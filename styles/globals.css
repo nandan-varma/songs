@@ -15,7 +15,7 @@ body {
 
 input {
     background-color: transparent;
-    color: transparent;
+    color: white;
     border: 4px solid grey;
     font-size: 2rem;
 }

@@ -4,13 +4,24 @@ import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlay, faPlus, faMagnifyingGlass, faDownload } from '@fortawesome/free-solid-svg-icons'
+
 const AlbumPage = () => {
     const router = useRouter();
+    const { albumID } = router.query;
 
+    const [albumData, setAlbumData] = useState(null);
     const [playlist, setPlaylist] = useState([]);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
+
+    useEffect(() => {
+        if (albumID) {
+            fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
+                .then(response => response.json())
+                .then(data => setAlbumData(data.data));
+        }
+    }, [albumID]);
 
     useEffect(() => {
         if (searchQuery) {
@@ -27,7 +38,7 @@ const AlbumPage = () => {
         }
     }, [searchQuery]);
 
-    if (!searchResults) return <div>Nothing to show</div>;
+    if (!albumData) return <div>Loading...</div>;
 
     const handlePlay = song => {
         console.log(song)
@@ -45,19 +56,38 @@ const AlbumPage = () => {
 
     return (
         <>
-            <div className='main-search'>
-                <input className='bordered' type="text" onChange={e => setSearchQuery(e.target.value)} />
-                <FontAwesomeIcon icon={faMagnifyingGlass} />
-                <ul className='songs'>
+            <div className='search-box'>
+            <input className='bordered' type="text" onChange={e => setSearchQuery(e.target.value)} />
+            <FontAwesomeIcon icon={faMagnifyingGlass}/>
+                <ul>
                     {searchResults.map(song => (
                         <li className='song bordered' key={song.id}>
                             <img className='song-art bordered' src={song.image.find(img => img.quality === '500x500').link} alt={song.name} />
                             <h3>{song.name}</h3>
                             <h4>{song.primaryArtists}</h4>
                             <div className='song-controls'>
-                                <FontAwesomeIcon onClick={() => handlePlay(song)} icon={faPlay} />
-                                <FontAwesomeIcon onClick={() => handleAddToPlaylist(song)} icon={faPlus} />
-                                <FontAwesomeIcon onClick={() => handleAddToPlaylist(song)} icon={faDownload} />
+                            <FontAwesomeIcon onClick={() => handlePlay(song)} icon={faPlay} />
+                            <FontAwesomeIcon onClick={() => handleAddToPlaylist(song)} icon={faPlus} />
+                            <FontAwesomeIcon onClick={() => handleAddToPlaylist(song)} icon={faDownload} />
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div className='album-box'>
+                <img className='background-art' src={albumData.image.find(img => img.quality === '50x50').link} alt={albumData.name} />
+                <h1>{albumData.name}</h1>
+                <img className='bordered' src={albumData.image.find(img => img.quality === '500x500').link} alt={albumData.name} />
+                <ul className='songs'>
+                    {albumData.songs.map(song => (
+                        <li className='song bordered' key={song.id}>
+                            <img className='song-art bordered' src={song.image.find(img => img.quality === '500x500').link} alt={song.name} />
+                            <h3>{song.name}</h3>
+                            <p>{song.primaryArtists}</p>
+                            <div className='song-controls'>
+                            <FontAwesomeIcon onClick={() => handlePlay(song)} icon={faPlay} />
+                            <FontAwesomeIcon onClick={() => handleAddToPlaylist(song)} icon={faPlus} />
+                            <FontAwesomeIcon onClick={() => handleAddToPlaylist(song)} icon={faDownload} />
                             </div>
                         </li>
                     ))}
@@ -68,8 +98,6 @@ const AlbumPage = () => {
                     <AudioPlayer
                         src={playlist[currentSongIndex].downloadUrl.find(url => url.quality === '160kbps').link}
                         onEnded={handleNextSong}
-                        showSkipControls
-                        onClickNext={handleNextSong}
                     />
                 </div>
             )}

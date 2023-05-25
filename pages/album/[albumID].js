@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AudioPlayer from 'react-h5-audio-player';
-import 'react-h5-audio-player/lib/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlay, faPlus, faMagnifyingGlass, faDownload } from '@fortawesome/free-solid-svg-icons'
 
@@ -17,14 +16,20 @@ const AlbumPage = () => {
 
     useEffect(() => {
         if (albumID) {
+            try{
             fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
                 .then(response => response.json())
                 .then(data => setAlbumData(data.data));
+            }
+            catch{
+                router.push('/404');
+            }
         }
     }, [albumID]);
 
     useEffect(() => {
         if (searchQuery) {
+            try{
             fetch(`https://jiosaavn-api-ebon-one.vercel.app/search/songs?query=${searchQuery}`)
                 .then(response => response.json())
                 .then(data => {
@@ -35,10 +40,14 @@ const AlbumPage = () => {
                         setSearchResults([])
                     }
                 });
+            }
+            catch{
+                router.push('/404');
+            }
         }
     }, [searchQuery]);
 
-    if (!albumData) return <div>Loading...</div>;
+    if (!albumData) return <div>Loading... wait if you want to see anything</div>;
 
     const handlePlay = song => {
         console.log(song)
@@ -52,6 +61,12 @@ const AlbumPage = () => {
 
     const handleNextSong = () => {
         setCurrentSongIndex(prevIndex => (prevIndex + 1) % playlist.length);
+    };
+
+    const handlePrevSong = () => {
+        if(prevIndex > 0){
+        setCurrentSongIndex(prevIndex => (prevIndex - 1) % playlist.length);
+        }
     };
 
     return (
@@ -98,6 +113,9 @@ const AlbumPage = () => {
                     <AudioPlayer
                         src={playlist[currentSongIndex].downloadUrl.find(url => url.quality === '160kbps').link}
                         onEnded={handleNextSong}
+                        showSkipControls
+                        onClickNext={handleNextSong}
+                        onClickPrevious={handlePrevSong}
                     />
                 </div>
             )}

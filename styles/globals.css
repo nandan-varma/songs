@@ -121,7 +121,7 @@ select{
     gap: 2rem;
 }
 
-.song {
+.song,.album {
     position: relative;
     margin: 2rem;
     list-style-type: none;
@@ -134,9 +134,15 @@ select{
     height: 28rem;
     font-size: 1rem;
     text-align: center;
+    text-decoration: none;
 }
 
-.song-art {
+.album{
+    height: 20rem;
+    font: optional;
+}
+
+.song-art,.album-art {
     width: 16rem;
 }
 
@@ -148,7 +154,7 @@ select{
     margin: 0 1rem;
 }
 
-.song-controls {
+.song-controls,.album-controls {
     position: absolute;
     bottom: 0;
     display: flex;

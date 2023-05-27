@@ -17,6 +17,8 @@ const Search = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [pageType, setPageType] = useState('search') // 'album' or 'search'
     const [searchType, setSearchType] = useState('song'); // 'song' or 'album'
+    const [history, setHistory] = useState([]);
+    // history : pagetype : "" , value : ""
 
     useEffect(() => {
         if (albumID) {
@@ -113,6 +115,7 @@ const Search = () => {
                     <option value="song">Song</option>
                     <option value="album">Album</option>
                 </select>
+            </div>
 
                 {pageType === "search" && (
                     <ul className="songs">
@@ -162,7 +165,6 @@ const Search = () => {
                     </>
                 )}
 
-            </div>
             {playlist.length > 0 && (
                 <div style={{ position: 'fixed', bottom: 0, width: '100%' }}>
                     {/* <Playlist playlist={playlist} currentSongIndex={currentSongIndex}></Playlist> */}

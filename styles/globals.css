@@ -1,11 +1,14 @@
+:root{
+}
+
 html,
 body {
     margin: 0;
 }
 
 body {
-    /* background: black; */
-    background-image: url("/background.svg");
+    background: black;
+    /* background-image: url("/background.svg"); */
     background-blend-mode: darken;
     background-size: cover;
     background-repeat: no-repeat;
@@ -48,7 +51,6 @@ button {
 
 .main-search {
     top: 0;
-    width: 100vw;
     height: 6vh;
     background: rgba(0, 0, 0, 0.425);
     padding: 2vh 2vw;  
@@ -65,13 +67,14 @@ button {
 }
 
 .main-search select{
+    color: white;
     text-align: center;
     margin: 1vh 1vw;
     height: 3rem;
     width: 15vw;
     font-weight: 700;
     font-size: 1.2rem;
-    background-color: transparent;
+    background-color: black;
     border: 2px solid grey;
     border-radius: 24px ;
 }
@@ -141,16 +144,16 @@ button {
 .songs {
     padding: max(5vh, 20px) max(10vw, 20px);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(36vw,1fr));
+    gap: 4rem;
 }
 
 .song,.album {
     position: relative;
     margin: 2rem;
     list-style-type: none;
-    background: linear-gradient(transparent, transparent) padding-box,
-        url("/gradient.svg") border-box;
+    background: grey;
+    background: linear-gradient(grey);
     border-radius: 50em;
     border: 4px solid transparent;
     border-radius: 32px;
@@ -177,6 +180,24 @@ button {
     width: 2rem;
     margin: 0 1rem;
 }
+
+.current{
+    text-decoration: underline;
+}
+
+.playlist .song{
+    background: grey;
+    margin: 1rem;
+    padding-left: 4rem;
+    text-align: left;
+    height: 3rem;
+    width: 60vw
+}
+
+.playlist .song-controls{
+    margin: 0;
+}
+
 
 .song-controls,.album-controls {
     position: absolute;

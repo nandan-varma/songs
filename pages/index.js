@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faMusic } from '@fortawesome/free-solid-svg-icons';
-import { Song, Album } from '../components/song';
+import { Song, Album, Artist } from '../components/song';
 import MainSearch from '../components/search';
 import AlbumPage from '../components/Album';
 import PlaylistItem from '@/components/playlistItem';
+import ArtistPage from '@/components/Artist';
 
-const MainPage = () => {
+const MainContainer = () => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [albumID, setAlbumID] = useState(null);
+  const [artistID, setArtistID] = useState(null);
+  const [artistData, setArtistData] = useState(null);
   const [albumData, setAlbumData] = useState(null);
   const [playlist, setPlaylist] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
@@ -20,7 +21,6 @@ const MainPage = () => {
   const [pageType, setPageType] = useState('search'); // 'album' or 'search' or 'playlist' or 'artist'
   const [searchType, setSearchType] = useState('song'); // 'song' or 'album' or 'artist'
   const [history, setHistory] = useState([]);
-  // history: pagetype: "", value: ""
 
   useEffect(() => {
     if (albumID) {
@@ -41,18 +41,35 @@ const MainPage = () => {
   }, [albumID]);
 
   useEffect(() => {
+    if (artistID) {
+      fetch(`https://jiosaavn-api-ebon-one.vercel.app/artists?id=${artistID}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.data) {
+            setArtistData(data.data);
+          } else {
+            setArtistData(null);
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching album data:', error);
+          setArtistData(null);
+        });
+    }
+  }, [artistID]);
+
+  useEffect(() => {
     if (searchQuery) {
       if (pageType !== 'search') {
         setPageType('search');
       }
       let searchUrl = '';
       if (searchType === 'song') {
-        searchUrl = `https://saavn.me/search/songs?query=${searchQuery}`;
+        searchUrl = `https://jiosaavn-cvjy6pyk5-nandan-varma.vercel.app/search/songs?query=${searchQuery}`;
       } else if (searchType === 'album') {
-        searchUrl = `https://saavn.me/search/albums?query=${searchQuery}`;
-      }
-      else if (searchType === 'artist') {
-        searchUrl = `https://saavn.me/search/artists?query=${searchQuery}`;
+        searchUrl = `https://jiosaavn-cvjy6pyk5-nandan-varma.vercel.app/search/albums?query=${searchQuery}`;
+      } else if (searchType === 'artist') {
+        searchUrl = `https://jiosaavn-cvjy6pyk5-nandan-varma.vercel.app/search/artists?query=${searchQuery}`;
       }
 
       fetch(searchUrl)
@@ -109,6 +126,7 @@ const MainPage = () => {
 
   const handleSearchTypeChange = (e) => {
     setSearchQuery('');
+    setSearchResults(null);
     setSearchType(e.target.value);
   };
 
@@ -118,8 +136,14 @@ const MainPage = () => {
     handleClick();
   };
 
+  const handleArtistClick = (ID) => {
+    setArtistID(ID);
+    setPageType('artist');
+    handleClick();
+  };
+
   const handlePlaylist = (ID) => {
-    setPageType('playlist')
+    setPageType('playlist');
     handleClick();
   };
 
@@ -135,46 +159,36 @@ const MainPage = () => {
       />
 
       {pageType === 'search' && (
-        <ul className="songs">
-          {searchResults.map((result) =>
-            searchType === 'song' ? (
-              <Song
-                key={result.id}
-                song={result}
-                onPlay={handlePlay}
-                onAddToPlaylist={handleAddToPlaylist}
-              />
-            ) : (
-              <Album key={result.id} album={result} handleAlbumClick={handleAlbumClick} />
-            )
-          )}
-        </ul>
+        <SearchResults
+          searchResults={searchResults}
+          searchType={searchType}
+          handlePlay={handlePlay}
+          handleAddToPlaylist={handleAddToPlaylist}
+          handleAlbumClick={handleAlbumClick}
+          handleArtistClick={handleArtistClick}
+        />
       )}
 
       {pageType === 'playlist' && (
-        <ul className="playlist">
-        {playlist.map((result,index) =>
-          searchType === 'song' ? (
-            <>
-            <PlaylistItem
-              key={result.id}
-              song={result}
-              onPlay={handlePlay}
-              onAddToPlaylist={handleAddToPlaylist}
-              currentSongIndex={currentSongIndex}
-              index={index}
-            />
-            </>
-          ) : (
-            <Album key={result.id} album={result} handleAlbumClick={handleAlbumClick} />
-          )
-        )}
-        </ul>
+        <Playlist
+          playlist={playlist}
+          currentSongIndex={currentSongIndex}
+          handlePlay={handlePlay}
+          handleAddToPlaylist={handleAddToPlaylist}
+        />
       )}
 
       {pageType === 'album' && (
         <AlbumPage
           albumData={albumData}
+          handlePlay={handlePlay}
+          handleAddToPlaylist={handleAddToPlaylist}
+        />
+      )}
+
+      {pageType === 'artist' && (
+        <ArtistPage
+          artistData={artistData}
           handlePlay={handlePlay}
           handleAddToPlaylist={handleAddToPlaylist}
         />
@@ -194,6 +208,64 @@ const MainPage = () => {
         </div>
       )}
     </>
+  );
+};
+
+const SearchResults = ({
+  searchResults,
+  searchType,
+  handlePlay,
+  handleAddToPlaylist,
+  handleAlbumClick,
+  handleArtistClick,
+}) => (
+  <ul className="songs">
+    {searchResults.map((result) => {
+      return (
+        searchType === 'song' ? (
+          <Song
+            key={result.id}
+            song={result}
+            onPlay={handlePlay}
+            onAddToPlaylist={handleAddToPlaylist}
+          />
+        ) : (
+          searchType === 'album' ? (
+            <Album key={result.id} album={result} handleAlbumClick={handleAlbumClick} />
+          ) : (
+            searchType === 'artist' ? (
+              <Artist key={result.id} artist={result} handleArtistClick={handleArtistClick} />
+            ) : null
+          )
+        )
+      );
+    })}
+  </ul>
+);
+
+const Playlist = ({
+  playlist,
+  currentSongIndex,
+  handlePlay,
+  handleAddToPlaylist,
+}) => (
+  <ul className="playlist">
+    {playlist.map((result, index) =>
+      <PlaylistItem
+        key={result.id}
+        song={result}
+        onPlay={handlePlay}
+        onAddToPlaylist={handleAddToPlaylist}
+        currentSongIndex={currentSongIndex}
+        index={index}
+      />
+    )}
+  </ul>
+);
+
+const MainPage = () => {
+  return (
+    <MainContainer />
   );
 };
 

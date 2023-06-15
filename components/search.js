@@ -16,6 +16,7 @@ const MainSearch = ({ searchQuery, setSearchQuery, searchType, setSearchType, ha
       <select name="type" id="type" value={searchType} onChange={handleSearchTypeChange}>
         <option value="song">Song</option>
         <option value="album">Album</option>
+        <option value="artist">Artist</option>
       </select>
     </div>
   );

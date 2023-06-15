@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPlus, faDownload } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
+import DownloadIcon from './DownloadIcon';
 
 const Song = ({ song, onPlay, onAddToPlaylist }) => {
   return (
@@ -9,20 +10,13 @@ const Song = ({ song, onPlay, onAddToPlaylist }) => {
       <img className='song-art bordered' src={song.image.find(img => img.quality === '500x500').link} alt={song.name} />
       <h3>{song.name}</h3>
       {/* <h4>{song.primaryArtists}</h4> */}
-      <div className='song-controls'>
+      { song!==null &&
+        <div className='song-controls'>
         <FontAwesomeIcon onClick={() => onPlay(song)} icon={faPlay} />
         <FontAwesomeIcon onClick={() => onAddToPlaylist(song)} icon={faPlus} />
-        <FontAwesomeIcon onClick={async () => {
-      const response = await fetch(song.downloadUrl[4].link);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = song.name;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
-    }} icon={faDownload} />
+        <DownloadIcon downloadUrl={song.downloadUrl[4].link} name={song.name} />
       </div>
+      }
     </li>
   );
 };
@@ -33,6 +27,19 @@ const Album = ({ album, handleAlbumClick }) => {
     <li className='album bordered' key={album.id} onClick={() => { handleAlbumClick(album.id) }}>
       <img className='album-art bordered' src={album.image.find(img => img.quality === '500x500').link} alt={album.name} />
       <h3>{album.name}</h3>
+      {/* <h4>{song.primaryArtists}</h4> */}
+      {/* <div className='album-controls'> */}
+      {/* <FontAwesomeIcon onClick={() => onPlay(album)} icon={faPlay} /> */}
+      {/* </div> */}
+    </li>
+  );
+};
+
+const Artist = ({ artist, handleArtistClick }) => {
+  return (
+    <li className='album bordered' key={artist.id} onClick={() => { handleArtistClick(artist.id) }}>
+      <img className='album-art bordered' src={artist.image.find(img => img.quality === '500x500').link} alt={artist.name} />
+      <h3>{artist.name}</h3>
       {/* <h4>{song.primaryArtists}</h4> */}
       {/* <div className='album-controls'> */}
       {/* <FontAwesomeIcon onClick={() => onPlay(album)} icon={faPlay} /> */}
@@ -69,4 +76,4 @@ const Playlist = ({ playlist, currentSongIndex }) => {
 };
 
 
-export { Song, Album, Playlist };
+export { Song, Album, Playlist , Artist };

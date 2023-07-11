@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
+import { Text } from '@chakra-ui/react';
 
 const DownloadIcon = ({ downloadUrl, name }) => {
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -41,12 +42,13 @@ const DownloadIcon = ({ downloadUrl, name }) => {
   return (
     
     <div className="download-icon" onClick={handleDownload}>
-      <FontAwesomeIcon icon={faDownload} />
-      {downloadProgress!=0 && (
-      <div className="download-progress" id="greenBar" style={{ width: `${downloadProgress}%` }}>
+      {downloadProgress!=0 ? (
+        <Text size={'2x'}>
         {downloadProgress}%
-      </div>
-      ) }
+      </Text>
+      ) : (
+        <FontAwesomeIcon size='2x' icon={faDownload} />
+      )}
     </div>
   );
 };

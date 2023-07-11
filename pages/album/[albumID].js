@@ -4,7 +4,7 @@ import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import {Song} from '../../components/song';
+import { Song } from '../../components/song';
 
 const AlbumPage = () => {
   const router = useRouter();
@@ -52,7 +52,13 @@ const AlbumPage = () => {
     }
   }, [searchQuery]);
 
-  if (!albumData) return <div>Loading...</div>;
+  if (!albumData) return
+  (
+    <Center mt={"50vh"}>
+      <Spinner size={"xl"}></Spinner>
+    </Center>
+  )
+    ;
 
   const handlePlay = song => {
     setPlaylist([song]);
@@ -78,21 +84,21 @@ const AlbumPage = () => {
       <div className='search-box'>
         <input className='bordered' type="text" onChange={e => setSearchQuery(e.target.value)} />
         <FontAwesomeIcon icon={faMagnifyingGlass} />
-        <ul>
+        <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={4}>
           {searchResults.map(song => (
             <Song key={song.id} song={song} onPlay={handlePlay} onAddToPlaylist={handleAddToPlaylist} />
           ))}
-        </ul>
+        </Grid>
       </div>
       <div className='album-box'>
         <img className='background-art' src={albumData.image.find(img => img.quality === '50x50').link} alt={albumData.name} />
         <h1>{albumData.name}</h1>
         <img className='bordered' src={albumData.image.find(img => img.quality === '500x500').link} alt={albumData.name} />
-        <ul className='songs'>
+        <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={4}>
           {albumData.songs.map(song => (
             <Song key={song.id} song={song} onPlay={handlePlay} onAddToPlaylist={handleAddToPlaylist} />
           ))}
-        </ul>
+        </Grid>
       </div>
       {playlist.length > 0 && (
         <div style={{ position: 'fixed', bottom: 0, width: '100%' }}>

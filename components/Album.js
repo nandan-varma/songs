@@ -29,8 +29,9 @@ const AlbumPage = ({ albumData, handlePlay, handleAddToPlaylist }) => {
           </ul>
         </div>
       ) : (
-        <div>Loading Album Data</div>
-      )}
+        <Center mt={"50vh"}>
+          <Spinner size={"xl"}></Spinner>
+        </Center>)}
     </>
   );
 };

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import AudioPlayer from 'react-h5-audio-player';
-import 'react-h5-audio-player/lib/styles.css';
-import { Song, Album, Artist } from '../components/song';
 import MainSearch from '../components/search';
 import AlbumPage from '../components/Album';
-import PlaylistItem from '@/components/playlistItem';
+import Playlist from '@/components/PlayList';
 import ArtistPage from '@/components/Artist';
+import LoadPage from '@/components/LoadPage';
+import { SearchResults } from '@/components/SearchResults'
+import Footer from '@/components/Footer';
 
 const MainContainer = () => {
   const router = useRouter();
@@ -124,12 +125,6 @@ const MainContainer = () => {
     }
   };
 
-  const handleSearchTypeChange = (e) => {
-    setSearchQuery('');
-    setSearchResults(null);
-    setSearchType(e.target.value);
-  };
-
   const handleAlbumClick = (ID) => {
     setAlbumID(ID);
     setPageType('album');
@@ -147,9 +142,16 @@ const MainContainer = () => {
     handleClick();
   };
 
+  const handleSearchTypeChange = value => {
+    setSearchQuery('');
+    setSearchType(value);
+  };
+
   return (
-    <>
+    <LoadPage>
+      <title>Music</title>
       <MainSearch
+        handleSearchTypeChange={handleSearchTypeChange}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         searchType={searchType}
@@ -207,61 +209,10 @@ const MainContainer = () => {
           />
         </div>
       )}
-    </>
+      <Footer></Footer>
+    </LoadPage>
   );
 };
-
-const SearchResults = ({
-  searchResults,
-  searchType,
-  handlePlay,
-  handleAddToPlaylist,
-  handleAlbumClick,
-  handleArtistClick,
-}) => (
-  <ul className="songs">
-    {searchResults.map((result) => {
-      return (
-        searchType === 'song' ? (
-          <Song
-            key={result.id}
-            song={result}
-            onPlay={handlePlay}
-            onAddToPlaylist={handleAddToPlaylist}
-          />
-        ) : (
-          searchType === 'album' ? (
-            <Album key={result.id} album={result} handleAlbumClick={handleAlbumClick} />
-          ) : (
-            searchType === 'artist' ? (
-              <Artist key={result.id} artist={result} handleArtistClick={handleArtistClick} />
-            ) : null
-          )
-        )
-      );
-    })}
-  </ul>
-);
-
-const Playlist = ({
-  playlist,
-  currentSongIndex,
-  handlePlay,
-  handleAddToPlaylist,
-}) => (
-  <ul className="playlist">
-    {playlist.map((result, index) =>
-      <PlaylistItem
-        key={result.id}
-        song={result}
-        onPlay={handlePlay}
-        onAddToPlaylist={handleAddToPlaylist}
-        currentSongIndex={currentSongIndex}
-        index={index}
-      />
-    )}
-  </ul>
-);
 
 const MainPage = () => {
   return (

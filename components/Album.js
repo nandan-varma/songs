@@ -1,5 +1,6 @@
 import React from 'react';
 import { Song } from '../components/song';
+import { Center, Spinner } from '@chakra-ui/react';
 
 const AlbumPage = ({ albumData, handlePlay, handleAddToPlaylist }) => {
   return (
@@ -17,7 +18,7 @@ const AlbumPage = ({ albumData, handlePlay, handleAddToPlaylist }) => {
             src={albumData.image.find((img) => img.quality === "500x500").link}
             alt={albumData.name}
           />
-          <ul className="songs">
+  <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={4}>
             {albumData.songs.map((song) => (
               <Song
                 key={song.id}
@@ -26,7 +27,7 @@ const AlbumPage = ({ albumData, handlePlay, handleAddToPlaylist }) => {
                 onAddToPlaylist={handleAddToPlaylist}
               />
             ))}
-          </ul>
+          </Grid>
         </div>
       ) : (
         <Center mt={"50vh"}>

@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import MainSearch from '@/components/search/search';
-import AlbumPage from '../components/Album';
+import AlbumPage from '@/components/Album';
 import Playlist from '@/components/PlayList';
 import ArtistPage from '@/components/Artist';
 import LoadPage from '@/components/LoadPage';
-import { SearchResults } from '@/components/search/SearchResults'
-import Background from '@/components/Background';
 import { useAppContext } from '@/components/AppContext';
-import { usePlayerContext } from '@/components/PlayerContext';
 import { Player } from '@/components/Player';
+import { useSearchContext } from '@/components/search/SearchContext';
+import { useEffect } from 'react';
 
-const Page = () => {
+const searchPage = () => {
   const router = useRouter();
-  const {pageType, setPageType} = useAppContext();
+  const {pageType} = useAppContext();
+  const {setSearchQuery} = useSearchContext();
+  const { slug } = router.query;
+  useEffect(() => {
+    if(slug != null){
+      setSearchQuery(slug);
+    }
+  }, [slug]);
   return (
     <LoadPage>
       <title>Music</title>
@@ -35,4 +39,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default searchPage;

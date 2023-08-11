@@ -10,17 +10,15 @@ const LoadPage = ({ children }) => {
 
     return (
         <>
-            <ChakraProvider>
-                {
-                    domLoaded ? (
-                        <>{children}</>
-                    ) : (
-                        <Center mt={"50vh"}>
-                            <Spinner size={"xl"}></Spinner>
-                        </Center>
-                    )
-                }
-            </ChakraProvider>
+            {
+                domLoaded ? (
+                    <>{children}</>
+                ) : (
+                    <Center mt={"50vh"}>
+                        <Spinner size={"xl"}></Spinner>
+                    </Center>
+                )
+            }
         </>
     )
 };

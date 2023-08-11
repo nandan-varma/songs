@@ -1,5 +1,6 @@
 import React from 'react';
 import { Song } from '../components/song';
+import { Center, Spinner } from '@chakra-ui/react';
 
 const ArtistPage = ({ artistData, handlePlay, handleAddToPlaylist }) => {
   return (
@@ -30,7 +31,9 @@ const ArtistPage = ({ artistData, handlePlay, handleAddToPlaylist }) => {
           <p>Coming Soon</p>
         </div>
       ) : (
-        <div>Loading Artist Data</div>
+        <Center mt={"50vh"}>
+          <Spinner size={"xl"}></Spinner>
+        </Center>
       )}
     </>
   );

@@ -1,17 +1,35 @@
-
 html,
 body {
-    margin: 0;
+	margin: 0;
+}
+
+#__next {
+	height: 100%;
+	width: 100%;
+	margin: 0;
 }
 
 body {
-    background: black;
-    background-image: url("/background.svg");
-    background-blend-mode: darken;
-    background-size: cover;
-    background-repeat: no-repeat;
-    color: white;
-    min-height: 100vh;
+	background: white;
+	/* background-image: url("/background.svg"); */
+	background-blend-mode: darken;
+	background-size: cover;
+	background-repeat: no-repeat;
+	color: white;
+	min-height: 100vh;
+	margin: 0;
+	padding: 0;
+}
+
+.background {
+    display: block;
+    margin: 0 auto;
+	padding: 0;
+}
+
+.blur {
+	background-color: rgba(29, 29, 29, 0.7);
+	backdrop-filter: blur(10px);
 }
 
 
@@ -19,7 +37,7 @@ body {
 
 
 .rhap_container {
-    box-sizing: border-box;
+	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	line-height: 1;
@@ -27,9 +45,9 @@ body {
 	width: 100%;
 	padding: 10px 15px;
 	/* background-color: #fff; */
-    background-color: rgb(255 255 255 / 0.5);
-    /* background-image: linear-gradient(to right, rgba(180,180,180,0.7) , rgba(255,255,255,0.8) , rgba(190,190,190,0.7)); */
-    backdrop-filter: blur(10px);
+	/* background-image: linear-gradient(to right, rgba(180,180,180,0.7) , rgba(255,255,255,0.8) , rgba(190,190,190,0.7)); */
+	background-color: rgb(255 255 255 / 0.5);
+	backdrop-filter: blur(10px);
 	box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 

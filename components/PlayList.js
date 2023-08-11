@@ -6,8 +6,8 @@ export const Playlist = ({
     handlePlay,
     handleAddToPlaylist,
   }) => (
-    <ul className="playlist">
-      {playlist.map((result, index) =>
+    <Grid templateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={4}>
+    {playlist.map((result, index) =>
         <PlaylistItem
           key={result.id}
           song={result}
@@ -17,5 +17,5 @@ export const Playlist = ({
           index={index}
         />
       )}
-    </ul>
+    </Grid>
   );

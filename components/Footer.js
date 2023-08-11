@@ -14,7 +14,7 @@ export default function Footer() {
         </NextLink>
       </Flex> */}
       <Text mt={4} textAlign="center">
-        &copy; {new Date().getFullYear()} Nandan Varma. All rights reserved.
+        &copy; {new Date().getFullYear()} Nandan Varma. No rights reserved.
       </Text>
     </Box>
   );

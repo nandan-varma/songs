@@ -7,8 +7,7 @@ export const useSearchContext = () => useContext(SearchContext);
 
 export const SearchProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  // const [searchType, setSearchType] = useState('song');
-  const [searchResults, setSearchResults] = useState();
+  const [searchResults, setSearchResults] = useState({songs : [], albums : [],artists : []});
   const { pageType, setPageType } = useAppContext();
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -24,25 +23,20 @@ export const SearchProvider = ({ children }) => {
             if (data.data) {
               setSearchResults(data.data);
             } else {
-              setSearchResults([]);
+              setSearchResults({songs : [], albums : [],artists : []});
             }
           })
           .catch((error) => {
             console.error('Error fetching search results:', error);
-            setSearchResults([]);
+            setSearchResults({songs : [], albums : [],artists : []});
           });
       } else {
-        setSearchResults([]);
+        setSearchResults({songs : [], albums : [],artists : []});
       }
     }, 250);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
-
-  // useEffect(()=>{
-  //   setSearchResults([]);
-  //   setSearchQuery(searchQuery);
-  // },[searchType]);
 
   return (
     <SearchContext.Provider value={{ searchQuery, setSearchQuery, searchResults, setSearchResults }}>

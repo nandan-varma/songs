@@ -35,7 +35,8 @@ const MainSearch = () => {
       router.push('/search/' + value);
     }
     else {
-      router.push("/")
+      router.push("/");
+      console.log(searchResults);
     }
   }
   return (
@@ -46,7 +47,7 @@ const MainSearch = () => {
           />
       </Flex>
       {console.log(searchResults)}
-      {searchResults!= undefined && <SearchResults />}
+      <SearchResults />
     </>
   );
 };

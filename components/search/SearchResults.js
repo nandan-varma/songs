@@ -6,7 +6,7 @@ export function SearchResults() {
   const { searchResults } = useSearchContext();
   return (
     <>
-      {(searchResults.length == 0 || searchResults == null) && 
+      {(searchResults != null) && 
       <>
         <SimpleGrid minChildWidth='xs' spacing={'1'}>
           {

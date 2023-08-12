@@ -9,43 +9,26 @@ import { useAppContext } from './AppContext';
 const Song = ({ song }) => {
   const { handlePlay, handleAddToPlaylist } = usePlayerContext();
 
-  const getDownloadUrl = () => {
-    var url = null;
-    if (song.downloadUrl == null || song.downloadUrl == undefined) {
-      
-      fetch(`https://saavn-api.nandanvarma.com/songs?id=${song.id}`)
-        .then((response) => response.json())
-        .then((res) => {
-          if (res.data) {
-            url = res.data.downloadUrl[4].link;
-          } else {
-            url = null;
-          }
-        })
-    }
-    else {
-      url = song.downloadUrl[4].link;
-    }
-  }
-
   return (
     <Center>
       <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={song.id}>
         <img
           className='song-art bordered'
           src={song.image.find(img => img.quality === '500x500').link}
-          alt={song.name}
+          alt={song.title}
         />
         <Box textAlign={'center'} justifyContent={'center'}>
-          <Text fontWeight={'bold'} fontSize={'2xl'}>{
-            song.name}</Text>
+          <Text fontWeight={'bold'} fontSize={'lg'}>{
+            song.title}</Text>
+          <Text fontWeight={'medium'} fontSize={'lg'}>{
+            song.album}</Text>
           <Text fontStyle={'italic'}>{song.primaryArtists}</Text>
         </Box>
         {song !== null && (
           <Flex m={'1rem 2.5rem'} className='song-controls' justifyContent={'space-between'}>
             <FontAwesomeIcon size='2x' onClick={() => handlePlay(song)} icon={faPlay} />
             <FontAwesomeIcon size='2x' onClick={() => handleAddToPlaylist(song)} icon={faPlus} />
-              {/* <DownloadIcon downloadUrl={getDownloadUrl()} name={song.name} /> */}
+            <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
           </Flex>
         )}
       </Box>

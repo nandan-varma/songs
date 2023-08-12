@@ -36,18 +36,18 @@ const MainSearch = () => {
     }
     else {
       router.push("/");
-      console.log(searchResults);
     }
   }
   return (
     <>
-      <Flex m={'4'}>
+      <Box w={'100vw'}>
+        <Flex m={'4'}>
           <Input autoFocus={true} type="text" value={searchQuery}
             onChange={(event) => handleSearch(event.target.value)}
           />
-      </Flex>
-      {console.log(searchResults)}
-      <SearchResults />
+        </Flex>
+        <SearchResults />
+      </Box>
     </>
   );
 };

@@ -5,6 +5,7 @@ import { PlayerProvider } from '@/components/PlayerContext';
 import { AppProvider } from '@/components/AppContext';
 import MainSearch from '@/components/search/search';
 import { ChakraProvider } from '@chakra-ui/react';
+import { Navbar } from '@/components/Navbar';
 
 export default function App({ Component, pageProps }) {
   return (
@@ -13,6 +14,7 @@ export default function App({ Component, pageProps }) {
         <AppProvider>
           <SearchProvider>
             <PlayerProvider>
+              <Navbar/>
               <MainSearch />
               <Component {...pageProps} />
             </PlayerProvider>

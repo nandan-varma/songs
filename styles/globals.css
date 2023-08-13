@@ -28,7 +28,7 @@ body {
 }
 
 .blur {
-	background-color: rgba(29, 29, 29, 0.7);
+	background-color: rgba(111, 111, 111, 0.373);
 	backdrop-filter: blur(10px);
 }
 
@@ -42,13 +42,14 @@ body {
 	flex-direction: column;
 	line-height: 1;
 	font-family: inherit;
-	width: 100%;
-	padding: 10px 15px;
+	width: 95vw;
+	margin: 0.5rem;
 	/* background-color: #fff; */
 	/* background-image: linear-gradient(to right, rgba(180,180,180,0.7) , rgba(255,255,255,0.8) , rgba(190,190,190,0.7)); */
-	background-color: rgb(255 255 255 / 0.5);
+	background-color: rgba(255, 255, 255, 0.332);
 	backdrop-filter: blur(10px);
 	box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
+	border-radius: 20px;
 }
 
 .rhap_container:focus:not(:focus-visible) {

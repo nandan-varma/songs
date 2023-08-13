@@ -7,6 +7,7 @@ import { useAppContext } from '@/components/AppContext';
 import { Player } from '@/components/Player';
 import { useSearchContext } from '@/components/search/SearchContext';
 import { useEffect } from 'react';
+import { SearchResults } from '@/components/search/SearchResults';
 
 const searchPage = () => {
   const router = useRouter();
@@ -19,23 +20,7 @@ const searchPage = () => {
     }
   }, [slug]);
   return (
-    <LoadPage>
-      <title>Music</title>
-
-      {pageType === 'playlist' && (
-        <Playlist/>
-      )}
-
-      {pageType === 'album' && (
-        <AlbumPage/>
-      )}
-
-      {pageType === 'artist' && (
-        <ArtistPage/>
-      )}
-      <Player/>
-      {/* <Footer></Footer> */}
-    </LoadPage>
+    <SearchResults/>
   );
 };
 

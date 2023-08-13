@@ -6,7 +6,7 @@ export const useAppContext = () => useContext(AppContext);
 
 export const AppProvider = ({ children }) => {
     const [history, setHistory] = useState([]);
-    const [pageType, setPageType] = useState('search');
+    const [pageType, SetPageType] = useState('search');
     const [content, SetContent] = useState({ type: "song", id: 0 })
     const [data, SetData] = useState([]);
 
@@ -14,7 +14,7 @@ export const AppProvider = ({ children }) => {
     //     var delayDebounceFn;
     //     delayDebounceFn = setTimeout(() => {
     //         SetData([]);
-    //             fetch(`https://saavn-api.nandanvarma.com/${data.type}s?id=${data.id}`)
+    //             fetch(`${}/${data.type}s?id=${data.id}`)
     //                 .then((response) => response.json())
     //                 .then((res) => {
     //                     if (res.data) {
@@ -33,7 +33,7 @@ export const AppProvider = ({ children }) => {
     // }, [data]);
 
     return (
-        <AppContext.Provider value={{ history, setHistory, pageType, setPageType, content, SetContent, data, SetData }}>
+        <AppContext.Provider value={{ pageType, SetPageType}}>
             {children}
         </AppContext.Provider>
     );

@@ -1,21 +1,20 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
-import { Text } from '@chakra-ui/react';
+import { IconButton, Text } from '@chakra-ui/react';
+import { usePlayerContext } from './PlayerContext';
 
 const DownloadIcon = ({ id, name, downloadUrl }) => {
+  const {getDownloadUrl} = usePlayerContext();
   const [downloadProgress, setDownloadProgress] = useState(0);
-  var url;
-
-
+  var url = downloadUrl;
 
   const handleDownload = async () => {
-    url = downloadUrl;
+    setDownloadProgress(1);
     if (url == null || url == undefined) {
-      const url_response = await fetch(`https://saavn-api.nandanvarma.com/songs?id=${id}`).then((res)=>{
-        return res.json();
-      });
-      url = url_response.data[0].downloadUrl[4].link;
+      await getDownloadUrl(id).then((res)=>{
+        url = res;
+      })
     }
     const response = await fetch(url);
     const totalSize = response.headers.get('content-length');
@@ -39,8 +38,8 @@ const DownloadIcon = ({ id, name, downloadUrl }) => {
 
       chunks.push(value);
       loadedSize += value.length;
-      const progress = Math.round((loadedSize / totalSize) * 100);
-      setDownloadProgress(progress);
+      const progress = Math.round((loadedSize / totalSize) * 99);
+      setDownloadProgress(progress+1);
 
       // Read the next chunk
       return reader.read().then(handleChunk);
@@ -53,11 +52,11 @@ const DownloadIcon = ({ id, name, downloadUrl }) => {
 
     <div className="download-icon" onClick={handleDownload}>
       {downloadProgress != 0 ? (
-        <Text fontWeight={'bold'} size={'2x'}>
+        <Text m={'2'} fontWeight={'bold'} size={'2x'}>
           {downloadProgress}%
         </Text>
       ) : (
-        <FontAwesomeIcon size='2x' icon={faDownload} />
+        <IconButton m={'1'} icon={<FontAwesomeIcon icon={faDownload} />}/>
       )}
     </div>
   );

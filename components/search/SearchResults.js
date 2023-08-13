@@ -35,18 +35,6 @@ export function SearchResults() {
               }
               )}
           </SimpleGrid>
-          {/* <Text textAlign={'center'} as={Heading}>Artists</Text>
-          <SimpleGrid minChildWidth='xs' spacing={'1'}>
-            {searchResults.artists.results.map((result) => {
-              return (
-                <Artist
-                  key={result.id}
-                  artist={result}
-                />
-              )
-            }
-            )}
-          </SimpleGrid> */}
           </>
         }
         </>

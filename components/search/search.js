@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 const SearchMenu = () => {
   return (
     <>
-      <Flex w={'24'} p={'10px'}>
+      <Flex>
         <Menu>
           {({ isOpen }) => (
             <>
@@ -31,7 +31,7 @@ const MainSearch = () => {
   const { searchQuery, setSearchQuery, searchResults } = useSearchContext();
   const handleSearch = (value) => {
     setSearchQuery(value);
-    if (value != "") {
+    if (value.replace(/\s/g, "") != "") {
       router.push('/search/' + value);
     }
     else {
@@ -40,13 +40,12 @@ const MainSearch = () => {
   }
   return (
     <>
-      <Box w={'100vw'}>
+      <Box>
         <Flex m={'4'}>
           <Input autoFocus={true} type="text" value={searchQuery}
             onChange={(event) => handleSearch(event.target.value)}
           />
         </Flex>
-        <SearchResults />
       </Box>
     </>
   );

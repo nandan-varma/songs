@@ -6,13 +6,37 @@ const SearchContext = createContext();
 export const useSearchContext = () => useContext(SearchContext);
 
 export const SearchProvider = ({ children }) => {
-  const emptyResult = {songs : {results : []}, albums : {results : []},artists : {results : []}};
+  const emptyResult = {
+    "topQuery": {
+      "results": [],
+      "position": 0
+    },
+    "songs": {
+      "results": [],
+      "position": 1
+    },
+    "albums": {
+      "results": [],
+      "position": 2
+    },
+    "artists": {
+      "results": [],
+      "position": 3
+    },
+    "playlists": {
+      "results": [],
+      "position": 4
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(emptyResult);
   const { pageType, setPageType } = useAppContext();
+  const ResetSearch = () => {
+    setSearchResults(emptyResult);
+  }
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (searchQuery) {
+      if (searchQuery && searchQuery.replace(/\s/g, "") != "") {
         if (pageType !== 'search') {
           setPageType('search');
         }
@@ -40,7 +64,7 @@ export const SearchProvider = ({ children }) => {
   }, [searchQuery]);
 
   return (
-    <SearchContext.Provider value={{ searchQuery, setSearchQuery, searchResults, setSearchResults }}>
+    <SearchContext.Provider value={{ searchQuery, setSearchQuery, searchResults, setSearchResults, emptyResult, ResetSearch }}>
       {children}
     </SearchContext.Provider>
   );

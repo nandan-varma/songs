@@ -12,10 +12,9 @@ export const PlayerProvider = ({ children }) => {
     setPlaylist([item]);
     setCurrentSongIndex(0);
   };
-  
+
   const handleAddToPlaylist = (item) => {
     setPlaylist((prevPlaylist) => [...prevPlaylist, item]);
-    console.log(playlist);
   };
 
   const handleNextSong = () => {
@@ -28,10 +27,20 @@ export const PlayerProvider = ({ children }) => {
     }
   };
 
-  // Add other player-related states and functions here
+  async function getDownloadUrl(id) {
+    try {
+        const response = await fetch(`https://saavn-api.nandanvarma.com/songs?id=${id}`);
+        const data = await response.json();
+        const url = data.data[0].downloadUrl[4].link;
+        return url;
+    } catch (error) {
+        console.error("Error fetching download URL:", error);
+        return null;
+    }
+}
 
   return (
-    <PlayerContext.Provider value={{ playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, handlePlay, handleAddToPlaylist, handlePrevSong, handleNextSong }}>
+    <PlayerContext.Provider value={{ playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, handlePlay, handleAddToPlaylist, handlePrevSong, handleNextSong, getDownloadUrl }}>
       {children}
     </PlayerContext.Provider>
   );

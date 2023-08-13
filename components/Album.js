@@ -2,7 +2,7 @@ import React from 'react';
 import { Song } from '../components/song';
 import { Grid, Center, Spinner, Text, Heading } from '@chakra-ui/react';
 
-const AlbumPage = ({ albumData, handlePlay, handleAddToPlaylist }) => {
+const AlbumPage = ({ albumData }) => {
   return (
     <>
       {albumData !== null ? (
@@ -22,8 +22,6 @@ const AlbumPage = ({ albumData, handlePlay, handleAddToPlaylist }) => {
               <Song
                 key={song.id}
                 song={song}
-                onPlay={handlePlay}
-                onAddToPlaylist={handleAddToPlaylist}
               />
             ))}
           </Grid>

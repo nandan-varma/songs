@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { Box, Text, Flex, List, ListItem, Center } from '@chakra-ui/react';
+import { Box, Text, Flex, List, ListItem, Center, IconButton } from '@chakra-ui/react';
 import DownloadIcon from './DownloadIcon';
 import { usePlayerContext } from './PlayerContext';
-import { useAppContext } from './AppContext';
+import { useRouter } from 'next/router';
 
 const Song = ({ song }) => {
   const { handlePlay, handleAddToPlaylist } = usePlayerContext();
-
   return (
     <Center>
       <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={song.id}>
@@ -17,7 +16,7 @@ const Song = ({ song }) => {
           src={song.image.find(img => img.quality === '500x500').link}
           alt={song.title}
         />
-        <Box textAlign={'center'} justifyContent={'center'}>
+        <Box p={'2'} h={'20'} textAlign={'center'} justifyContent={'center'}>
           <Text fontWeight={'bold'} fontSize={'lg'}>{
             song.title}</Text>
           <Text fontWeight={'medium'} fontSize={'lg'}>{
@@ -25,9 +24,9 @@ const Song = ({ song }) => {
           <Text fontStyle={'italic'}>{song.primaryArtists}</Text>
         </Box>
         {song !== null && (
-          <Flex m={'1rem 2.5rem'} className='song-controls' justifyContent={'space-between'}>
-            <FontAwesomeIcon size='2x' onClick={() => handlePlay(song)} icon={faPlay} />
-            <FontAwesomeIcon size='2x' onClick={() => handleAddToPlaylist(song)} icon={faPlus} />
+          <Flex m={'6'} className='song-controls' justifyContent={'space-between'}>
+            <IconButton m={'1'} onClick={()=>{handlePlay(song)}} icon={<FontAwesomeIcon icon={faPlay} />}/>
+            <IconButton m={'1'} onClick={()=>{handleAddToPlaylist(song)}} icon={<FontAwesomeIcon icon={faPlus} />}/>
             <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
           </Flex>
         )}
@@ -37,41 +36,43 @@ const Song = ({ song }) => {
 };
 
 const Album = ({ album }) => {
-  const { content, SetContent } = useAppContext();
+  const router = useRouter();
   return (
-    <Box className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={album.id} onClick={() => { SetContent({ type: "album", id: album.id }) }}>
-      <img
-        className='album-art bordered'
-        src={album.image.find(img => img.quality === '500x500').link}
-        alt={album.name}
-        effect='blur'
-      />
-      <Text textAlign={'center'} p={'4'} fontWeight={'bold'}>{album.name}</Text>
-      {/* <Text p={'4'} textAlign={'center'}>{album.primaryArtists.map(artist => artist.name).join(', ')}</Text> */}
-      {/* <div className='album-controls'> */}
-      {/* <FontAwesomeIcon onClick={() => onPlay(album)} icon={faPlay} /> */}
-      {/* </div> */}
-    </Box>
+    <Center>
+      <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={album.id} onClick={() => {router.push("/album/"+album.id)}}>
+        <img
+          className='album-art bordered'
+          src={album.image.find(img => img.quality === '500x500').link}
+          alt={album.title}
+          effect='blur'
+        />
+        <Box p={'2'} h={'24'} textAlign={'center'} justifyContent={'center'}>
+          <Text fontWeight={'bold'} fontSize={'lg'}>{
+            album.title}</Text>
+          <Text fontStyle={'italic'}>{album.artist}</Text>
+        </Box>
+      </Box>
+    </Center>
   );
 };
 
 const Artist = ({ artist, handleArtistClick }) => {
   return (
-    <List>
-      <ListItem className='album bordered' key={artist.id} onClick={() => { handleArtistClick(artist.id) }}>
+    <Center>
+      <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={artist.id}>
         <img
-          className='album-art bordered'
+          className='song-art bordered'
           src={artist.image.find(img => img.quality === '500x500').link}
-          alt={artist.name}
-          effect='blur'
+          alt={artist.title}
         />
-        <Text>{artist.name}</Text>
-        {/* <Text>{song.primaryArtists}</Text> */}
-        {/* <div className='album-controls'> */}
-        {/* <FontAwesomeIcon onClick={() => onPlay(album)} icon={faPlay} /> */}
-        {/* </div> */}
-      </ListItem>
-    </List>
+        <Box p={'2'} h={'20'} textAlign={'center'} justifyContent={'center'}>
+          <Text fontWeight={'bold'} fontSize={'lg'}>{
+            artist.title}</Text>
+          <Text fontStyle={'italic'}>{artist.description}</Text>
+
+        </Box>
+      </Box>
+    </Center>
   );
 };
 

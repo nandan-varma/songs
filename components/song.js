@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { Box, Text, Flex, List, ListItem, Center, IconButton } from '@chakra-ui/react';
+import { Box, Text, Flex, List, ListItem, Center, IconButton, Image } from '@chakra-ui/react';
 import DownloadIcon from './DownloadIcon';
 import { usePlayerContext } from './PlayerContext';
 import { useRouter } from 'next/router';
@@ -10,10 +10,18 @@ const Song = ({ song }) => {
   const { handlePlay, handleAddToPlaylist } = usePlayerContext();
   return (
     <Center>
-      <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={song.id}>
-        <img
+      <Box m={'2'}
+        className='blur'
+        w={{ base: '64', sm: '70%', md: '60' }}
+        borderRadius={'24px'} key={song.id}
+        _hover={{ borderColor: 'white', boxShadow: '0 0 3px 2.5px gray' }}
+      >
+        <Image
+          objectFit={'cover'}
+          borderRadius={'24px'}
+          aspectRatio={'1'}
           className='song-art bordered'
-          src={song.image.find(img => img.quality === '500x500').link}
+          src={song.image[2].link}
           alt={song.title}
         />
         <Box p={'2'} h={'20'} textAlign={'center'} justifyContent={'center'}>
@@ -25,8 +33,8 @@ const Song = ({ song }) => {
         </Box>
         {song !== null && (
           <Flex m={'6'} className='song-controls' justifyContent={'space-between'}>
-            <IconButton m={'1'} onClick={()=>{handlePlay(song)}} icon={<FontAwesomeIcon icon={faPlay} />}/>
-            <IconButton m={'1'} onClick={()=>{handleAddToPlaylist(song)}} icon={<FontAwesomeIcon icon={faPlus} />}/>
+            <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} />
+            <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} />
             <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
           </Flex>
         )}
@@ -39,16 +47,25 @@ const Album = ({ album }) => {
   const router = useRouter();
   return (
     <Center>
-      <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={album.id} onClick={() => {router.push("/album/"+album.id)}}>
-        <img
+      <Box m={'2'}
+        className='blur'
+        w={{ base: '64', sm: '70%', md: '60' }}
+        borderRadius={'24px'} key={album.id}
+        _hover={{ borderColor: 'white', boxShadow: '0 0 6px 5px gray' }}
+        onClick={()=>{router.push("/album/"+album.id)}}
+      >
+        <Image
+          objectFit={'cover'}
+          borderRadius={'24px'}
+          aspectRatio={'1'}
           className='album-art bordered'
           src={album.image.find(img => img.quality === '500x500').link}
           alt={album.title}
           effect='blur'
         />
-        <Box p={'2'} h={'24'} textAlign={'center'} justifyContent={'center'}>
+        <Box p={'2'} h={'32'} textAlign={'center'} justifyContent={'center'}>
           <Text fontWeight={'bold'} fontSize={'lg'}>{
-            album.title}</Text>
+            album.title.replace(/&quot;/g, '"')}</Text>
           <Text fontStyle={'italic'}>{album.artist}</Text>
         </Box>
       </Box>
@@ -59,8 +76,16 @@ const Album = ({ album }) => {
 const Artist = ({ artist, handleArtistClick }) => {
   return (
     <Center>
-      <Box w={'64'} className='blur' margin={'4'} boxShadow={'2xl'} borderRadius={'0 0 24px 24px'} key={artist.id}>
-        <img
+      <Box m={'2'}
+        className='blur'
+        w={{ base: '64', sm: '70%', md: '60' }}
+        borderRadius={'24px'} key={artist.id}
+        _hover={{ borderColor: 'white', boxShadow: '0 0 6px 5px gray' }}
+      >
+        <Image
+          objectFit={'cover'}
+          borderRadius={'24px'}
+          aspectRatio={'1'}
           className='song-art bordered'
           src={artist.image.find(img => img.quality === '500x500').link}
           alt={artist.title}

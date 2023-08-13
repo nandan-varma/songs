@@ -29,6 +29,7 @@
     "react-spring": "^9.7.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^1.4.0",
     "next-transpile-modules": "^10.0.0"
   }
 }

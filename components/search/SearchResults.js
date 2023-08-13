@@ -10,7 +10,6 @@ export function SearchResults() {
         <>
           {searchResults.songs.results.length == 0 ? <Center><Text w={'lg'} mt={'8'} textAlign={'center'}> keep searching bcuz there is nothing to show here</Text></Center> :
             <>
-            {console.log(searchResults)}
               <Text textAlign={'center'} as={Heading}>Songs</Text>
               <SimpleGrid minChildWidth='xs' spacing={'1'}>
                 {
@@ -36,7 +35,7 @@ export function SearchResults() {
               }
               )}
           </SimpleGrid>
-          <Text textAlign={'center'} as={Heading}>Artists</Text>
+          {/* <Text textAlign={'center'} as={Heading}>Artists</Text>
           <SimpleGrid minChildWidth='xs' spacing={'1'}>
             {searchResults.artists.results.map((result) => {
               return (
@@ -47,7 +46,7 @@ export function SearchResults() {
               )
             }
             )}
-          </SimpleGrid>
+          </SimpleGrid> */}
           </>
         }
         </>

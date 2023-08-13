@@ -17,20 +17,6 @@ const Page = () => {
   return (
     <LoadPage>
       <title>Music</title>
-
-      {pageType === 'playlist' && (
-        <Playlist/>
-      )}
-
-      {pageType === 'album' && (
-        <AlbumPage/>
-      )}
-
-      {pageType === 'artist' && (
-        <ArtistPage/>
-      )}
-      <Player/>
-      {/* <Footer></Footer> */}
     </LoadPage>
   );
 };

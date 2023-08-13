@@ -15,7 +15,6 @@ export function SearchResults() {
               <SimpleGrid minChildWidth='xs' spacing={'1'}>
                 {
                   searchResults.songs.results.map((result) => {
-                    console.log(result);
                     return (
                       <Song
                         key={result.id}

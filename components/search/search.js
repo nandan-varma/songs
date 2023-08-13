@@ -1,6 +1,5 @@
 import { Button, Box, Flex, Menu, MenuButton, MenuList, MenuItem, Input, Select } from '@chakra-ui/react';
 import { useSearchContext } from './SearchContext';
-import { SearchResults } from './SearchResults';
 import { useRouter } from 'next/router';
 
 const SearchMenu = () => {

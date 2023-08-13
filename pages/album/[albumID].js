@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSearchContext } from "@/components/search/SearchContext";
 import { usePlayerContext } from "@/components/PlayerContext";
 import { Song } from "@/components/song";
+import DownloadIcon from "@/components/DownloadIcon";
 
 export default function album() {
     const router = useRouter();
@@ -67,9 +68,8 @@ export default function album() {
                                     onClick={()=>{handlePlay(result)}}
                                     aria-label="Play Song"
                                     icon={<FontAwesomeIcon icon={faPlay} />}
-                                    colorScheme="blue"
-                                    variant="outline"
                                 />
+                                <DownloadIcon id={result.id} name={result.name}/>
                             </Flex>
                         ))}
                     </Box>

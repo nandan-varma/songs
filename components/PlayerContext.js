@@ -14,6 +14,10 @@ export const PlayerProvider = ({ children }) => {
     setCurrentSongIndex(0);
   };
 
+  const handleRemovePlaylist = (item) => {
+    setPlaylist((prevPlaylist) => prevPlaylist.filter((song) => song.id !== item.id));
+  };
+
   const handleAddToPlaylist = (item) => {
     setPlaylist((prevPlaylist) => [...prevPlaylist, item]);
   };
@@ -42,7 +46,7 @@ export const PlayerProvider = ({ children }) => {
 }
 
   return (
-    <PlayerContext.Provider value={{ playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, handlePlay, handleAddToPlaylist, handlePrevSong, handleNextSong, getDownloadUrl }}>
+    <PlayerContext.Provider value={{ playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, handlePlay, handleAddToPlaylist, handleRemovePlaylist, handlePrevSong, handleNextSong, getDownloadUrl }}>
       {children}
     </PlayerContext.Provider>
   );

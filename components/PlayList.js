@@ -7,10 +7,10 @@ import { usePlayerContext } from './PlayerContext';
 const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
   return (
     <Flex alignItems="center" p={2} borderBottom="1px solid #ccc">
-      <Box flex="1" mr={4}>
+      <Box flex="1" m={4}>
         <Image src={song.image[0].link} alt={song.title} boxSize="50px" />
       </Box>
-      <Box flex="4">
+      <Box flex="4" >
         <Text>{song.title}</Text>
         <Text fontSize="sm" color="gray.500">
           {song.primaryArtists}
@@ -25,7 +25,7 @@ const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
         <IconButton
           icon={<FontAwesomeIcon icon={faTrash} />}
           aria-label="Remove"
-          onClick={() => onRemove(index)}
+          onClick={() => onRemove(song)}
           ml={2}
         />
         {/* <IconButton
@@ -40,21 +40,24 @@ const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
 };
 
 const Playlist = () => {
-  const {playlist, handlePlay} = usePlayerContext();
-  function onRemove(){
-    
+  const { playlist, handlePlay, handleRemovePlaylist } = usePlayerContext();
+  function onRemove() {
+
   }
   return (
     <Box mt={4}>
-      {playlist.map((song, index) => (
-        <PlaylistItem
-          key={song.id}
-          song={song}
-          index={index}
-          onPlay={handlePlay}
-          onRemove={onRemove}
-        />
-      ))}
+      {playlist.length == 0 ? <Text textAlign={'center'}>Add some songs to see your song queue</Text> :
+        <>
+          {playlist.map((song, index) => (
+            <PlaylistItem
+              key={song.id}
+              song={song}
+              index={index}
+              onPlay={handlePlay}
+              onRemove={handleRemovePlaylist}
+            />
+          ))}
+        </>}
     </Box>
   );
 };

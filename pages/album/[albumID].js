@@ -1,39 +1,44 @@
-import AlbumPage from "@/components/Album";
-import { Center, Box, Heading, Image, Text, Link, Flex, IconButton, VStack } from '@chakra-ui/react';
+import { Center, Box, Heading, Image, Text, Flex, IconButton, VStack } from '@chakra-ui/react';
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { faPlay, faHeadphones, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSearchContext } from "@/components/search/SearchContext";
 import { usePlayerContext } from "@/components/PlayerContext";
-import { Song } from "@/components/song";
 import DownloadIcon from "@/components/DownloadIcon";
 
-export default function album() {
+export default function AlbumPage() {
     const router = useRouter();
     const { albumID } = router.query;
     const [albumData, setAlbumData] = useState(null);
     const { ResetSearch } = useSearchContext();
     const { handlePlay } = usePlayerContext();
+    const [loading, setLoading] = useState(true); // Add loading state
+  
     useEffect(() => {
-        if (albumID) {
-            fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.data) {
-                        setAlbumData(data.data);
-                    } else {
-                        setAlbumData(null);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching album data:', error);
-                    setAlbumData(null);
-                });
-            ResetSearch();
-        }
+      if (albumID) {
+        fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.data) {
+              setAlbumData(data.data);
+            } else {
+              setAlbumData(null);
+            }
+            setLoading(false); // Set loading to false on success or failure
+          })
+          .catch(error => {
+            console.error('Error fetching album data:', error);
+            setAlbumData(null);
+            setLoading(false); // Set loading to false on error
+          });
+        ResetSearch();
+      }
     }, [albumID]);
-    if (!albumData) return <Center>Loading...</Center>;
+  
+    if (loading) return <Center>Loading...</Center>; // Display loading message
+  
+    if (!albumData) return <Center>Error loading album data.</Center>; // Display error message
     return (
         <Box p={6}>
             <Flex direction="column" align="center">

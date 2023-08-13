@@ -9,6 +9,7 @@ export const PlayerProvider = ({ children }) => {
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
 
   const handlePlay = (item) => {
+    console.log(playlist);
     setPlaylist([item]);
     setCurrentSongIndex(0);
   };
@@ -19,6 +20,7 @@ export const PlayerProvider = ({ children }) => {
 
   const handleNextSong = () => {
     setCurrentSongIndex((prevIndex) => (prevIndex + 1) % playlist.length);
+    console.log("future is now");
   };
 
   const handlePrevSong = () => {

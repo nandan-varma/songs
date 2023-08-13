@@ -18,7 +18,7 @@ const Circle = memo(({ radius, colors }) => {
     let angle = 0;
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      angle += 0.03;
+      angle += 0.01;
 
       colors.forEach((color, i) => {
         ctx.beginPath();
@@ -45,7 +45,7 @@ const Circle = memo(({ radius, colors }) => {
 const Background = () => {
   return (
     <Flex position={'fixed'} zIndex={'-100'} w={'100vw'} justifyContent={'space-between'} textAlign={'center'}>
-        <Circle className='background' radius={typeof window !== 'undefined' ? Math.max(window.innerWidth, window.innerHeight) / 16 : 0} colors={['#C4DFDF', '#D2E9E9','#E3F4F4']} />
+        <Circle className='background' radius={typeof window !== 'undefined' ? Math.max(window.innerWidth, window.innerHeight) / 16 : 0} colors={['#96B6C5', '#ADC4CE','#E3F4F4']} />
     </Flex>
   );
 };

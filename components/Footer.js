@@ -1,18 +1,9 @@
 // components/Footer.jsx
-import { Box, Flex, Link, Text } from '@chakra-ui/react';
-import NextLink from 'next/link';
+import { Box, Flex, Text } from '@chakra-ui/react';
 
 export default function Footer() {
   return (
-    <Box as="footer"p={4} mt="auto">
-      {/* <Flex align="center" justify="center">
-        <NextLink href="/privacy-policy">
-          <Link mr={4}>Privacy Policy</Link>
-        </NextLink>
-        <NextLink href="/terms-of-service">
-          <Link>Terms of Service</Link>
-        </NextLink>
-      </Flex> */}
+    <Box p={4} position={'fixed'} bottom={'0'}>
       <Text mt={4} textAlign="center">
         &copy; {new Date().getFullYear()} Nandan Varma. No rights reserved.
       </Text>

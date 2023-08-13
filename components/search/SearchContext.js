@@ -30,17 +30,12 @@ export const SearchProvider = ({ children }) => {
   };
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState(emptyResult);
-  const { pageType, setPageType } = useAppContext();
   const ResetSearch = () => {
     setSearchQuery('');
     setSearchResults(emptyResult);
   }
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
       if (searchQuery && searchQuery.replace(/\s/g, "") != "") {
-        if (pageType !== 'search') {
-          setPageType('search');
-        }
         var searchUrl = `https://saavn-api.nandanvarma.com/search/all?query=${searchQuery}`;
 
         fetch(searchUrl)
@@ -59,9 +54,6 @@ export const SearchProvider = ({ children }) => {
       } else {
         setSearchResults(emptyResult);
       }
-    }, 250);
-
-    return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
   return (

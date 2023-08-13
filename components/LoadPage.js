@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChakraProvider, Center, Spinner } from '@chakra-ui/react'; // Replace 'your-ui-library' with the actual library you're using
+import { Center, Spinner } from '@chakra-ui/react'; // Replace 'your-ui-library' with the actual library you're using
 
 const LoadPage = ({ children }) => {
     const [domLoaded, setDomLoaded] = useState(false);

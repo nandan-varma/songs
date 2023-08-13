@@ -1,10 +1,5 @@
 import { useRouter } from 'next/router';
-import AlbumPage from '@/components/Album';
-import Playlist from '@/components/PlayList';
-import ArtistPage from '@/components/Artist';
-import LoadPage from '@/components/LoadPage';
 import { useAppContext } from '@/components/AppContext';
-import { Player } from '@/components/Player';
 import { useSearchContext } from '@/components/search/SearchContext';
 import { useEffect } from 'react';
 import { SearchResults } from '@/components/search/SearchResults';

@@ -32,6 +32,7 @@ export const SearchProvider = ({ children }) => {
   const [searchResults, setSearchResults] = useState(emptyResult);
   const { pageType, setPageType } = useAppContext();
   const ResetSearch = () => {
+    setSearchQuery('');
     setSearchResults(emptyResult);
   }
   useEffect(() => {

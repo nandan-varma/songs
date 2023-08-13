@@ -3,14 +3,15 @@ import { useRouter } from 'next/router';
 import LoadPage from '@/components/LoadPage';
 import { useAppContext } from '@/components/AppContext';
 import { Text } from '@chakra-ui/react';
+import Footer from '@/components/Footer';
 
 const Page = () => {
   const router = useRouter();
-  const {pageType, setPageType} = useAppContext();
   return (
     <LoadPage>
       <title>Music</title>
       <Text textAlign={'center'}>Try searching something</Text>
+      <Footer/>
     </LoadPage>
   );
 };

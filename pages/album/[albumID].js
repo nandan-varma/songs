@@ -14,30 +14,30 @@ export default function AlbumPage() {
     const { ResetSearch } = useSearchContext();
     const { handlePlay } = usePlayerContext();
     const [loading, setLoading] = useState(true); // Add loading state
-  
+
     useEffect(() => {
-      if (albumID) {
-        fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.data) {
-              setAlbumData(data.data);
-            } else {
-              setAlbumData(null);
-            }
-            setLoading(false); // Set loading to false on success or failure
-          })
-          .catch(error => {
-            console.error('Error fetching album data:', error);
-            setAlbumData(null);
-            setLoading(false); // Set loading to false on error
-          });
-        ResetSearch();
-      }
+        if (albumID) {
+            fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data) {
+                        setAlbumData(data.data);
+                    } else {
+                        setAlbumData(null);
+                    }
+                    setLoading(false); // Set loading to false on success or failure
+                })
+                .catch(error => {
+                    console.error('Error fetching album data:', error);
+                    setAlbumData(null);
+                    setLoading(false); // Set loading to false on error
+                });
+            ResetSearch();
+        }
     }, [albumID]);
-  
+
     if (loading) return <Center>Loading...</Center>; // Display loading message
-  
+
     if (!albumData) return <Center>Error loading album data.</Center>; // Display error message
     return (
         <Box p={6}>
@@ -45,7 +45,7 @@ export default function AlbumPage() {
                 <Image src={albumData.image[2].link} alt={albumData.name} maxW="300px" mb={4} />
 
                 <Heading as="h1" size="xl" mb={2}>
-                    {albumData.name}
+                    {albumData.name.replace(/&quot;/g,'"')}
                 </Heading>
                 <Text fontSize="lg" color="gray.600" mb={4}>
                     {albumData.year}
@@ -58,23 +58,25 @@ export default function AlbumPage() {
                             Songs
                         </Heading>
                         {albumData.songs.map((result) => (
-                            <Flex key={result.id} align="center" justifyContent="space-between" w="100%">
+                            <Flex key={result.id} align="center" w="100%">
                                 {/* <Song song={result}></Song> */}
                                 <Box>
                                     <Text fontSize="lg" fontWeight="semibold">
-                                        {result.name}
+                                        {result.name.replace(/&quot;/g,'"')}
                                     </Text>
-                                    <Text color="gray.600">
+                                    <Text>
                                         {result.primaryArtists} - {result.duration} seconds
                                     </Text>
                                 </Box>
-                                <IconButton
-                                    ml={'2'}
-                                    onClick={()=>{handlePlay(result)}}
-                                    aria-label="Play Song"
-                                    icon={<FontAwesomeIcon icon={faPlay} />}
-                                />
-                                <DownloadIcon id={result.id} name={result.name}/>
+                                <Flex align={'center'} direction={'row'} ml={'auto'}>
+                                    <IconButton
+                                        ml={'2'}
+                                        onClick={() => { handlePlay(result) }}
+                                        aria-label="Play Song"
+                                        icon={<FontAwesomeIcon icon={faPlay} />}
+                                    />
+                                    <DownloadIcon id={result.id} name={result.name} />
+                                </Flex>
                             </Flex>
                         ))}
                     </Box>

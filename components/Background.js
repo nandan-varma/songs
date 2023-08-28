@@ -1,9 +1,16 @@
 'use client'
-import { Box, Flex } from '@chakra-ui/react';
+import { Center } from '@chakra-ui/react';
 import React, { useRef, useEffect, memo } from 'react';
 
 
 const Circle = memo(({ radius, colors }) => {
+
+  // no animations in safari bcuz i dont know how to use filters in webkit :)
+  const isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+  if (isSafari) {
+    return <></>
+  }
+
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -44,9 +51,9 @@ const Circle = memo(({ radius, colors }) => {
 
 const Background = () => {
   return (
-    <Flex position={'fixed'} zIndex={'-100'} w={'100vw'} justifyContent={'space-between'} textAlign={'center'}>
-        <Circle className='background' radius={typeof window !== 'undefined' ? Math.max(window.innerWidth, window.innerHeight) / 16 : 0} colors={['#96B6C5', '#ADC4CE','#E3F4F4']} />
-    </Flex>
+    <Center position={'fixed'} zIndex={'-100'} w={'100vw'} h={'50vh'} justifyContent={'space-between'} textAlign={'center'}>
+      <Circle className='background' radius={typeof window !== 'undefined' ? Math.max(window.innerWidth, window.innerHeight) / 16 : 0} colors={['#96B6C5', '#ADC4CE', '#E3F4F4']} />
+    </Center>
   );
 };
 

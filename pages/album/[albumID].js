@@ -13,11 +13,11 @@ export default function AlbumPage() {
     const [albumData, setAlbumData] = useState(null);
     const { ResetSearch } = useSearchContext();
     const { handlePlay } = usePlayerContext();
-    const [loading, setLoading] = useState(true); // Add loading state
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (albumID) {
-            fetch(`https://jiosaavn-api-ebon-one.vercel.app/albums?id=${albumID}`)
+            fetch(`https://saavn-api.nandanvarma.com/albums?id=${albumID}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.data) {
@@ -25,20 +25,20 @@ export default function AlbumPage() {
                     } else {
                         setAlbumData(null);
                     }
-                    setLoading(false); // Set loading to false on success or failure
+                    setLoading(false);
                 })
                 .catch(error => {
                     console.error('Error fetching album data:', error);
                     setAlbumData(null);
-                    setLoading(false); // Set loading to false on error
+                    setLoading(false);
                 });
             ResetSearch();
         }
     }, [albumID]);
 
-    if (loading) return <Center>Loading...</Center>; // Display loading message
+    if (loading) return <Center>Loading...</Center>;
 
-    if (!albumData) return <Center>Error loading album data.</Center>; // Display error message
+    if (!albumData) return <Center>Error loading album data.</Center>;
     return (
         <Box p={6}>
             <Flex direction="column" align="center">

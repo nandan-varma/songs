@@ -9,12 +9,12 @@ import { useSearchContext } from "./search/SearchContext";
 export const Navbar = () => {
     const router = useRouter();
     const { colorMode, toggleColorMode } = useColorMode();
-    const {resetSearch} = useSearchContext();
+    const { ResetSearch } = useSearchContext();
     const [togglePlaylist, SetTogglePlaylist] = useState(false);
     return (
         <>
             <Flex justify={'space-around'}>
-                <IconButton m={'1'} aria-label='toggle back button' onClick={() => { resetSearch(); }} icon={<FontAwesomeIcon icon={faLeftLong} />} />
+                <IconButton m={'1'} aria-label='toggle back button' onClick={() => { ResetSearch();router.back() }} icon={<FontAwesomeIcon icon={faLeftLong} />} />
                 <IconButton m={'1'} aria-label='toggle back home' onClick={() => { router.push('/') }} icon={<FontAwesomeIcon icon={faHome} />} />
                 <IconButton m={'1'} aria-label='toggle playlist' onClick={() => { SetTogglePlaylist(!togglePlaylist) }} icon={<FontAwesomeIcon icon={faBars} />} />
                 <IconButton m={'1'} aria-label='toggle color theme' onClick={toggleColorMode} icon={<FontAwesomeIcon icon={colorMode === 'light' ? faMoon : faSun} />} />

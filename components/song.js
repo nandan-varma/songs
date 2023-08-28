@@ -6,6 +6,28 @@ import DownloadIcon from './DownloadIcon';
 import { usePlayerContext } from './PlayerContext';
 import { useRouter } from 'next/router';
 
+const HSong = ({ song }) => {
+  const { handlePlay, handleAddToPlaylist } = usePlayerContext();
+  return (
+    <Flex alignItems="center" p={1}>
+      <Box flex="1" m={4}>
+        <Image src={song.image[1].link} alt={song.title} aspectRatio={'1:1'} />
+      </Box>
+      <Box flex="4" >
+        <Text>{song.title}</Text>
+        <Text fontSize="sm" color="gray.500">
+          {song.primaryArtists}
+        </Text>
+      </Box>
+      <Flex flex="2">
+          <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} />
+          <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} />
+          <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
+      </Flex>
+    </Flex>
+  );
+};
+
 const Song = ({ song }) => {
   const { handlePlay, handleAddToPlaylist } = usePlayerContext();
   return (
@@ -52,7 +74,7 @@ const Album = ({ album }) => {
         w={{ base: '64', sm: '70%', md: '60' }}
         borderRadius={'24px'} key={album.id}
         _hover={{ borderColor: 'white', boxShadow: '0 0 6px 5px gray' }}
-        onClick={()=>{router.push("/album/"+album.id)}}
+        onClick={() => { router.push("/album/" + album.id) }}
       >
         <Image
           objectFit={'cover'}
@@ -128,4 +150,4 @@ const Playlist = ({ playlist, currentSongIndex }) => {
   );
 };
 
-export { Song, Album, Playlist, Artist };
+export { Song, HSong, Album, Playlist, Artist };

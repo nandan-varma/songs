@@ -7,13 +7,13 @@ const MainSearch = () => {
   const router = useRouter();
   const { searchQuery: initialSearchQuery, setSearchQuery } = useSearchContext();
   const [searchQuery, setSearchQueryWithDelay] = useState(initialSearchQuery);
-  const [searchTimeout, setSearchTimeout] = useState(null);
+  // const [searchTimeout, setSearchTimeout] = useState(null);
 
   const handleSearch = (value) => {
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
-    }
-    const newTimeout = setTimeout(() => {
+    // if (searchTimeout) {
+    //   clearTimeout(searchTimeout);
+    // }
+    // const newTimeout = setTimeout(() => {
       setSearchQuery(value);
 
       if (value.replace(/\s/g, '') !== '') {
@@ -21,9 +21,9 @@ const MainSearch = () => {
       } else {
         router.push('/');
       }
-    }, 500);
+    // }, 500);
 
-    setSearchTimeout(newTimeout);
+    // setSearchTimeout(newTimeout);
     setSearchQueryWithDelay(value);
   };
 

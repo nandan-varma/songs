@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload } from '@fortawesome/free-solid-svg-icons';
-import { Button, IconButton, Text } from '@chakra-ui/react';
+import { IconButton, Text } from '@chakra-ui/react';
 import { usePlayerContext } from './PlayerContext';
 
 const DownloadIcon = ({ id, name, downloadUrl }) => {

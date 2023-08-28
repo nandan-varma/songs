@@ -4,7 +4,7 @@ const nextConfig = {
   images: {
     domains: ['c.saavncdn.com']
   },
-  output: 'export',
+  // output: 'export',
 }
 
 module.exports = nextConfig

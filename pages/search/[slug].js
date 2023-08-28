@@ -14,7 +14,6 @@ const searchPage = () => {
   }, [slug]);
   return (
     <>
-    <title>Search for {slug}</title>
     <SearchResults/>
     </>
   );

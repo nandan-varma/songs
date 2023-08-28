@@ -7,6 +7,7 @@ import MainSearch from '@/components/search/search';
 import { ChakraProvider } from '@chakra-ui/react';
 import { Navbar } from '@/components/Navbar';
 import { Player } from '@/components/Player';
+import Head from 'next/head';
 
 export default function App({ Component, pageProps }) {
   return (
@@ -15,6 +16,9 @@ export default function App({ Component, pageProps }) {
         <AppProvider>
           <SearchProvider>
             <PlayerProvider>
+              <Head>
+                <title>Music</title>
+              </Head>
               <Navbar/>
               <MainSearch />
               <Component {...pageProps} />

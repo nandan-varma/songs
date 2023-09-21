@@ -1,3 +1,4 @@
+import { api_link } from '@/lib/api';
 import React, { createContext, useState, useContext } from 'react';
 
 const PlayerContext = createContext();
@@ -33,7 +34,7 @@ export const PlayerProvider = ({ children }) => {
 
   async function getDownloadUrl(id) {
     try {
-        const response = await fetch(`https://saavn-api.nandanvarma.com/songs?id=${id}`);
+        const response = await fetch(`${api_link}/songs?id=${id}`);
         const data = await response.json();
         const url = data.data[0].downloadUrl[4].link;
         return url;

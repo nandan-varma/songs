@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useSearchContext } from "@/components/search/SearchContext";
 import { usePlayerContext } from "@/components/PlayerContext";
 import DownloadIcon from "@/components/DownloadIcon";
+import { api_link } from '@/lib/api';
 
 export default function AlbumPage() {
     const router = useRouter();
@@ -17,7 +18,7 @@ export default function AlbumPage() {
 
     useEffect(() => {
         if (albumID) {
-            fetch(`https://saavn-api.nandanvarma.com/albums?id=${albumID}`)
+            fetch(`${api_link}/albums?id=${albumID}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.data) {

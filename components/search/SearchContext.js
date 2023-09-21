@@ -1,3 +1,4 @@
+import { api_link } from '@/lib/api';
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const SearchContext = createContext();
@@ -35,7 +36,7 @@ export const SearchProvider = ({ children }) => {
   }
   useEffect(() => {
       if (searchQuery && searchQuery.replace(/\s/g, "") != "") {
-        var searchUrl = `https://saavn-api.nandanvarma.com/search/all?query=${searchQuery}`;
+        var searchUrl = `${api_link}/search/all?query=${searchQuery}`;
 
         fetch(searchUrl)
           .then((response) => response.json())

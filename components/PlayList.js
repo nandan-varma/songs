@@ -5,13 +5,14 @@ import { faPlay, faTrash, faBars } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerContext } from './PlayerContext';
 
 const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
+  const { currentSongIndex } = usePlayerContext();
   return (
     <Flex alignItems="center" p={2} borderBottom="1px solid #ccc">
       <Box flex="1" m={4}>
         <Image src={song.image[0].link} alt={song.title} boxSize="50px" />
       </Box>
       <Box flex="4" >
-        <Text>{song.title}</Text>
+        <Text style={{textDecoration:(index==currentSongIndex)?'underline':'none'}}>{song.title}</Text>
         <Text fontSize="sm" color="gray.500">
           {song.primaryArtists}
         </Text>

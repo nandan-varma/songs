@@ -1,13 +1,13 @@
 import React from 'react';
 import { Box, Flex, IconButton, Image, Text } from '@chakra-ui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faTrash, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { usePlayerContext } from './PlayerContext';
 
 const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
-  const { currentSongIndex } = usePlayerContext();
+  const { currentSongIndex,setCurrentSongIndex } = usePlayerContext();
   return (
-    <Flex alignItems="center" p={2} borderBottom="1px solid #ccc">
+    <Flex alignItems="center" p={1} mx={4} my={2} borderRadius={'2xl'} border={(index==currentSongIndex)?"4px solid gray":"1px solid gray"} >
       <Box flex="1" m={4}>
         <Image src={song.image[0].link} alt={song.title} boxSize="50px" />
       </Box>
@@ -21,7 +21,9 @@ const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
         <IconButton
           icon={<FontAwesomeIcon icon={faPlay} />}
           aria-label="Play"
-          onClick={() => onPlay(song)}
+          onClick={() => {
+            setCurrentSongIndex(index);
+          }}
         />
         <IconButton
           icon={<FontAwesomeIcon icon={faTrash} />}
@@ -42,9 +44,6 @@ const PlaylistItem = ({ song, onPlay, onRemove, index }) => {
 
 const Playlist = () => {
   const { playlist, handlePlay, handleRemovePlaylist } = usePlayerContext();
-  function onRemove() {
-
-  }
   return (
     <Box mt={4}>
       {playlist.length == 0 ? <Text textAlign={'center'}>Add some songs to see your song queue</Text> :
@@ -54,7 +53,6 @@ const Playlist = () => {
               key={song.id}
               song={song}
               index={index}
-              onPlay={handlePlay}
               onRemove={handleRemovePlaylist}
             />
           ))}

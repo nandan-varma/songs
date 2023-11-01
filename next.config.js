@@ -2,7 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['c.saavncdn.com']
+    domains: [
+      'c.saavncdn.com'
+    ]
   },
   // output: 'export',
 }

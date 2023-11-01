@@ -8,6 +8,7 @@ export const usePlayerContext = () => useContext(PlayerContext);
 export const PlayerProvider = ({ children }) => {
   const [playlist, setPlaylist] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [currentImage,SetCurrentImage] = useState('');
 
   const handlePlay = (item) => {
     setPlaylist([item]);
@@ -19,7 +20,9 @@ export const PlayerProvider = ({ children }) => {
   };
 
   const handleAddToPlaylist = (item) => {
-    setPlaylist((prevPlaylist) => [...prevPlaylist, item]);
+    if(!playlist.includes(item)){      
+      setPlaylist((prevPlaylist) => [...prevPlaylist, item]);
+    }
   };
 
   const handleNextSong = () => {
@@ -45,7 +48,7 @@ export const PlayerProvider = ({ children }) => {
 }
 
   return (
-    <PlayerContext.Provider value={{ playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, handlePlay, handleAddToPlaylist, handleRemovePlaylist, handlePrevSong, handleNextSong, getDownloadUrl }}>
+    <PlayerContext.Provider value={{ playlist, setPlaylist, currentSongIndex, setCurrentSongIndex, currentImage, SetCurrentImage, handlePlay, handleAddToPlaylist, handleRemovePlaylist, handlePrevSong, handleNextSong, getDownloadUrl }}>
       {children}
     </PlayerContext.Provider>
   );

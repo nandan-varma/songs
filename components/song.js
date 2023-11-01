@@ -11,7 +11,9 @@ const HSong = ({ song }) => {
   return (
     <Flex alignItems="center" p={1}>
       <Box flex="1" m={4}>
-        <Image src={song.image[1].link} alt={song.title} aspectRatio={'1:1'} />
+        <Image
+          minH={16} minW={16}
+          src={song.image[1].link} alt={song.title} aspectRatio={'1:1'} />
       </Box>
       <Box flex="4" >
         <Text>{song.title}</Text>
@@ -20,9 +22,9 @@ const HSong = ({ song }) => {
         </Text>
       </Box>
       <Flex flex="2">
-          <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} />
-          <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} />
-          <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
+        <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} />
+        <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} />
+        <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
       </Flex>
     </Flex>
   );
@@ -39,10 +41,11 @@ const Song = ({ song }) => {
         _hover={{ borderColor: 'white', boxShadow: '0 0 3px 2.5px gray' }}
       >
         <Image
+          minH={16}
+          minW={16}
           objectFit={'cover'}
           borderRadius={'24px'}
           aspectRatio={'1'}
-          className='song-art bordered'
           src={song.image[2].link}
           alt={song.title}
         />
@@ -65,18 +68,53 @@ const Song = ({ song }) => {
   );
 };
 
+const HAlbum = ({ album }) => {
+  const router = useRouter();
+  return (
+    <Flex alignItems="center">
+      <Box flex="1" m={4}
+        className='blur'
+        borderRadius={'24px'} key={album.id}
+        onClick={() => { router.push("/album/" + album.id) }}
+      >
+        <Image
+          minH={16} minW={16}
+          objectFit={'cover'}
+          borderRadius={'24px'}
+          aspectRatio={'1'}
+          className='album-art bordered'
+          src={album.image.find(img => img.quality === '500x500').link}
+          alt={album.title}
+          effect='blur'
+        />
+      </Box>
+      <Box flex="4"
+        onClick={() => { router.push("/album/" + album.id) }}
+      >
+        <Text fontWeight={'bold'} fontSize={'lg'}>{
+          album.title.replace(/&quot;/g, '"')}</Text>
+        <Text fontStyle={'italic'}>{album.artist}</Text>
+      </Box>
+      <Flex flex="2">
+        <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlay} />} />
+        <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlus} />} />
+      </Flex>
+    </Flex>
+  );
+};
+
 const Album = ({ album }) => {
   const router = useRouter();
   return (
-    <Center>
-      <Box m={'2'}
+    <Flex alignItems="center" p={1}>
+      <Box flex="1" m={4}
         className='blur'
-        w={{ base: '64', sm: '70%', md: '60' }}
         borderRadius={'24px'} key={album.id}
         _hover={{ borderColor: 'white', boxShadow: '0 0 6px 5px gray' }}
         onClick={() => { router.push("/album/" + album.id) }}
       >
         <Image
+          minH={16} minW={16}
           objectFit={'cover'}
           borderRadius={'24px'}
           aspectRatio={'1'}
@@ -91,7 +129,7 @@ const Album = ({ album }) => {
           <Text fontStyle={'italic'}>{album.artist}</Text>
         </Box>
       </Box>
-    </Center>
+    </Flex>
   );
 };
 
@@ -150,4 +188,4 @@ const Playlist = ({ playlist, currentSongIndex }) => {
   );
 };
 
-export { Song, HSong, Album, Playlist, Artist };
+export { Song, HSong, Album, HAlbum, Playlist, Artist };

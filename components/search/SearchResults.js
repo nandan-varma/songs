@@ -1,5 +1,5 @@
-import { Center, Heading, SimpleGrid, Stack, Text, useMediaQuery } from '@chakra-ui/react';
-import { Song, Album, HSong } from '@/components/song';
+import { Center, Heading, Stack, Text, useMediaQuery } from '@chakra-ui/react';
+import { HSong, HAlbum } from '@/components/song';
 import { useSearchContext } from './SearchContext';
 
 export function SearchResults() {
@@ -14,7 +14,7 @@ export function SearchResults() {
           {searchResults.songs.results.length == 0 ? <Center><Text w={'lg'} mt={'8'} textAlign={'center'}> Loading.</Text></Center> :
             <>
               <Text textAlign={'center'} as={Heading}>Songs</Text>
-              <Stack px={'24'}>
+              <Stack>
                 {
                   searchResults.songs.results.map((result) => {
                     if (isLargerThan600) {
@@ -26,7 +26,7 @@ export function SearchResults() {
                       )
                     } else {
                       return (
-                        <Song
+                        <HSong
                           key={result.id}
                           song={result}
                         />
@@ -36,17 +36,17 @@ export function SearchResults() {
                   )}
               </Stack >
               <Text textAlign={'center'} as={Heading}>Albums</Text>
-              <SimpleGrid minChildWidth='xs' spacing={'1'}>
+              <Stack>
                 {searchResults.albums.results.map((result) => {
                   return (
-                    <Album
+                    <HAlbum
                       key={result.id}
                       album={result}
                     />
                   )
                 }
                 )}
-              </SimpleGrid>
+              </Stack>
             </>
           }
         </>

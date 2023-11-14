@@ -5,6 +5,7 @@ import { Box, Text, Flex, List, ListItem, Center, IconButton, Image } from '@cha
 import DownloadIcon from './DownloadIcon';
 import { usePlayerContext } from './PlayerContext';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const HSong = ({ song }) => {
   const { handlePlay, handleAddToPlaylist } = usePlayerContext();
@@ -75,8 +76,9 @@ const HAlbum = ({ album }) => {
       <Box flex="1" m={4}
         className='blur'
         borderRadius={'24px'} key={album.id}
-        onClick={() => { router.push("/album/" + album.id) }}
+      // onClick={() => { router.push("/album/" + album.id) }}
       >
+        <Link href={"/album/" + album.id}>
         <Image
           minH={16} minW={16}
           objectFit={'cover'}
@@ -87,13 +89,17 @@ const HAlbum = ({ album }) => {
           alt={album.title}
           effect='blur'
         />
+        </Link>
       </Box>
       <Box flex="4"
-        onClick={() => { router.push("/album/" + album.id) }}
+      // onClick={() => { router.push("/album/" + album.id) }}
       >
-        <Text fontWeight={'bold'} fontSize={'lg'}>{
-          album.title.replace(/&quot;/g, '"')}</Text>
-        <Text fontStyle={'italic'}>{album.artist}</Text>
+        <Link href={"/album/" + album.id}>
+          <Text fontWeight={'bold'} fontSize={'lg'}
+          >{
+              album.title.replace(/&quot;/g, '"')}</Text>
+          <Text fontStyle={'italic'}>{album.artist}</Text>
+        </Link>
       </Box>
       <Flex flex="2">
         <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlay} />} />

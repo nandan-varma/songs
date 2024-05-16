@@ -1,6 +1,34 @@
 
 # An application to play and download music
 
+## install dependencies
+```
+yarn install
+```
+
+## run dev server
+```
+yarn dev
+```
+
+## build tauri application (currently only windows is supported)
+
+```
+yarn tauri build
+```
+
+## Screenshots
+### home
+![home](screenshots/home.png)
+### search
+![search](screenshots/search.png)
+### albums
+![albums](screenshots/albums.png)
+### player, playlist, dark mode and more 
+![more](screenshots/more.png)
+### standalone application too 
+![standalone application](screenshots/app.png)
+
 ## Features
 
 - Scrapes music from JioSaavn
@@ -12,15 +40,16 @@
 
 - Export and save playlist
 - Reccomendation system
+- Authentication System
 
 ## What I learnt
 
 - Application -> Middleware -> Server ( Architecture )
-- Scraping
+- Web Scraping
 
 ## Built with
 
-- [Next.js](https://nextjs.org)
-- [tailwindcss](https://tailwindcss.com)
+- Frontend using [Next.js](https://nextjs.org)
+- UI using [tailwindcss](https://tailwindcss.com)
 - Deployed on [Vercel](https://vercel.com)
-- Some JioSaavn APIs that shall not be discussed 🤫
+- Scraping [Jiosaavn](jiosaavn.com)

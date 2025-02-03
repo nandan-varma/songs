@@ -6,7 +6,7 @@ import { useState } from "react";
 import Playlist from "./PlayList";
 import { useSearchContext } from "./search/SearchContext";
 
-export const Navbar = () => {
+export const Navbar: React.FC = () => {
     const router = useRouter();
     const { colorMode, toggleColorMode } = useColorMode();
     const { ResetSearch } = useSearchContext();

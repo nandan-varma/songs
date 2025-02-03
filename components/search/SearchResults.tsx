@@ -2,14 +2,37 @@ import { Center, Heading, Stack, Text, useMediaQuery } from '@chakra-ui/react';
 import { HSong, HAlbum } from '../song';
 import { useSearchContext } from './SearchContext';
 
+interface Image {
+  quality: string;
+  link: string;
+}
+
 interface Song {
   id: string;
-  // ...other properties...
+  title: string;
+  image: Image[];
+  album: string;
+  url: string;
+  type: string;
+  description: string;
+  position: number;
+  primaryArtists: string;
+  singers: string;
+  language: string;
 }
 
 interface Album {
   id: string;
-  // ...other properties...
+  title: string;
+  image: Image[];
+  artist: string;
+  url: string;
+  type: string;
+  description: string;
+  position: number;
+  year: string;
+  songIds: string;
+  language: string;
 }
 
 export function SearchResults() {

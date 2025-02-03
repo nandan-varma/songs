@@ -9,7 +9,9 @@ const searchPage = () => {
   const { slug } = router.query;
   useEffect(() => {
     if(slug != null){
-      setSearchQuery(slug);
+      if (typeof slug === 'string') {
+        setSearchQuery(slug);
+      }
     }
   }, [slug]);
   return (

@@ -1,7 +1,8 @@
 // components/Footer.jsx
-import { Box, Flex, Text } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
+import React from 'react';
 
-export default function Footer() {
+const Footer: React.FC = () => {
   return (
     <Box p={4} position={'fixed'} bottom={'0'}>
       <Text mt={4} textAlign="center">
@@ -10,3 +11,5 @@ export default function Footer() {
     </Box>
   );
 }
+
+export default Footer;

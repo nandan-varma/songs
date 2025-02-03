@@ -23,8 +23,8 @@ const HSong = ({ song }) => {
         </Text>
       </Box>
       <Flex flex="2">
-        <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} />
-        <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} />
+        <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} aria-label="Play" />
+        <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} aria-label="Add to Playlist" />
         <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
       </Flex>
     </Flex>
@@ -59,8 +59,8 @@ const Song = ({ song }) => {
         </Box>
         {song !== null && (
           <Flex m={'6'} className='song-controls' justifyContent={'space-between'}>
-            <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} />
-            <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} />
+            <IconButton m={'1'} onClick={() => { handlePlay(song) }} icon={<FontAwesomeIcon icon={faPlay} />} aria-label="Play" />
+            <IconButton m={'1'} onClick={() => { handleAddToPlaylist(song) }} icon={<FontAwesomeIcon icon={faPlus} />} aria-label="Add to Playlist" />
             <DownloadIcon id={song.id} downloadUrl={song.downloadUrl} name={song.title} />
           </Flex>
         )}
@@ -87,7 +87,6 @@ const HAlbum = ({ album }) => {
           className='album-art bordered'
           src={album.image.find(img => img.quality === '500x500').link}
           alt={album.title}
-          effect='blur'
         />
         </Link>
       </Box>
@@ -102,8 +101,8 @@ const HAlbum = ({ album }) => {
         </Link>
       </Box>
       <Flex flex="2">
-        <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlay} />} />
-        <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlus} />} />
+        <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlay} />} aria-label="Play" />
+        <IconButton m={'1'} onClick={() => { }} icon={<FontAwesomeIcon icon={faPlus} />} aria-label="Add to Playlist" />
       </Flex>
     </Flex>
   );
@@ -127,7 +126,6 @@ const Album = ({ album }) => {
           className='album-art bordered'
           src={album.image.find(img => img.quality === '500x500').link}
           alt={album.title}
-          effect='blur'
         />
         <Box p={'2'} h={'32'} textAlign={'center'} justifyContent={'center'}>
           <Text fontWeight={'bold'} fontSize={'lg'}>{

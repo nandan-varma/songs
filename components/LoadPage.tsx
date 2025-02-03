@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Center, Spinner } from '@chakra-ui/react'; // Replace 'your-ui-library' with the actual library you're using
+import React, { useState, useEffect, ReactNode } from 'react';
+import { Center, Spinner } from '@chakra-ui/react';
 
-const LoadPage = ({ children }) => {
+interface LoadPageProps {
+    children: ReactNode;
+}
+
+const LoadPage: React.FC<LoadPageProps> = ({ children }) => {
     const [domLoaded, setDomLoaded] = useState(false);
 
     useEffect(() => {

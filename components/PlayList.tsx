@@ -53,6 +53,7 @@ const Playlist = () => {
               key={song.id}
               song={song}
               index={index}
+              onPlay={handlePlay}
               onRemove={handleRemovePlaylist}
             />
           ))}

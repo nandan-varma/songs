@@ -1,10 +1,19 @@
 import { Center, Heading, Stack, Text, useMediaQuery } from '@chakra-ui/react';
-import { HSong, HAlbum } from '@/components/song';
+import { HSong, HAlbum } from '../song';
 import { useSearchContext } from './SearchContext';
+
+interface Song {
+  id: string;
+  // ...other properties...
+}
+
+interface Album {
+  id: string;
+  // ...other properties...
+}
 
 export function SearchResults() {
   const { searchResults } = useSearchContext();
-  // single media query with no options
   const [isLargerThan600] = useMediaQuery('(min-width: 600px)')
 
   return (
@@ -16,7 +25,7 @@ export function SearchResults() {
               <Text textAlign={'center'} as={Heading}>Songs</Text>
               <Stack>
                 {
-                  searchResults.songs.results.map((result) => {
+                  searchResults.songs.results.map((result: Song) => {
                     if (isLargerThan600) {
                       return (
                         <HSong
@@ -37,7 +46,7 @@ export function SearchResults() {
               </Stack >
               <Text textAlign={'center'} as={Heading}>Albums</Text>
               <Stack>
-                {searchResults.albums.results.map((result) => {
+                {searchResults.albums.results.map((result: Album) => {
                   return (
                     <HAlbum
                       key={result.id}

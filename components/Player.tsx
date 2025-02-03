@@ -41,7 +41,7 @@ export function Player() {
     getDownloadUrl,
   } = usePlayerContext();
   const [currentUrl, setCurrentUrl] = useState(null);
-  const PlayerRef = createRef()
+  const PlayerRef = createRef<AudioPlayer>()
   useEffect(() => {
     let song = playlist[currentSongIndex];
     if(PlayerRef.current != null){

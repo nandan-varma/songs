@@ -1,1 +1,1 @@
-export const api_link = "https://music-mv0xosdc3-nandan-varma.vercel.app"
+export const api_link = "https://saavn-api.nandanvarma.com"

@@ -1,0 +1,126 @@
+---
+const { id } = Astro.params;
+import DotsButton from "../../components/DotsButton.astro";
+import InlineArtists from "../../components/InlineArtists.astro";
+import LikeButton from "../../components/LikeButton.astro";
+import MusicsTable from "../../components/MusicsTable.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import PlayButton from "../../components/PlayButton.astro";
+import Layout from "../../layouts/Layout.astro";
+import { mapSongFromAPI } from "../../lib/api";
+
+const apiUrl = "https://saavn.sumit.co";
+const response = await fetch(`${apiUrl}/api/artists/${id}`);
+const data = await response.json();
+
+if (!data.success) {
+  return Astro.redirect("/404");
+}
+
+const artist = data.data;
+const mappedTopSongs = artist.topSongs?.map(mapSongFromAPI) || [];
+const mappedSingles = artist.singles?.map(mapSongFromAPI) || [];
+---
+
+<Layout image={artist.image?.[0]?.url} title={artist.name || "404"}>
+  <div
+    class="relative bg-zinc-900 min-h-full flex flex-col overflow-x-hidden rounded-lg"
+    transition:name=`artist ${artist.id} box`
+  >
+    <PageHeader />
+    <div
+      class="flex flex-col items-center md:flex-row md:items-stretch gap-8 px-6"
+    >
+      <div class="h-52 w-52 flex-none">
+        <img
+          src={artist.image?.find(img => img.quality === '500x500')?.url || artist.image?.[0]?.url}
+          alt={artist.name}
+          class="object-cover h-full w-full shadow-[5px_0_30px_0px_rgba(0,0,0,0.3)] rounded-full"
+          transition:name=`artist ${artist.id} image`
+        />
+      </div>
+      <div class="flex flex-col justify-between">
+        <div class="flex flex-1 items-end">Artist</div>
+        <div>
+          <h1 class="title-clamp font-bold block">
+            {artist.name}
+            <span transition:name=`artist ${artist.id} title`></span>
+          </h1>
+        </div>
+        <div class="flex-1 flex items-end">
+          <div class="text-sm">
+            <div class="mt-1">
+              <span class="font-semibold">{artist.followerCount || 0} followers</span>, <span
+                class="text-gray-300">{artist.dominantLanguage || ''}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-zinc-900/30 mt-6 flex-1 p-6">
+      <div class="flex gap-1 items-center">
+        <PlayButton size="lg" />
+        <div class="ml-4" transition:name=`artist ${artist.id} play`></div>
+        <LikeButton />
+        <DotsButton />
+      </div>
+
+      {#if mappedTopSongs && mappedTopSongs.length > 0}
+        <div class="mt-8">
+          <h2 class="text-2xl font-bold mb-4">Popular</h2>
+          <MusicsTable songs={mappedTopSongs} />
+        </div>
+      {/if}
+
+      {#if artist.topAlbums && artist.topAlbums.length > 0}
+        <div class="mt-8">
+          <h2 class="text-2xl font-bold mb-4">Albums</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {#each artist.topAlbums as album}
+              <a href={`/album/${album.id}`} class="group">
+                <div class="aspect-square mb-2">
+                  <img
+                    src={album.image?.find(img => img.quality === '500x500')?.url || album.image?.[0]?.url}
+                    alt={album.name}
+                    class="w-full h-full object-cover rounded-md group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <div class="text-sm font-medium truncate">{album.name}</div>
+                <div class="text-xs text-gray-400 truncate">{album.year}</div>
+              </a>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      {#if mappedSingles && mappedSingles.length > 0}
+        <div class="mt-8">
+          <h2 class="text-2xl font-bold mb-4">Singles</h2>
+          <MusicsTable songs={mappedSingles} />
+        </div>
+      {/if}
+    </div>
+    <div
+      class="absolute h-screen inset-0 z-[-1] bg-gradient-to-b from-context"
+      style=`--context-color:#1db954`
+    >
+      <img
+        src={artist.image?.find(img => img.quality === '500x500')?.url || artist.image?.[0]?.url}
+        alt={artist.name}
+        class="el-to-fade transition-all duration-500 z-[-1] absolute inset-0 mix-blend-overlay opacity-20 scale-90 w-full h-full object-cover blur-md"
+      />
+      <div
+        class="absolute inset-0 bg-gradient-to-t via-transparent from-zinc-900"
+      >
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .title-clamp {
+    font-size: clamp(20px, 6vw, 70px);
+    line-height: 1;
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import SearchPage from "../components/SearchPage.svelte";
+---
+
+<Layout title="Search">
+  <div
+    id="search-container"
+    class="relative transition-all duration-1000 bg-context"
+    style="min-height:300px;--context-color:#134e4a;"
+  >
+    <PageHeader />
+    <div class="relative z-10 px-6">
+      <h1 class="text-2xl font-bold mb-6">Search</h1>
+      <SearchPage client:load />
+    </div>
+    <div
+      class="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/80"
+    >
+    </div>
+  </div>
+</Layout>

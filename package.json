@@ -1,43 +1,30 @@
 {
-  "name": "songs",
-  "version": "1.0.0",
-  "private": true,
+  "name": "spotify-astro-transitions",
+  "description": "Clone of Spotify with Astro View Transitions integration for fluid navigation",
+  "type": "module",
+  "version": "0.0.1",
+  "author": "https://github.com/igorm84",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "tauri": "tauri",
-    "lint": "next lint"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
-    "@chakra-ui/react": "^2.7.1",
-    "@chakra-ui/react-types": "^2.0.6",
-    "@emotion/react": "^11.11.1",
-    "@emotion/styled": "^11.11.0",
-    "@fortawesome/fontawesome-svg-core": "^6.4.0",
-    "@fortawesome/free-solid-svg-icons": "^6.4.0",
-    "@fortawesome/react-fontawesome": "^0.2.0",
-    "@tailwindcss/postcss": "^4.0.3",
-    "@types/react-dom": "^19.0.3",
-    "@vidstack/react": "^1.12.12",
-    "flubber": "^0.4.2",
-    "fortawesome": "^0.0.1-security",
-    "framer-motion": "^10.12.18",
-    "hive": "^0.1.6",
-    "isomorphic-unfetch": "^4.0.2",
-    "next": "13.4.3",
-    "node-fetch": "^3.3.1",
-    "postcss": "^8.5.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-h5-audio-player": "^3.8.6",
-    "react-p5": "^1.3.35",
-    "tailwindcss": "^4.0.3"
+    "@astrojs/svelte": "^4.0.0",
+    "@astrojs/tailwind": "^5.0.0",
+    "astro": "^3.0.7",
+    "astro-icon": "^0.8.1",
+    "lucide-svelte": "^0.548.0",
+    "svelte": "^4.0.0",
+    "tailwindcss": "^3.0.24",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
-    "@types/react": "^19.0.8",
-    "next-transpile-modules": "^10.0.0",
-    "typescript": "5.7.3"
+    "@tailwindcss/typography": "^0.5.9",
+    "prettier": "^3.0.3",
+    "prettier-plugin-astro": "^0.12.0",
+    "prettier-plugin-tailwindcss": "^0.5.4"
   }
 }

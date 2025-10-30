@@ -93,9 +93,23 @@ const SongSchema = z.object({
     .optional(),
 });
 
+const TopQueryResultSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  image: z.array(ImageSchema),
+  type: z.string(),
+  description: z.string().optional(),
+});
+
 const GlobalSearchResponseSchema = z.object({
   success: z.boolean(),
   data: z.object({
+    topQuery: z
+      .object({
+        results: z.array(TopQueryResultSchema),
+        position: z.number(),
+      })
+      .optional(),
     songs: z
       .object({
         results: z.array(SongSchema),
@@ -410,5 +424,34 @@ export async function searchPlaylists(
   } catch (error) {
     console.error("Playlist search failed:", error);
     return [];
+  }
+}
+
+export async function globalSearch(
+  query: string,
+  apiUrl: string = "https://saavn-api.nandanvarma.com",
+): Promise<z.infer<typeof GlobalSearchResponseSchema>["data"] | null> {
+  if (!query.trim()) return null;
+
+  try {
+    const response = await fetch(
+      `${apiUrl}/api/search?query=${encodeURIComponent(query)}`,
+    );
+    const json = await response.json();
+    console.log("Global search API response:", json);
+    const parsed = GlobalSearchResponseSchema.safeParse(json);
+    if (!parsed.success) {
+      console.error("Zod parse error:", parsed.error);
+      return null;
+    }
+    const data = parsed.data;
+
+    if (data.success) {
+      return data.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Global search failed:", error);
+    return null;
   }
 }

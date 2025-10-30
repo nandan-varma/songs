@@ -35,9 +35,9 @@ import Player from "../components/Player.svelte";
       <div class="w-[350px] flex-col hidden lg:flex overflow-y-auto">
         <SideMenu />
       </div>
-       <div class="rounded-lg bg-zinc-900 flex-1 mx-auto overflow-y-auto pb-24">
-         <slot />
-       </div>
+        <div class="rounded-lg bg-zinc-900 flex-1 mx-auto overflow-y-auto pb-24" transition:name="page">
+          <slot />
+        </div>
        <Player client:load />
     </div>
     <div

@@ -11,6 +11,8 @@
   } else {
     greeting = "Good night";
   }
+
+  const transitionName = "greetingTitle";
 </script>
 
 <h1 class="text-3xl font-bold">{greeting}</h1>

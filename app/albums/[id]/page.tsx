@@ -149,9 +149,16 @@ export default function AlbumPage() {
                       <Link href={`/songs/${song.id}`}>
                         <h3 className="font-medium truncate hover:underline">{song.name}</h3>
                       </Link>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {song.artists?.primary?.map(a => a.name).join(', ')}
-                      </p>
+                      <div className="text-sm text-muted-foreground truncate">
+                        {song.artists?.primary?.map((artist, idx) => (
+                          <span key={artist.id}>
+                            <Link href={`/artists/${artist.id}`} className="hover:underline" onClick={(e) => e.stopPropagation()}>
+                              {artist.name}
+                            </Link>
+                            {idx < song.artists.primary.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     {song.duration && (
                       <span className="text-sm text-muted-foreground">

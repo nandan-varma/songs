@@ -1,10 +1,60 @@
+// Enums for better type safety
+export enum ImageQuality {
+  LOW = '50x50',
+  MEDIUM = '150x150',
+  HIGH = '500x500',
+}
+
+export enum AudioQuality {
+  VERY_LOW = '12kbps',
+  LOW = '48kbps',
+  MEDIUM = '96kbps',
+  HIGH = '160kbps',
+  VERY_HIGH = '320kbps',
+}
+
+export enum EntityType {
+  SONG = 'song',
+  ALBUM = 'album',
+  ARTIST = 'artist',
+  PLAYLIST = 'playlist',
+}
+
+export enum ArtistRole {
+  PRIMARY = 'primary_artists',
+  FEATURED = 'featured_artists',
+  SINGER = 'singer',
+  LYRICIST = 'lyricist',
+  COMPOSER = 'composer',
+  MUSIC = 'music',
+}
+
+export enum Language {
+  HINDI = 'hindi',
+  ENGLISH = 'english',
+  PUNJABI = 'punjabi',
+  TAMIL = 'tamil',
+  TELUGU = 'telugu',
+  MARATHI = 'marathi',
+  GUJARATI = 'gujarati',
+  BENGALI = 'bengali',
+  KANNADA = 'kannada',
+  BHOJPURI = 'bhojpuri',
+  MALAYALAM = 'malayalam',
+  URDU = 'urdu',
+  HARYANVI = 'haryanvi',
+  RAJASTHANI = 'rajasthani',
+  ODIA = 'odia',
+  ASSAMESE = 'assamese',
+}
+
 export interface Image {
-  quality: string;
+  quality: ImageQuality | string; // Allow string for flexibility
   url: string;
 }
 
 export interface DownloadUrl {
-  quality: string;
+  quality: AudioQuality | string; // Allow string for flexibility
   url: string;
 }
 
@@ -15,11 +65,11 @@ export interface Song {
   image: Image[];
   album: string;
   url: string;
-  type: string;
+  type: EntityType | string;
   description: string;
   primaryArtists: string;
   singers: string;
-  language: string;
+  language: Language | string;
 }
 
 export interface Album {
@@ -28,10 +78,10 @@ export interface Album {
   image: Image[];
   artist: string;
   url: string;
-  type: string;
+  type: EntityType | string;
   description: string;
   year: string;
-  language: string;
+  language: Language | string;
   songIds: string;
 }
 
@@ -39,7 +89,7 @@ export interface Artist {
   id: string;
   title: string;
   image: Image[];
-  type: string;
+  type: EntityType | string;
   description: string;
   position?: number;
 }
@@ -49,8 +99,8 @@ export interface Playlist {
   title: string;
   image: Image[];
   url: string;
-  language: string;
-  type: string;
+  language: Language | string;
+  type: EntityType | string;
   description: string;
 }
 
@@ -58,8 +108,8 @@ export interface Playlist {
 export interface ArtistMini {
   id: string;
   name: string;
-  role: string;
-  type: string;
+  role: ArtistRole | string;
+  type: EntityType | string;
   image: Image[];
   url: string;
 }
@@ -73,14 +123,14 @@ export interface AlbumMini {
 export interface DetailedSong {
   id: string;
   name: string;
-  type: string;
+  type: EntityType | string;
   year: string | null;
   releaseDate: string | null;
   duration: number | null;
   label: string | null;
   explicitContent: boolean;
   playCount: number | null;
-  language: string;
+  language: Language | string;
   hasLyrics: boolean;
   lyricsId: string | null;
   url: string;
@@ -106,9 +156,9 @@ export interface DetailedAlbum {
   name: string;
   description: string;
   year: number | null;
-  type: string;
+  type: EntityType | string;
   playCount: number | null;
-  language: string;
+  language: Language | string;
   explicitContent: boolean;
   artists: {
     primary: ArtistMini[];
@@ -125,13 +175,13 @@ export interface DetailedArtist {
   id: string;
   name: string;
   url: string;
-  type: string;
+  type: EntityType | string;
   image: Image[];
   followerCount: number | null;
   fanCount: string | null;
   isVerified: boolean | null;
-  dominantLanguage: string | null;
-  dominantType: string | null;
+  dominantLanguage: Language | string | null;
+  dominantType: EntityType | string | null;
   bio: Bio[] | null;
   dob: string | null;
   fb: string | null;
@@ -150,9 +200,9 @@ export interface DetailedPlaylist {
   name: string;
   description: string;
   year: number | null;
-  type: string;
+  type: EntityType | string;
   playCount: number | null;
-  language: string;
+  language: Language | string;
   explicitContent: boolean;
   songCount: number | null;
   url: string;

@@ -1,46 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getPlaylistById } from '@/lib/api';
-import { DetailedPlaylist } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, Plus, Download, Loader2, ListMusic } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { ProgressiveImage } from '@/components/progressive-image';
 import { toast } from 'sonner';
+import { usePlaylist } from '@/hooks/queries';
+import { EntityType } from '@/lib/types';
 
 export default function PlaylistPage() {
   const params = useParams();
   const playlistId = params.id as string;
   const { playQueue, playSong, addToQueue } = usePlayer();
   
-  const [playlist, setPlaylist] = useState<DetailedPlaylist | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const response = await getPlaylistById(playlistId, 0, 50);
-        
-        if (response.data) {
-          setPlaylist(response.data);
-        }
-      } catch (err) {
-        setError('Failed to load playlist');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [playlistId]);
+  const { data: playlist, isLoading, error } = usePlaylist(playlistId);
 
   if (isLoading) {
     return (
@@ -53,12 +30,10 @@ export default function PlaylistPage() {
   if (error || !playlist) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Playlist not found'}</p>
+        <p className="text-center text-destructive">{error instanceof Error ? error.message : 'Playlist not found'}</p>
       </div>
     );
   }
-
-  const imageUrl = playlist.image?.[2]?.url || playlist.image?.[0]?.url;
 
   return (
     <div className="container mx-auto px-4 py-8 pb-32 space-y-8">
@@ -67,20 +42,14 @@ export default function PlaylistPage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Playlist Cover */}
-            <div className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={playlist.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <ListMusic className="h-24 w-24 text-muted-foreground" />
-                </div>
-              )}
+            <div className="relative aspect-square w-full md:w-64 flex-shrink-0">
+              <ProgressiveImage
+                images={playlist.image}
+                alt={playlist.name}
+                entityType={EntityType.PLAYLIST}
+                rounded="default"
+                priority
+              />
             </div>
 
             {/* Playlist Details */}
@@ -143,15 +112,13 @@ export default function PlaylistPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground w-6">{index + 1}</span>
-                    <div className="relative h-12 w-12 flex-shrink-0 rounded overflow-hidden bg-muted">
-                      {song.image?.[0]?.url && (
-                        <Image
-                          src={song.image[0].url}
-                          alt={song.name}
-                          fill
-                          className="object-cover"
-                        />
-                      )}
+                    <div className="relative h-12 w-12 flex-shrink-0">
+                      <ProgressiveImage
+                        images={song.image}
+                        alt={song.name}
+                        entityType={EntityType.SONG}
+                        rounded="default"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <Link href={`/songs/${song.id}`}>

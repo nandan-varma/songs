@@ -1,55 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getSongById, getSongSuggestions } from '@/lib/api';
-import { DetailedSong } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Play, Plus, Download, Loader2, Music2 } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from '@/components/progressive-image';
+import { EntityType } from '@/lib/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useSong, useSongSuggestions } from '@/hooks/queries';
 
 export default function SongPage() {
   const params = useParams();
   const songId = params.id as string;
   const { playSong, addToQueue } = usePlayer();
   
-  const [song, setSong] = useState<DetailedSong | null>(null);
-  const [suggestions, setSuggestions] = useState<DetailedSong[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const [songResponse, suggestionsResponse] = await Promise.all([
-          getSongById(songId),
-          getSongSuggestions(songId, 10),
-        ]);
-        
-        if (songResponse.data && songResponse.data.length > 0) {
-          setSong(songResponse.data[0]);
-        }
-        
-        if (suggestionsResponse.data) {
-          setSuggestions(suggestionsResponse.data);
-        }
-      } catch (err) {
-        setError('Failed to load song');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [songId]);
+  const { data: songData, isLoading: isSongLoading, error: songError } = useSong(songId);
+  const { data: suggestions = [], isLoading: isSuggestionsLoading } = useSongSuggestions(songId, 10);
+  
+  const song = songData?.[0];
+  const isLoading = isSongLoading || isSuggestionsLoading;
 
   if (isLoading) {
     return (
@@ -59,15 +32,13 @@ export default function SongPage() {
     );
   }
 
-  if (error || !song) {
+  if (songError || !song) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Song not found'}</p>
+        <p className="text-center text-destructive">{songError instanceof Error ? songError.message : 'Song not found'}</p>
       </div>
     );
   }
-
-  const imageUrl = song.image?.[2]?.url || song.image?.[0]?.url;
 
   return (
     <div className="container mx-auto px-4 py-8 pb-32 space-y-8">
@@ -76,17 +47,17 @@ export default function SongPage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Album Art */}
-            <div className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
+            <div className="relative aspect-square w-full md:w-64 flex-shrink-0">
+              {song.image && song.image.length > 0 ? (
+                <ProgressiveImage
+                  images={song.image}
                   alt={song.name}
-                  fill
-                  className="object-cover"
+                  entityType={EntityType.SONG}
+                  rounded="default"
                   priority
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center">
+                <div className="flex h-full w-full items-center justify-center bg-muted rounded-lg">
                   <Music2 className="h-24 w-24 text-muted-foreground" />
                 </div>
               )}
@@ -208,13 +179,13 @@ export default function SongPage() {
                 <Card key={suggestion.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      <div className="relative h-16 w-16 flex-shrink-0 rounded overflow-hidden bg-muted">
-                        {suggestion.image?.[1]?.url && (
-                          <Image
-                            src={suggestion.image[1].url}
+                      <div className="relative h-16 w-16 flex-shrink-0">
+                        {suggestion.image && suggestion.image.length > 0 && (
+                          <ProgressiveImage
+                            images={suggestion.image}
                             alt={suggestion.name}
-                            fill
-                            className="object-cover"
+                            entityType={EntityType.SONG}
+                            rounded="default"
                           />
                         )}
                       </div>

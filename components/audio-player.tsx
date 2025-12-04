@@ -29,17 +29,20 @@ export function AudioPlayer() {
 
     const audio = audioRef.current;
     const needsNewSource = audio.src !== downloadUrl.url;
+    let playWhenReadyHandler: (() => void) | null = null;
     
     if (needsNewSource) {
       audio.src = downloadUrl.url;
       audio.load();
       
       if (isPlaying) {
-        const playWhenReady = () => {
+        playWhenReadyHandler = () => {
           audio.play().catch(console.error);
-          audio.removeEventListener('canplay', playWhenReady);
+          if (playWhenReadyHandler) {
+            audio.removeEventListener('canplay', playWhenReadyHandler);
+          }
         };
-        audio.addEventListener('canplay', playWhenReady);
+        audio.addEventListener('canplay', playWhenReadyHandler);
       }
     } else {
       if (isPlaying && audio.paused) {
@@ -48,11 +51,20 @@ export function AudioPlayer() {
         audio.pause();
       }
     }
+
+    // Cleanup function to remove event listener if component unmounts
+    return () => {
+      if (playWhenReadyHandler && audio) {
+        audio.removeEventListener('canplay', playWhenReadyHandler);
+      }
+    };
   }, [currentSong, isPlaying, audioRef]);
 
   /** Set up Media Session API for OS-level media controls */
   useEffect(() => {
-    if (!('mediaSession' in navigator) || !currentSong) return;
+    if (!('mediaSession' in navigator) || !currentSong) {
+      return;
+    }
 
     const artwork = currentSong.image?.map(img => ({
       src: img.url,
@@ -68,29 +80,53 @@ export function AudioPlayer() {
       artwork: artwork.length > 0 ? artwork : undefined,
     });
 
-    navigator.mediaSession.setActionHandler('play', () => {
+    const playHandler = () => {
       audioRef.current?.play().catch(console.error);
-    });
-    navigator.mediaSession.setActionHandler('pause', () => {
+    };
+    
+    const pauseHandler = () => {
       audioRef.current?.pause();
-    });
-    navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
-    navigator.mediaSession.setActionHandler('nexttrack', playNext);
-    navigator.mediaSession.setActionHandler('seekto', (details) => {
+    };
+    
+    const seektoHandler = (details: MediaSessionActionDetails) => {
       if (details.seekTime) {
         seekTo(details.seekTime);
       }
-    });
-    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+    };
+    
+    const seekbackwardHandler = (details: MediaSessionActionDetails) => {
       const skipTime = details.seekOffset || 10;
       seekTo(Math.max(0, currentTime - skipTime));
-    });
-    navigator.mediaSession.setActionHandler('seekforward', (details) => {
+    };
+    
+    const seekforwardHandler = (details: MediaSessionActionDetails) => {
       const skipTime = details.seekOffset || 10;
       seekTo(Math.min(duration, currentTime + skipTime));
-    });
+    };
+
+    navigator.mediaSession.setActionHandler('play', playHandler);
+    navigator.mediaSession.setActionHandler('pause', pauseHandler);
+    navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
+    navigator.mediaSession.setActionHandler('nexttrack', playNext);
+    navigator.mediaSession.setActionHandler('seekto', seektoHandler);
+    navigator.mediaSession.setActionHandler('seekbackward', seekbackwardHandler);
+    navigator.mediaSession.setActionHandler('seekforward', seekforwardHandler);
     
     navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+    // Cleanup function to remove action handlers
+    return () => {
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+        navigator.mediaSession.setActionHandler('seekto', null);
+        navigator.mediaSession.setActionHandler('seekbackward', null);
+        navigator.mediaSession.setActionHandler('seekforward', null);
+        navigator.mediaSession.metadata = null;
+      }
+    };
   }, [currentSong, isPlaying, playNext, playPrevious, seekTo, currentTime, duration, audioRef]);
 
   /** Update Media Session position state for scrubbing */

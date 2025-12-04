@@ -7,7 +7,7 @@ import { Music, Play, Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePlayer } from '@/contexts/player-context';
-import { convertToDetailedSong } from '@/lib/utils';
+import { getSongById } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface SongsListProps {
@@ -21,18 +21,32 @@ export function SongsList({ songs }: SongsListProps) {
     return null;
   }
 
-  const handlePlay = (song: Song, e: React.MouseEvent) => {
+  const handlePlay = async (song: Song, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    playSong(convertToDetailedSong(song));
-    toast.success(`Now playing: ${song.title}`);
+    
+    try {
+      const detailedSong = await getSongById(song.id);
+      playSong(detailedSong.data[0]);
+      toast.success(`Now playing: ${song.title}`);
+    } catch (err) {
+      toast.error('Failed to play song');
+      console.error(err);
+    }
   };
 
-  const handleAddToQueue = (song: Song, e: React.MouseEvent) => {
+  const handleAddToQueue = async (song: Song, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToQueue(convertToDetailedSong(song));
-    toast.success(`Added to queue: ${song.title}`);
+    
+    try {
+      const detailedSong = await getSongById(song.id);
+      addToQueue(detailedSong.data[0]);
+      toast.success(`Added to queue: ${song.title}`);
+    } catch (err) {
+      toast.error('Failed to add to queue');
+      console.error(err);
+    }
   };
 
   return (

@@ -4,7 +4,7 @@ import { usePlayer } from '@/contexts/player-context';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Minus } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
@@ -46,13 +46,23 @@ export function AudioPlayer() {
       (url) => url.quality === '320kbps'
     ) || currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
 
-    if (downloadUrl?.url) {
+    if (downloadUrl?.url && audioRef.current.src !== downloadUrl.url) {
       audioRef.current.src = downloadUrl.url;
       if (isPlaying) {
         audioRef.current.play().catch(console.error);
       }
     }
-  }, [currentSong, audioRef, isPlaying]);
+  }, [currentSong, audioRef]);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    
+    if (isPlaying) {
+      audioRef.current.play().catch(console.error);
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying, audioRef]);
 
   const toggleMute = () => {
     if (isMuted) {
@@ -214,11 +224,11 @@ export function AudioPlayer() {
                         </div>
                         {index !== currentIndex && (
                           <Button
-                            variant="ghost"
-                            size="sm"
+                            variant="outline"
+                            size="icon"
                             onClick={() => removeFromQueue(index)}
                           >
-                            Remove
+                            <Minus />
                           </Button>
                         )}
                       </div>

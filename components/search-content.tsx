@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SearchBar } from '@/components/search-bar';
 import { SongsList } from '@/components/songs-list';
 import { AlbumsList } from '@/components/albums-list';
 import { ArtistsList } from '@/components/artists-list';
-import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlaylistsList } from '@/components/playlists-list';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState, LoadingSpinner, ErrorState } from '@/components/search/search-states';
+import { SearchTabContent } from '@/components/search/search-tab-content';
+import { GlobalSearchResults } from '@/components/search/global-search-results';
 import { detailedSongToSong } from '@/lib/utils';
 import { 
   DetailedSong, 
@@ -28,7 +29,42 @@ import {
   useSearchPlaylists 
 } from '@/hooks/queries';
 
+// ============================================================================
+// TYPES & CONSTANTS
+// ============================================================================
+
 type TabType = 'all' | 'songs' | 'albums' | 'artists' | 'playlists';
+
+const TABS = [
+  { value: 'all', label: 'All' },
+  { value: 'songs', label: 'Songs' },
+  { value: 'albums', label: 'Albums' },
+  { value: 'artists', label: 'Artists' },
+  { value: 'playlists', label: 'Playlists' },
+] as const;
+
+const SEARCH_PAGE_SIZE = 20;
+
+/** Convert artist search result to standard artist format */
+const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
+  id: artist.id,
+  title: artist.name,
+  image: artist.image,
+  type: artist.type,
+  description: artist.role,
+  position: undefined,
+});
+
+/** Convert playlist search result to standard playlist format */
+const playlistSearchResultToPlaylist = (playlist: PlaylistSearchResult): Playlist => ({
+  id: playlist.id,
+  title: playlist.name,
+  image: playlist.image,
+  url: playlist.url,
+  language: playlist.language,
+  type: playlist.type,
+  description: `${playlist.songCount} songs`,
+});
 
 export function SearchContent() {
   const router = useRouter();
@@ -39,85 +75,93 @@ export function SearchContent() {
   const [query, setQuery] = useState(queryParam);
   const [activeTab, setActiveTab] = useState<TabType>(tabParam);
   
-  // Global search query
-  const { data: globalSearchResults, isLoading: isLoadingGlobal, error: globalError } = useGlobalSearch(queryParam, {
-    enabled: activeTab === 'all' && queryParam.trim().length > 0,
+  const searchEnabled = useMemo(() => queryParam.trim().length > 0, [queryParam]);
+  
+  const globalSearchQuery = useGlobalSearch(queryParam, {
+    enabled: activeTab === 'all' && searchEnabled,
   });
   
-  // Individual search queries with infinite scroll
-  const songsQuery = useSearchSongs(queryParam, 20, {
-    enabled: activeTab === 'songs' && queryParam.trim().length > 0,
+  const songsQuery = useSearchSongs(queryParam, SEARCH_PAGE_SIZE, {
+    enabled: activeTab === 'songs' && searchEnabled,
   });
   
-  const albumsQuery = useSearchAlbums(queryParam, 20, {
-    enabled: activeTab === 'albums' && queryParam.trim().length > 0,
+  const albumsQuery = useSearchAlbums(queryParam, SEARCH_PAGE_SIZE, {
+    enabled: activeTab === 'albums' && searchEnabled,
   });
   
-  const artistsQuery = useSearchArtists(queryParam, 20, {
-    enabled: activeTab === 'artists' && queryParam.trim().length > 0,
+  const artistsQuery = useSearchArtists(queryParam, SEARCH_PAGE_SIZE, {
+    enabled: activeTab === 'artists' && searchEnabled,
   });
   
-  const playlistsQuery = useSearchPlaylists(queryParam, 20, {
-    enabled: activeTab === 'playlists' && queryParam.trim().length > 0,
-  });
-  
-  // Converter functions for search results
-  const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
-    id: artist.id,
-    title: artist.name,
-    image: artist.image,
-    type: artist.type,
-    description: artist.role,
-    position: undefined,
+  const playlistsQuery = useSearchPlaylists(queryParam, SEARCH_PAGE_SIZE, {
+    enabled: activeTab === 'playlists' && searchEnabled,
   });
 
-  const playlistSearchResultToPlaylist = (playlist: PlaylistSearchResult): Playlist => ({
-    id: playlist.id,
-    title: playlist.name,
-    image: playlist.image,
-    url: playlist.url,
-    language: playlist.language,
-    type: playlist.type,
-    description: `${playlist.songCount} songs`,
-  });
+  /** Process infinite query data efficiently */
+  const processedData = useMemo(() => {
+    const songsData = songsQuery.data as { pages: Array<{ total: number; results: DetailedSong[] }> } | undefined;
+    const albumsData = albumsQuery.data as { pages: Array<{ total: number; results: AlbumSearchResult[] }> } | undefined;
+    const artistsData = artistsQuery.data as { pages: Array<{ total: number; results: ArtistSearchResult[] }> } | undefined;
+    const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: PlaylistSearchResult[] }> } | undefined;
+    
+    return {
+      songs: {
+        items: songsData?.pages.flatMap(page => page.results.map(detailedSongToSong)) ?? [],
+        total: songsData?.pages[0]?.total ?? 0,
+      },
+      albums: {
+        items: albumsData?.pages.flatMap(page => page.results) ?? [],
+        total: albumsData?.pages[0]?.total ?? 0,
+      },
+      artists: {
+        items: artistsData?.pages.flatMap(page => page.results.map(artistSearchResultToArtist)) ?? [],
+        total: artistsData?.pages[0]?.total ?? 0,
+      },
+      playlists: {
+        items: playlistsData?.pages.flatMap(page => page.results.map(playlistSearchResultToPlaylist)) ?? [],
+        total: playlistsData?.pages[0]?.total ?? 0,
+      },
+    };
+  }, [songsQuery.data, albumsQuery.data, artistsQuery.data, playlistsQuery.data]);
 
-  // Flatten infinite query data
-  const songsData = songsQuery.data as { pages: Array<{ total: number; results: DetailedSong[] }> } | undefined;
-  const albumsData = albumsQuery.data as { pages: Array<{ total: number; results: AlbumSearchResult[] }> } | undefined;
-  const artistsData = artistsQuery.data as { pages: Array<{ total: number; results: ArtistSearchResult[] }> } | undefined;
-  const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: PlaylistSearchResult[] }> } | undefined;
-  
-  const allSongs = songsData?.pages.flatMap(page => page.results.map(detailedSongToSong)) ?? [];
-  const allAlbums = albumsData?.pages.flatMap(page => page.results) ?? [];
-  const allArtists = artistsData?.pages.flatMap(page => page.results.map(artistSearchResultToArtist)) ?? [];
-  const allPlaylists = playlistsData?.pages.flatMap(page => page.results.map(playlistSearchResultToPlaylist)) ?? [];
-  
-  const totalSongs = songsData?.pages[0]?.total ?? 0;
-  const totalAlbums = albumsData?.pages[0]?.total ?? 0;
-  const totalArtists = artistsData?.pages[0]?.total ?? 0;
-  const totalPlaylists = playlistsData?.pages[0]?.total ?? 0;
+  const hasError = useMemo(() => {
+    return !!(globalSearchQuery.error || songsQuery.error || albumsQuery.error || 
+              artistsQuery.error || playlistsQuery.error);
+  }, [globalSearchQuery.error, songsQuery.error, albumsQuery.error, 
+      artistsQuery.error, playlistsQuery.error]);
 
-  // Update URL when tab changes
-  useEffect(() => {
-    setActiveTab(tabParam);
-  }, [tabParam]);
-
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (!query.trim()) return;
     router.push(`/?q=${encodeURIComponent(query)}&tab=${activeTab}`);
-  };
+  }, [query, activeTab, router]);
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = useCallback((tab: string) => {
     const newTab = tab as TabType;
     setActiveTab(newTab);
     if (queryParam) {
       router.push(`/?q=${encodeURIComponent(queryParam)}&tab=${newTab}`);
     }
-  };
+  }, [queryParam, router]);
+
+  const loadMoreCallbacks = useMemo(() => ({
+    songs: songsQuery.fetchNextPage,
+    albums: albumsQuery.fetchNextPage,
+    artists: artistsQuery.fetchNextPage,
+    playlists: playlistsQuery.fetchNextPage,
+  }), [songsQuery.fetchNextPage, albumsQuery.fetchNextPage, 
+       artistsQuery.fetchNextPage, playlistsQuery.fetchNextPage]);
+
+  /** Update local state when URL params change */
+  useEffect(() => {
+    setActiveTab(tabParam);
+  }, [tabParam]);
+
+  useEffect(() => {
+    setQuery(queryParam);
+  }, [queryParam]);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Search Bar */}
       <div className="flex justify-center">
         <SearchBar
           value={query}
@@ -134,151 +178,99 @@ export function SearchContent() {
         </div>
       )}
 
-      {/* Error State */}
-      {(globalError || songsQuery.error || albumsQuery.error || artistsQuery.error || playlistsQuery.error) && (
-        <div className="text-center text-destructive py-8">
-          Failed to load search results. Please try again.
-        </div>
-      )}
+      {hasError && <ErrorState />}
 
-      {/* Search Results with Tabs */}
-      {queryParam && (
+      {queryParam && !hasError && (
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-5">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="songs">Songs</TabsTrigger>
-            <TabsTrigger value="albums">Albums</TabsTrigger>
-            <TabsTrigger value="artists">Artists</TabsTrigger>
-            <TabsTrigger value="playlists">Playlists</TabsTrigger>
+            {TABS.map(tab => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {/* All Tab */}
           <TabsContent value="all" className="space-y-8 mt-6">
-            {isLoadingGlobal ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : globalSearchResults ? (
-              <div className="space-y-8">
-                {globalSearchResults.data.songs.results.length > 0 && (
-                  <>
-                    <SongsList songs={globalSearchResults.data.songs.results} />
-                    <Separator />
-                  </>
-                )}
-                {globalSearchResults.data.albums.results.length > 0 && (
-                  <>
-                    <AlbumsList albums={globalSearchResults.data.albums.results} />
-                    <Separator />
-                  </>
-                )}
-                {globalSearchResults.data.artists.results.length > 0 && (
-                  <>
-                    <ArtistsList artists={globalSearchResults.data.artists.results} />
-                    <Separator />
-                  </>
-                )}
-                {globalSearchResults.data.playlists?.results.length > 0 && (
-                  <PlaylistsList playlists={globalSearchResults.data.playlists.results} />
-                )}
-                {globalSearchResults.data.songs.results.length === 0 &&
-                  globalSearchResults.data.albums.results.length === 0 &&
-                  globalSearchResults.data.artists.results.length === 0 &&
-                  (!globalSearchResults.data.playlists || globalSearchResults.data.playlists.results.length === 0) && (
-                    <div className="text-center text-muted-foreground py-12">
-                      No results found for &quot;{queryParam}&quot;
-                    </div>
-                  )}
-              </div>
+            {globalSearchQuery.isLoading ? (
+              <LoadingSpinner />
+            ) : globalSearchQuery.data ? (
+              <GlobalSearchResults 
+                results={globalSearchQuery.data} 
+                query={queryParam} 
+              />
             ) : null}
           </TabsContent>
 
-          {/* Songs Tab */}
           <TabsContent value="songs" className="mt-6">
-            {songsQuery.isLoading && allSongs.length === 0 ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : allSongs.length > 0 ? (
+            <SearchTabContent
+              type="songs"
+              isLoading={songsQuery.isLoading && processedData.songs.items.length === 0}
+              hasResults={processedData.songs.items.length > 0}
+              query={queryParam}
+            >
               <SongsList 
-                songs={allSongs}
+                songs={processedData.songs.items}
                 showLoadMore={true}
-                onLoadMore={songsQuery.fetchNextPage}
+                onLoadMore={loadMoreCallbacks.songs}
                 isLoading={songsQuery.isFetchingNextPage}
-                totalCount={totalSongs}
+                totalCount={processedData.songs.total}
                 hasMore={songsQuery.hasNextPage ?? false}
               />
-            ) : (
-              <div className="text-center text-muted-foreground py-12">
-                No songs found for &quot;{queryParam}&quot;
-              </div>
-            )}
+            </SearchTabContent>
           </TabsContent>
 
-          {/* Albums Tab */}
           <TabsContent value="albums" className="mt-6">
-            {albumsQuery.isLoading && allAlbums.length === 0 ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : allAlbums.length > 0 ? (
+            <SearchTabContent
+              type="albums"
+              isLoading={albumsQuery.isLoading && processedData.albums.items.length === 0}
+              hasResults={processedData.albums.items.length > 0}
+              query={queryParam}
+            >
               <AlbumsList 
-                albums={allAlbums}
+                albums={processedData.albums.items}
                 showLoadMore={true}
-                onLoadMore={albumsQuery.fetchNextPage}
+                onLoadMore={loadMoreCallbacks.albums}
                 isLoading={albumsQuery.isFetchingNextPage}
-                totalCount={totalAlbums}
+                totalCount={processedData.albums.total}
                 hasMore={albumsQuery.hasNextPage ?? false}
               />
-            ) : (
-              <div className="text-center text-muted-foreground py-12">
-                No albums found for &quot;{queryParam}&quot;
-              </div>
-            )}
+            </SearchTabContent>
           </TabsContent>
 
-          {/* Artists Tab */}
           <TabsContent value="artists" className="mt-6">
-            {artistsQuery.isLoading && allArtists.length === 0 ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : allArtists.length > 0 ? (
+            <SearchTabContent
+              type="artists"
+              isLoading={artistsQuery.isLoading && processedData.artists.items.length === 0}
+              hasResults={processedData.artists.items.length > 0}
+              query={queryParam}
+            >
               <ArtistsList 
-                artists={allArtists}
+                artists={processedData.artists.items}
                 showLoadMore={true}
-                onLoadMore={artistsQuery.fetchNextPage}
+                onLoadMore={loadMoreCallbacks.artists}
                 isLoading={artistsQuery.isFetchingNextPage}
-                totalCount={totalArtists}
+                totalCount={processedData.artists.total}
                 hasMore={artistsQuery.hasNextPage ?? false}
               />
-            ) : (
-              <div className="text-center text-muted-foreground py-12">
-                No artists found for &quot;{queryParam}&quot;
-              </div>
-            )}
+            </SearchTabContent>
           </TabsContent>
 
-          {/* Playlists Tab */}
           <TabsContent value="playlists" className="mt-6">
-            {playlistsQuery.isLoading && allPlaylists.length === 0 ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : allPlaylists.length > 0 ? (
+            <SearchTabContent
+              type="playlists"
+              isLoading={playlistsQuery.isLoading && processedData.playlists.items.length === 0}
+              hasResults={processedData.playlists.items.length > 0}
+              query={queryParam}
+            >
               <PlaylistsList 
-                playlists={allPlaylists}
+                playlists={processedData.playlists.items}
                 showLoadMore={true}
-                onLoadMore={playlistsQuery.fetchNextPage}
+                onLoadMore={loadMoreCallbacks.playlists}
                 isLoading={playlistsQuery.isFetchingNextPage}
-                totalCount={totalPlaylists}
+                totalCount={processedData.playlists.total}
                 hasMore={playlistsQuery.hasNextPage ?? false}
               />
-            ) : (
-              <div className="text-center text-muted-foreground py-12">
-                No playlists found for &quot;{queryParam}&quot;
-              </div>
-            )}
+            </SearchTabContent>
           </TabsContent>
         </Tabs>
       )}

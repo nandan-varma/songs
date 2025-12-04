@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { usePlayer } from '@/contexts/player-context';
+import { usePlayerActions } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,12 @@ import { toast } from 'sonner';
 import { LoadMoreButton } from '@/components/load-more-button';
 import { useArtist, useArtistSongs, useArtistAlbums } from '@/hooks/queries';
 import { DetailedSong, DetailedAlbum, EntityType } from '@/lib/types';
+import { useCallback } from 'react';
 
 export default function ArtistPage() {
   const params = useParams();
   const artistId = params.id as string;
-  const { playQueue, playSong, addToQueue } = usePlayer();
+  const { playQueue, playSong, addToQueue } = usePlayerActions();
   
   const { data: artist, isLoading, error } = useArtist(artistId, {
     songCount: 0,

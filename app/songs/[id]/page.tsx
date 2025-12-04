@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { usePlayer } from '@/contexts/player-context';
+import { usePlayerActions } from '@/contexts/player-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,11 +12,12 @@ import { EntityType } from '@/lib/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useSong, useSongSuggestions } from '@/hooks/queries';
+import { useCallback } from 'react';
 
 export default function SongPage() {
   const params = useParams();
   const songId = params.id as string;
-  const { playSong, addToQueue } = usePlayer();
+  const { playSong, addToQueue } = usePlayerActions();
   
   const { data: songData, isLoading: isSongLoading, error: songError } = useSong(songId);
   const { data: suggestions = [], isLoading: isSuggestionsLoading } = useSongSuggestions(songId, 10);

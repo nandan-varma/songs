@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { usePlayer } from '@/contexts/player-context';
+import { usePlayerActions } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,11 +11,12 @@ import { ProgressiveImage } from '@/components/progressive-image';
 import { toast } from 'sonner';
 import { usePlaylist } from '@/hooks/queries';
 import { EntityType } from '@/lib/types';
+import { useCallback } from 'react';
 
 export default function PlaylistPage() {
   const params = useParams();
   const playlistId = params.id as string;
-  const { playQueue, playSong, addToQueue } = usePlayer();
+  const { playQueue, playSong, addToQueue } = usePlayerActions();
   
   const { data: playlist, isLoading, error } = usePlaylist(playlistId);
 

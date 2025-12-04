@@ -1,103 +1,204 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { DetailedSong } from '@/lib/types';
 
-interface PlayerContextType {
-  // Current playback
+/**
+ * Split into 3 contexts to minimize re-renders:
+ * - PlaybackContext: High frequency updates (currentTime every second)
+ * - QueueContext: Medium frequency updates (queue modifications)  
+ * - PlayerActionsContext: Stable function references (never changes)
+ */
+
+interface PlaybackState {
   currentSong: DetailedSong | null;
   isPlaying: boolean;
   volume: number;
   currentTime: number;
   duration: number;
-  
-  // Queue management
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+}
+
+interface QueueState {
   queue: DetailedSong[];
   currentIndex: number;
-  
-  // Actions
+}
+
+interface PlayerActions {
   playSong: (song: DetailedSong, replaceQueue?: boolean) => void;
   playQueue: (songs: DetailedSong[], startIndex?: number) => void;
   addToQueue: (song: DetailedSong) => void;
   addMultipleToQueue: (songs: DetailedSong[]) => void;
   removeFromQueue: (index: number) => void;
   clearQueue: () => void;
-  
   togglePlayPause: () => void;
   playNext: () => void;
   playPrevious: () => void;
   seekTo: (time: number) => void;
   setVolume: (volume: number) => void;
-  
-  // Audio element ref
-  audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
-const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
+const PlaybackContext = createContext<PlaybackState | undefined>(undefined);
+const QueueContext = createContext<QueueState | undefined>(undefined);
+const PlayerActionsContext = createContext<PlayerActions | undefined>(undefined);
+
+const DEFAULT_VOLUME = 0.7;
+const RESTART_THRESHOLD_SECONDS = 3;
+const AUDIO_CHECK_INTERVAL_MS = 100;
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   
   const [currentSong, setCurrentSong] = useState<DetailedSong | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolumeState] = useState(0.7);
+  const [volume, setVolumeState] = useState(DEFAULT_VOLUME);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  
   const [queue, setQueue] = useState<DetailedSong[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Sync audio element with state
+  /** Keep audio element volume in sync with state */
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = volume;
     }
   }, [volume]);
 
+  /** Play a single song, optionally replacing the queue */
   const playSong = useCallback((song: DetailedSong, replaceQueue = true) => {
     setCurrentSong(song);
+    setIsPlaying(true);
+    
     if (replaceQueue) {
       setQueue([song]);
       setCurrentIndex(0);
     }
-    setIsPlaying(true);
   }, []);
 
+  /** Play a queue of songs starting at a specific index */
   const playQueue = useCallback((songs: DetailedSong[], startIndex = 0) => {
     if (songs.length === 0) return;
+    
     setQueue(songs);
     setCurrentIndex(startIndex);
     setCurrentSong(songs[startIndex]);
     setIsPlaying(true);
   }, []);
 
+  /** Toggle between play and pause states */
+  const togglePlayPause = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    setIsPlaying(prev => {
+      const newState = !prev;
+      if (newState) {
+        audio.play().catch(console.error);
+      } else {
+        audio.pause();
+      }
+      return newState;
+    });
+  }, []);
+
+  /** Skip to the next song in the queue (loops back to start) */
+  const playNext = useCallback(() => {
+    setQueue(q => {
+      if (q.length === 0) return q;
+      
+      setCurrentIndex(idx => {
+        const nextIndex = (idx + 1) % q.length;
+        setCurrentSong(q[nextIndex]);
+        setIsPlaying(true);
+        return nextIndex;
+      });
+      
+      return q;
+    });
+  }, []);
+
+  /** Go to previous song, or restart current song if > 3 seconds in */
+  const playPrevious = useCallback(() => {
+    setCurrentTime(ct => {
+      if (ct > RESTART_THRESHOLD_SECONDS) {
+        const audio = audioRef.current;
+        if (audio) {
+          audio.currentTime = 0;
+        }
+        return 0;
+      }
+      
+      setQueue(q => {
+        if (q.length === 0) return q;
+        
+        setCurrentIndex(idx => {
+          const prevIndex = idx === 0 ? q.length - 1 : idx - 1;
+          setCurrentSong(q[prevIndex]);
+          setIsPlaying(true);
+          return prevIndex;
+        });
+        
+        return q;
+      });
+      
+      return ct;
+    });
+  }, []);
+
+  /** Seek to a specific time in the current song */
+  const seekTo = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = time;
+      setCurrentTime(time);
+    }
+  }, []);
+
+  /** Set the volume level (0-1) */
+  const setVolume = useCallback((newVolume: number) => {
+    setVolumeState(newVolume);
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = newVolume;
+    }
+  }, []);
+
+  /** Add a single song to the end of the queue */
   const addToQueue = useCallback((song: DetailedSong) => {
     setQueue(prev => [...prev, song]);
   }, []);
 
+  /** Add multiple songs to the end of the queue */
   const addMultipleToQueue = useCallback((songs: DetailedSong[]) => {
     setQueue(prev => [...prev, ...songs]);
   }, []);
 
+  /** Remove a song from the queue by index */
   const removeFromQueue = useCallback((index: number) => {
     setQueue(prev => {
       const newQueue = prev.filter((_, i) => i !== index);
-      if (index < currentIndex) {
-        setCurrentIndex(prev => prev - 1);
-      } else if (index === currentIndex) {
-        // If removing current song, play next
+      
+      if (index === currentIndex) {
         if (newQueue.length > 0) {
           const newIndex = Math.min(currentIndex, newQueue.length - 1);
           setCurrentIndex(newIndex);
           setCurrentSong(newQueue[newIndex]);
         } else {
+          setCurrentIndex(0);
           setCurrentSong(null);
           setIsPlaying(false);
         }
+      } else if (index < currentIndex) {
+        setCurrentIndex(prev => prev - 1);
       }
+      
       return newQueue;
     });
   }, [currentIndex]);
 
+  /** Clear the entire queue and stop playback */
   const clearQueue = useCallback(() => {
     setQueue([]);
     setCurrentIndex(0);
@@ -105,90 +206,70 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     setIsPlaying(false);
   }, []);
 
-  const togglePlayPause = useCallback(() => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play().catch(console.error);
-      }
-      setIsPlaying(!isPlaying);
-    }
-  }, [isPlaying]);
+  /**
+   * Set up HTML5 audio element event listeners
+   * Uses a ref to avoid recreating the playNext callback in dependencies
+   * Checks periodically for audio element existence (rendered by child component)
+   */
+  const playNextRef = useRef(playNext);
+  playNextRef.current = playNext;
 
-  const playNext = useCallback(() => {
-    if (queue.length === 0) return;
-    const nextIndex = (currentIndex + 1) % queue.length;
-    setCurrentIndex(nextIndex);
-    setCurrentSong(queue[nextIndex]);
-    setIsPlaying(true);
-  }, [queue, currentIndex]);
-
-  const playPrevious = useCallback(() => {
-    if (queue.length === 0) return;
-    
-    // If more than 3 seconds into song, restart it
-    if (currentTime > 3) {
-      seekTo(0);
-      return;
-    }
-    
-    const prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
-    setCurrentIndex(prevIndex);
-    setCurrentSong(queue[prevIndex]);
-    setIsPlaying(true);
-  }, [queue, currentIndex, currentTime]);
-
-  const seekTo = useCallback((time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
-    }
-  }, []);
-
-  const setVolume = useCallback((newVolume: number) => {
-    setVolumeState(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-  }, []);
-
-  // Audio event handlers
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const setupListeners = () => {
+      const audio = audioRef.current;
+      if (!audio) return null;
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleDurationChange = () => setDuration(audio.duration);
-    const handleEnded = () => {
-      playNext();
+      const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+      const handleDurationChange = () => setDuration(audio.duration);
+      const handleEnded = () => playNextRef.current();
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
+
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('durationchange', handleDurationChange);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('pause', handlePause);
+
+      return () => {
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('durationchange', handleDurationChange);
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('play', handlePlay);
+        audio.removeEventListener('pause', handlePause);
+      };
     };
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('durationchange', handleDurationChange);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
+    const cleanup = setupListeners();
+    if (cleanup) return cleanup;
+
+    const checkInterval = setInterval(() => {
+      const cleanup = setupListeners();
+      if (cleanup) {
+        clearInterval(checkInterval);
+      }
+    }, AUDIO_CHECK_INTERVAL_MS);
 
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('durationchange', handleDurationChange);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
+      clearInterval(checkInterval);
     };
-  }, [playNext]);
+  }, []);
 
-  const value: PlayerContextType = {
+  const playbackValue = useMemo<PlaybackState>(() => ({
     currentSong,
     isPlaying,
     volume,
     currentTime,
     duration,
+    audioRef,
+  }), [currentSong, isPlaying, volume, currentTime, duration]);
+
+  const queueValue = useMemo<QueueState>(() => ({
     queue,
     currentIndex,
+  }), [queue, currentIndex]);
+
+  const actionsValue = useMemo<PlayerActions>(() => ({
     playSong,
     playQueue,
     addToQueue,
@@ -200,20 +281,69 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     playPrevious,
     seekTo,
     setVolume,
-    audioRef,
-  };
+  }), [playSong, playQueue, addToQueue, addMultipleToQueue, removeFromQueue, clearQueue, togglePlayPause, playNext, playPrevious, seekTo, setVolume]);
 
   return (
-    <PlayerContext.Provider value={value}>
-      {children}
-    </PlayerContext.Provider>
+    <PlaybackContext.Provider value={playbackValue}>
+      <QueueContext.Provider value={queueValue}>
+        <PlayerActionsContext.Provider value={actionsValue}>
+          {children}
+        </PlayerActionsContext.Provider>
+      </QueueContext.Provider>
+    </PlaybackContext.Provider>
   );
 }
 
-export function usePlayer() {
-  const context = useContext(PlayerContext);
+/**
+ * Access playback state (high frequency updates)
+ * Use this when you need currentTime, isPlaying, or volume
+ */
+export function usePlayback() {
+  const context = useContext(PlaybackContext);
   if (context === undefined) {
-    throw new Error('usePlayer must be used within a PlayerProvider');
+    throw new Error('usePlayback must be used within a PlayerProvider');
   }
   return context;
+}
+
+/**
+ * Access queue state (medium frequency updates)
+ * Use this when you need the queue array or current index
+ */
+export function useQueue() {
+  const context = useContext(QueueContext);
+  if (context === undefined) {
+    throw new Error('useQueue must be used within a PlayerProvider');
+  }
+  return context;
+}
+
+/**
+ * Access player actions (stable references, never changes)
+ * Use this when you only need to control playback, not read state
+ * This is the most efficient hook - components won't re-render on state changes
+ */
+export function usePlayerActions() {
+  const context = useContext(PlayerActionsContext);
+  if (context === undefined) {
+    throw new Error('usePlayerActions must be used within a PlayerProvider');
+  }
+  return context;
+}
+
+/**
+ * Access all player state and actions
+ * Only use this if you truly need everything - prefer specific hooks above
+ * Components using this will re-render on any state change
+ */
+export function usePlayer() {
+  const playback = usePlayback();
+  const queue = useQueue();
+  const actions = usePlayerActions();
+  
+  return useMemo(() => ({
+    ...playback,
+    ...queue,
+    ...actions,
+  }), [playback, queue, actions]);
 }

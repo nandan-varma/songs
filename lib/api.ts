@@ -6,10 +6,6 @@ import {
   DetailedArtist,
   DetailedPlaylist,
   PaginatedResponse,
-  Song,
-  Album,
-  Artist,
-  Playlist,
   AlbumSearchResult,
   ArtistSearchResult,
   PlaylistSearchResult,
@@ -154,7 +150,7 @@ export async function getArtistById(
   }
 ): Promise<ApiResponse<DetailedArtist>> {
   const params = new URLSearchParams({ id });
-  
+
   if (options?.page !== undefined) params.append('page', options.page.toString());
   if (options?.songCount) params.append('songCount', options.songCount.toString());
   if (options?.albumCount) params.append('albumCount', options.albumCount.toString());

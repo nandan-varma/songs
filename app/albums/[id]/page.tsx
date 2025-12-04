@@ -2,17 +2,15 @@
 
 import { useParams } from 'next/navigation';
 import { usePlayerActions } from '@/contexts/player-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Play, Plus, Loader2, Music2, Disc3, Download } from 'lucide-react';
+import { Play, Plus, Loader2, Disc3, Download } from 'lucide-react';
 import { ProgressiveImage } from '@/components/progressive-image';
 import { EntityType } from '@/lib/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAlbum } from '@/hooks/queries';
-import { useCallback } from 'react';
 
 export default function AlbumPage() {
   const params = useParams();

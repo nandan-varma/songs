@@ -1,439 +1,496 @@
-'use client';
+"use client";
 
-import { useParams } from 'next/navigation';
-import { usePlayerActions } from '@/contexts/player-context';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Play, Plus, Download, Loader2, User, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
-import { ProgressiveImage } from '@/components/progressive-image';
-import { toast } from 'sonner';
-import { LoadMoreButton } from '@/components/load-more-button';
-import { useArtist, useArtistSongs, useArtistAlbums } from '@/hooks/queries';
-import { DetailedSong, DetailedAlbum, EntityType } from '@/lib/types';
-import { useCallback } from 'react';
+import { Download, ExternalLink, Loader2, Play, Plus } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
+import { ProgressiveImage } from "@/components/progressive-image";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePlayerActions } from "@/contexts/player-context";
+import { useArtist, useArtistAlbums, useArtistSongs } from "@/hooks/queries";
+import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
 
 export default function ArtistPage() {
-  const params = useParams();
-  const artistId = params.id as string;
-  const { playQueue, playSong, addToQueue } = usePlayerActions();
-  
-  const { data: artist, isLoading, error } = useArtist(artistId, {
-    songCount: 0,
-    albumCount: 0,
-  });
-  
-  const songsQuery = useArtistSongs(artistId, 'popularity', 'desc');
-  const albumsQuery = useArtistAlbums(artistId, 'popularity', 'desc');
-  
-  const songsData = songsQuery.data as { pages: Array<{ total: number; songs: DetailedSong[] }> } | undefined;
-  const albumsData = albumsQuery.data as { pages: Array<{ total: number; albums: DetailedAlbum[] }> } | undefined;
-  
-  const allSongs: DetailedSong[] = songsData?.pages.flatMap(page => page.songs) ?? [];
-  const allAlbums: DetailedAlbum[] = albumsData?.pages.flatMap(page => page.albums) ?? [];
-  const totalSongs = songsData?.pages[0]?.total ?? 0;
-  const totalAlbums = albumsData?.pages[0]?.total ?? 0;
-  
-  const fetchNextSongsPage = songsQuery.fetchNextPage;
-  const hasMoreSongs = songsQuery.hasNextPage;
-  const isLoadingMoreSongs = songsQuery.isFetchingNextPage;
-  
-  const fetchNextAlbumsPage = albumsQuery.fetchNextPage;
-  const hasMoreAlbums = albumsQuery.hasNextPage;
-  const isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
+	const params = useParams();
+	const artistId = params.id as string;
+	const { playQueue, playSong, addToQueue } = usePlayerActions();
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+	const {
+		data: artist,
+		isLoading,
+		error,
+	} = useArtist(artistId, {
+		songCount: 0,
+		albumCount: 0,
+	});
 
-  if (error || !artist) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error instanceof Error ? error.message : 'Artist not found'}</p>
-      </div>
-    );
-  }
+	const songsQuery = useArtistSongs(artistId, "popularity", "desc");
+	const albumsQuery = useArtistAlbums(artistId, "popularity", "desc");
 
-  return (
-    <div className="container mx-auto px-4 py-8 pb-32 space-y-8">
-      {/* Artist Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Artist Image */}
-            <div className="relative aspect-square w-full md:w-64 flex-shrink-0">
-              <ProgressiveImage
-                images={artist.image}
-                alt={artist.name}
-                entityType={EntityType.ARTIST}
-                rounded="full"
-                priority
-              />
-            </div>
+	const songsData = songsQuery.data as
+		| { pages: Array<{ total: number; songs: DetailedSong[] }> }
+		| undefined;
+	const albumsData = albumsQuery.data as
+		| { pages: Array<{ total: number; albums: DetailedAlbum[] }> }
+		| undefined;
 
-            {/* Artist Details */}
-            <div className="flex-1 space-y-4">
-              <div>
-                <Badge variant="secondary" className="mb-2">Artist</Badge>
-                {artist.isVerified && (
-                  <Badge variant="default" className="mb-2 ml-2">Verified</Badge>
-                )}
-                <h1 className="text-4xl font-bold">{artist.name}</h1>
-              </div>
+	const allSongs: DetailedSong[] =
+		songsData?.pages.flatMap((page) => page.songs) ?? [];
+	const allAlbums: DetailedAlbum[] =
+		albumsData?.pages.flatMap((page) => page.albums) ?? [];
+	const _totalSongs = songsData?.pages[0]?.total ?? 0;
+	const _totalAlbums = albumsData?.pages[0]?.total ?? 0;
 
-              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                {artist.followerCount && (
-                  <span>{artist.followerCount.toLocaleString()} followers</span>
-                )}
-                {artist.dominantLanguage && (
-                  <span className="capitalize">{artist.dominantLanguage}</span>
-                )}
-                {artist.dominantType && (
-                  <span className="capitalize">{artist.dominantType}</span>
-                )}
-              </div>
+	const _fetchNextSongsPage = songsQuery.fetchNextPage;
+	const _hasMoreSongs = songsQuery.hasNextPage;
+	const _isLoadingMoreSongs = songsQuery.isFetchingNextPage;
 
-              {/* Social Links */}
-              {(artist.fb || artist.twitter || artist.wiki) && (
-                <div className="flex gap-2">
-                  {artist.fb && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={artist.fb} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Facebook
-                      </a>
-                    </Button>
-                  )}
-                  {artist.twitter && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={artist.twitter} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Twitter
-                      </a>
-                    </Button>
-                  )}
-                  {artist.wiki && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={artist.wiki} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Wikipedia
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+	const _fetchNextAlbumsPage = albumsQuery.fetchNextPage;
+	const _hasMoreAlbums = albumsQuery.hasNextPage;
+	const _isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
 
-      {/* Tabs for Songs, Albums, Bio */}
-      <Tabs defaultValue="songs" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="songs">Top Songs</TabsTrigger>
-          <TabsTrigger value="albums">Albums</TabsTrigger>
-          {artist.singles && artist.singles.length > 0 && (
-            <TabsTrigger value="singles">Singles</TabsTrigger>
-          )}
-          {artist.bio && artist.bio.length > 0 && (
-            <TabsTrigger value="bio">Bio</TabsTrigger>
-          )}
-        </TabsList>
+	if (isLoading) {
+		return (
+			<div className="flex justify-center items-center min-h-screen">
+				<Loader2 className="h-8 w-8 animate-spin" />
+			</div>
+		);
+	}
 
-        {/* Top Songs */}
-        <TabsContent value="songs" className="space-y-4">
-          {allSongs.length > 0 ? (
-            <>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => {
-                    playQueue(allSongs);
-                    toast.success(`Playing ${artist.name}'s top songs`);
-                  }}
-                  className="gap-2"
-                >
-                  <Play className="h-4 w-4" />
-                  Play All
-                </Button>
-              </div>
-              <div className="grid gap-2">
-                {allSongs.map((song, index) => (
-                  <Card key={song.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-muted-foreground w-6">{index + 1}</span>
-                        <div className="relative h-12 w-12 flex-shrink-0">
-                          <ProgressiveImage
-                            images={song.image}
-                            alt={song.name}
-                            entityType={EntityType.SONG}
-                            rounded="default"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <Link href={`/songs/${song.id}`}>
-                            <h3 className="font-medium truncate hover:underline">{song.name}</h3>
-                          </Link>
-                          {song.album?.id ? (
-                            <Link href={`/albums/${song.album.id}`} className="text-sm text-muted-foreground truncate hover:underline block" onClick={(e) => e.stopPropagation()}>
-                              {song.album.name}
-                            </Link>
-                          ) : (
-                            <p className="text-sm text-muted-foreground truncate">
-                              {song.album?.name}
-                            </p>
-                          )}
-                        </div>
-                        {song.duration && (
-                          <span className="text-sm text-muted-foreground">
-                            {Math.floor(song.duration / 60)}:{(song.duration % 60).toString().padStart(2, '0')}
-                          </span>
-                        )}
-                        <div className="flex gap-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              playSong(song);
-                              toast.success(`Now playing: ${song.name}`);
-                            }}
-                            aria-label="Play song"
-                          >
-                            <Play className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              addToQueue(song);
-                              toast.success(`Added to queue: ${song.name}`);
-                            }}
-                            aria-label="Add to queue"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          {song.downloadUrl && song.downloadUrl.length > 0 && (
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              asChild
-                              aria-label="Download song"
-                            >
-                              <a href={song.downloadUrl[song.downloadUrl.length - 1]?.url} target="_blank" rel="noopener noreferrer">
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <LoadMoreButton
-                onLoadMore={fetchNextSongsPage}
-                isLoading={isLoadingMoreSongs}
-                currentCount={allSongs.length}
-                totalCount={totalSongs}
-                hasMore={hasMoreSongs ?? false}
-              />
-            </>
-          ) : !songsData ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">No songs available</p>
-          )}
-        </TabsContent>
+	if (error || !artist) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">
+					{error instanceof Error ? error.message : "Artist not found"}
+				</p>
+			</div>
+		);
+	}
 
-        {/* Albums */}
-        <TabsContent value="albums" className="space-y-4">
-          {allAlbums.length > 0 ? (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {allAlbums.map((album) => (
-                  <Card key={album.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
-                    <CardContent className="p-4">
-                      <Link href={`/albums/${album.id}`}>
-                        <div className="space-y-3">
-                          <div className="relative aspect-square w-full">
-                            <ProgressiveImage
-                              images={album.image}
-                              alt={album.name}
-                              entityType={EntityType.ALBUM}
-                              rounded="default"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <h3 className="font-medium truncate hover:underline">{album.name}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {album.year}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <LoadMoreButton
-                onLoadMore={fetchNextAlbumsPage}
-                isLoading={isLoadingMoreAlbums}
-                currentCount={allAlbums.length}
-                totalCount={totalAlbums}
-                hasMore={hasMoreAlbums ?? false}
-              />
-            </>
-          ) : !albumsData ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">No albums available</p>
-          )}
-        </TabsContent>
+	return (
+		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
+			{/* Artist Header */}
+			<Card>
+				<CardContent className="p-6">
+					<div className="flex flex-col md:flex-row gap-6">
+						{/* Artist Image */}
+						<div className="relative aspect-square w-full md:w-64 flex-shrink-0">
+							<ProgressiveImage
+								images={artist.image}
+								alt={artist.name}
+								entityType={EntityType.ARTIST}
+								rounded="full"
+								priority
+							/>
+						</div>
 
-        {/* Singles */}
-        {artist.singles && artist.singles.length > 0 && (
-          <TabsContent value="singles" className="space-y-4">
-            <div className="grid gap-2">
-              {artist.singles.map((song) => (
-                <Card key={song.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-12 w-12 flex-shrink-0">
-                        <ProgressiveImage
-                          images={song.image}
-                          alt={song.name}
-                          entityType={EntityType.SONG}
-                          rounded="default"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Link href={`/songs/${song.id}`}>
-                          <h3 className="font-medium truncate hover:underline">{song.name}</h3>
-                        </Link>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {song.year}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            playSong(song);
-                            toast.success(`Now playing: ${song.name}`);
-                          }}
-                          aria-label="Play song"
-                        >
-                          <Play className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            addToQueue(song);
-                            toast.success(`Added to queue: ${song.name}`);
-                          }}
-                          aria-label="Add to queue"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                        {song.downloadUrl && song.downloadUrl.length > 0 && (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                            asChild
-                            aria-label="Download song"
-                          >
-                            <a href={song.downloadUrl[song.downloadUrl.length - 1]?.url} target="_blank" rel="noopener noreferrer">
-                              <Download className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        )}
+						{/* Artist Details */}
+						<div className="flex-1 space-y-4">
+							<div>
+								<Badge variant="secondary" className="mb-2">
+									Artist
+								</Badge>
+								{artist.isVerified && (
+									<Badge variant="default" className="mb-2 ml-2">
+										Verified
+									</Badge>
+								)}
+								<h1 className="text-4xl font-bold">{artist.name}</h1>
+							</div>
 
-        {/* Bio */}
-        {artist.bio && artist.bio.length > 0 && (
-          <TabsContent value="bio" className="space-y-4">
-            <Card>
-              <CardContent className="p-6 space-y-4">
-                {artist.bio.map((section, index) => (
-                  <div key={index}>
-                    {section.title && (
-                      <h3 className="text-lg font-semibold mb-2">{section.title}</h3>
-                    )}
-                    {section.text && (
-                      <p className="text-muted-foreground">{section.text}</p>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
-      </Tabs>
+							<div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+								{artist.followerCount && (
+									<span>{artist.followerCount.toLocaleString()} followers</span>
+								)}
+								{artist.dominantLanguage && (
+									<span className="capitalize">{artist.dominantLanguage}</span>
+								)}
+								{artist.dominantType && (
+									<span className="capitalize">{artist.dominantType}</span>
+								)}
+							</div>
 
-      {/* Similar Artists */}
-      {artist.similarArtists && artist.similarArtists.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">Similar Artists</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {artist.similarArtists.slice(0, 8).map((similarArtist) => (
-              <Card key={similarArtist.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
-                <CardContent className="p-4">
-                  <Link href={`/artists/${similarArtist.id}`}>
-                    <div className="space-y-3">
-                      <div className="relative aspect-square w-full">
-                        <ProgressiveImage
-                          images={similarArtist.image}
-                          alt={similarArtist.name}
-                          entityType={EntityType.ARTIST}
-                          rounded="full"
-                        />
-                      </div>
-                      <div className="text-center">
-                        <h3 className="font-medium truncate hover:underline">{similarArtist.name}</h3>
-                      </div>
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+							{/* Social Links */}
+							{(artist.fb || artist.twitter || artist.wiki) && (
+								<div className="flex gap-2">
+									{artist.fb && (
+										<Button variant="outline" size="sm" asChild>
+											<a
+												href={artist.fb}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<ExternalLink className="h-4 w-4 mr-2" />
+												Facebook
+											</a>
+										</Button>
+									)}
+									{artist.twitter && (
+										<Button variant="outline" size="sm" asChild>
+											<a
+												href={artist.twitter}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<ExternalLink className="h-4 w-4 mr-2" />
+												Twitter
+											</a>
+										</Button>
+									)}
+									{artist.wiki && (
+										<Button variant="outline" size="sm" asChild>
+											<a
+												href={artist.wiki}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<ExternalLink className="h-4 w-4 mr-2" />
+												Wikipedia
+											</a>
+										</Button>
+									)}
+								</div>
+							)}
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+
+			{/* Tabs for Songs, Albums, Bio */}
+			<Tabs defaultValue="songs" className="space-y-4">
+				<TabsList>
+					<TabsTrigger value="songs">Top Songs</TabsTrigger>
+					<TabsTrigger value="albums">Albums</TabsTrigger>
+					{artist.singles && artist.singles.length > 0 && (
+						<TabsTrigger value="singles">Singles</TabsTrigger>
+					)}
+					{artist.bio && artist.bio.length > 0 && (
+						<TabsTrigger value="bio">Bio</TabsTrigger>
+					)}
+				</TabsList>
+
+				{/* Top Songs */}
+				<TabsContent value="songs" className="space-y-4">
+					{allSongs.length > 0 ? (
+						<>
+							<div className="flex gap-2">
+								<Button
+									onClick={() => {
+										playQueue(allSongs);
+										toast.success(`Playing ${artist.name}'s top songs`);
+									}}
+									className="gap-2"
+								>
+									<Play className="h-4 w-4" />
+									Play All
+								</Button>
+							</div>
+							<div className="grid gap-2">
+								{allSongs.map((song, index) => (
+									<Card
+										key={song.id}
+										className="overflow-hidden hover:bg-accent/50 transition-colors"
+									>
+										<CardContent className="p-4">
+											<div className="flex items-center gap-4">
+												<span className="text-sm text-muted-foreground w-6">
+													{index + 1}
+												</span>
+												<div className="relative h-12 w-12 flex-shrink-0">
+													<ProgressiveImage
+														images={song.image}
+														alt={song.name}
+														entityType={EntityType.SONG}
+														rounded="default"
+													/>
+												</div>
+												<div className="flex-1 min-w-0">
+													<Link href={`/songs/${song.id}`}>
+														<h3 className="font-medium truncate hover:underline">
+															{song.name}
+														</h3>
+													</Link>
+													{song.album?.id ? (
+														<Link
+															href={`/albums/${song.album.id}`}
+															className="text-sm text-muted-foreground truncate hover:underline block"
+															onClick={(e) => e.stopPropagation()}
+														>
+															{song.album.name}
+														</Link>
+													) : (
+														<p className="text-sm text-muted-foreground truncate">
+															{song.album?.name}
+														</p>
+													)}
+												</div>
+												{song.duration && (
+													<span className="text-sm text-muted-foreground">
+														{Math.floor(song.duration / 60)}:
+														{(song.duration % 60).toString().padStart(2, "0")}
+													</span>
+												)}
+												<div className="flex gap-2">
+													<Button
+														size="icon"
+														variant="ghost"
+														onClick={(e) => {
+															e.preventDefault();
+															e.stopPropagation();
+															playSong(song);
+															toast.success(`Now playing: ${song.name}`);
+														}}
+														aria-label="Play song"
+													>
+														<Play className="h-4 w-4" />
+													</Button>
+													<Button
+														size="icon"
+														variant="ghost"
+														onClick={(e) => {
+															e.preventDefault();
+															e.stopPropagation();
+															addToQueue(song);
+															toast.success(`Added to queue: ${song.name}`);
+														}}
+														aria-label="Add to queue"
+													>
+														<Plus className="h-4 w-4" />
+													</Button>
+													{song.downloadUrl && song.downloadUrl.length > 0 && (
+														<Button
+															size="icon"
+															variant="ghost"
+															onClick={(e) => {
+																e.preventDefault();
+																e.stopPropagation();
+															}}
+															asChild
+															aria-label="Download song"
+														>
+															<a
+																href={
+																	song.downloadUrl[song.downloadUrl.length - 1]
+																		?.url
+																}
+																target="_blank"
+																rel="noopener noreferrer"
+															>
+																<Download className="h-4 w-4" />
+															</a>
+														</Button>
+													)}
+												</div>
+											</div>
+										</CardContent>
+									</Card>
+								))}
+							</div>
+						</>
+					) : !songsData ? (
+						<div className="flex justify-center py-12">
+							<Loader2 className="h-8 w-8 animate-spin" />
+						</div>
+					) : (
+						<p className="text-center text-muted-foreground py-8">
+							No songs available
+						</p>
+					)}
+				</TabsContent>
+
+				{/* Albums */}
+				<TabsContent value="albums" className="space-y-4">
+					{allAlbums.length > 0 ? (
+						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+							{allAlbums.map((album) => (
+								<Card
+									key={album.id}
+									className="overflow-hidden hover:bg-accent/50 transition-colors"
+								>
+									<CardContent className="p-4">
+										<Link href={`/albums/${album.id}`}>
+											<div className="space-y-3">
+												<div className="relative aspect-square w-full">
+													<ProgressiveImage
+														images={album.image}
+														alt={album.name}
+														entityType={EntityType.ALBUM}
+														rounded="default"
+													/>
+												</div>
+												<div className="space-y-1">
+													<h3 className="font-medium truncate hover:underline">
+														{album.name}
+													</h3>
+													<p className="text-sm text-muted-foreground">
+														{album.year}
+													</p>
+												</div>
+											</div>
+										</Link>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					) : !albumsData ? (
+						<div className="flex justify-center py-12">
+							<Loader2 className="h-8 w-8 animate-spin" />
+						</div>
+					) : (
+						<p className="text-center text-muted-foreground py-8">
+							No albums available
+						</p>
+					)}
+				</TabsContent>
+
+				{/* Singles */}
+				{artist.singles && artist.singles.length > 0 && (
+					<TabsContent value="singles" className="space-y-4">
+						<div className="grid gap-2">
+							{artist.singles.map((song) => (
+								<Card
+									key={song.id}
+									className="overflow-hidden hover:bg-accent/50 transition-colors"
+								>
+									<CardContent className="p-4">
+										<div className="flex items-center gap-4">
+											<div className="relative h-12 w-12 flex-shrink-0">
+												<ProgressiveImage
+													images={song.image}
+													alt={song.name}
+													entityType={EntityType.SONG}
+													rounded="default"
+												/>
+											</div>
+											<div className="flex-1 min-w-0">
+												<Link href={`/songs/${song.id}`}>
+													<h3 className="font-medium truncate hover:underline">
+														{song.name}
+													</h3>
+												</Link>
+												<p className="text-sm text-muted-foreground truncate">
+													{song.year}
+												</p>
+											</div>
+											<div className="flex gap-2">
+												<Button
+													size="icon"
+													variant="ghost"
+													onClick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														playSong(song);
+														toast.success(`Now playing: ${song.name}`);
+													}}
+													aria-label="Play song"
+												>
+													<Play className="h-4 w-4" />
+												</Button>
+												<Button
+													size="icon"
+													variant="ghost"
+													onClick={(e) => {
+														e.preventDefault();
+														e.stopPropagation();
+														addToQueue(song);
+														toast.success(`Added to queue: ${song.name}`);
+													}}
+													aria-label="Add to queue"
+												>
+													<Plus className="h-4 w-4" />
+												</Button>
+												{song.downloadUrl && song.downloadUrl.length > 0 && (
+													<Button
+														size="icon"
+														variant="ghost"
+														onClick={(e) => {
+															e.preventDefault();
+															e.stopPropagation();
+														}}
+														asChild
+														aria-label="Download song"
+													>
+														<a
+															href={
+																song.downloadUrl[song.downloadUrl.length - 1]
+																	?.url
+															}
+															target="_blank"
+															rel="noopener noreferrer"
+														>
+															<Download className="h-4 w-4" />
+														</a>
+													</Button>
+												)}
+											</div>
+										</div>
+									</CardContent>
+								</Card>
+							))}
+						</div>
+					</TabsContent>
+				)}
+
+				{/* Bio */}
+				{artist.bio && artist.bio.length > 0 && (
+					<TabsContent value="bio" className="space-y-4">
+						<Card>
+							<CardContent className="p-6 space-y-4">
+								{artist.bio.map((section, index) => (
+									<div key={index}>
+										{section.title && (
+											<h3 className="text-lg font-semibold mb-2">
+												{section.title}
+											</h3>
+										)}
+										{section.text && (
+											<p className="text-muted-foreground">{section.text}</p>
+										)}
+									</div>
+								))}
+							</CardContent>
+						</Card>
+					</TabsContent>
+				)}
+			</Tabs>
+
+			{/* Similar Artists */}
+			{artist.similarArtists && artist.similarArtists.length > 0 && (
+				<div className="space-y-4">
+					<h2 className="text-2xl font-semibold">Similar Artists</h2>
+					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+						{artist.similarArtists.slice(0, 8).map((similarArtist) => (
+							<Card
+								key={similarArtist.id}
+								className="overflow-hidden hover:bg-accent/50 transition-colors"
+							>
+								<CardContent className="p-4">
+									<Link href={`/artists/${similarArtist.id}`}>
+										<div className="space-y-3">
+											<div className="relative aspect-square w-full">
+												<ProgressiveImage
+													images={similarArtist.image}
+													alt={similarArtist.name}
+													entityType={EntityType.ARTIST}
+													rounded="full"
+												/>
+											</div>
+											<div className="text-center">
+												<h3 className="font-medium truncate hover:underline">
+													{similarArtist.name}
+												</h3>
+											</div>
+										</div>
+									</Link>
+								</CardContent>
+							</Card>
+						))}
+					</div>
+				</div>
+			)}
+		</div>
+	);
 }

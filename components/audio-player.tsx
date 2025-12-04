@@ -1,243 +1,271 @@
-'use client';
+"use client";
 
-import { usePlayback, useQueue, usePlayerActions } from '@/contexts/player-context';
-import { Card } from './ui/card';
-import { SongInfo } from './player/song-info';
-import { PlaybackControls } from './player/playback-controls';
-import { ProgressBar } from './player/progress-bar';
-import { VolumeControl } from './player/volume-control';
-import { QueueButton } from './player/queue-button';
-import { useEffect } from 'react';
+import { useEffect } from "react";
+import {
+	usePlayback,
+	usePlayerActions,
+	useQueue,
+} from "@/contexts/player-context";
+import { PlaybackControls } from "./player/playback-controls";
+import { ProgressBar } from "./player/progress-bar";
+import { QueueButton } from "./player/queue-button";
+import { SongInfo } from "./player/song-info";
+import { VolumeControl } from "./player/volume-control";
+import { Card } from "./ui/card";
 
 /**
  * Persistent audio player UI with split contexts to minimize re-renders
  */
 export function AudioPlayer() {
-  const { currentSong, isPlaying, volume, currentTime, duration, audioRef } = usePlayback();
-  const { queue, currentIndex } = useQueue();
-  const { togglePlayPause, playNext, playPrevious, seekTo, setVolume, removeFromQueue } = usePlayerActions();
+	const { currentSong, isPlaying, volume, currentTime, duration, audioRef } =
+		usePlayback();
+	const { queue, currentIndex } = useQueue();
+	const {
+		togglePlayPause,
+		playNext,
+		playPrevious,
+		seekTo,
+		setVolume,
+		removeFromQueue,
+	} = usePlayerActions();
 
-  /** Manages audio source loading and playback state */
-  useEffect(() => {
-    if (!currentSong || !audioRef.current) return;
+	/** Manages audio source loading and playback state */
+	useEffect(() => {
+		if (!currentSong || !audioRef.current) return;
 
-    const downloadUrl = currentSong.downloadUrl?.find(
-      (url) => url.quality === '320kbps'
-    ) || currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
+		const downloadUrl =
+			currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
+			currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
 
-    if (!downloadUrl?.url) return;
+		if (!downloadUrl?.url) return;
 
-    const audio = audioRef.current;
-    const needsNewSource = audio.src !== downloadUrl.url;
-    let playWhenReadyHandler: (() => void) | null = null;
-    
-    if (needsNewSource) {
-      audio.src = downloadUrl.url;
-      audio.load();
-      
-      if (isPlaying) {
-        playWhenReadyHandler = () => {
-          audio.play().catch(console.error);
-          if (playWhenReadyHandler) {
-            audio.removeEventListener('canplay', playWhenReadyHandler);
-          }
-        };
-        audio.addEventListener('canplay', playWhenReadyHandler);
-      }
-    } else {
-      if (isPlaying && audio.paused) {
-        audio.play().catch(console.error);
-      } else if (!isPlaying && !audio.paused) {
-        audio.pause();
-      }
-    }
+		const audio = audioRef.current;
+		const needsNewSource = audio.src !== downloadUrl.url;
+		let playWhenReadyHandler: (() => void) | null = null;
 
-    // Cleanup function to remove event listener if component unmounts
-    return () => {
-      if (playWhenReadyHandler && audio) {
-        audio.removeEventListener('canplay', playWhenReadyHandler);
-      }
-    };
-  }, [currentSong, isPlaying, audioRef]);
+		if (needsNewSource) {
+			audio.src = downloadUrl.url;
+			audio.load();
 
-  /** Set up Media Session API for OS-level media controls */
-  useEffect(() => {
-    if (!('mediaSession' in navigator) || !currentSong) {
-      return;
-    }
+			if (isPlaying) {
+				playWhenReadyHandler = () => {
+					audio.play().catch(console.error);
+					if (playWhenReadyHandler) {
+						audio.removeEventListener("canplay", playWhenReadyHandler);
+					}
+				};
+				audio.addEventListener("canplay", playWhenReadyHandler);
+			}
+		} else {
+			if (isPlaying && audio.paused) {
+				audio.play().catch(console.error);
+			} else if (!isPlaying && !audio.paused) {
+				audio.pause();
+			}
+		}
 
-    const artwork = currentSong.image?.map(img => ({
-      src: img.url,
-      sizes: img.quality === '500x500' ? '500x500' : 
-             img.quality === '150x150' ? '150x150' : '50x50',
-      type: 'image/jpeg'
-    })) || [];
+		// Cleanup function to remove event listener if component unmounts
+		return () => {
+			if (playWhenReadyHandler && audio) {
+				audio.removeEventListener("canplay", playWhenReadyHandler);
+			}
+		};
+	}, [currentSong, isPlaying, audioRef]);
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: currentSong.name,
-      artist: currentSong.artists?.primary?.map(a => a.name).join(', ') || 'Unknown Artist',
-      album: currentSong.album?.name || 'Unknown Album',
-      artwork: artwork.length > 0 ? artwork : undefined,
-    });
+	/** Set up Media Session API for OS-level media controls */
+	useEffect(() => {
+		if (!("mediaSession" in navigator) || !currentSong) {
+			return;
+		}
 
-    const playHandler = () => {
-      audioRef.current?.play().catch(console.error);
-    };
-    
-    const pauseHandler = () => {
-      audioRef.current?.pause();
-    };
-    
-    const seektoHandler = (details: MediaSessionActionDetails) => {
-      if (details.seekTime) {
-        seekTo(details.seekTime);
-      }
-    };
-    
-    const seekbackwardHandler = (details: MediaSessionActionDetails) => {
-      const skipTime = details.seekOffset || 10;
-      seekTo(Math.max(0, currentTime - skipTime));
-    };
-    
-    const seekforwardHandler = (details: MediaSessionActionDetails) => {
-      const skipTime = details.seekOffset || 10;
-      seekTo(Math.min(duration, currentTime + skipTime));
-    };
+		const artwork =
+			currentSong.image?.map((img) => ({
+				src: img.url,
+				sizes:
+					img.quality === "500x500"
+						? "500x500"
+						: img.quality === "150x150"
+							? "150x150"
+							: "50x50",
+				type: "image/jpeg",
+			})) || [];
 
-    navigator.mediaSession.setActionHandler('play', playHandler);
-    navigator.mediaSession.setActionHandler('pause', pauseHandler);
-    navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
-    navigator.mediaSession.setActionHandler('nexttrack', playNext);
-    navigator.mediaSession.setActionHandler('seekto', seektoHandler);
-    navigator.mediaSession.setActionHandler('seekbackward', seekbackwardHandler);
-    navigator.mediaSession.setActionHandler('seekforward', seekforwardHandler);
-    
-    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+		navigator.mediaSession.metadata = new MediaMetadata({
+			title: currentSong.name,
+			artist:
+				currentSong.artists?.primary?.map((a) => a.name).join(", ") ||
+				"Unknown Artist",
+			album: currentSong.album?.name || "Unknown Album",
+			artwork: artwork.length > 0 ? artwork : undefined,
+		});
 
-    // Cleanup function to remove action handlers
-    return () => {
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play', null);
-        navigator.mediaSession.setActionHandler('pause', null);
-        navigator.mediaSession.setActionHandler('previoustrack', null);
-        navigator.mediaSession.setActionHandler('nexttrack', null);
-        navigator.mediaSession.setActionHandler('seekto', null);
-        navigator.mediaSession.setActionHandler('seekbackward', null);
-        navigator.mediaSession.setActionHandler('seekforward', null);
-        navigator.mediaSession.metadata = null;
-      }
-    };
-  }, [currentSong, isPlaying, playNext, playPrevious, seekTo, currentTime, duration, audioRef]);
+		const playHandler = () => {
+			audioRef.current?.play().catch(console.error);
+		};
 
-  /** Update Media Session position state for scrubbing */
-  useEffect(() => {
-    if (!('mediaSession' in navigator) || !audioRef.current || duration <= 0) return;
+		const pauseHandler = () => {
+			audioRef.current?.pause();
+		};
 
-    navigator.mediaSession.setPositionState({
-      duration: duration,
-      playbackRate: audioRef.current.playbackRate || 1,
-      position: currentTime,
-    });
-  }, [currentTime, duration, audioRef]);
+		const seektoHandler = (details: MediaSessionActionDetails) => {
+			if (details.seekTime) {
+				seekTo(details.seekTime);
+			}
+		};
 
-  if (!currentSong) {
-    return null;
-  }
+		const seekbackwardHandler = (details: MediaSessionActionDetails) => {
+			const skipTime = details.seekOffset || 10;
+			seekTo(Math.max(0, currentTime - skipTime));
+		};
 
-  return (
-    <div className="fixed bottom-6 left-4 right-4 md:left-6 md:right-6 z-50 max-w-7xl mx-auto">
-      <Card className="bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 border shadow-2xl">
-        <audio ref={audioRef} />
-        
-        <div className="px-4 md:px-6 py-4 md:py-5">
-          {/* Mobile Layout */}
-          <div className="md:hidden space-y-4">
-            <div className="flex items-start gap-3">
-              {currentSong.image && currentSong.image.length > 0 && (
-                <div className="relative h-16 w-16 flex-shrink-0">
-                  <img
-                    src={currentSong.image[0]?.url}
-                    alt={currentSong.name}
-                    className="h-full w-full object-cover rounded"
-                  />
-                </div>
-              )}
-              
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold truncate text-base">{currentSong.name}</h3>
-                <div className="text-sm text-muted-foreground truncate">
-                  {currentSong.artists?.primary?.map((artist, index) => (
-                    <span key={artist.id}>
-                      {artist.name}
-                      {index < currentSong.artists.primary.length - 1 && ', '}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <QueueButton 
-                queue={queue} 
-                currentIndex={currentIndex} 
-                onRemoveFromQueue={removeFromQueue} 
-              />
-            </div>
+		const seekforwardHandler = (details: MediaSessionActionDetails) => {
+			const skipTime = details.seekOffset || 10;
+			seekTo(Math.min(duration, currentTime + skipTime));
+		};
 
-            <ProgressBar 
-              currentTime={currentTime} 
-              duration={duration} 
-              onSeekTo={seekTo} 
-            />
+		navigator.mediaSession.setActionHandler("play", playHandler);
+		navigator.mediaSession.setActionHandler("pause", pauseHandler);
+		navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
+		navigator.mediaSession.setActionHandler("nexttrack", playNext);
+		navigator.mediaSession.setActionHandler("seekto", seektoHandler);
+		navigator.mediaSession.setActionHandler(
+			"seekbackward",
+			seekbackwardHandler,
+		);
+		navigator.mediaSession.setActionHandler("seekforward", seekforwardHandler);
 
-            <div className="flex items-center justify-between">
-              <PlaybackControls
-                isPlaying={isPlaying}
-                queueLength={queue.length}
-                onTogglePlayPause={togglePlayPause}
-                onPlayPrevious={playPrevious}
-                onPlayNext={playNext}
-              />
+		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
 
-              <VolumeControl 
-                volume={volume} 
-                onSetVolume={setVolume} 
-              />
-            </div>
-          </div>
+		// Cleanup function to remove action handlers
+		return () => {
+			if ("mediaSession" in navigator) {
+				navigator.mediaSession.setActionHandler("play", null);
+				navigator.mediaSession.setActionHandler("pause", null);
+				navigator.mediaSession.setActionHandler("previoustrack", null);
+				navigator.mediaSession.setActionHandler("nexttrack", null);
+				navigator.mediaSession.setActionHandler("seekto", null);
+				navigator.mediaSession.setActionHandler("seekbackward", null);
+				navigator.mediaSession.setActionHandler("seekforward", null);
+				navigator.mediaSession.metadata = null;
+			}
+		};
+	}, [
+		currentSong,
+		isPlaying,
+		playNext,
+		playPrevious,
+		seekTo,
+		currentTime,
+		duration,
+		audioRef,
+	]);
 
-          {/* Desktop Layout */}
-          <div className="hidden md:flex items-center gap-6">
-            <SongInfo currentSong={currentSong} />
+	/** Update Media Session position state for scrubbing */
+	useEffect(() => {
+		if (!("mediaSession" in navigator) || !audioRef.current || duration <= 0)
+			return;
 
-            <div className="flex flex-col items-center gap-3 flex-1 max-w-2xl">
-              <PlaybackControls
-                isPlaying={isPlaying}
-                queueLength={queue.length}
-                onTogglePlayPause={togglePlayPause}
-                onPlayPrevious={playPrevious}
-                onPlayNext={playNext}
-              />
+		navigator.mediaSession.setPositionState({
+			duration: duration,
+			playbackRate: audioRef.current.playbackRate || 1,
+			position: currentTime,
+		});
+	}, [currentTime, duration, audioRef]);
 
-              <ProgressBar 
-                currentTime={currentTime} 
-                duration={duration} 
-                onSeekTo={seekTo} 
-              />
-            </div>
+	if (!currentSong) {
+		return null;
+	}
 
-            <div className="flex items-center gap-3 w-72 justify-end">
-              <VolumeControl 
-                volume={volume} 
-                onSetVolume={setVolume} 
-              />
-              <QueueButton 
-                queue={queue} 
-                currentIndex={currentIndex} 
-                onRemoveFromQueue={removeFromQueue} 
-              />
-            </div>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
+	return (
+		<div className="fixed bottom-6 left-4 right-4 md:left-6 md:right-6 z-50 max-w-7xl mx-auto">
+			<Card className="bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 border shadow-2xl">
+				<audio ref={audioRef} />
+
+				<div className="px-4 md:px-6 py-4 md:py-5">
+					{/* Mobile Layout */}
+					<div className="md:hidden space-y-4">
+						<div className="flex items-start gap-3">
+							{currentSong.image && currentSong.image.length > 0 && (
+								<div className="relative h-16 w-16 flex-shrink-0">
+									<img
+										src={currentSong.image[0]?.url}
+										alt={currentSong.name}
+										className="h-full w-full object-cover rounded"
+									/>
+								</div>
+							)}
+
+							<div className="min-w-0 flex-1">
+								<h3 className="font-semibold truncate text-base">
+									{currentSong.name}
+								</h3>
+								<div className="text-sm text-muted-foreground truncate">
+									{currentSong.artists?.primary?.map((artist, index) => (
+										<span key={artist.id}>
+											{artist.name}
+											{index < currentSong.artists.primary.length - 1 && ", "}
+										</span>
+									))}
+								</div>
+							</div>
+
+							<QueueButton
+								queue={queue}
+								currentIndex={currentIndex}
+								onRemoveFromQueue={removeFromQueue}
+							/>
+						</div>
+
+						<ProgressBar
+							currentTime={currentTime}
+							duration={duration}
+							onSeekTo={seekTo}
+						/>
+
+						<div className="flex items-center justify-between">
+							<PlaybackControls
+								isPlaying={isPlaying}
+								queueLength={queue.length}
+								onTogglePlayPause={togglePlayPause}
+								onPlayPrevious={playPrevious}
+								onPlayNext={playNext}
+							/>
+
+							<VolumeControl volume={volume} onSetVolume={setVolume} />
+						</div>
+					</div>
+
+					{/* Desktop Layout */}
+					<div className="hidden md:flex items-center gap-6">
+						<SongInfo currentSong={currentSong} />
+
+						<div className="flex flex-col items-center gap-3 flex-1 max-w-2xl">
+							<PlaybackControls
+								isPlaying={isPlaying}
+								queueLength={queue.length}
+								onTogglePlayPause={togglePlayPause}
+								onPlayPrevious={playPrevious}
+								onPlayNext={playNext}
+							/>
+
+							<ProgressBar
+								currentTime={currentTime}
+								duration={duration}
+								onSeekTo={seekTo}
+							/>
+						</div>
+
+						<div className="flex items-center gap-3 w-72 justify-end">
+							<VolumeControl volume={volume} onSetVolume={setVolume} />
+							<QueueButton
+								queue={queue}
+								currentIndex={currentIndex}
+								onRemoveFromQueue={removeFromQueue}
+							/>
+						</div>
+					</div>
+				</div>
+			</Card>
+		</div>
+	);
 }

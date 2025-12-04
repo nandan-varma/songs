@@ -1,68 +1,71 @@
-'use client';
+"use client";
 
-import { memo, useState, useCallback } from 'react';
-import { Button } from '../ui/button';
-import { Slider } from '../ui/slider';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX } from "lucide-react";
+import { memo, useCallback, useState } from "react";
+import { Button } from "../ui/button";
+import { Slider } from "../ui/slider";
 
 interface VolumeControlProps {
-  volume: number;
-  onSetVolume: (volume: number) => void;
+	volume: number;
+	onSetVolume: (volume: number) => void;
 }
 
 export const VolumeControl = memo(function VolumeControl({
-  volume,
-  onSetVolume,
+	volume,
+	onSetVolume,
 }: VolumeControlProps) {
-  const [isMuted, setIsMuted] = useState(false);
-  const [previousVolume, setPreviousVolume] = useState(volume);
+	const [isMuted, setIsMuted] = useState(false);
+	const [previousVolume, setPreviousVolume] = useState(volume);
 
-  const toggleMute = useCallback(() => {
-    if (isMuted) {
-      onSetVolume(previousVolume);
-      setIsMuted(false);
-    } else {
-      setPreviousVolume(volume);
-      onSetVolume(0);
-      setIsMuted(true);
-    }
-  }, [isMuted, volume, previousVolume, onSetVolume]);
+	const toggleMute = useCallback(() => {
+		if (isMuted) {
+			onSetVolume(previousVolume);
+			setIsMuted(false);
+		} else {
+			setPreviousVolume(volume);
+			onSetVolume(0);
+			setIsMuted(true);
+		}
+	}, [isMuted, volume, previousVolume, onSetVolume]);
 
-  const handleVolumeChange = useCallback(([value]: number[]) => {
-    const newVolume = value / 100;
-    onSetVolume(newVolume);
-    
-    if (value > 0 && isMuted) {
-      setIsMuted(false);
-    }
-  }, [onSetVolume, isMuted]);
+	const handleVolumeChange = useCallback(
+		([value]: number[]) => {
+			const newVolume = value / 100;
+			onSetVolume(newVolume);
 
-  const isSilent = isMuted || volume === 0;
+			if (value > 0 && isMuted) {
+				setIsMuted(false);
+			}
+		},
+		[onSetVolume, isMuted],
+	);
 
-  return (
-    <div className="flex items-center gap-3">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleMute}
-        className="h-10 w-10"
-        aria-label={isSilent ? 'Unmute' : 'Mute'}
-      >
-        {isSilent ? (
-          <VolumeX className="h-5 w-5" />
-        ) : (
-          <Volume2 className="h-5 w-5" />
-        )}
-      </Button>
+	const isSilent = isMuted || volume === 0;
 
-      <Slider
-        value={[volume * 100]}
-        max={100}
-        step={1}
-        onValueChange={handleVolumeChange}
-        className="w-28"
-        aria-label="Volume"
-      />
-    </div>
-  );
+	return (
+		<div className="flex items-center gap-3">
+			<Button
+				variant="ghost"
+				size="icon"
+				onClick={toggleMute}
+				className="h-10 w-10"
+				aria-label={isSilent ? "Unmute" : "Mute"}
+			>
+				{isSilent ? (
+					<VolumeX className="h-5 w-5" />
+				) : (
+					<Volume2 className="h-5 w-5" />
+				)}
+			</Button>
+
+			<Slider
+				value={[volume * 100]}
+				max={100}
+				step={1}
+				onValueChange={handleVolumeChange}
+				className="w-28"
+				aria-label="Volume"
+			/>
+		</div>
+	);
 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,12 +38,10 @@ const routeIcons: Record<string, React.ReactNode> = {
 export function BreadcrumbNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbSegment[]>([]);
-
-  useEffect(() => {
+  
+  const breadcrumbs = useMemo<BreadcrumbSegment[]>(() => {
     if (pathname === '/') {
-      setBreadcrumbs([]);
-      return;
+      return [];
     }
 
     const segments = pathname.split('/').filter(Boolean);
@@ -74,7 +72,7 @@ export function BreadcrumbNav() {
       });
     });
 
-    setBreadcrumbs(crumbs);
+    return crumbs;
   }, [pathname]);
 
   // Don't show breadcrumbs on home page
@@ -105,7 +103,7 @@ export function BreadcrumbNav() {
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              {breadcrumbs.map((crumb) => (
+              {breadcrumbs.map((crumb: BreadcrumbSegment) => (
                 <div key={crumb.href} className="flex items-center">
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>

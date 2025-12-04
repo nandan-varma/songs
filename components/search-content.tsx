@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, memo, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SearchBar } from '@/components/search-bar';
 import { SongsList } from '@/components/songs-list';
@@ -8,13 +8,12 @@ import { AlbumsList } from '@/components/albums-list';
 import { ArtistsList } from '@/components/artists-list';
 import { PlaylistsList } from '@/components/playlists-list';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EmptyState, LoadingSpinner, ErrorState } from '@/components/search/search-states';
+import { LoadingSpinner, ErrorState } from '@/components/search/search-states';
 import { SearchTabContent } from '@/components/search/search-tab-content';
 import { GlobalSearchResults } from '@/components/search/global-search-results';
 import { detailedSongToSong } from '@/lib/utils';
 import { 
   DetailedSong, 
-  Album, 
   Artist, 
   Playlist,
   AlbumSearchResult,

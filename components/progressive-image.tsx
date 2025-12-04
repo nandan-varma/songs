@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import type { Image as ImageType, EntityType } from '@/lib/types';
+import type { EntityType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface ProgressiveImageProps {
-  images: ImageType[];
-  alt: string;
-  entityType?: EntityType | string;
-  priority?: boolean;
+  images: Array<{ url: string; quality: string }>;
+  alt?: string;
   className?: string;
+  entityType?: EntityType;
+  priority?: boolean;
   fill?: boolean;
   width?: number;
   height?: number;
@@ -22,7 +22,6 @@ const FALLBACK_URL = 'https://placehold.co/500x500?text=Image+Not+Found';
 export function ProgressiveImage({
   images,
   alt,
-  entityType,
   priority = false,
   className,
   fill = true,
@@ -30,34 +29,39 @@ export function ProgressiveImage({
   height,
   rounded = 'default',
 }: ProgressiveImageProps) {
-  const [currentQualityIndex, setCurrentQualityIndex] = useState(0);
   const [imageSrc, setImageSrc] = useState<string>(() => {
-    // Start with lowest quality image
+    // Start with lowest quality image or fallback
     return images?.[0]?.url || FALLBACK_URL;
   });
-  const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(() => {
+    return !images || images.length === 0;
+  });
+  const [hasError, setHasError] = useState(() => {
+    return !images || images.length === 0;
+  });
 
   useEffect(() => {
     if (!images || images.length === 0) {
-      setImageSrc(FALLBACK_URL);
-      setHasError(true);
-      setIsHighQualityLoaded(true);
       return;
     }
-
-    // Reset error state
-    setHasError(false);
-    setIsHighQualityLoaded(false);
-    setCurrentQualityIndex(0);
-
+    
+    let cancelled = false;
+    
     // Test low quality image first
     const lowQualityUrl = images[0]?.url;
     if (!lowQualityUrl) {
-      setImageSrc(FALLBACK_URL);
-      setHasError(true);
-      setIsHighQualityLoaded(true);
-      return;
+      // Use a timeout to avoid setState in effect
+      const timeout = setTimeout(() => {
+        if (!cancelled) {
+          setImageSrc(FALLBACK_URL);
+          setHasError(true);
+          setIsHighQualityLoaded(true);
+        }
+      }, 0);
+      return () => {
+        cancelled = true;
+        clearTimeout(timeout);
+      };
     }
 
     // Preload low quality to check if it works
@@ -65,8 +69,11 @@ export function ProgressiveImage({
     lowImg.src = lowQualityUrl;
     
     lowImg.onload = () => {
+      if (cancelled) return;
       // Low quality loaded successfully, use it
       setImageSrc(lowQualityUrl);
+      setHasError(false);
+      setIsHighQualityLoaded(false);
 
       // Now try to load high quality image
       const highQualityIndex = images.length - 1;
@@ -74,26 +81,34 @@ export function ProgressiveImage({
         const highImg = new window.Image();
         highImg.src = images[highQualityIndex].url;
         highImg.onload = () => {
+          if (cancelled) return;
           setImageSrc(images[highQualityIndex].url);
-          setCurrentQualityIndex(highQualityIndex);
           setIsHighQualityLoaded(true);
         };
         highImg.onerror = () => {
+          if (cancelled) return;
           // High quality failed, but low quality is working
           console.warn('Failed to load high quality image, staying with low quality');
           setIsHighQualityLoaded(true);
         };
       } else {
-        setIsHighQualityLoaded(true);
+        if (!cancelled) {
+          setIsHighQualityLoaded(true);
+        }
       }
     };
 
     lowImg.onerror = () => {
+      if (cancelled) return;
       // Low quality failed, use fallback immediately
       console.warn('Failed to load image, using fallback');
       setImageSrc(FALLBACK_URL);
       setHasError(true);
       setIsHighQualityLoaded(true);
+    };
+    
+    return () => {
+      cancelled = true;
     };
   }, [images]);
 

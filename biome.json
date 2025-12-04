@@ -22,10 +22,21 @@
 			},
 			"a11y": {
 				"noStaticElementInteractions": "warn",
-				"useKeyWithClickEvents": "warn"
+				"useKeyWithClickEvents": "warn",
+				"useFocusableInteractive": "warn",
+				"useSemanticElements": "warn",
+				"useAriaPropsForRole": "warn"
 			},
 			"suspicious": {
-				"useIterableCallbackReturn": "error"
+				"useIterableCallbackReturn": "error",
+				"noArrayIndexKey": "warn",
+				"noDocumentCookie": "warn"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "warn"
+			},
+			"performance": {
+				"noImgElement": "warn"
 			}
 		}
 	},

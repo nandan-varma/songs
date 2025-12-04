@@ -179,7 +179,9 @@ export function AudioPlayer() {
 	return (
 		<div className="fixed bottom-6 left-4 right-4 md:left-6 md:right-6 z-50 max-w-7xl mx-auto">
 			<Card className="bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 border shadow-2xl">
-				<audio ref={audioRef} />
+				<audio ref={audioRef}>
+					<track kind="captions" />
+				</audio>
 
 				<div className="px-4 md:px-6 py-4 md:py-5">
 					{/* Mobile Layout */}

@@ -61,8 +61,9 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 											<div className="text-sm text-muted-foreground truncate">
 												{album.artists.primary.map((artist, index) => (
 													<span key={artist.id}>
-														<span
-															className="hover:underline cursor-pointer"
+														<button
+															type="button"
+															className="hover:underline cursor-pointer bg-transparent border-none p-0 text-inherit font-inherit"
 															onClick={(e) => {
 																e.preventDefault();
 																e.stopPropagation();
@@ -70,7 +71,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 															}}
 														>
 															{artist.name}
-														</span>
+														</button>
 														{index < album.artists.primary.length - 1 && ", "}
 													</span>
 												))}

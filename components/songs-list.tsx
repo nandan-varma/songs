@@ -2,17 +2,38 @@
 
 import { Song } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
-import { Music } from 'lucide-react';
+import { Button } from './ui/button';
+import { Music, Play, Plus } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { usePlayer } from '@/contexts/player-context';
+import { convertToDetailedSong } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface SongsListProps {
   songs: Song[];
 }
 
 export function SongsList({ songs }: SongsListProps) {
+  const { playSong, addToQueue } = usePlayer();
+
   if (songs.length === 0) {
     return null;
   }
+
+  const handlePlay = (song: Song, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    playSong(convertToDetailedSong(song));
+    toast.success(`Now playing: ${song.title}`);
+  };
+
+  const handleAddToQueue = (song: Song, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToQueue(convertToDetailedSong(song));
+    toast.success(`Added to queue: ${song.title}`);
+  };
 
   return (
     <div className="space-y-3">
@@ -37,13 +58,33 @@ export function SongsList({ songs }: SongsListProps) {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium truncate">{song.title}</h3>
+                  <Link href={`/songs/${song.id}`}>
+                    <h3 className="font-medium truncate hover:underline">{song.title}</h3>
+                  </Link>
                   <p className="text-sm text-muted-foreground truncate">
                     {song.primaryArtists}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
                     {song.album}
                   </p>
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={(e) => handlePlay(song, e)}
+                    aria-label="Play song"
+                  >
+                    <Play className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={(e) => handleAddToQueue(song, e)}
+                    aria-label="Add to queue"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </CardContent>

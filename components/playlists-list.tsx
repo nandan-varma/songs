@@ -1,14 +1,14 @@
 'use client';
 
-import { Album } from '@/lib/types';
+import { Playlist } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
-import { Disc3 } from 'lucide-react';
+import { ListMusic } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { LoadMoreButton } from './load-more-button';
 
-interface AlbumsListProps {
-  albums: Album[];
+interface PlaylistsListProps {
+  playlists: Playlist[];
   showLoadMore?: boolean;
   onLoadMore?: () => void;
   isLoading?: boolean;
@@ -16,48 +16,48 @@ interface AlbumsListProps {
   hasMore?: boolean;
 }
 
-export function AlbumsList({ 
-  albums,
+export function PlaylistsList({ 
+  playlists,
   showLoadMore = false,
   onLoadMore,
   isLoading = false,
   totalCount = 0,
   hasMore = false 
-}: AlbumsListProps) {
-  if (albums.length === 0) {
+}: PlaylistsListProps) {
+  if (playlists.length === 0) {
     return null;
   }
 
   return (
     <div className="space-y-3">
-      <h2 className="text-2xl font-semibold">Albums</h2>
+      <h2 className="text-2xl font-semibold">Playlists</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {albums.map((album) => (
-          <Link key={album.id} href={`/albums/${album.id}`}>
+        {playlists.map((playlist) => (
+          <Link key={playlist.id} href={`/playlists/${playlist.id}`}>
             <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
               <CardContent className="p-4">
                 <div className="space-y-3">
                   <div className="relative aspect-square w-full rounded overflow-hidden bg-muted">
-                    {album.image?.[2]?.url ? (
+                    {playlist.image?.[2]?.url ? (
                       <Image
-                        src={album.image[2].url}
-                        alt={album.title}
+                        src={playlist.image[2].url}
+                        alt={playlist.title}
                         fill
                         className="object-cover"
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
-                        <Disc3 className="h-12 w-12 text-muted-foreground" />
+                        <ListMusic className="h-12 w-12 text-muted-foreground" />
                       </div>
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="font-medium truncate">{album.title}</h3>
+                    <h3 className="font-medium truncate">{playlist.title}</h3>
                     <p className="text-sm text-muted-foreground truncate">
-                      {album.artist}
+                      {playlist.description}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {album.year} · {album.language}
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {playlist.language}
                     </p>
                   </div>
                 </div>
@@ -70,7 +70,7 @@ export function AlbumsList({
         <LoadMoreButton
           onLoadMore={onLoadMore}
           isLoading={isLoading}
-          currentCount={albums.length}
+          currentCount={playlists.length}
           totalCount={totalCount}
           hasMore={hasMore}
         />

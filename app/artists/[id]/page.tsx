@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getArtistById } from '@/lib/api';
-import { DetailedArtist } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,38 +10,38 @@ import { Play, Plus, Download, Loader2, User, ExternalLink } from 'lucide-react'
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { LoadMoreButton } from '@/components/load-more-button';
+import { useArtist, useArtistSongs, useArtistAlbums } from '@/hooks/queries';
+import { DetailedSong, DetailedAlbum } from '@/lib/types';
 
 export default function ArtistPage() {
   const params = useParams();
   const artistId = params.id as string;
   const { playQueue, playSong, addToQueue } = usePlayer();
   
-  const [artist, setArtist] = useState<DetailedArtist | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const response = await getArtistById(artistId, {
-          songCount: 20,
-          albumCount: 20,
-        });
-        
-        if (response.data) {
-          setArtist(response.data);
-        }
-      } catch (err) {
-        setError('Failed to load artist');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [artistId]);
+  const { data: artist, isLoading, error } = useArtist(artistId, {
+    songCount: 0,
+    albumCount: 0,
+  });
+  
+  const songsQuery = useArtistSongs(artistId, 'popularity', 'desc');
+  const albumsQuery = useArtistAlbums(artistId, 'popularity', 'desc');
+  
+  const songsData = songsQuery.data as { pages: Array<{ total: number; songs: DetailedSong[] }> } | undefined;
+  const albumsData = albumsQuery.data as { pages: Array<{ total: number; albums: DetailedAlbum[] }> } | undefined;
+  
+  const allSongs: DetailedSong[] = songsData?.pages.flatMap(page => page.songs) ?? [];
+  const allAlbums: DetailedAlbum[] = albumsData?.pages.flatMap(page => page.albums) ?? [];
+  const totalSongs = songsData?.pages[0]?.total ?? 0;
+  const totalAlbums = albumsData?.pages[0]?.total ?? 0;
+  
+  const fetchNextSongsPage = songsQuery.fetchNextPage;
+  const hasMoreSongs = songsQuery.hasNextPage;
+  const isLoadingMoreSongs = songsQuery.isFetchingNextPage;
+  
+  const fetchNextAlbumsPage = albumsQuery.fetchNextPage;
+  const hasMoreAlbums = albumsQuery.hasNextPage;
+  const isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
 
   if (isLoading) {
     return (
@@ -57,7 +54,7 @@ export default function ArtistPage() {
   if (error || !artist) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Artist not found'}</p>
+        <p className="text-center text-destructive">{error instanceof Error ? error.message : 'Artist not found'}</p>
       </div>
     );
   }
@@ -158,12 +155,12 @@ export default function ArtistPage() {
 
         {/* Top Songs */}
         <TabsContent value="songs" className="space-y-4">
-          {artist.topSongs && artist.topSongs.length > 0 ? (
+          {allSongs.length > 0 ? (
             <>
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
-                    playQueue(artist.topSongs || []);
+                    playQueue(allSongs);
                     toast.success(`Playing ${artist.name}'s top songs`);
                   }}
                   className="gap-2"
@@ -173,7 +170,7 @@ export default function ArtistPage() {
                 </Button>
               </div>
               <div className="grid gap-2">
-                {artist.topSongs.map((song, index) => (
+                {allSongs.map((song, index) => (
                   <Card key={song.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
@@ -250,7 +247,18 @@ export default function ArtistPage() {
                   </Card>
                 ))}
               </div>
+              <LoadMoreButton
+                onLoadMore={fetchNextSongsPage}
+                isLoading={isLoadingMoreSongs}
+                currentCount={allSongs.length}
+                totalCount={totalSongs}
+                hasMore={hasMoreSongs ?? false}
+              />
             </>
+          ) : !songsData ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">No songs available</p>
           )}
@@ -258,34 +266,47 @@ export default function ArtistPage() {
 
         {/* Albums */}
         <TabsContent value="albums" className="space-y-4">
-          {artist.topAlbums && artist.topAlbums.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {artist.topAlbums.map((album) => (
-                <Card key={album.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
-                  <CardContent className="p-4">
-                    <Link href={`/albums/${album.id}`}>
-                      <div className="space-y-3">
-                        <div className="relative aspect-square w-full rounded overflow-hidden bg-muted">
-                          {album.image?.[2]?.url && (
-                            <Image
-                              src={album.image[2].url}
-                              alt={album.name}
-                              fill
-                              className="object-cover"
-                            />
-                          )}
+          {allAlbums.length > 0 ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {allAlbums.map((album) => (
+                  <Card key={album.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
+                    <CardContent className="p-4">
+                      <Link href={`/albums/${album.id}`}>
+                        <div className="space-y-3">
+                          <div className="relative aspect-square w-full rounded overflow-hidden bg-muted">
+                            {album.image?.[2]?.url && (
+                              <Image
+                                src={album.image[2].url}
+                                alt={album.name}
+                                fill
+                                className="object-cover"
+                              />
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <h3 className="font-medium truncate hover:underline">{album.name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {album.year}
+                            </p>
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <h3 className="font-medium truncate hover:underline">{album.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {album.year}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <LoadMoreButton
+                onLoadMore={fetchNextAlbumsPage}
+                isLoading={isLoadingMoreAlbums}
+                currentCount={allAlbums.length}
+                totalCount={totalAlbums}
+                hasMore={hasMoreAlbums ?? false}
+              />
+            </>
+          ) : !albumsData ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">No albums available</p>

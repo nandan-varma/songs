@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getSongById, getSongSuggestions } from '@/lib/api';
-import { DetailedSong } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,43 +10,18 @@ import { Play, Plus, Download, Loader2, Music2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useSong, useSongSuggestions } from '@/hooks/queries';
 
 export default function SongPage() {
   const params = useParams();
   const songId = params.id as string;
   const { playSong, addToQueue } = usePlayer();
   
-  const [song, setSong] = useState<DetailedSong | null>(null);
-  const [suggestions, setSuggestions] = useState<DetailedSong[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const [songResponse, suggestionsResponse] = await Promise.all([
-          getSongById(songId),
-          getSongSuggestions(songId, 10),
-        ]);
-        
-        if (songResponse.data && songResponse.data.length > 0) {
-          setSong(songResponse.data[0]);
-        }
-        
-        if (suggestionsResponse.data) {
-          setSuggestions(suggestionsResponse.data);
-        }
-      } catch (err) {
-        setError('Failed to load song');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [songId]);
+  const { data: songData, isLoading: isSongLoading, error: songError } = useSong(songId);
+  const { data: suggestions = [], isLoading: isSuggestionsLoading } = useSongSuggestions(songId, 10);
+  
+  const song = songData?.[0];
+  const isLoading = isSongLoading || isSuggestionsLoading;
 
   if (isLoading) {
     return (
@@ -59,10 +31,10 @@ export default function SongPage() {
     );
   }
 
-  if (error || !song) {
+  if (songError || !song) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Song not found'}</p>
+        <p className="text-center text-destructive">{songError instanceof Error ? songError.message : 'Song not found'}</p>
       </div>
     );
   }

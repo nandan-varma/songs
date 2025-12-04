@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getPlaylistById } from '@/lib/api';
-import { DetailedPlaylist } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,35 +9,14 @@ import { Play, Plus, Download, Loader2, ListMusic } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { usePlaylist } from '@/hooks/queries';
 
 export default function PlaylistPage() {
   const params = useParams();
   const playlistId = params.id as string;
   const { playQueue, playSong, addToQueue } = usePlayer();
   
-  const [playlist, setPlaylist] = useState<DetailedPlaylist | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const response = await getPlaylistById(playlistId, 0, 50);
-        
-        if (response.data) {
-          setPlaylist(response.data);
-        }
-      } catch (err) {
-        setError('Failed to load playlist');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [playlistId]);
+  const { data: playlist, isLoading, error } = usePlaylist(playlistId);
 
   if (isLoading) {
     return (
@@ -53,7 +29,7 @@ export default function PlaylistPage() {
   if (error || !playlist) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Playlist not found'}</p>
+        <p className="text-center text-destructive">{error instanceof Error ? error.message : 'Playlist not found'}</p>
       </div>
     );
   }

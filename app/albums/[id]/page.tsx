@@ -1,9 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getAlbumById } from '@/lib/api';
-import { DetailedAlbum } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,35 +9,14 @@ import { Play, Plus, Download, Loader2, Disc3 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useAlbum } from '@/hooks/queries';
 
 export default function AlbumPage() {
   const params = useParams();
   const albumId = params.id as string;
   const { playQueue, playSong, addToQueue } = usePlayer();
   
-  const [album, setAlbum] = useState<DetailedAlbum | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const response = await getAlbumById(albumId);
-        
-        if (response.data) {
-          setAlbum(response.data);
-        }
-      } catch (err) {
-        setError('Failed to load album');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [albumId]);
+  const { data: album, isLoading, error } = useAlbum(albumId);
 
   if (isLoading) {
     return (
@@ -53,7 +29,7 @@ export default function AlbumPage() {
   if (error || !album) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Album not found'}</p>
+        <p className="text-center text-destructive">{error instanceof Error ? error.message : 'Album not found'}</p>
       </div>
     );
   }

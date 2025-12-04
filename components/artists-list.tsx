@@ -5,12 +5,25 @@ import { Card, CardContent } from './ui/card';
 import { User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { LoadMoreButton } from './load-more-button';
 
 interface ArtistsListProps {
   artists: Artist[];
+  showLoadMore?: boolean;
+  onLoadMore?: () => void;
+  isLoading?: boolean;
+  totalCount?: number;
+  hasMore?: boolean;
 }
 
-export function ArtistsList({ artists }: ArtistsListProps) {
+export function ArtistsList({ 
+  artists,
+  showLoadMore = false,
+  onLoadMore,
+  isLoading = false,
+  totalCount = 0,
+  hasMore = false 
+}: ArtistsListProps) {
   if (artists.length === 0) {
     return null;
   }
@@ -50,6 +63,15 @@ export function ArtistsList({ artists }: ArtistsListProps) {
           </Link>
         ))}
       </div>
+      {showLoadMore && onLoadMore && (
+        <LoadMoreButton
+          onLoadMore={onLoadMore}
+          isLoading={isLoading}
+          currentCount={artists.length}
+          totalCount={totalCount}
+          hasMore={hasMore}
+        />
+      )}
     </div>
   );
 }

@@ -1,19 +1,24 @@
 'use client';
 
-import { Album, EntityType } from '@/lib/types';
+import { Album, AlbumSearchResult, EntityType } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Disc3 } from 'lucide-react';
 import { ProgressiveImage } from './progressive-image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { LoadMoreButton } from './load-more-button';
 
 interface AlbumsListProps {
-  albums: Album[];
+  albums: (Album | AlbumSearchResult)[];
   showLoadMore?: boolean;
   onLoadMore?: () => void;
   isLoading?: boolean;
   totalCount?: number;
   hasMore?: boolean;
+}
+
+function isAlbumSearchResult(album: Album | AlbumSearchResult): album is AlbumSearchResult {
+  return 'artists' in album && typeof album.artists === 'object' && 'primary' in album.artists;
 }
 
 export function AlbumsList({ 
@@ -24,6 +29,8 @@ export function AlbumsList({
   totalCount = 0,
   hasMore = false 
 }: AlbumsListProps) {
+  const router = useRouter();
+  
   if (albums.length === 0) {
     return null;
   }
@@ -41,7 +48,7 @@ export function AlbumsList({
                     {album.image && album.image.length > 0 ? (
                       <ProgressiveImage
                         images={album.image}
-                        alt={album.title}
+                        alt={isAlbumSearchResult(album) ? album.name : album.title}
                         entityType={EntityType.ALBUM}
                         rounded="default"
                       />
@@ -52,12 +59,32 @@ export function AlbumsList({
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h3 className="font-medium truncate">{album.title}</h3>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {album.artist}
-                    </p>
+                    <h3 className="font-medium truncate">{isAlbumSearchResult(album) ? album.name : album.title}</h3>
+                    {isAlbumSearchResult(album) && album.artists?.primary ? (
+                      <div className="text-sm text-muted-foreground truncate">
+                        {album.artists.primary.map((artist, index) => (
+                          <span key={artist.id}>
+                            <span 
+                              className="hover:underline cursor-pointer" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                router.push(`/artists/${artist.id}`);
+                              }}
+                            >
+                              {artist.name}
+                            </span>
+                            {index < album.artists.primary.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground truncate">
+                        {isAlbumSearchResult(album) ? album.artists?.primary?.map(a => a.name).join(', ') : album.artist}
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground">
-                      {album.year} · {album.language}
+                      {album.year} · {isAlbumSearchResult(album) ? album.language : album.language}
                     </p>
                   </div>
                 </div>

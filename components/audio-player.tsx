@@ -8,6 +8,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Minus 
 import { ProgressiveImage } from './progressive-image';
 import { EntityType } from '@/lib/types';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { ScrollArea } from './ui/scroll-area';
 
@@ -178,10 +179,19 @@ export function AudioPlayer() {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="font-semibold truncate text-base">{currentSong.name}</p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {currentSong.artists?.primary?.map(a => a.name).join(', ')}
-                </p>
+                <Link href={`/songs/${currentSong.id}`} className="font-semibold truncate text-base hover:underline block">
+                  {currentSong.name}
+                </Link>
+                <div className="text-sm text-muted-foreground truncate">
+                  {currentSong.artists?.primary?.map((artist, index) => (
+                    <span key={artist.id}>
+                      <Link href={`/artists/${artist.id}`} className="hover:underline">
+                        {artist.name}
+                      </Link>
+                      {index < currentSong.artists.primary.length - 1 && ', '}
+                    </span>
+                  ))}
+                </div>
               </div>
               <Sheet>
                 <SheetTrigger asChild>
@@ -218,10 +228,19 @@ export function AudioPlayer() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{song.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {song.artists?.primary?.map(a => a.name).join(', ')}
-                            </p>
+                            <Link href={`/songs/${song.id}`} className="text-sm font-medium truncate hover:underline block">
+                              {song.name}
+                            </Link>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {song.artists?.primary?.map((artist, index) => (
+                                <span key={artist.id}>
+                                  <Link href={`/artists/${artist.id}`} className="hover:underline">
+                                    {artist.name}
+                                  </Link>
+                                  {index < song.artists.primary.length - 1 && ', '}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                           {index !== currentIndex && (
                             <Button
@@ -334,10 +353,19 @@ export function AudioPlayer() {
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="font-semibold truncate text-base">{currentSong.name}</p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {currentSong.artists?.primary?.map(a => a.name).join(', ')}
-                </p>
+                <Link href={`/songs/${currentSong.id}`} className="font-semibold truncate text-base hover:underline block">
+                  {currentSong.name}
+                </Link>
+                <div className="text-sm text-muted-foreground truncate">
+                  {currentSong.artists?.primary?.map((artist, index) => (
+                    <span key={artist.id}>
+                      <Link href={`/artists/${artist.id}`} className="hover:underline">
+                        {artist.name}
+                      </Link>
+                      {index < currentSong.artists.primary.length - 1 && ', '}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -454,10 +482,19 @@ export function AudioPlayer() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{song.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {song.artists?.primary?.map(a => a.name).join(', ')}
-                            </p>
+                            <Link href={`/songs/${song.id}`} className="text-sm font-medium truncate hover:underline block">
+                              {song.name}
+                            </Link>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {song.artists?.primary?.map((artist, idx) => (
+                                <span key={artist.id}>
+                                  <Link href={`/artists/${artist.id}`} className="hover:underline">
+                                    {artist.name}
+                                  </Link>
+                                  {idx < song.artists.primary.length - 1 && ', '}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                           {index !== currentIndex && (
                             <Button

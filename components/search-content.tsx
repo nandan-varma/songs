@@ -62,19 +62,6 @@ export function SearchContent() {
   });
   
   // Converter functions for search results
-  const albumSearchResultToAlbum = (album: AlbumSearchResult): Album => ({
-    id: album.id,
-    title: album.name,
-    image: album.image,
-    artist: album.artists.primary.map(a => a.name).join(', '),
-    url: album.url,
-    type: album.type,
-    description: album.description,
-    year: album.year.toString(),
-    language: album.language,
-    songIds: '',
-  });
-
   const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
     id: artist.id,
     title: artist.name,
@@ -101,7 +88,7 @@ export function SearchContent() {
   const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: PlaylistSearchResult[] }> } | undefined;
   
   const allSongs = songsData?.pages.flatMap(page => page.results.map(detailedSongToSong)) ?? [];
-  const allAlbums = albumsData?.pages.flatMap(page => page.results.map(albumSearchResultToAlbum)) ?? [];
+  const allAlbums = albumsData?.pages.flatMap(page => page.results) ?? [];
   const allArtists = artistsData?.pages.flatMap(page => page.results.map(artistSearchResultToArtist)) ?? [];
   const allPlaylists = playlistsData?.pages.flatMap(page => page.results.map(playlistSearchResultToPlaylist)) ?? [];
   

@@ -179,9 +179,15 @@ export default function ArtistPage() {
                           <Link href={`/songs/${song.id}`}>
                             <h3 className="font-medium truncate hover:underline">{song.name}</h3>
                           </Link>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {song.album?.name}
-                          </p>
+                          {song.album?.id ? (
+                            <Link href={`/albums/${song.album.id}`} className="text-sm text-muted-foreground truncate hover:underline block" onClick={(e) => e.stopPropagation()}>
+                              {song.album.name}
+                            </Link>
+                          ) : (
+                            <p className="text-sm text-muted-foreground truncate">
+                              {song.album?.name}
+                            </p>
+                          )}
                         </div>
                         {song.duration && (
                           <span className="text-sm text-muted-foreground">

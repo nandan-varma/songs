@@ -1,21 +1,23 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { usePlayer } from '@/contexts/player-context';
-import { Card, CardContent } from '@/components/ui/card';
+import { usePlayerActions } from '@/contexts/player-context';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Plus, Download, Loader2, Disc3 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Play, Plus, Loader2, Music2, Disc3, Download } from 'lucide-react';
 import { ProgressiveImage } from '@/components/progressive-image';
 import { EntityType } from '@/lib/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAlbum } from '@/hooks/queries';
+import { useCallback } from 'react';
 
 export default function AlbumPage() {
   const params = useParams();
   const albumId = params.id as string;
-  const { playQueue, playSong, addToQueue } = usePlayer();
+  const { playQueue, playSong, addToQueue } = usePlayerActions();
   
   const { data: album, isLoading, error } = useAlbum(albumId);
 

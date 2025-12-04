@@ -1,9 +1,9 @@
 'use client';
 
-import { Playlist } from '@/lib/types';
+import { Playlist, EntityType } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { ListMusic } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from './progressive-image';
 import Link from 'next/link';
 import { LoadMoreButton } from './load-more-button';
 
@@ -37,16 +37,16 @@ export function PlaylistsList({
             <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <div className="relative aspect-square w-full rounded overflow-hidden bg-muted">
-                    {playlist.image?.[2]?.url ? (
-                      <Image
-                        src={playlist.image[2].url}
+                  <div className="relative aspect-square w-full">
+                    {playlist.image && playlist.image.length > 0 ? (
+                      <ProgressiveImage
+                        images={playlist.image}
                         alt={playlist.title}
-                        fill
-                        className="object-cover"
+                        entityType={EntityType.PLAYLIST}
+                        rounded="default"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
+                      <div className="flex h-full w-full items-center justify-center bg-muted rounded">
                         <ListMusic className="h-12 w-12 text-muted-foreground" />
                       </div>
                     )}

@@ -440,7 +440,7 @@ export default function ArtistPage() {
 						<Card>
 							<CardContent className="p-6 space-y-4">
 								{artist.bio.map((section, index) => (
-									<div key={index}>
+									<div key={`${section.title || "section"}-${index}`}>
 										{section.title && (
 											<h3 className="text-lg font-semibold mb-2">
 												{section.title}

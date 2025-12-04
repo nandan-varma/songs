@@ -9,12 +9,25 @@ import Link from 'next/link';
 import { usePlayer } from '@/contexts/player-context';
 import { getSongById } from '@/lib/api';
 import { toast } from 'sonner';
+import { LoadMoreButton } from './load-more-button';
 
 interface SongsListProps {
   songs: Song[];
+  showLoadMore?: boolean;
+  onLoadMore?: () => void;
+  isLoading?: boolean;
+  totalCount?: number;
+  hasMore?: boolean;
 }
 
-export function SongsList({ songs }: SongsListProps) {
+export function SongsList({ 
+  songs, 
+  showLoadMore = false,
+  onLoadMore,
+  isLoading = false,
+  totalCount = 0,
+  hasMore = false 
+}: SongsListProps) {
   const { playSong, addToQueue } = usePlayer();
 
   if (songs.length === 0) {
@@ -105,6 +118,15 @@ export function SongsList({ songs }: SongsListProps) {
           </Card>
         ))}
       </div>
+      {showLoadMore && onLoadMore && (
+        <LoadMoreButton
+          onLoadMore={onLoadMore}
+          isLoading={isLoading}
+          currentCount={songs.length}
+          totalCount={totalCount}
+          hasMore={hasMore}
+        />
+      )}
     </div>
   );
 }

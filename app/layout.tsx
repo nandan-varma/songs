@@ -6,6 +6,7 @@ import { Navigation } from "@/components/navigation";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { AudioPlayer } from "@/components/audio-player";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,13 +33,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
       >
-        <PlayerProvider>
-          <Navigation />
-          <BreadcrumbNav />
-          <main className="pb-24">{children}</main>
-          <AudioPlayer />
-          <Toaster />
-        </PlayerProvider>
+        <Providers>
+          <PlayerProvider>
+            <Navigation />
+            <BreadcrumbNav />
+            <main className="pb-24">{children}</main>
+            <AudioPlayer />
+            <Toaster />
+          </PlayerProvider>
+        </Providers>
       </body>
     </html>
   );

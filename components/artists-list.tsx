@@ -1,9 +1,9 @@
 'use client';
 
-import { Artist } from '@/lib/types';
+import { Artist, EntityType } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { User } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from './progressive-image';
 import Link from 'next/link';
 import { LoadMoreButton } from './load-more-button';
 
@@ -37,16 +37,16 @@ export function ArtistsList({
             <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <div className="relative aspect-square w-full rounded-full overflow-hidden bg-muted">
-                    {artist.image?.[2]?.url ? (
-                      <Image
-                        src={artist.image[2].url}
+                  <div className="relative aspect-square w-full">
+                    {artist.image && artist.image.length > 0 ? (
+                      <ProgressiveImage
+                        images={artist.image}
                         alt={artist.title}
-                        fill
-                        className="object-cover"
+                        entityType={EntityType.ARTIST}
+                        rounded="full"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
+                      <div className="flex h-full w-full items-center justify-center bg-muted rounded-full">
                         <User className="h-12 w-12 text-muted-foreground" />
                       </div>
                     )}

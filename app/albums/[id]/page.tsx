@@ -6,7 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, Plus, Download, Loader2, Disc3 } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from '@/components/progressive-image';
+import { EntityType } from '@/lib/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useAlbum } from '@/hooks/queries';
@@ -34,8 +35,6 @@ export default function AlbumPage() {
     );
   }
 
-  const imageUrl = album.image?.[2]?.url || album.image?.[0]?.url;
-
   return (
     <div className="container mx-auto px-4 py-8 pb-32 space-y-8">
       {/* Album Header */}
@@ -43,17 +42,17 @@ export default function AlbumPage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Album Art */}
-            <div className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
+            <div className="relative aspect-square w-full md:w-64 flex-shrink-0">
+              {album.image && album.image.length > 0 ? (
+                <ProgressiveImage
+                  images={album.image}
                   alt={album.name}
-                  fill
-                  className="object-cover"
+                  entityType={EntityType.ALBUM}
+                  rounded="default"
                   priority
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center">
+                <div className="flex h-full w-full items-center justify-center bg-muted rounded-lg">
                   <Disc3 className="h-24 w-24 text-muted-foreground" />
                 </div>
               )}
@@ -136,13 +135,13 @@ export default function AlbumPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-muted-foreground w-6">{index + 1}</span>
-                    <div className="relative h-12 w-12 flex-shrink-0 rounded overflow-hidden bg-muted">
-                      {song.image?.[0]?.url && (
-                        <Image
-                          src={song.image[0].url}
+                    <div className="relative h-12 w-12 flex-shrink-0">
+                      {song.image && song.image.length > 0 && (
+                        <ProgressiveImage
+                          images={song.image}
                           alt={song.name}
-                          fill
-                          className="object-cover"
+                          entityType={EntityType.SONG}
+                          rounded="default"
                         />
                       )}
                     </div>

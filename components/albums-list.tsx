@@ -1,9 +1,9 @@
 'use client';
 
-import { Album } from '@/lib/types';
+import { Album, EntityType } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Disc3 } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from './progressive-image';
 import Link from 'next/link';
 import { LoadMoreButton } from './load-more-button';
 
@@ -37,16 +37,16 @@ export function AlbumsList({
             <Card className="overflow-hidden hover:bg-accent/50 transition-colors">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <div className="relative aspect-square w-full rounded overflow-hidden bg-muted">
-                    {album.image?.[2]?.url ? (
-                      <Image
-                        src={album.image[2].url}
+                  <div className="relative aspect-square w-full">
+                    {album.image && album.image.length > 0 ? (
+                      <ProgressiveImage
+                        images={album.image}
                         alt={album.title}
-                        fill
-                        className="object-cover"
+                        entityType={EntityType.ALBUM}
+                        rounded="default"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
+                      <div className="flex h-full w-full items-center justify-center bg-muted rounded">
                         <Disc3 className="h-12 w-12 text-muted-foreground" />
                       </div>
                     )}

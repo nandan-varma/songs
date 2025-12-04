@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlaylistsList } from '@/components/playlists-list';
 import { detailedSongToSong } from '@/lib/utils';
+import { DetailedSong, Album, Artist, Playlist } from '@/lib/types';
 import { 
   useGlobalSearch, 
   useSearchSongs, 
@@ -53,10 +54,10 @@ export function SearchContent() {
   });
   
   // Flatten infinite query data
-  const songsData = songsQuery.data as { pages: Array<{ total: number; results: any[] }> } | undefined;
-  const albumsData = albumsQuery.data as { pages: Array<{ total: number; results: any[] }> } | undefined;
-  const artistsData = artistsQuery.data as { pages: Array<{ total: number; results: any[] }> } | undefined;
-  const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: any[] }> } | undefined;
+  const songsData = songsQuery.data as { pages: Array<{ total: number; results: DetailedSong[] }> } | undefined;
+  const albumsData = albumsQuery.data as { pages: Array<{ total: number; results: Album[] }> } | undefined;
+  const artistsData = artistsQuery.data as { pages: Array<{ total: number; results: Artist[] }> } | undefined;
+  const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: Playlist[] }> } | undefined;
   
   const allSongs = songsData?.pages.flatMap(page => page.results.map(detailedSongToSong)) ?? [];
   const allAlbums = albumsData?.pages.flatMap(page => page.results) ?? [];

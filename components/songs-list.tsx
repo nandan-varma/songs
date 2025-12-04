@@ -1,10 +1,10 @@
 'use client';
 
-import { Song } from '@/lib/types';
+import { Song, EntityType } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Music, Play, Plus } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from './progressive-image';
 import Link from 'next/link';
 import { usePlayer } from '@/contexts/player-context';
 import { getSongById } from '@/lib/api';
@@ -70,16 +70,16 @@ export function SongsList({
           <Card key={song.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 flex-shrink-0 rounded overflow-hidden bg-muted">
-                  {song.image?.[2]?.url ? (
-                    <Image
-                      src={song.image[2].url}
+                <div className="relative h-16 w-16 flex-shrink-0">
+                  {song.image && song.image.length > 0 ? (
+                    <ProgressiveImage
+                      images={song.image}
                       alt={song.title}
-                      fill
-                      className="object-cover"
+                      entityType={EntityType.SONG}
+                      rounded="default"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center">
+                    <div className="flex h-full w-full items-center justify-center bg-muted rounded">
                       <Music className="h-8 w-8 text-muted-foreground" />
                     </div>
                   )}

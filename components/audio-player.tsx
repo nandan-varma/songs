@@ -5,7 +5,8 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic, Minus } from 'lucide-react';
-import Image from 'next/image';
+import { ProgressiveImage } from './progressive-image';
+import { EntityType } from '@/lib/types';
 import { useEffect, useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { ScrollArea } from './ui/scroll-area';
@@ -79,8 +80,6 @@ export function AudioPlayer() {
     return null;
   }
 
-  const imageUrl = currentSong.image?.[2]?.url || currentSong.image?.[0]?.url;
-
   return (
     <Card className="fixed bottom-0 left-0 right-0 z-50 rounded-none border-t border-x-0 border-b-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <audio ref={audioRef} />
@@ -89,13 +88,14 @@ export function AudioPlayer() {
         <div className="flex items-center gap-4">
           {/* Song Info */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            {imageUrl && (
-              <div className="relative h-14 w-14 flex-shrink-0 rounded overflow-hidden">
-                <Image
-                  src={imageUrl}
+            {currentSong.image && currentSong.image.length > 0 && (
+              <div className="relative h-14 w-14 flex-shrink-0">
+                <ProgressiveImage
+                  images={currentSong.image}
                   alt={currentSong.name}
-                  fill
-                  className="object-cover"
+                  entityType={EntityType.SONG}
+                  rounded="default"
+                  priority
                 />
               </div>
             )}
@@ -206,13 +206,13 @@ export function AudioPlayer() {
                           index === currentIndex ? 'bg-accent' : ''
                         }`}
                       >
-                        <div className="relative h-10 w-10 flex-shrink-0 rounded overflow-hidden">
-                          {song.image?.[0]?.url && (
-                            <Image
-                              src={song.image[0].url}
+                        <div className="relative h-10 w-10 flex-shrink-0">
+                          {song.image && song.image.length > 0 && (
+                            <ProgressiveImage
+                              images={song.image}
                               alt={song.name}
-                              fill
-                              className="object-cover"
+                              entityType={EntityType.SONG}
+                              rounded="default"
                             />
                           )}
                         </div>

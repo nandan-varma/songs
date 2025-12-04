@@ -37,7 +37,7 @@ export default function RootLayout({
           <PlayerProvider>
             <Navigation />
             <BreadcrumbNav />
-            <main className="pb-24">{children}</main>
+            <main className="pb-32 md:pb-36">{children}</main>
             <AudioPlayer />
             <Toaster />
           </PlayerProvider>

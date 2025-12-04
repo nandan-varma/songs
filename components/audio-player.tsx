@@ -53,17 +53,93 @@ export function AudioPlayer() {
         audioRef.current.play().catch(console.error);
       }
     }
-  }, [currentSong, audioRef]);
+
+    // Set Media Session metadata for OS-level controls
+    if ('mediaSession' in navigator) {
+      const artwork = currentSong.image?.map(img => ({
+        src: img.url,
+        sizes: img.quality === '500x500' ? '500x500' : img.quality === '150x150' ? '150x150' : '50x50',
+        type: 'image/jpeg'
+      })) || [];
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentSong.name,
+        artist: currentSong.artists?.primary?.map(a => a.name).join(', ') || 'Unknown Artist',
+        album: currentSong.album?.name || 'Unknown Album',
+        artwork: artwork.length > 0 ? artwork : undefined,
+      });
+
+      // Set up action handlers
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (audioRef.current) {
+          audioRef.current.play().catch(console.error);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        playPrevious();
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        playNext();
+      });
+
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime && audioRef.current) {
+          seekTo(details.seekTime);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        if (audioRef.current) {
+          const skipTime = details.seekOffset || 10;
+          seekTo(Math.max(0, currentTime - skipTime));
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        if (audioRef.current) {
+          const skipTime = details.seekOffset || 10;
+          seekTo(Math.min(duration, currentTime + skipTime));
+        }
+      });
+    }
+  }, [currentSong, audioRef, isPlaying, playNext, playPrevious, seekTo, currentTime, duration]);
 
   useEffect(() => {
     if (!audioRef.current) return;
     
     if (isPlaying) {
       audioRef.current.play().catch(console.error);
+      // Update Media Session playback state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
     } else {
       audioRef.current.pause();
+      // Update Media Session playback state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     }
   }, [isPlaying, audioRef]);
+
+  // Update Media Session position state
+  useEffect(() => {
+    if ('mediaSession' in navigator && audioRef.current && duration > 0) {
+      navigator.mediaSession.setPositionState({
+        duration: duration,
+        playbackRate: audioRef.current.playbackRate || 1,
+        position: currentTime,
+      });
+    }
+  }, [currentTime, duration, audioRef]);
 
   const toggleMute = () => {
     if (isMuted) {

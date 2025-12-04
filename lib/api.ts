@@ -10,6 +10,9 @@ import {
   Album,
   Artist,
   Playlist,
+  AlbumSearchResult,
+  ArtistSearchResult,
+  PlaylistSearchResult,
 } from './types';
 
 const API_BASE_URL = 'https://saavn-api.nandanvarma.com/api';
@@ -48,7 +51,7 @@ export async function searchAlbums(
   query: string,
   page = 0,
   limit = 10
-): Promise<ApiResponse<PaginatedResponse<Album>>> {
+): Promise<ApiResponse<PaginatedResponse<AlbumSearchResult>>> {
   const response = await fetch(
     `${API_BASE_URL}/search/albums?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`
   );
@@ -64,7 +67,7 @@ export async function searchArtists(
   query: string,
   page = 0,
   limit = 10
-): Promise<ApiResponse<PaginatedResponse<Artist>>> {
+): Promise<ApiResponse<PaginatedResponse<ArtistSearchResult>>> {
   const response = await fetch(
     `${API_BASE_URL}/search/artists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`
   );
@@ -80,7 +83,7 @@ export async function searchPlaylists(
   query: string,
   page = 0,
   limit = 10
-): Promise<ApiResponse<PaginatedResponse<Playlist>>> {
+): Promise<ApiResponse<PaginatedResponse<PlaylistSearchResult>>> {
   const response = await fetch(
     `${API_BASE_URL}/search/playlists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`
   );

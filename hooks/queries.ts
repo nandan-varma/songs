@@ -22,6 +22,9 @@ import type {
   Artist,
   Playlist,
   SearchResponse,
+  AlbumSearchResult,
+  ArtistSearchResult,
+  PlaylistSearchResult,
 } from '@/lib/types'
 
 // Query Keys
@@ -201,7 +204,7 @@ export function useSearchAlbums(
   query: string,
   limit = 20,
   options?: Omit<
-    UseInfiniteQueryOptions<{ total: number; results: Album[] }, Error, { total: number; results: Album[] }, readonly [string, string], number>,
+    UseInfiniteQueryOptions<{ total: number; results: AlbumSearchResult[] }, Error, { total: number; results: AlbumSearchResult[] }, readonly [string, string], number>,
     'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
   >
 ) {
@@ -226,7 +229,7 @@ export function useSearchArtists(
   query: string,
   limit = 20,
   options?: Omit<
-    UseInfiniteQueryOptions<{ total: number; results: Artist[] }, Error, { total: number; results: Artist[] }, readonly [string, string], number>,
+    UseInfiniteQueryOptions<{ total: number; results: ArtistSearchResult[] }, Error, { total: number; results: ArtistSearchResult[] }, readonly [string, string], number>,
     'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
   >
 ) {
@@ -251,7 +254,7 @@ export function useSearchPlaylists(
   query: string,
   limit = 20,
   options?: Omit<
-    UseInfiniteQueryOptions<{ total: number; results: Playlist[] }, Error, { total: number; results: Playlist[] }, readonly [string, string], number>,
+    UseInfiniteQueryOptions<{ total: number; results: PlaylistSearchResult[] }, Error, { total: number; results: PlaylistSearchResult[] }, readonly [string, string], number>,
     'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
   >
 ) {

@@ -85,6 +85,25 @@ export interface Album {
   songIds: string;
 }
 
+// Album type returned from paginated search API
+export interface AlbumSearchResult {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  year: number;
+  type: EntityType | string;
+  playCount: number | null;
+  language: Language | string;
+  explicitContent: boolean;
+  artists: {
+    primary: ArtistMini[];
+    featured: ArtistMini[];
+    all: ArtistMini[];
+  };
+  image: Image[];
+}
+
 export interface Artist {
   id: string;
   title: string;
@@ -92,6 +111,16 @@ export interface Artist {
   type: EntityType | string;
   description: string;
   position?: number;
+}
+
+// Artist type returned from paginated search API
+export interface ArtistSearchResult {
+  id: string;
+  name: string;
+  role: string;
+  image: Image[];
+  type: EntityType | string;
+  url: string;
 }
 
 export interface Playlist {
@@ -102,6 +131,18 @@ export interface Playlist {
   language: Language | string;
   type: EntityType | string;
   description: string;
+}
+
+// Playlist type returned from paginated search API
+export interface PlaylistSearchResult {
+  id: string;
+  name: string;
+  type: EntityType | string;
+  image: Image[];
+  url: string;
+  songCount: number;
+  language: Language | string;
+  explicitContent: boolean;
 }
 
 // Detailed types for individual pages

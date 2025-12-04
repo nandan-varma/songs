@@ -11,7 +11,15 @@ import { Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlaylistsList } from '@/components/playlists-list';
 import { detailedSongToSong } from '@/lib/utils';
-import { DetailedSong, Album, Artist, Playlist } from '@/lib/types';
+import { 
+  DetailedSong, 
+  Album, 
+  Artist, 
+  Playlist,
+  AlbumSearchResult,
+  ArtistSearchResult,
+  PlaylistSearchResult 
+} from '@/lib/types';
 import { 
   useGlobalSearch, 
   useSearchSongs, 
@@ -53,16 +61,49 @@ export function SearchContent() {
     enabled: activeTab === 'playlists' && queryParam.trim().length > 0,
   });
   
+  // Converter functions for search results
+  const albumSearchResultToAlbum = (album: AlbumSearchResult): Album => ({
+    id: album.id,
+    title: album.name,
+    image: album.image,
+    artist: album.artists.primary.map(a => a.name).join(', '),
+    url: album.url,
+    type: album.type,
+    description: album.description,
+    year: album.year.toString(),
+    language: album.language,
+    songIds: '',
+  });
+
+  const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
+    id: artist.id,
+    title: artist.name,
+    image: artist.image,
+    type: artist.type,
+    description: artist.role,
+    position: undefined,
+  });
+
+  const playlistSearchResultToPlaylist = (playlist: PlaylistSearchResult): Playlist => ({
+    id: playlist.id,
+    title: playlist.name,
+    image: playlist.image,
+    url: playlist.url,
+    language: playlist.language,
+    type: playlist.type,
+    description: `${playlist.songCount} songs`,
+  });
+
   // Flatten infinite query data
   const songsData = songsQuery.data as { pages: Array<{ total: number; results: DetailedSong[] }> } | undefined;
-  const albumsData = albumsQuery.data as { pages: Array<{ total: number; results: Album[] }> } | undefined;
-  const artistsData = artistsQuery.data as { pages: Array<{ total: number; results: Artist[] }> } | undefined;
-  const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: Playlist[] }> } | undefined;
+  const albumsData = albumsQuery.data as { pages: Array<{ total: number; results: AlbumSearchResult[] }> } | undefined;
+  const artistsData = artistsQuery.data as { pages: Array<{ total: number; results: ArtistSearchResult[] }> } | undefined;
+  const playlistsData = playlistsQuery.data as { pages: Array<{ total: number; results: PlaylistSearchResult[] }> } | undefined;
   
   const allSongs = songsData?.pages.flatMap(page => page.results.map(detailedSongToSong)) ?? [];
-  const allAlbums = albumsData?.pages.flatMap(page => page.results) ?? [];
-  const allArtists = artistsData?.pages.flatMap(page => page.results) ?? [];
-  const allPlaylists = playlistsData?.pages.flatMap(page => page.results) ?? [];
+  const allAlbums = albumsData?.pages.flatMap(page => page.results.map(albumSearchResultToAlbum)) ?? [];
+  const allArtists = artistsData?.pages.flatMap(page => page.results.map(artistSearchResultToArtist)) ?? [];
+  const allPlaylists = playlistsData?.pages.flatMap(page => page.results.map(playlistSearchResultToPlaylist)) ?? [];
   
   const totalSongs = songsData?.pages[0]?.total ?? 0;
   const totalAlbums = albumsData?.pages[0]?.total ?? 0;

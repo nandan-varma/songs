@@ -1,188 +1,202 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import type { EntityType } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import type { EntityType } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface ProgressiveImageProps {
-  images: Array<{ url: string; quality: string }>;
-  alt?: string;
-  className?: string;
-  entityType?: EntityType;
-  priority?: boolean;
-  fill?: boolean;
-  width?: number;
-  height?: number;
-  rounded?: 'none' | 'default' | 'full';
+	images: Array<{ url: string; quality: string }>;
+	alt?: string;
+	className?: string;
+	entityType?: EntityType;
+	priority?: boolean;
+	fill?: boolean;
+	width?: number;
+	height?: number;
+	rounded?: "none" | "default" | "full";
 }
 
-const FALLBACK_URL = 'https://placehold.co/500x500?text=Image+Not+Found';
+const FALLBACK_URL = "https://placehold.co/500x500?text=Image+Not+Found";
 
 export function ProgressiveImage({
-  images,
-  alt,
-  priority = false,
-  className,
-  fill = true,
-  width,
-  height,
-  rounded = 'default',
+	images,
+	alt,
+	priority = false,
+	className,
+	fill = true,
+	width,
+	height,
+	rounded = "default",
 }: ProgressiveImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>(() => {
-    // Start with lowest quality image or fallback
-    return images?.[0]?.url || FALLBACK_URL;
-  });
-  const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(() => {
-    return !images || images.length === 0;
-  });
-  const [hasError, setHasError] = useState(() => {
-    return !images || images.length === 0;
-  });
+	const [imageSrc, setImageSrc] = useState<string>(() => {
+		// Start with lowest quality image or fallback
+		return images?.[0]?.url || FALLBACK_URL;
+	});
+	const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(() => {
+		return !images || images.length === 0;
+	});
+	const [hasError, setHasError] = useState(() => {
+		return !images || images.length === 0;
+	});
 
-  useEffect(() => {
-    if (!images || images.length === 0) {
-      return;
-    }
-    
-    let cancelled = false;
-    
-    // Test low quality image first
-    const lowQualityUrl = images[0]?.url;
-    if (!lowQualityUrl) {
-      // Use a timeout to avoid setState in effect
-      const timeout = setTimeout(() => {
-        if (!cancelled) {
-          setImageSrc(FALLBACK_URL);
-          setHasError(true);
-          setIsHighQualityLoaded(true);
-        }
-      }, 0);
-      return () => {
-        cancelled = true;
-        clearTimeout(timeout);
-      };
-    }
+	useEffect(() => {
+		if (!images || images.length === 0) {
+			return;
+		}
 
-    // Preload low quality to check if it works
-    const lowImg = new window.Image();
-    lowImg.src = lowQualityUrl;
-    
-    lowImg.onload = () => {
-      if (cancelled) return;
-      // Low quality loaded successfully, use it
-      setImageSrc(lowQualityUrl);
-      setHasError(false);
-      setIsHighQualityLoaded(false);
+		let cancelled = false;
 
-      // Now try to load high quality image
-      const highQualityIndex = images.length - 1;
-      if (highQualityIndex > 0 && images[highQualityIndex]?.url) {
-        const highImg = new window.Image();
-        highImg.src = images[highQualityIndex].url;
-        highImg.onload = () => {
-          if (cancelled) return;
-          setImageSrc(images[highQualityIndex].url);
-          setIsHighQualityLoaded(true);
-        };
-        highImg.onerror = () => {
-          if (cancelled) return;
-          // High quality failed, but low quality is working
-          console.warn('Failed to load high quality image, staying with low quality');
-          setIsHighQualityLoaded(true);
-        };
-      } else {
-        if (!cancelled) {
-          setIsHighQualityLoaded(true);
-        }
-      }
-    };
+		// Test low quality image first
+		const lowQualityUrl = images[0]?.url;
+		if (!lowQualityUrl) {
+			// Use a timeout to avoid setState in effect
+			const timeout = setTimeout(() => {
+				if (!cancelled) {
+					setImageSrc(FALLBACK_URL);
+					setHasError(true);
+					setIsHighQualityLoaded(true);
+				}
+			}, 0);
+			return () => {
+				cancelled = true;
+				clearTimeout(timeout);
+			};
+		}
 
-    lowImg.onerror = () => {
-      if (cancelled) return;
-      // Low quality failed, use fallback immediately
-      console.warn('Failed to load image, using fallback');
-      setImageSrc(FALLBACK_URL);
-      setHasError(true);
-      setIsHighQualityLoaded(true);
-    };
-    
-    return () => {
-      cancelled = true;
-    };
-  }, [images]);
+		// Preload low quality to check if it works
+		const lowImg = new window.Image();
+		lowImg.src = lowQualityUrl;
 
-  const handleError = () => {
-    // Fallback in case Next.js Image onError is triggered
-    if (!hasError && imageSrc !== FALLBACK_URL) {
-      console.warn('Image error detected, switching to fallback');
-      setHasError(true);
-      setImageSrc(FALLBACK_URL);
-      setIsHighQualityLoaded(true);
-    }
-  };
+		lowImg.onload = () => {
+			if (cancelled) return;
+			// Low quality loaded successfully, use it
+			setImageSrc(lowQualityUrl);
+			setHasError(false);
+			setIsHighQualityLoaded(false);
 
-  const roundedClasses = {
-    none: '',
-    default: 'rounded',
-    full: 'rounded-full',
-  };
+			// Now try to load high quality image
+			const highQualityIndex = images.length - 1;
+			if (highQualityIndex > 0 && images[highQualityIndex]?.url) {
+				const highImg = new window.Image();
+				highImg.src = images[highQualityIndex].url;
+				highImg.onload = () => {
+					if (cancelled) return;
+					setImageSrc(images[highQualityIndex].url);
+					setIsHighQualityLoaded(true);
+				};
+				highImg.onerror = () => {
+					if (cancelled) return;
+					// High quality failed, but low quality is working
+					console.warn(
+						"Failed to load high quality image, staying with low quality",
+					);
+					setIsHighQualityLoaded(true);
+				};
+			} else {
+				if (!cancelled) {
+					setIsHighQualityLoaded(true);
+				}
+			}
+		};
 
-  const imageClassName = cn(
-    'object-cover transition-opacity duration-300',
-    !isHighQualityLoaded && 'blur-sm',
-    isHighQualityLoaded && 'blur-0',
-    className
-  );
+		lowImg.onerror = () => {
+			if (cancelled) return;
+			// Low quality failed, use fallback immediately
+			console.warn("Failed to load image, using fallback");
+			setImageSrc(FALLBACK_URL);
+			setHasError(true);
+			setIsHighQualityLoaded(true);
+		};
 
-  const wrapperClassName = cn(
-    'overflow-hidden bg-muted',
-    roundedClasses[rounded]
-  );
+		return () => {
+			cancelled = true;
+		};
+	}, [images]);
 
-  const imageAlt = hasError ? 'Image not found' : (alt || 'Image');
+	const handleError = () => {
+		// Fallback in case Next.js Image onError is triggered
+		if (!hasError && imageSrc !== FALLBACK_URL) {
+			console.warn("Image error detected, switching to fallback");
+			setHasError(true);
+			setImageSrc(FALLBACK_URL);
+			setIsHighQualityLoaded(true);
+		}
+	};
 
-  // Use regular img tag for fallback to avoid Next.js Image optimization issues
-  if (hasError) {
-    return (
-      <div className={wrapperClassName}>
-        <img
-          src={FALLBACK_URL}
-          alt={imageAlt}
-          className={cn(imageClassName, fill ? 'absolute inset-0 w-full h-full' : '')}
-          style={fill ? { position: 'absolute', height: '100%', width: '100%', inset: 0 } : undefined}
-        />
-      </div>
-    );
-  }
+	const roundedClasses = {
+		none: "",
+		default: "rounded",
+		full: "rounded-full",
+	};
 
-  if (fill) {
-    return (
-      <div className={wrapperClassName}>
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          className={imageClassName}
-          onError={handleError}
-          priority={priority}
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </div>
-    );
-  }
+	const imageClassName = cn(
+		"object-cover transition-opacity duration-300",
+		!isHighQualityLoaded && "blur-sm",
+		isHighQualityLoaded && "blur-0",
+		className,
+	);
 
-  return (
-    <div className={wrapperClassName}>
-      <Image
-        src={imageSrc}
-        alt={imageAlt}
-        width={width || 500}
-        height={height || 500}
-        className={imageClassName}
-        onError={handleError}
-        priority={priority}
-      />
-    </div>
-  );
+	const wrapperClassName = cn(
+		"overflow-hidden bg-muted",
+		roundedClasses[rounded],
+	);
+
+	const imageAlt = hasError ? "Image not found" : alt || "Image";
+
+	// Use regular img tag for fallback to avoid Next.js Image optimization issues
+	if (hasError) {
+		return (
+			<div className={wrapperClassName}>
+				<img
+					src={FALLBACK_URL}
+					alt={imageAlt}
+					className={cn(
+						imageClassName,
+						fill ? "absolute inset-0 w-full h-full" : "",
+					)}
+					style={
+						fill
+							? {
+									position: "absolute",
+									height: "100%",
+									width: "100%",
+									inset: 0,
+								}
+							: undefined
+					}
+				/>
+			</div>
+		);
+	}
+
+	if (fill) {
+		return (
+			<div className={wrapperClassName}>
+				<Image
+					src={imageSrc}
+					alt={imageAlt}
+					fill
+					className={imageClassName}
+					onError={handleError}
+					priority={priority}
+					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+				/>
+			</div>
+		);
+	}
+
+	return (
+		<div className={wrapperClassName}>
+			<Image
+				src={imageSrc}
+				alt={imageAlt}
+				width={width || 500}
+				height={height || 500}
+				className={imageClassName}
+				onError={handleError}
+				priority={priority}
+			/>
+		</div>
+	);
 }

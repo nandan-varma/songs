@@ -58,14 +58,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [queue, setQueue] = useState<DetailedSong[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  /** Keep audio element volume in sync with state */
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.volume = volume;
-    }
-  }, [volume]);
-
   /** Play a single song, optionally replacing the queue */
   const playSong = useCallback((song: DetailedSong, replaceQueue = true) => {
     setCurrentSong(song);
@@ -150,18 +142,24 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   /** Seek to a specific time in the current song */
   const seekTo = useCallback((time: number) => {
     const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = time;
-      setCurrentTime(time);
+    if (audio && !isNaN(time) && isFinite(time)) {
+      const clampedTime = Math.max(0, Math.min(audio.duration || 0, time));
+      try {
+        audio.currentTime = clampedTime;
+        setCurrentTime(clampedTime);
+      } catch (error) {
+        console.error('Error seeking to time:', error);
+      }
     }
   }, []);
 
   /** Set the volume level (0-1) */
   const setVolume = useCallback((newVolume: number) => {
-    setVolumeState(newVolume);
+    const clampedVolume = Math.max(0, Math.min(1, newVolume));
+    setVolumeState(clampedVolume);
     const audio = audioRef.current;
     if (audio) {
-      audio.volume = newVolume;
+      audio.volume = clampedVolume;
     }
   }, []);
 
@@ -212,46 +210,80 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
    * Checks periodically for audio element existence (rendered by child component)
    */
   const playNextRef = useRef(playNext);
-  playNextRef.current = playNext;
+  
+  useEffect(() => {
+    playNextRef.current = playNext;
+  }, [playNext]);
 
   useEffect(() => {
-    const setupListeners = () => {
-      const audio = audioRef.current;
-      if (!audio) return null;
+    let cleanup: (() => void) | null = null;
+    let checkInterval: NodeJS.Timeout | null = null;
+    let isActive = true;
 
-      const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-      const handleDurationChange = () => setDuration(audio.duration);
-      const handleEnded = () => playNextRef.current();
-      const handlePlay = () => setIsPlaying(true);
-      const handlePause = () => setIsPlaying(false);
+    const setupListeners = () => {
+      if (!isActive) return false;
+      
+      const audio = audioRef.current;
+      if (!audio) return false;
+
+      const handleTimeUpdate = () => {
+        if (isActive) setCurrentTime(audio.currentTime);
+      };
+      const handleDurationChange = () => {
+        if (isActive) setDuration(audio.duration || 0);
+      };
+      const handleEnded = () => {
+        if (isActive) playNextRef.current();
+      };
+      const handlePlay = () => {
+        if (isActive) setIsPlaying(true);
+      };
+      const handlePause = () => {
+        if (isActive) setIsPlaying(false);
+      };
+      const handleError = (e: Event) => {
+        console.error('Audio playback error:', e);
+        if (isActive) setIsPlaying(false);
+      };
 
       audio.addEventListener('timeupdate', handleTimeUpdate);
       audio.addEventListener('durationchange', handleDurationChange);
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('play', handlePlay);
       audio.addEventListener('pause', handlePause);
+      audio.addEventListener('error', handleError);
 
-      return () => {
+      cleanup = () => {
         audio.removeEventListener('timeupdate', handleTimeUpdate);
         audio.removeEventListener('durationchange', handleDurationChange);
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('play', handlePlay);
         audio.removeEventListener('pause', handlePause);
+        audio.removeEventListener('error', handleError);
       };
+
+      return true;
     };
 
-    const cleanup = setupListeners();
-    if (cleanup) return cleanup;
-
-    const checkInterval = setInterval(() => {
-      const cleanup = setupListeners();
-      if (cleanup) {
-        clearInterval(checkInterval);
-      }
-    }, AUDIO_CHECK_INTERVAL_MS);
+    // Try to setup listeners immediately
+    if (!setupListeners()) {
+      // If audio element not ready, poll for it
+      checkInterval = setInterval(() => {
+        if (setupListeners() && checkInterval) {
+          clearInterval(checkInterval);
+          checkInterval = null;
+        }
+      }, AUDIO_CHECK_INTERVAL_MS);
+    }
 
     return () => {
-      clearInterval(checkInterval);
+      isActive = false;
+      if (cleanup) {
+        cleanup();
+      }
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
     };
   }, []);
 

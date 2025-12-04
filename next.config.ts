@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
         hostname: 'www.jiosaavn.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'static.saavncdn.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        pathname: '/**',
+      }
     ],
   },
 };

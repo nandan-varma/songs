@@ -1,50 +1,47 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { getArtistById } from '@/lib/api';
-import { DetailedArtist } from '@/lib/types';
 import { usePlayer } from '@/contexts/player-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Play, Plus, Download, Loader2, User, ExternalLink } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { ProgressiveImage } from '@/components/progressive-image';
 import { toast } from 'sonner';
+import { LoadMoreButton } from '@/components/load-more-button';
+import { useArtist, useArtistSongs, useArtistAlbums } from '@/hooks/queries';
+import { DetailedSong, DetailedAlbum, EntityType } from '@/lib/types';
 
 export default function ArtistPage() {
   const params = useParams();
   const artistId = params.id as string;
   const { playQueue, playSong, addToQueue } = usePlayer();
   
-  const [artist, setArtist] = useState<DetailedArtist | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const response = await getArtistById(artistId, {
-          songCount: 20,
-          albumCount: 20,
-        });
-        
-        if (response.data) {
-          setArtist(response.data);
-        }
-      } catch (err) {
-        setError('Failed to load artist');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [artistId]);
+  const { data: artist, isLoading, error } = useArtist(artistId, {
+    songCount: 0,
+    albumCount: 0,
+  });
+  
+  const songsQuery = useArtistSongs(artistId, 'popularity', 'desc');
+  const albumsQuery = useArtistAlbums(artistId, 'popularity', 'desc');
+  
+  const songsData = songsQuery.data as { pages: Array<{ total: number; songs: DetailedSong[] }> } | undefined;
+  const albumsData = albumsQuery.data as { pages: Array<{ total: number; albums: DetailedAlbum[] }> } | undefined;
+  
+  const allSongs: DetailedSong[] = songsData?.pages.flatMap(page => page.songs) ?? [];
+  const allAlbums: DetailedAlbum[] = albumsData?.pages.flatMap(page => page.albums) ?? [];
+  const totalSongs = songsData?.pages[0]?.total ?? 0;
+  const totalAlbums = albumsData?.pages[0]?.total ?? 0;
+  
+  const fetchNextSongsPage = songsQuery.fetchNextPage;
+  const hasMoreSongs = songsQuery.hasNextPage;
+  const isLoadingMoreSongs = songsQuery.isFetchingNextPage;
+  
+  const fetchNextAlbumsPage = albumsQuery.fetchNextPage;
+  const hasMoreAlbums = albumsQuery.hasNextPage;
+  const isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
 
   if (isLoading) {
     return (
@@ -57,12 +54,10 @@ export default function ArtistPage() {
   if (error || !artist) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-center text-destructive">{error || 'Artist not found'}</p>
+        <p className="text-center text-destructive">{error instanceof Error ? error.message : 'Artist not found'}</p>
       </div>
     );
   }
-
-  const imageUrl = artist.image?.[2]?.url || artist.image?.[0]?.url;
 
   return (
     <div className="container mx-auto px-4 py-8 pb-32 space-y-8">
@@ -71,20 +66,14 @@ export default function ArtistPage() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Artist Image */}
-            <div className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-full overflow-hidden bg-muted">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={artist.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <User className="h-24 w-24 text-muted-foreground" />
-                </div>
-              )}
+            <div className="relative aspect-square w-full md:w-64 flex-shrink-0">
+              <ProgressiveImage
+                images={artist.image}
+                alt={artist.name}
+                entityType={EntityType.ARTIST}
+                rounded="full"
+                priority
+              />
             </div>
 
             {/* Artist Details */}
@@ -158,12 +147,12 @@ export default function ArtistPage() {
 
         {/* Top Songs */}
         <TabsContent value="songs" className="space-y-4">
-          {artist.topSongs && artist.topSongs.length > 0 ? (
+          {allSongs.length > 0 ? (
             <>
               <div className="flex gap-2">
                 <Button
                   onClick={() => {
-                    playQueue(artist.topSongs || []);
+                    playQueue(allSongs);
                     toast.success(`Playing ${artist.name}'s top songs`);
                   }}
                   className="gap-2"
@@ -173,20 +162,18 @@ export default function ArtistPage() {
                 </Button>
               </div>
               <div className="grid gap-2">
-                {artist.topSongs.map((song, index) => (
+                {allSongs.map((song, index) => (
                   <Card key={song.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
                         <span className="text-sm text-muted-foreground w-6">{index + 1}</span>
-                        <div className="relative h-12 w-12 flex-shrink-0 rounded overflow-hidden bg-muted">
-                          {song.image?.[0]?.url && (
-                            <Image
-                              src={song.image[0].url}
-                              alt={song.name}
-                              fill
-                              className="object-cover"
-                            />
-                          )}
+                        <div className="relative h-12 w-12 flex-shrink-0">
+                          <ProgressiveImage
+                            images={song.image}
+                            alt={song.name}
+                            entityType={EntityType.SONG}
+                            rounded="default"
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <Link href={`/songs/${song.id}`}>
@@ -250,7 +237,18 @@ export default function ArtistPage() {
                   </Card>
                 ))}
               </div>
+              <LoadMoreButton
+                onLoadMore={fetchNextSongsPage}
+                isLoading={isLoadingMoreSongs}
+                currentCount={allSongs.length}
+                totalCount={totalSongs}
+                hasMore={hasMoreSongs ?? false}
+              />
             </>
+          ) : !songsData ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">No songs available</p>
           )}
@@ -258,34 +256,45 @@ export default function ArtistPage() {
 
         {/* Albums */}
         <TabsContent value="albums" className="space-y-4">
-          {artist.topAlbums && artist.topAlbums.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {artist.topAlbums.map((album) => (
-                <Card key={album.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
-                  <CardContent className="p-4">
-                    <Link href={`/albums/${album.id}`}>
-                      <div className="space-y-3">
-                        <div className="relative aspect-square w-full rounded overflow-hidden bg-muted">
-                          {album.image?.[2]?.url && (
-                            <Image
-                              src={album.image[2].url}
+          {allAlbums.length > 0 ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {allAlbums.map((album) => (
+                  <Card key={album.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
+                    <CardContent className="p-4">
+                      <Link href={`/albums/${album.id}`}>
+                        <div className="space-y-3">
+                          <div className="relative aspect-square w-full">
+                            <ProgressiveImage
+                              images={album.image}
                               alt={album.name}
-                              fill
-                              className="object-cover"
+                              entityType={EntityType.ALBUM}
+                              rounded="default"
                             />
-                          )}
+                          </div>
+                          <div className="space-y-1">
+                            <h3 className="font-medium truncate hover:underline">{album.name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {album.year}
+                            </p>
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <h3 className="font-medium truncate hover:underline">{album.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {album.year}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <LoadMoreButton
+                onLoadMore={fetchNextAlbumsPage}
+                isLoading={isLoadingMoreAlbums}
+                currentCount={allAlbums.length}
+                totalCount={totalAlbums}
+                hasMore={hasMoreAlbums ?? false}
+              />
+            </>
+          ) : !albumsData ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">No albums available</p>
@@ -300,15 +309,13 @@ export default function ArtistPage() {
                 <Card key={song.id} className="overflow-hidden hover:bg-accent/50 transition-colors">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      <div className="relative h-12 w-12 flex-shrink-0 rounded overflow-hidden bg-muted">
-                        {song.image?.[0]?.url && (
-                          <Image
-                            src={song.image[0].url}
-                            alt={song.name}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
+                      <div className="relative h-12 w-12 flex-shrink-0">
+                        <ProgressiveImage
+                          images={song.image}
+                          alt={song.name}
+                          entityType={EntityType.SONG}
+                          rounded="default"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <Link href={`/songs/${song.id}`}>
@@ -401,15 +408,13 @@ export default function ArtistPage() {
                 <CardContent className="p-4">
                   <Link href={`/artists/${similarArtist.id}`}>
                     <div className="space-y-3">
-                      <div className="relative aspect-square w-full rounded-full overflow-hidden bg-muted">
-                        {similarArtist.image?.[2]?.url && (
-                          <Image
-                            src={similarArtist.image[2].url}
-                            alt={similarArtist.name}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
+                      <div className="relative aspect-square w-full">
+                        <ProgressiveImage
+                          images={similarArtist.image}
+                          alt={similarArtist.name}
+                          entityType={EntityType.ARTIST}
+                          rounded="full"
+                        />
                       </div>
                       <div className="text-center">
                         <h3 className="font-medium truncate hover:underline">{similarArtist.name}</h3>

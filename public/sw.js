@@ -20,14 +20,16 @@ self.addEventListener("install", (event) => {
 							if (response.ok) {
 								return cache.put(url, response);
 							}
-							console.warn(`[Service Worker] Failed to cache ${url}: ${response.status}`);
+							console.warn(
+								`[Service Worker] Failed to cache ${url}: ${response.status}`,
+							);
 							return Promise.resolve();
 						})
 						.catch((err) => {
 							console.warn(`[Service Worker] Failed to fetch ${url}:`, err);
 							return Promise.resolve();
-						})
-				)
+						}),
+				),
 			).then(() => {
 				console.log("[Service Worker] Static assets caching complete");
 			});

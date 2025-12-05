@@ -64,7 +64,7 @@ export const DownloadButton = memo(function DownloadButton({
 		return baseClass;
 	};
 
-		return (
+	return (
 		<Button
 			size={size}
 			variant={variant}
@@ -75,9 +75,7 @@ export const DownloadButton = memo(function DownloadButton({
 		>
 			{getIcon()}
 			{showLabel && (
-				<span className="ml-2">
-					{isDownloaded ? "Downloaded" : "Download"}
-				</span>
+				<span className="ml-2">{isDownloaded ? "Downloaded" : "Download"}</span>
 			)}
 		</Button>
 	);

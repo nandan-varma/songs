@@ -98,19 +98,19 @@ export default function SongPage() {
 				<CardContent className="p-6">
 					<div className="flex flex-col md:flex-row gap-6">
 						{/* Album Art */}
-					<div className="w-full md:w-64 flex-shrink-0">
-						{song.image && song.image.length > 0 ? (
-							<ProgressiveImage
-								images={song.image}
-								alt={song.name}
-								entityType={EntityType.SONG}
-								rounded="default"
-								priority
-								objectFit="contain"
-								fill={false}
-								width={256}
-								height={256}
-							/>
+						<div className="w-full md:w-64 flex-shrink-0">
+							{song.image && song.image.length > 0 ? (
+								<ProgressiveImage
+									images={song.image}
+									alt={song.name}
+									entityType={EntityType.SONG}
+									rounded="default"
+									priority
+									objectFit="contain"
+									fill={false}
+									width={256}
+									height={256}
+								/>
 							) : (
 								<div className="flex aspect-square h-full w-full items-center justify-center bg-muted rounded-lg">
 									<Music className="h-24 w-24 text-muted-foreground" />

@@ -5,11 +5,11 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { CachedSong } from "@/contexts/downloads-context";
 import { useDownloads } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
 import { usePlayerActions } from "@/contexts/player-context";
 import { musicDB } from "@/lib/db";
-import type { CachedSong } from "@/contexts/downloads-context";
 
 interface SongItemProps {
 	item: CachedSong;
@@ -37,8 +37,14 @@ const SongItem = memo(function SongItem({
 	}, [item.song.duration]);
 
 	const handlePlay = useCallback(() => onPlay(item.song), [onPlay, item.song]);
-	const handleAddToQueue = useCallback(() => onAddToQueue(item.song), [onAddToQueue, item.song]);
-	const handleRemove = useCallback(() => onRemove(item.song.id), [onRemove, item.song.id]);
+	const handleAddToQueue = useCallback(
+		() => onAddToQueue(item.song),
+		[onAddToQueue, item.song],
+	);
+	const handleRemove = useCallback(
+		() => onRemove(item.song.id),
+		[onRemove, item.song.id],
+	);
 
 	const src = useMemo(() => {
 		return (
@@ -78,9 +84,7 @@ const SongItem = memo(function SongItem({
 						)}
 					</div>
 
-					<div className="text-sm text-muted-foreground">
-						{formatDuration}
-					</div>
+					<div className="text-sm text-muted-foreground">{formatDuration}</div>
 
 					<div className="flex items-center gap-2">
 						<Button
@@ -121,7 +125,10 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
 
-	const cachedSongsArray = useMemo(() => Array.from(cachedSongs.values()), [cachedSongs]);
+	const cachedSongsArray = useMemo(
+		() => Array.from(cachedSongs.values()),
+		[cachedSongs],
+	);
 
 	// Load cached images from IndexedDB
 	useEffect(() => {
@@ -163,9 +170,18 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 		};
 	}, [cachedSongsArray]);
 
-	const handlePlay = useCallback((song: CachedSong["song"]) => playSong(song), [playSong]);
-	const handleAddToQueue = useCallback((song: CachedSong["song"]) => addToQueue(song), [addToQueue]);
-	const handleRemove = useCallback((songId: string) => removeSong(songId), [removeSong]);
+	const handlePlay = useCallback(
+		(song: CachedSong["song"]) => playSong(song),
+		[playSong],
+	);
+	const handleAddToQueue = useCallback(
+		(song: CachedSong["song"]) => addToQueue(song),
+		[addToQueue],
+	);
+	const handleRemove = useCallback(
+		(songId: string) => removeSong(songId),
+		[removeSong],
+	);
 
 	if (cachedSongsArray.length === 0) {
 		return (

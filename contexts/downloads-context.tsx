@@ -71,65 +71,68 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		loadCachedSongs();
 	}, []);
 
-	const downloadSong = useCallback(async (song: DetailedSong) => {
-		if (isDownloading || cachedSongs.has(song.id)) return;
+	const downloadSong = useCallback(
+		async (song: DetailedSong) => {
+			if (isDownloading || cachedSongs.has(song.id)) return;
 
-		setIsDownloading(true);
+			setIsDownloading(true);
 
-		try {
-			// Get the highest quality download URL
-			const downloadUrl =
-				song.downloadUrl.find((url) => url.quality === "320kbps") ||
-				song.downloadUrl[0];
+			try {
+				// Get the highest quality download URL
+				const downloadUrl =
+					song.downloadUrl.find((url) => url.quality === "320kbps") ||
+					song.downloadUrl[0];
 
-			if (!downloadUrl?.url) {
-				throw new Error("No download URL available");
-			}
-
-			// Fetch the audio file
-			const response = await fetch(downloadUrl.url);
-
-			if (!response.ok) {
-				throw new Error(`Failed to download: ${response.statusText}`);
-			}
-
-			const blob = await response.blob();
-
-			// Save to IndexedDB
-			await musicDB.saveSong(song);
-			await musicDB.saveAudioBlob(song.id, blob);
-
-			// Cache images
-			for (const img of song.image) {
-				try {
-					const imgResponse = await fetch(img.url);
-					if (imgResponse.ok) {
-						const imgBlob = await imgResponse.blob();
-						await musicDB.saveImageBlob(
-							`${song.id}-${img.quality}`,
-							imgBlob,
-							{ songId: song.id, quality: img.quality },
-						);
-					}
-				} catch (imgError) {
-					console.warn(`Failed to cache image for ${song.id}:`, imgError);
+				if (!downloadUrl?.url) {
+					throw new Error("No download URL available");
 				}
+
+				// Fetch the audio file
+				const response = await fetch(downloadUrl.url);
+
+				if (!response.ok) {
+					throw new Error(`Failed to download: ${response.statusText}`);
+				}
+
+				const blob = await response.blob();
+
+				// Save to IndexedDB
+				await musicDB.saveSong(song);
+				await musicDB.saveAudioBlob(song.id, blob);
+
+				// Cache images
+				for (const img of song.image) {
+					try {
+						const imgResponse = await fetch(img.url);
+						if (imgResponse.ok) {
+							const imgBlob = await imgResponse.blob();
+							await musicDB.saveImageBlob(
+								`${song.id}-${img.quality}`,
+								imgBlob,
+								{ songId: song.id, quality: img.quality },
+							);
+						}
+					} catch (imgError) {
+						console.warn(`Failed to cache image for ${song.id}:`, imgError);
+					}
+				}
+
+				// Add to cache
+				const cachedSong: CachedSong = {
+					song,
+					blob,
+					downloadedAt: new Date(),
+				};
+
+				setCachedSongs((prev) => new Map(prev.set(song.id, cachedSong)));
+			} catch (error) {
+				console.error(`Error downloading song ${song.name}:`, error);
+			} finally {
+				setIsDownloading(false);
 			}
-
-			// Add to cache
-			const cachedSong: CachedSong = {
-				song,
-				blob,
-				downloadedAt: new Date(),
-			};
-
-			setCachedSongs((prev) => new Map(prev.set(song.id, cachedSong)));
-		} catch (error) {
-			console.error(`Error downloading song ${song.name}:`, error);
-		} finally {
-			setIsDownloading(false);
-		}
-	}, [isDownloading, cachedSongs]);
+		},
+		[isDownloading, cachedSongs],
+	);
 
 	const removeSong = useCallback((songId: string) => {
 		setCachedSongs((prev) => {
@@ -141,13 +144,19 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		musicDB.deleteSong(songId).catch(console.error);
 	}, []);
 
-	const getSongBlob = useCallback((songId: string): Blob | null => {
-		return cachedSongs.get(songId)?.blob || null;
-	}, [cachedSongs]);
+	const getSongBlob = useCallback(
+		(songId: string): Blob | null => {
+			return cachedSongs.get(songId)?.blob || null;
+		},
+		[cachedSongs],
+	);
 
-	const isSongCached = useCallback((songId: string): boolean => {
-		return cachedSongs.has(songId);
-	}, [cachedSongs]);
+	const isSongCached = useCallback(
+		(songId: string): boolean => {
+			return cachedSongs.has(songId);
+		},
+		[cachedSongs],
+	);
 
 	const saveToDevice = useCallback(async () => {
 		const cachedSongsArray = Array.from(cachedSongs.values());
@@ -159,7 +168,11 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 
 		try {
 			if ("showDirectoryPicker" in window) {
-				const dirHandle = await (window as Window & { showDirectoryPicker(): Promise<FileSystemDirectoryHandle> }).showDirectoryPicker();
+				const dirHandle = await (
+					window as Window & {
+						showDirectoryPicker(): Promise<FileSystemDirectoryHandle>;
+					}
+				).showDirectoryPicker();
 				for (const cachedSong of cachedSongsArray) {
 					const fileName = `${cachedSong.song.name}.mp3`
 						.replace(/[<>:"/\\|?*]/g, "_")

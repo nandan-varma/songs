@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AudioPlayer } from "@/components/audio-player";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { Navigation } from "@/components/navigation";
 import { ServiceWorkerManager } from "@/components/offline/service-worker-manager";
 import { Toaster } from "@/components/ui/sonner";
@@ -60,7 +61,9 @@ export default function RootLayout({
 					<Navigation />
 					<BreadcrumbNav />
 					<main className="pb-32 md:pb-36">{children}</main>
-					<AudioPlayer />
+					<ErrorBoundary context="AudioPlayer">
+						<AudioPlayer />
+					</ErrorBoundary>
 					<Toaster />
 				</Providers>
 			</body>

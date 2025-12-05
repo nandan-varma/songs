@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { usePlayerActions } from "@/contexts/player-context";
@@ -12,7 +12,9 @@ interface SongsListProps {
 	songs: Song[];
 }
 
-export function SongsList({ songs }: SongsListProps) {
+export const SongsList = React.memo(function SongsList({
+	songs,
+}: SongsListProps) {
 	const { playSong, addToQueue } = usePlayerActions();
 	const { addToDownloadQueue } = useDownloadsActions();
 
@@ -79,4 +81,4 @@ export function SongsList({ songs }: SongsListProps) {
 			</div>
 		</div>
 	);
-}
+});

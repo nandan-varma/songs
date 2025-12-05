@@ -113,9 +113,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 		[isOfflineMode, isSongCached],
 	);
 
-	const shouldEnableQuery = useCallback((): boolean => {
-		return !isOfflineMode;
-	}, [isOfflineMode]);
+	const shouldEnableQuery = useCallback(() => !isOfflineMode, [isOfflineMode]);
 
 	const value = useMemo(
 		() => ({

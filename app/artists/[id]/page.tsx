@@ -4,6 +4,7 @@ import { ExternalLink, Loader2, Play } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +17,7 @@ import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
 
-export default function ArtistPage() {
+function ArtistPageContent() {
 	const params = useParams();
 	const artistId = params.id as string;
 	const { playQueue } = useOfflinePlayerActions();
@@ -338,5 +339,13 @@ export default function ArtistPage() {
 				</div>
 			)}
 		</div>
+	);
+}
+
+export default function ArtistPage() {
+	return (
+		<ErrorBoundary context="ArtistPage">
+			<ArtistPageContent />
+		</ErrorBoundary>
 	);
 }

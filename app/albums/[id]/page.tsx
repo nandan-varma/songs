@@ -4,6 +4,7 @@ import { Disc3, Loader2, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
 
-export default function AlbumPage() {
+function AlbumPageContent() {
 	const params = useParams();
 	const albumId = params.id as string;
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
@@ -171,5 +172,13 @@ export default function AlbumPage() {
 				<SongsList songs={filteredSongs.map(detailedSongToSong)} />
 			)}
 		</div>
+	);
+}
+
+export default function AlbumPage() {
+	return (
+		<ErrorBoundary context="AlbumPage">
+			<AlbumPageContent />
+		</ErrorBoundary>
 	);
 }

@@ -3,6 +3,7 @@
 import { Loader2, Play, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
 
-export default function PlaylistPage() {
+function PlaylistPageContent() {
 	const params = useParams();
 	const playlistId = params.id as string;
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
@@ -145,5 +146,13 @@ export default function PlaylistPage() {
 				<SongsList songs={filteredSongs.map(detailedSongToSong)} />
 			)}
 		</div>
+	);
+}
+
+export default function PlaylistPage() {
+	return (
+		<ErrorBoundary context="PlaylistPage">
+			<PlaylistPageContent />
+		</ErrorBoundary>
 	);
 }

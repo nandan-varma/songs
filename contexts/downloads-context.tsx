@@ -71,6 +71,7 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 	const [cachedSongs, setCachedSongs] = useState<Map<string, DownloadItem>>(
 		new Map(),
 	);
+	const downloadControllerRef = useRef<AbortController | null>(null);
 
 	// Load cached songs from IndexedDB on mount
 	useEffect(() => {
@@ -82,7 +83,7 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 
 				for (const cachedSong of dbSongs) {
 					const audioBlob = await musicDB.getAudioBlob(cachedSong.id);
-					if (audioBlob) {
+					if (audioBlob && cachedSong.metadata) {
 						cacheMap.set(cachedSong.id, {
 							id: `${cachedSong.id}-${cachedSong.cachedAt}`,
 							song: cachedSong.metadata,
@@ -93,7 +94,6 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 						});
 					}
 				}
-
 				// Fallback to localStorage for migration
 				if (cacheMap.size === 0) {
 					const cached = localStorage.getItem(CACHE_KEY);
@@ -139,6 +139,10 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 	const downloadSong = useCallback(async (downloadItem: DownloadItem) => {
 		const { song } = downloadItem;
 
+		// Create abort controller for this download
+		const controller = new AbortController();
+		downloadControllerRef.current = controller;
+
 		try {
 			// Get the highest quality download URL
 			const downloadUrl =
@@ -159,7 +163,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 			);
 
 			// Fetch the audio file
-			const response = await fetch(downloadUrl.url);
+			const response = await fetch(downloadUrl.url, {
+				signal: controller.signal,
+			});
 
 			if (!response.ok) {
 				throw new Error(`Failed to download: ${response.statusText}`);
@@ -205,7 +211,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				// Cache images
 				for (const img of song.image) {
 					try {
-						const imgResponse = await fetch(img.url);
+						const imgResponse = await fetch(img.url, {
+							signal: controller.signal,
+						});
 						if (imgResponse.ok) {
 							const imgBlob = await imgResponse.blob();
 							await musicDB.saveImageBlob(
@@ -239,6 +247,11 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 
 			setCachedSongs((prev) => new Map(prev.set(song.id, completedItem)));
 		} catch (error) {
+			if (error instanceof Error && error.name === "AbortError") {
+				// Download was cancelled, don't mark as failed
+				return;
+			}
+
 			console.error(`Error downloading song ${song.name}:`, error);
 
 			setDownloads((prev) =>
@@ -253,6 +266,8 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 						: item,
 				),
 			);
+		} finally {
+			downloadControllerRef.current = null;
 		}
 	}, []);
 
@@ -278,6 +293,13 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		};
 
 		processQueue();
+
+		return () => {
+			// Abort any ongoing download when effect cleans up
+			if (downloadControllerRef.current) {
+				downloadControllerRef.current.abort();
+			}
+		};
 	}, [downloads, downloadSong]);
 
 	const addToDownloadQueue = useCallback(

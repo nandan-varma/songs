@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Clock, Download, Music, Play, Plus } from "lucide-react";
+import { Check, Download, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 import { useDownloadsActions } from "@/contexts/downloads-context";
@@ -24,10 +24,9 @@ export const SongItem = memo(function SongItem({
 	onDownload,
 	showDownload = true,
 }: SongItemProps) {
-	const { isSongCached, isSongInQueue } = useDownloadsActions();
+	const { isSongCached } = useDownloadsActions();
 
 	const isDownloaded = isSongCached(song.id);
-	const isInDownloadQueue = isSongInQueue(song.id);
 
 	const handlePlay = useCallback(
 		(e: React.MouseEvent) => {
@@ -111,26 +110,14 @@ export const SongItem = memo(function SongItem({
 								size="icon"
 								variant="ghost"
 								onClick={handleDownload}
-								disabled={isDownloaded || isInDownloadQueue || !onDownload}
+								disabled={isDownloaded || !onDownload}
 								aria-label={
-									isDownloaded
-										? "Already downloaded"
-										: isInDownloadQueue
-											? "In download queue"
-											: "Download song"
+									isDownloaded ? "Already downloaded" : "Download song"
 								}
-								className={
-									isDownloaded
-										? "text-green-600"
-										: isInDownloadQueue
-											? "text-blue-600"
-											: ""
-								}
+								className={isDownloaded ? "text-green-600" : ""}
 							>
 								{isDownloaded ? (
 									<Check className="h-4 w-4" />
-								) : isInDownloadQueue ? (
-									<Clock className="h-4 w-4" />
 								) : (
 									<Download className="h-4 w-4" />
 								)}

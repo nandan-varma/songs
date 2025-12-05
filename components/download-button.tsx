@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Clock, Download } from "lucide-react";
+import { Check, Download } from "lucide-react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
@@ -22,14 +22,12 @@ export const DownloadButton = memo(function DownloadButton({
 	className = "",
 	showLabel = false,
 }: DownloadButtonProps) {
-	const { addToDownloadQueue, isSongCached, isSongInQueue } =
-		useDownloadsActions();
+	const { downloadSong, isSongCached } = useDownloadsActions();
 
 	const isDownloaded = isSongCached(song.id);
-	const isInDownloadQueue = isSongInQueue(song.id);
 
 	const handleDownload = useCallback(
-		(e: React.MouseEvent) => {
+		async (e: React.MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 
@@ -38,23 +36,15 @@ export const DownloadButton = memo(function DownloadButton({
 				return;
 			}
 
-			if (isInDownloadQueue) {
-				toast.info("Song is already in download queue");
-				return;
-			}
-
-			addToDownloadQueue(song);
-			toast.success(`Added to download queue: ${song.name}`);
+			await downloadSong(song);
+			toast.success(`Downloaded: ${song.name}`);
 		},
-		[song, addToDownloadQueue, isDownloaded, isInDownloadQueue],
+		[song, downloadSong, isDownloaded],
 	);
 
 	const getIcon = () => {
 		if (isDownloaded) {
 			return <Check className="h-4 w-4" />;
-		}
-		if (isInDownloadQueue) {
-			return <Clock className="h-4 w-4" />;
 		}
 		return <Download className="h-4 w-4" />;
 	};
@@ -62,9 +52,6 @@ export const DownloadButton = memo(function DownloadButton({
 	const getAriaLabel = () => {
 		if (isDownloaded) {
 			return "Already downloaded";
-		}
-		if (isInDownloadQueue) {
-			return "In download queue";
 		}
 		return "Download song";
 	};
@@ -74,29 +61,22 @@ export const DownloadButton = memo(function DownloadButton({
 		if (isDownloaded) {
 			return `${baseClass} text-green-600 hover:text-green-700`;
 		}
-		if (isInDownloadQueue) {
-			return `${baseClass} text-blue-600 hover:text-blue-700`;
-		}
 		return baseClass;
 	};
 
-	return (
+		return (
 		<Button
 			size={size}
 			variant={variant}
 			onClick={handleDownload}
-			disabled={isDownloaded || isInDownloadQueue}
+			disabled={isDownloaded}
 			aria-label={getAriaLabel()}
 			className={getButtonClassName()}
 		>
 			{getIcon()}
 			{showLabel && (
 				<span className="ml-2">
-					{isDownloaded
-						? "Downloaded"
-						: isInDownloadQueue
-							? "In Queue"
-							: "Download"}
+					{isDownloaded ? "Downloaded" : "Download"}
 				</span>
 			)}
 		</Button>

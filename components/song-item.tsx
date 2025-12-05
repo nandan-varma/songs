@@ -1,24 +1,34 @@
 "use client";
 
-import { Music, Play, Plus } from "lucide-react";
+import { Music, Play, Plus, Download, Check, Clock } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 import { EntityType, type Song } from "@/lib/types";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
+import { useDownloadsActions } from "@/contexts/downloads-context";
 
 interface SongItemProps {
 	song: Song;
 	onPlay: (song: Song) => void;
 	onAddToQueue: (song: Song) => void;
+	onDownload?: (song: Song) => void;
+	showDownload?: boolean;
 }
 
 export const SongItem = memo(function SongItem({
 	song,
 	onPlay,
 	onAddToQueue,
+	onDownload,
+	showDownload = true,
 }: SongItemProps) {
+	const { isSongCached, isSongInQueue } = useDownloadsActions();
+	
+	const isDownloaded = isSongCached(song.id);
+	const isInDownloadQueue = isSongInQueue(song.id);
+
 	const handlePlay = useCallback(
 		(e: React.MouseEvent) => {
 			e.preventDefault();
@@ -35,6 +45,17 @@ export const SongItem = memo(function SongItem({
 			onAddToQueue(song);
 		},
 		[song, onAddToQueue],
+	);
+
+	const handleDownload = useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault();
+			e.stopPropagation();
+			if (onDownload) {
+				onDownload(song);
+			}
+		},
+		[song, onDownload],
 	);
 
 	return (
@@ -85,6 +106,36 @@ export const SongItem = memo(function SongItem({
 						>
 							<Plus className="h-4 w-4" />
 						</Button>
+						{showDownload && (
+							<Button
+								size="icon"
+								variant="ghost"
+								onClick={handleDownload}
+								disabled={isDownloaded || isInDownloadQueue || !onDownload}
+								aria-label={
+									isDownloaded 
+										? "Already downloaded" 
+										: isInDownloadQueue 
+										? "In download queue" 
+										: "Download song"
+								}
+								className={
+									isDownloaded 
+										? "text-green-600" 
+										: isInDownloadQueue 
+										? "text-blue-600" 
+										: ""
+								}
+							>
+								{isDownloaded ? (
+									<Check className="h-4 w-4" />
+								) : isInDownloadQueue ? (
+									<Clock className="h-4 w-4" />
+								) : (
+									<Download className="h-4 w-4" />
+								)}
+							</Button>
+						)}
 					</div>
 				</div>
 			</CardContent>

@@ -8,10 +8,9 @@ import { ProgressiveImage } from "@/components/progressive-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { usePlaylist } from "@/hooks/queries";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 
 export default function PlaylistPage() {
@@ -20,7 +19,11 @@ export default function PlaylistPage() {
 	const { playQueue, playSong, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
-	const { data: playlist, isLoading, error } = usePlaylist(playlistId, {
+	const {
+		data: playlist,
+		isLoading,
+		error,
+	} = usePlaylist(playlistId, {
 		enabled: shouldEnableQuery(),
 	});
 
@@ -32,8 +35,8 @@ export default function PlaylistPage() {
 				<Card className="text-center py-12">
 					<CardContent>
 						<p className="text-muted-foreground">
-							Playlist details are not available in offline mode.
-							Please disable offline mode to view this playlist.
+							Playlist details are not available in offline mode. Please disable
+							offline mode to view this playlist.
 						</p>
 					</CardContent>
 				</Card>

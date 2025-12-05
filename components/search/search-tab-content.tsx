@@ -1,8 +1,8 @@
 "use client";
 
 import { memo, type ReactNode } from "react";
-import { EmptyState, LoadingSpinner, OfflineEmptyState } from "./search-states";
 import { useOffline } from "@/contexts/offline-context";
+import { EmptyState, LoadingSpinner, OfflineEmptyState } from "./search-states";
 
 interface SearchTabContentProps {
 	type: string;

@@ -9,10 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { useArtist, useArtistAlbums, useArtistSongs } from "@/hooks/queries";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
 
 export default function ArtistPage() {
@@ -69,8 +68,8 @@ export default function ArtistPage() {
 				<Card className="text-center py-12">
 					<CardContent>
 						<p className="text-muted-foreground">
-							Artist details are not available in offline mode.
-							Please disable offline mode to view this artist.
+							Artist details are not available in offline mode. Please disable
+							offline mode to view this artist.
 						</p>
 					</CardContent>
 				</Card>

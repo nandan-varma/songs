@@ -4,11 +4,7 @@ const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `images-${CACHE_VERSION}`;
 
 // Static assets to cache immediately
-const STATIC_ASSETS = [
-	"/",
-	"/offline",
-	"/manifest.json",
-];
+const STATIC_ASSETS = ["/", "/offline", "/manifest.json"];
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
@@ -19,7 +15,7 @@ self.addEventListener("install", (event) => {
 			return cache.addAll(STATIC_ASSETS).catch((err) => {
 				console.error("[Service Worker] Failed to cache static assets:", err);
 			});
-		})
+		}),
 	);
 	self.skipWaiting();
 });
@@ -39,9 +35,10 @@ self.addEventListener("activate", (event) => {
 						console.log("[Service Worker] Deleting old cache:", cacheName);
 						return caches.delete(cacheName);
 					}
-				})
+					return Promise.resolve();
+				}),
 			);
-		})
+		}),
 	);
 	return self.clients.claim();
 });
@@ -83,10 +80,10 @@ self.addEventListener("fetch", (event) => {
 						// Return a placeholder image if offline
 						return new Response(
 							'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#ddd"/></svg>',
-							{ headers: { "Content-Type": "image/svg+xml" } }
+							{ headers: { "Content-Type": "image/svg+xml" } },
 						);
 					});
-			})
+			}),
 		);
 		return;
 	}
@@ -114,7 +111,7 @@ self.addEventListener("fetch", (event) => {
 							return offlineResponse || new Response("Offline");
 						});
 					});
-				})
+				}),
 		);
 		return;
 	}
@@ -157,7 +154,7 @@ self.addEventListener("fetch", (event) => {
 						headers: { "Content-Type": "text/plain" },
 					});
 				});
-		})
+		}),
 	);
 });
 
@@ -171,9 +168,9 @@ self.addEventListener("message", (event) => {
 		event.waitUntil(
 			caches.keys().then((cacheNames) => {
 				return Promise.all(
-					cacheNames.map((cacheName) => caches.delete(cacheName))
+					cacheNames.map((cacheName) => caches.delete(cacheName)),
 				);
-			})
+			}),
 		);
 	}
 });

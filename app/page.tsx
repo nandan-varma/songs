@@ -2,8 +2,8 @@
 
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
-import { SearchContent } from "@/components/search-content";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
+import { SearchContent } from "@/components/search-content";
 import { useOffline } from "@/contexts/offline-context";
 
 export default function Home() {

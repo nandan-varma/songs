@@ -1,9 +1,9 @@
 "use client";
 
-import { memo } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Download, WifiOff } from "lucide-react";
+import Link from "next/link";
+import { memo } from "react";
+import { Button } from "@/components/ui/button";
 
 interface EmptyStateProps {
 	query: string;
@@ -57,16 +57,14 @@ export const OfflineEmptyState = memo(function OfflineEmptyState({
 			</div>
 			<div>
 				<h3 className="font-semibold text-lg mb-2">
-					{type === "search" 
+					{type === "search"
 						? `No offline results for "${query}"`
-						: "No downloaded content available"
-					}
+						: "No downloaded content available"}
 				</h3>
 				<p className="text-muted-foreground mb-4">
 					{type === "search"
 						? "Try searching with offline mode disabled or download some songs first."
-						: "Download songs to enjoy them offline."
-					}
+						: "Download songs to enjoy them offline."}
 				</p>
 			</div>
 			<Link href="/downloads">

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { HardDrive, Trash2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { musicDB } from "@/lib/db";
-import { toast } from "sonner";
 
 export function StorageInfo() {
 	const [storageUsed, setStorageUsed] = useState(0);
@@ -14,7 +14,7 @@ export function StorageInfo() {
 	const [songCount, setSongCount] = useState(0);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const loadStorageInfo = async () => {
+	const loadStorageInfo = useCallback(async () => {
 		try {
 			setIsLoading(true);
 			const used = await musicDB.getStorageSize();
@@ -32,11 +32,11 @@ export function StorageInfo() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		loadStorageInfo();
-		
+
 		// Refresh storage info every 10 seconds when tab is visible
 		const interval = setInterval(() => {
 			if (!document.hidden) {
@@ -45,21 +45,25 @@ export function StorageInfo() {
 		}, 10000);
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [loadStorageInfo]);
 
 	const handleClearAll = async () => {
-		if (!confirm("Are you sure you want to clear all cached data? This will remove all downloaded songs and metadata.")) {
+		if (
+			!confirm(
+				"Are you sure you want to clear all cached data? This will remove all downloaded songs and metadata.",
+			)
+		) {
 			return;
 		}
 
 		try {
 			await musicDB.clearAll();
 			localStorage.clear();
-			
+
 			// Clear service worker caches
 			if ("caches" in window) {
 				const cacheNames = await caches.keys();
-				await Promise.all(cacheNames.map(name => caches.delete(name)));
+				await Promise.all(cacheNames.map((name) => caches.delete(name)));
 			}
 
 			toast.success("All cached data cleared");
@@ -76,10 +80,11 @@ export function StorageInfo() {
 		const k = 1024;
 		const sizes = ["Bytes", "KB", "MB", "GB"];
 		const i = Math.floor(Math.log(bytes) / Math.log(k));
-		return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+		return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
 	};
 
-	const usagePercent = storageQuota > 0 ? (storageUsed / storageQuota) * 100 : 0;
+	const usagePercent =
+		storageQuota > 0 ? (storageUsed / storageQuota) * 100 : 0;
 	const getProgressColor = () => {
 		if (usagePercent < 50) return "";
 		if (usagePercent < 80) return "bg-yellow-500";
@@ -118,7 +123,10 @@ export function StorageInfo() {
 							{formatBytes(storageQuota - storageUsed)} remaining
 						</span>
 					</div>
-					<Progress value={usagePercent} className={`h-2 ${getProgressColor()}`} />
+					<Progress
+						value={usagePercent}
+						className={`h-2 ${getProgressColor()}`}
+					/>
 					<p className="text-xs text-muted-foreground mt-1">
 						{usagePercent.toFixed(1)}% used of {formatBytes(storageQuota)} total
 					</p>

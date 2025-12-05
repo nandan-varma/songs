@@ -2,16 +2,16 @@
 
 import {
 	createContext,
+	type ReactNode,
 	useCallback,
 	useContext,
 	useEffect,
 	useMemo,
 	useRef,
 	useState,
-	type ReactNode,
 } from "react";
-import type { DetailedSong } from "@/lib/types";
 import { musicDB } from "@/lib/db";
+import type { DetailedSong } from "@/lib/types";
 
 export enum DownloadStatus {
 	PENDING = "pending",
@@ -55,8 +55,12 @@ interface DownloadsActions {
 	isSongInQueue: (songId: string) => boolean;
 }
 
-const DownloadsStateContext = createContext<DownloadsState | undefined>(undefined);
-const DownloadsActionsContext = createContext<DownloadsActions | undefined>(undefined);
+const DownloadsStateContext = createContext<DownloadsState | undefined>(
+	undefined,
+);
+const DownloadsActionsContext = createContext<DownloadsActions | undefined>(
+	undefined,
+);
 
 const CACHE_KEY = "music_app_downloads";
 const MAX_CONCURRENT_DOWNLOADS = 1; // Download one song at a time
@@ -121,12 +125,10 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 
 	// Save completed downloads to localStorage
 	useEffect(() => {
-		const completedDownloads = Array.from(cachedSongs.values()).map(
-			(item) => ({
-				...item,
-				blob: undefined, // Don't serialize blob data
-			}),
-		);
+		const completedDownloads = Array.from(cachedSongs.values()).map((item) => ({
+			...item,
+			blob: undefined, // Don't serialize blob data
+		}));
 
 		if (completedDownloads.length > 0) {
 			localStorage.setItem(CACHE_KEY, JSON.stringify(completedDownloads));
@@ -139,9 +141,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 
 		try {
 			// Get the highest quality download URL
-			const downloadUrl = song.downloadUrl.find(
-				(url) => url.quality === "320kbps",
-			) || song.downloadUrl[0];
+			const downloadUrl =
+				song.downloadUrl.find((url) => url.quality === "320kbps") ||
+				song.downloadUrl[0];
 
 			if (!downloadUrl?.url) {
 				throw new Error("No download URL available");
@@ -245,7 +247,8 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 						? {
 								...item,
 								status: DownloadStatus.FAILED,
-								error: error instanceof Error ? error.message : "Download failed",
+								error:
+									error instanceof Error ? error.message : "Download failed",
 							}
 						: item,
 				),
@@ -277,32 +280,40 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		processQueue();
 	}, [downloads, downloadSong]);
 
-	const addToDownloadQueue = useCallback((song: DetailedSong) => {
-		const existingDownload = downloads.find((item) => item.song.id === song.id);
-		if (existingDownload) return; // Already in queue
+	const addToDownloadQueue = useCallback(
+		(song: DetailedSong) => {
+			const existingDownload = downloads.find(
+				(item) => item.song.id === song.id,
+			);
+			if (existingDownload) return; // Already in queue
 
-		const newItem: DownloadItem = {
-			id: `${song.id}-${Date.now()}`,
-			song,
-			status: DownloadStatus.PENDING,
-			progress: 0,
-		};
-
-		setDownloads((prev) => [...prev, newItem]);
-	}, [downloads]);
-
-	const addMultipleToDownloadQueue = useCallback((songs: DetailedSong[]) => {
-		const newItems: DownloadItem[] = songs
-			.filter((song) => !downloads.find((item) => item.song.id === song.id))
-			.map((song) => ({
+			const newItem: DownloadItem = {
 				id: `${song.id}-${Date.now()}`,
 				song,
 				status: DownloadStatus.PENDING,
 				progress: 0,
-			}));
+			};
 
-		setDownloads((prev) => [...prev, ...newItems]);
-	}, [downloads]);
+			setDownloads((prev) => [...prev, newItem]);
+		},
+		[downloads],
+	);
+
+	const addMultipleToDownloadQueue = useCallback(
+		(songs: DetailedSong[]) => {
+			const newItems: DownloadItem[] = songs
+				.filter((song) => !downloads.find((item) => item.song.id === song.id))
+				.map((song) => ({
+					id: `${song.id}-${Date.now()}`,
+					song,
+					status: DownloadStatus.PENDING,
+					progress: 0,
+				}));
+
+			setDownloads((prev) => [...prev, ...newItems]);
+		},
+		[downloads],
+	);
 
 	const removeFromQueue = useCallback((songId: string) => {
 		setDownloads((prev) => prev.filter((item) => item.song.id !== songId));
@@ -350,9 +361,7 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		try {
 			if ("showDirectoryPicker" in window) {
 				// Use File System Access API for modern browsers
-				const dirHandle = await (
-					window as any
-				).showDirectoryPicker();
+				const dirHandle = await (window as any).showDirectoryPicker();
 
 				for (const download of completedDownloads) {
 					if (download.blob) {
@@ -406,26 +415,19 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 	}, [downloads]);
 
 	// Stable action functions that don't change on every render
-	const getSongCacheBlob = useCallback(
-		(songId: string): Blob | null => {
-			return cachedSongsRef.current.get(songId)?.blob || null;
-		},
-		[],
-	);
+	const getSongCacheBlob = useCallback((songId: string): Blob | null => {
+		return cachedSongsRef.current.get(songId)?.blob || null;
+	}, []);
 
-	const isSongCached = useCallback(
-		(songId: string): boolean => {
-			return cachedSongsRef.current.has(songId);
-		},
-		[],
-	);
+	const isSongCached = useCallback((songId: string): boolean => {
+		return cachedSongsRef.current.has(songId);
+	}, []);
 
-	const isSongInQueue = useCallback(
-		(songId: string): boolean => {
-			return downloadsRef.current.some((item: DownloadItem) => item.song.id === songId);
-		},
-		[],
-	);
+	const isSongInQueue = useCallback((songId: string): boolean => {
+		return downloadsRef.current.some(
+			(item: DownloadItem) => item.song.id === songId,
+		);
+	}, []);
 
 	// Memoize state and actions separately
 	const stateValue = useMemo(
@@ -476,7 +478,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 export function useDownloadsState() {
 	const context = useContext(DownloadsStateContext);
 	if (context === undefined) {
-		throw new Error("useDownloadsState must be used within a DownloadsProvider");
+		throw new Error(
+			"useDownloadsState must be used within a DownloadsProvider",
+		);
 	}
 	return context;
 }
@@ -484,7 +488,9 @@ export function useDownloadsState() {
 export function useDownloadsActions() {
 	const context = useContext(DownloadsActionsContext);
 	if (context === undefined) {
-		throw new Error("useDownloadsActions must be used within a DownloadsProvider");
+		throw new Error(
+			"useDownloadsActions must be used within a DownloadsProvider",
+		);
 	}
 	return context;
 }

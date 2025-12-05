@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { memo } from "react";
-import { type DetailedSong, EntityType } from "@/lib/types";
-import { ProgressiveImage } from "../progressive-image";
+import type { DetailedSong } from "@/lib/types";
 
 interface SongInfoProps {
 	currentSong: DetailedSong;

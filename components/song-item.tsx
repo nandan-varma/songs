@@ -1,13 +1,13 @@
 "use client";
 
-import { Music, Play, Plus, Download, Check, Clock } from "lucide-react";
+import { Check, Clock, Download, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
+import { useDownloadsActions } from "@/contexts/downloads-context";
 import { EntityType, type Song } from "@/lib/types";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { useDownloadsActions } from "@/contexts/downloads-context";
 
 interface SongItemProps {
 	song: Song;
@@ -25,7 +25,7 @@ export const SongItem = memo(function SongItem({
 	showDownload = true,
 }: SongItemProps) {
 	const { isSongCached, isSongInQueue } = useDownloadsActions();
-	
+
 	const isDownloaded = isSongCached(song.id);
 	const isInDownloadQueue = isSongInQueue(song.id);
 
@@ -113,18 +113,18 @@ export const SongItem = memo(function SongItem({
 								onClick={handleDownload}
 								disabled={isDownloaded || isInDownloadQueue || !onDownload}
 								aria-label={
-									isDownloaded 
-										? "Already downloaded" 
-										: isInDownloadQueue 
-										? "In download queue" 
-										: "Download song"
+									isDownloaded
+										? "Already downloaded"
+										: isInDownloadQueue
+											? "In download queue"
+											: "Download song"
 								}
 								className={
-									isDownloaded 
-										? "text-green-600" 
-										: isInDownloadQueue 
-										? "text-blue-600" 
-										: ""
+									isDownloaded
+										? "text-green-600"
+										: isInDownloadQueue
+											? "text-blue-600"
+											: ""
 								}
 							>
 								{isDownloaded ? (

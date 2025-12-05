@@ -2,8 +2,8 @@
 
 import { useCallback } from "react";
 import { toast } from "sonner";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useDownloadsActions } from "@/contexts/downloads-context";
+import { usePlayerActions } from "@/contexts/player-context";
 import { getSongById } from "@/lib/api";
 import type { Song } from "@/lib/types";
 import { SongItem } from "./song-item";

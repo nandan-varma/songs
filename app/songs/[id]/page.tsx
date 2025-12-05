@@ -22,6 +22,26 @@ export default function SongPage() {
 	const { playSong, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
+	const handleDownload = async (url: string, filename: string) => {
+		try {
+			toast.info("Download starting...");
+			const response = await fetch(url);
+			const blob = await response.blob();
+			const blobUrl = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = blobUrl;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(blobUrl);
+			toast.success("Download complete!");
+		} catch (error) {
+			toast.error("Download failed. Please try again.");
+			console.error("Download error:", error);
+		}
+	};
+
 	const {
 		data: songData,
 		isLoading: isSongLoading,
@@ -198,16 +218,15 @@ export default function SongPage() {
 												key={url.quality}
 												variant="outline"
 												size="sm"
-												asChild
+												onClick={() =>
+													handleDownload(
+														url.url,
+														`${song.name}${song.album?.name ? ` - ${song.album.name}` : ""}.mp4`,
+													)
+												}
 											>
-												<a
-													href={url.url}
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													<Download className="h-4 w-4 mr-2" />
-													{url.quality}
-												</a>
+												<Download className="h-4 w-4 mr-2" />
+												{url.quality}
 											</Button>
 										))}
 									</div>

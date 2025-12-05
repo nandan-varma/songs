@@ -1,20 +1,19 @@
 "use client";
 
-import { Download, Music, Wifi, WifiOff, Smartphone } from "lucide-react";
+import { Download, Music, Smartphone, Wifi, WifiOff } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { useDownloads } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
 import { usePWAInstall } from "@/hooks/use-pwa-install";
 
 export function Navigation() {
 	const { downloads, isProcessing } = useDownloads();
-	const { isOfflineMode, setOfflineMode, cachedSongsCount } = useOffline();
+	const { isOfflineMode, cachedSongsCount } = useOffline();
 	const { isInstallable, promptInstall } = usePWAInstall();
-	const queueCount = downloads.filter((item) => 
-		item.status === "pending" || item.status === "downloading"
+	const queueCount = downloads.filter(
+		(item) => item.status === "pending" || item.status === "downloading",
 	).length;
 
 	return (
@@ -49,14 +48,14 @@ export function Navigation() {
 
 						{/* Offline Mode Toggle */}
 						<div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-card">
-						{isOfflineMode ? (
-							<WifiOff className="h-4 w-4 text-orange-500" />
-						) : (
-							<Wifi className="h-4 w-4 text-green-500" />
-						)}
-						<span className="hidden sm:inline text-sm font-medium">
-							{isOfflineMode ? "Offline" : "Online"}
-						</span>
+							{isOfflineMode ? (
+								<WifiOff className="h-4 w-4 text-orange-500" />
+							) : (
+								<Wifi className="h-4 w-4 text-green-500" />
+							)}
+							<span className="hidden sm:inline text-sm font-medium">
+								{isOfflineMode ? "Offline" : "Online"}
+							</span>
 							{isOfflineMode && cachedSongsCount > 0 && (
 								<Badge variant="secondary" className="text-xs">
 									{cachedSongsCount}
@@ -69,8 +68,8 @@ export function Navigation() {
 								<Download className="h-4 w-4" />
 								<span className="hidden sm:inline ml-2">Downloads</span>
 								{queueCount > 0 && (
-									<Badge 
-										variant="secondary" 
+									<Badge
+										variant="secondary"
 										className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
 									>
 										{queueCount}

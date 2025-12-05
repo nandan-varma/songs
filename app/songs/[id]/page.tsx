@@ -9,10 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { useSong, useSongSuggestions } from "@/hooks/queries";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 
 export default function SongPage() {
@@ -43,8 +42,8 @@ export default function SongPage() {
 				<Card className="text-center py-12">
 					<CardContent>
 						<p className="text-muted-foreground">
-							Song details are not available in offline mode.
-							Please disable offline mode to view this song.
+							Song details are not available in offline mode. Please disable
+							offline mode to view this song.
 						</p>
 					</CardContent>
 				</Card>

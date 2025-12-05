@@ -8,10 +8,9 @@ import { ProgressiveImage } from "@/components/progressive-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { useAlbum } from "@/hooks/queries";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 
 export default function AlbumPage() {
@@ -20,7 +19,11 @@ export default function AlbumPage() {
 	const { playQueue, playSong, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
-	const { data: album, isLoading, error } = useAlbum(albumId, {
+	const {
+		data: album,
+		isLoading,
+		error,
+	} = useAlbum(albumId, {
 		enabled: shouldEnableQuery(),
 	});
 
@@ -32,8 +35,8 @@ export default function AlbumPage() {
 				<Card className="text-center py-12">
 					<CardContent>
 						<p className="text-muted-foreground">
-							Album details are not available in offline mode.
-							Please disable offline mode to view this album.
+							Album details are not available in offline mode. Please disable
+							offline mode to view this album.
 						</p>
 					</CardContent>
 				</Card>
@@ -145,7 +148,9 @@ export default function AlbumPage() {
 										for (const song of filteredSongs) {
 											addToQueue(song);
 										}
-										toast.success(`Added ${filteredSongs.length} songs to queue`);
+										toast.success(
+											`Added ${filteredSongs.length} songs to queue`,
+										);
 									}}
 									className="gap-2"
 									disabled={filteredSongs.length === 0}

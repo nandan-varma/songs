@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 export function useServiceWorker() {
-	const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+	const [registration, setRegistration] =
+		useState<ServiceWorkerRegistration | null>(null);
 	const [updateAvailable, setUpdateAvailable] = useState(false);
 	const [isOnline, setIsOnline] = useState(true);
 
@@ -25,7 +26,10 @@ export function useServiceWorker() {
 					const newWorker = reg.installing;
 					if (newWorker) {
 						newWorker.addEventListener("statechange", () => {
-							if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+							if (
+								newWorker.state === "installed" &&
+								navigator.serviceWorker.controller
+							) {
 								setUpdateAvailable(true);
 							}
 						});
@@ -33,9 +37,12 @@ export function useServiceWorker() {
 				});
 
 				// Check for updates every hour
-				setInterval(() => {
-					reg.update();
-				}, 60 * 60 * 1000);
+				setInterval(
+					() => {
+						reg.update();
+					},
+					60 * 60 * 1000,
+				);
 			} catch (error) {
 				console.error("Service Worker registration failed:", error);
 			}

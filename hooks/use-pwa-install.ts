@@ -6,7 +6,8 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function usePWAInstall() {
-	const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+	const [deferredPrompt, setDeferredPrompt] =
+		useState<BeforeInstallPromptEvent | null>(null);
 	const [isInstallable, setIsInstallable] = useState(false);
 	const [isInstalled, setIsInstalled] = useState(false);
 
@@ -33,7 +34,10 @@ export function usePWAInstall() {
 		window.addEventListener("appinstalled", handleAppInstalled);
 
 		return () => {
-			window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+			window.removeEventListener(
+				"beforeinstallprompt",
+				handleBeforeInstallPrompt,
+			);
 			window.removeEventListener("appinstalled", handleAppInstalled);
 		};
 	}, []);
@@ -45,7 +49,7 @@ export function usePWAInstall() {
 
 		deferredPrompt.prompt();
 		const { outcome } = await deferredPrompt.userChoice;
-		
+
 		if (outcome === "accepted") {
 			setDeferredPrompt(null);
 			setIsInstallable(false);

@@ -1,22 +1,22 @@
 "use client";
 
+import { WifiOff } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { useDownloadsActions } from "@/contexts/downloads-context";
+import { useOffline } from "@/contexts/offline-context";
 import {
 	usePlayback,
 	usePlayerActions,
 	useQueue,
 } from "@/contexts/player-context";
-import { useDownloadsActions } from "@/contexts/downloads-context";
-import { useOffline } from "@/contexts/offline-context";
 import { PlaybackControls } from "./player/playback-controls";
 import { ProgressBar } from "./player/progress-bar";
 import { QueueButton } from "./player/queue-button";
 import { SongInfo } from "./player/song-info";
 import { VolumeControl } from "./player/volume-control";
-import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { WifiOff } from "lucide-react";
-import { toast } from "sonner";
+import { Card } from "./ui/card";
 
 /**
  * Persistent audio player UI with split contexts to minimize re-renders
@@ -35,16 +35,18 @@ export function AudioPlayer() {
 	} = usePlayerActions();
 	const { getSongCacheBlob, isSongCached } = useDownloadsActions();
 	const { isOfflineMode } = useOffline();
-	
+
 	// Store the current song ID to detect actual song changes
 	const previousSongIdRef = useRef<string | null>(null);
 
 	/** Skip uncached songs in offline mode */
 	useEffect(() => {
 		if (!currentSong || !isOfflineMode) return;
-		
+
 		if (!isSongCached(currentSong.id)) {
-			toast.error(`"${currentSong.name}" is not available offline. Skipping...`);
+			toast.error(
+				`"${currentSong.name}" is not available offline. Skipping...`,
+			);
 			playNext();
 		}
 	}, [currentSong, isOfflineMode, isSongCached, playNext]);
@@ -73,7 +75,7 @@ export function AudioPlayer() {
 		} else {
 			// In offline mode, don't try to play remote URLs
 			if (isOfflineMode) return;
-			
+
 			const downloadUrl =
 				currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
 				currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
@@ -237,7 +239,10 @@ export function AudioPlayer() {
 
 				{isOfflineMode && (
 					<div className="absolute -top-2 right-4 z-10">
-						<Badge variant="secondary" className="flex items-center gap-1 bg-orange-500/90 text-white border-orange-600">
+						<Badge
+							variant="secondary"
+							className="flex items-center gap-1 bg-orange-500/90 text-white border-orange-600"
+						>
 							<WifiOff className="h-3 w-3" />
 							Offline Mode
 						</Badge>

@@ -1,6 +1,7 @@
 "use client";
 
-import React, {
+import type React from "react";
+import {
 	createContext,
 	useCallback,
 	useContext,
@@ -8,9 +9,12 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import { useDownloadsActions, useDownloadsState } from "@/contexts/downloads-context";
-import type { DetailedSong, Song } from "@/lib/types";
 import { toast } from "sonner";
+import {
+	useDownloadsActions,
+	useDownloadsState,
+} from "@/contexts/downloads-context";
+import type { DetailedSong, Song } from "@/lib/types";
 
 interface OfflineState {
 	isOfflineMode: boolean;
@@ -21,7 +25,9 @@ interface OfflineActions {
 	setOfflineMode: (enabled: boolean) => void;
 	getFilteredSongs: <T extends Song | DetailedSong>(songs: T[]) => T[];
 	getCachedSongsOnly: () => DetailedSong[];
-	isOnlineContentAvailable: <T extends Song | DetailedSong>(songs: T[]) => boolean;
+	isOnlineContentAvailable: <T extends Song | DetailedSong>(
+		songs: T[],
+	) => boolean;
 	shouldEnableQuery: () => boolean;
 }
 
@@ -51,12 +57,13 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 			const online = navigator.onLine;
 			const wasOnline = isOnline;
 			setIsOnline(online);
-			
+
 			// Show toast notifications for network changes (skip initial load)
 			if (!isInitial) {
 				if (!online) {
 					toast.warning("No internet connection", {
-						description: "Switched to offline mode. Only cached songs are available.",
+						description:
+							"Switched to offline mode. Only cached songs are available.",
 					});
 				} else if (wasOnline === false) {
 					toast.success("Back online", {
@@ -64,7 +71,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 					});
 				}
 			}
-			
+
 			isInitial = false;
 		};
 
@@ -82,7 +89,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 	}, [isOnline]);
 
 	// Toggle is disabled - offline mode is automatic based on network
-	const setOfflineMode = useCallback((enabled: boolean) => {
+	const setOfflineMode = useCallback((_enabled: boolean) => {
 		// No-op: offline mode is now purely based on network status
 	}, []);
 

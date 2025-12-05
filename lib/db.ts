@@ -141,7 +141,9 @@ class MusicDatabase {
 		return new Promise((resolve, reject) => {
 			const request = store.get(songId);
 			request.onsuccess = () => {
-				const result = request.result as { songId: string; blob: Blob } | undefined;
+				const result = request.result as
+					| { songId: string; blob: Blob }
+					| undefined;
 				resolve(result?.blob || null);
 			};
 			request.onerror = () => reject(request.error);
@@ -156,7 +158,9 @@ class MusicDatabase {
 		return new Promise((resolve, reject) => {
 			const request = store.get(key);
 			request.onsuccess = () => {
-				const result = request.result as { key: string; blob: Blob } | undefined;
+				const result = request.result as
+					| { key: string; blob: Blob }
+					| undefined;
 				resolve(result?.blob || null);
 			};
 			request.onerror = () => reject(request.error);
@@ -202,7 +206,8 @@ class MusicDatabase {
 
 		const song = await new Promise<CachedSong | null>((resolve, reject) => {
 			const request = store.get(songId);
-			request.onsuccess = () => resolve(request.result as CachedSong | undefined || null);
+			request.onsuccess = () =>
+				resolve((request.result as CachedSong | undefined) || null);
 			request.onerror = () => reject(request.error);
 		});
 
@@ -218,7 +223,10 @@ class MusicDatabase {
 
 	async clearAll(): Promise<void> {
 		const db = await this.open();
-		const tx = db.transaction([STORE_SONGS, STORE_AUDIO, STORE_IMAGES], "readwrite");
+		const tx = db.transaction(
+			[STORE_SONGS, STORE_AUDIO, STORE_IMAGES],
+			"readwrite",
+		);
 
 		await Promise.all([
 			new Promise<void>((resolve, reject) => {
@@ -240,7 +248,11 @@ class MusicDatabase {
 	}
 
 	async getStorageSize(): Promise<number> {
-		if (typeof navigator !== "undefined" && "storage" in navigator && "estimate" in navigator.storage) {
+		if (
+			typeof navigator !== "undefined" &&
+			"storage" in navigator &&
+			"estimate" in navigator.storage
+		) {
 			const estimate = await navigator.storage.estimate();
 			return estimate.usage || 0;
 		}

@@ -9,15 +9,37 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useOffline } from "@/contexts/offline-context";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { usePlaylist } from "@/hooks/queries";
 import { EntityType } from "@/lib/types";
 
 export default function PlaylistPage() {
 	const params = useParams();
 	const playlistId = params.id as string;
-	const { playQueue, playSong, addToQueue } = usePlayerActions();
+	const { playQueue, playSong, addToQueue } = useOfflinePlayerActions();
+	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
-	const { data: playlist, isLoading, error } = usePlaylist(playlistId);
+	const { data: playlist, isLoading, error } = usePlaylist(playlistId, {
+		enabled: shouldEnableQuery(),
+	});
+
+	const filteredSongs = playlist?.songs ? getFilteredSongs(playlist.songs) : [];
+
+	if (isOfflineMode) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<Card className="text-center py-12">
+					<CardContent>
+						<p className="text-muted-foreground">
+							Playlist details are not available in offline mode.
+							Please disable offline mode to view this playlist.
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
 
 	if (isLoading) {
 		return (
@@ -82,11 +104,11 @@ export default function PlaylistPage() {
 								<Button
 									size="lg"
 									onClick={() => {
-										playQueue(playlist.songs);
+										playQueue(filteredSongs);
 										toast.success(`Playing ${playlist.name}`);
 									}}
 									className="gap-2"
-									disabled={!playlist.songs || playlist.songs.length === 0}
+									disabled={filteredSongs.length === 0}
 								>
 									<Play className="h-5 w-5" />
 									Play All
@@ -95,15 +117,15 @@ export default function PlaylistPage() {
 									size="lg"
 									variant="outline"
 									onClick={() => {
-										for (const song of playlist.songs) {
+										for (const song of filteredSongs) {
 											addToQueue(song);
 										}
 										toast.success(
-											`Added ${playlist.songs.length} songs to queue`,
+											`Added ${filteredSongs.length} songs to queue`,
 										);
 									}}
 									className="gap-2"
-									disabled={!playlist.songs || playlist.songs.length === 0}
+									disabled={filteredSongs.length === 0}
 								>
 									<Plus className="h-5 w-5" />
 									Add All to Queue
@@ -115,11 +137,11 @@ export default function PlaylistPage() {
 			</Card>
 
 			{/* Track List */}
-			{playlist.songs && playlist.songs.length > 0 && (
+			{filteredSongs.length > 0 && (
 				<div className="space-y-4">
 					<h2 className="text-2xl font-semibold">Tracks</h2>
 					<div className="grid gap-2">
-						{playlist.songs.map((song, index) => (
+						{filteredSongs.map((song, index) => (
 							<Card
 								key={song.id}
 								className="overflow-hidden hover:bg-accent/50 transition-colors"

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<canvas id="canvas192" width="192" height="192"></canvas>
+<canvas id="canvas512" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas, size) {
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = '#fff';
+  ctx.fillStyle = '#fff';
+  const scale = size / 192;
+  ctx.lineWidth = 8 * scale;
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, 60 * scale, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, 12 * scale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(size/2, size/2);
+  ctx.lineTo(size/2 + 24 * scale, size/2 - 36 * scale);
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+drawIcon(document.getElementById('canvas192'), 192);
+drawIcon(document.getElementById('canvas512'), 512);
+setTimeout(() => {
+  const link192 = document.createElement('a');
+  link192.download = 'icon-192x192.png';
+  link192.href = document.getElementById('canvas192').toDataURL();
+  link192.click();
+  setTimeout(() => {
+    const link512 = document.createElement('a');
+    link512.download = 'icon-512x512.png';
+    link512.href = document.getElementById('canvas512').toDataURL();
+    link512.click();
+  }, 100);
+}, 100);
+</script>
+</body>
+</html>

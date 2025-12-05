@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useDownloads } from "@/contexts/downloads-context";
 import { getSongById } from "@/lib/api";
 import type { Song } from "@/lib/types";
 import { SongItem } from "./song-item";
@@ -13,6 +14,7 @@ interface SongsListProps {
 
 export function SongsList({ songs }: SongsListProps) {
 	const { playSong, addToQueue } = usePlayerActions();
+	const { addToDownloadQueue } = useDownloads();
 
 	const handlePlay = useCallback(
 		async (song: Song) => {
@@ -42,6 +44,20 @@ export function SongsList({ songs }: SongsListProps) {
 		[addToQueue],
 	);
 
+	const handleDownload = useCallback(
+		async (song: Song) => {
+			try {
+				const detailedSong = await getSongById(song.id);
+				addToDownloadQueue(detailedSong.data[0]);
+				toast.success(`Added to download queue: ${song.title}`);
+			} catch (err) {
+				toast.error("Failed to add to download queue");
+				console.error(err);
+			}
+		},
+		[addToDownloadQueue],
+	);
+
 	if (songs.length === 0) {
 		return null;
 	}
@@ -56,6 +72,8 @@ export function SongsList({ songs }: SongsListProps) {
 						song={song}
 						onPlay={handlePlay}
 						onAddToQueue={handleAddToQueue}
+						onDownload={handleDownload}
+						showDownload={true}
 					/>
 				))}
 			</div>

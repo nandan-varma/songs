@@ -90,6 +90,18 @@ $CONVERT_CMD "$LOGO_PNG" -resize 16x16 -background none -gravity center -extent 
     "$LOGO_PNG" -resize 48x48 -background none -gravity center -extent 48x48 \
     "$PUBLIC_DIR/favicon.ico"
 
+# Generate Open Graph images
+echo -e "${GREEN}Generating Open Graph images...${NC}"
+
+echo "  - og-image.png (1200x630)"
+$CONVERT_CMD "$LOGO_PNG" -resize 400x400 -background "#000000" -gravity center -extent 1200x630 "$PUBLIC_DIR/og-image.png"
+
+echo "  - og-image-square.png (1200x1200)"
+$CONVERT_CMD "$LOGO_PNG" -resize 800x800 -background "#000000" -gravity center -extent 1200x1200 "$PUBLIC_DIR/og-image-square.png"
+
+echo "  - twitter-image.png (1200x600)"
+$CONVERT_CMD "$LOGO_PNG" -resize 400x400 -background "#000000" -gravity center -extent 1200x600 "$PUBLIC_DIR/twitter-image.png"
+
 # Generate SVG icons from app.svg
 echo -e "${GREEN}Generating SVG icons from app.svg...${NC}"
 

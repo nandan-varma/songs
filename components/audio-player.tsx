@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
 	usePlayback,
 	usePlayerActions,
 	useQueue,
 } from "@/contexts/player-context";
+import { useDownloadsActions } from "@/contexts/downloads-context";
+import { useOffline } from "@/contexts/offline-context";
 import { PlaybackControls } from "./player/playback-controls";
 import { ProgressBar } from "./player/progress-bar";
 import { QueueButton } from "./player/queue-button";
 import { SongInfo } from "./player/song-info";
 import { VolumeControl } from "./player/volume-control";
 import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { WifiOff } from "lucide-react";
+import { toast } from "sonner";
 
 /**
  * Persistent audio player UI with split contexts to minimize re-renders
@@ -28,51 +33,88 @@ export function AudioPlayer() {
 		setVolume,
 		removeFromQueue,
 	} = usePlayerActions();
+	const { getSongCacheBlob, isSongCached } = useDownloadsActions();
+	const { isOfflineMode } = useOffline();
+	
+	// Store the current song ID to detect actual song changes
+	const previousSongIdRef = useRef<string | null>(null);
 
-	/** Manages audio source loading and playback state */
+	/** Skip uncached songs in offline mode */
 	useEffect(() => {
-		if (!currentSong || !audioRef.current) return;
+		if (!currentSong || !isOfflineMode) return;
+		
+		if (!isSongCached(currentSong.id)) {
+			toast.error(`"${currentSong.name}" is not available offline. Skipping...`);
+			playNext();
+		}
+	}, [currentSong, isOfflineMode, isSongCached, playNext]);
 
-		const downloadUrl =
-			currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
-			currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
-
-		if (!downloadUrl?.url) return;
-
-		const audio = audioRef.current;
-		const needsNewSource = audio.src !== downloadUrl.url;
-		let playWhenReadyHandler: (() => void) | null = null;
-
-		if (needsNewSource) {
-			audio.src = downloadUrl.url;
-			audio.load();
-
-			if (isPlaying) {
-				playWhenReadyHandler = () => {
-					audio.play().catch(console.error);
-					if (playWhenReadyHandler) {
-						audio.removeEventListener("canplay", playWhenReadyHandler);
-					}
-				};
-				audio.addEventListener("canplay", playWhenReadyHandler);
-			}
-		} else {
-			if (isPlaying && audio.paused) {
-				audio.play().catch(console.error);
-			} else if (!isPlaying && !audio.paused) {
-				audio.pause();
-			}
+	/** Manages audio source loading - only when song actually changes */
+	useEffect(() => {
+		if (!currentSong || !audioRef.current) {
+			previousSongIdRef.current = null;
+			return;
 		}
 
-		// Cleanup function to remove event listener if component unmounts
+		// Only load new source if the song ID actually changed
+		if (previousSongIdRef.current === currentSong.id) {
+			return;
+		}
+
+		previousSongIdRef.current = currentSong.id;
+		const audio = audioRef.current;
+		let blobUrl: string | null = null;
+
+		// Try to use cached audio first, then fallback to remote URL
+		const cachedBlob = getSongCacheBlob(currentSong.id);
+		if (cachedBlob) {
+			blobUrl = URL.createObjectURL(cachedBlob);
+			audio.src = blobUrl;
+		} else {
+			// In offline mode, don't try to play remote URLs
+			if (isOfflineMode) return;
+			
+			const downloadUrl =
+				currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
+				currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
+
+			if (!downloadUrl?.url) return;
+			audio.src = downloadUrl.url;
+		}
+
+		// Load the new source
+		audio.load();
+
+		// If we should be playing, start playback when ready
+		if (isPlaying) {
+			const playWhenReady = () => {
+				audio.play().catch(console.error);
+				audio.removeEventListener("canplay", playWhenReady);
+			};
+			audio.addEventListener("canplay", playWhenReady);
+		}
+
+		// Cleanup: revoke blob URL when song changes or component unmounts
 		return () => {
-			if (playWhenReadyHandler && audio) {
-				audio.removeEventListener("canplay", playWhenReadyHandler);
+			if (blobUrl) {
+				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, [currentSong, isPlaying, audioRef]);
+	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongCacheBlob]);
 
-	/** Set up Media Session API for OS-level media controls */
+	/** Manages play/pause state */
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio || !currentSong) return;
+
+		if (isPlaying && audio.paused) {
+			audio.play().catch(console.error);
+		} else if (!isPlaying && !audio.paused) {
+			audio.pause();
+		}
+	}, [isPlaying, currentSong, audioRef]);
+
+	/** Set up Media Session API metadata - only when song changes */
 	useEffect(() => {
 		if (!("mediaSession" in navigator) || !currentSong) {
 			return;
@@ -99,6 +141,23 @@ export function AudioPlayer() {
 			artwork: artwork.length > 0 ? artwork : undefined,
 		});
 
+		return () => {
+			if ("mediaSession" in navigator) {
+				navigator.mediaSession.metadata = null;
+			}
+		};
+	}, [currentSong]);
+
+	/** Update Media Session playback state */
+	useEffect(() => {
+		if (!("mediaSession" in navigator)) return;
+		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+	}, [isPlaying]);
+
+	/** Set up Media Session action handlers once */
+	useEffect(() => {
+		if (!("mediaSession" in navigator)) return;
+
 		const playHandler = () => {
 			audioRef.current?.play().catch(console.error);
 		};
@@ -115,12 +174,18 @@ export function AudioPlayer() {
 
 		const seekbackwardHandler = (details: MediaSessionActionDetails) => {
 			const skipTime = details.seekOffset || 10;
-			seekTo(Math.max(0, currentTime - skipTime));
+			const audio = audioRef.current;
+			if (audio) {
+				seekTo(Math.max(0, audio.currentTime - skipTime));
+			}
 		};
 
 		const seekforwardHandler = (details: MediaSessionActionDetails) => {
 			const skipTime = details.seekOffset || 10;
-			seekTo(Math.min(duration, currentTime + skipTime));
+			const audio = audioRef.current;
+			if (audio) {
+				seekTo(Math.min(audio.duration || 0, audio.currentTime + skipTime));
+			}
 		};
 
 		navigator.mediaSession.setActionHandler("play", playHandler);
@@ -134,9 +199,6 @@ export function AudioPlayer() {
 		);
 		navigator.mediaSession.setActionHandler("seekforward", seekforwardHandler);
 
-		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
-
-		// Cleanup function to remove action handlers
 		return () => {
 			if ("mediaSession" in navigator) {
 				navigator.mediaSession.setActionHandler("play", null);
@@ -146,19 +208,9 @@ export function AudioPlayer() {
 				navigator.mediaSession.setActionHandler("seekto", null);
 				navigator.mediaSession.setActionHandler("seekbackward", null);
 				navigator.mediaSession.setActionHandler("seekforward", null);
-				navigator.mediaSession.metadata = null;
 			}
 		};
-	}, [
-		currentSong,
-		isPlaying,
-		playNext,
-		playPrevious,
-		seekTo,
-		currentTime,
-		duration,
-		audioRef,
-	]);
+	}, [playNext, playPrevious, seekTo, audioRef]);
 
 	/** Update Media Session position state for scrubbing */
 	useEffect(() => {
@@ -183,17 +235,26 @@ export function AudioPlayer() {
 					<track kind="captions" />
 				</audio>
 
+				{isOfflineMode && (
+					<div className="absolute -top-2 right-4 z-10">
+						<Badge variant="secondary" className="flex items-center gap-1 bg-orange-500/90 text-white border-orange-600">
+							<WifiOff className="h-3 w-3" />
+							Offline Mode
+						</Badge>
+					</div>
+				)}
+
 				<div className="px-4 md:px-6 py-4 md:py-5">
 					{/* Mobile Layout */}
 					<div className="md:hidden space-y-4">
 						<div className="flex items-start gap-3">
 							{currentSong.image && currentSong.image.length > 0 && (
 								<div className="relative h-16 w-16 flex-shrink-0">
-									<img
+									{/* <img
 										src={currentSong.image[0]?.url}
 										alt={currentSong.name}
 										className="h-full w-full object-cover rounded"
-									/>
+									/> */}
 								</div>
 							)}
 

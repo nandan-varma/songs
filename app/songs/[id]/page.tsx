@@ -10,24 +10,47 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useOffline } from "@/contexts/offline-context";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { useSong, useSongSuggestions } from "@/hooks/queries";
 import { EntityType } from "@/lib/types";
 
 export default function SongPage() {
 	const params = useParams();
 	const songId = params.id as string;
-	const { playSong, addToQueue } = usePlayerActions();
+	const { playSong, addToQueue } = useOfflinePlayerActions();
+	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
 	const {
 		data: songData,
 		isLoading: isSongLoading,
 		error: songError,
-	} = useSong(songId);
+	} = useSong(songId, {
+		enabled: shouldEnableQuery(),
+	});
 	const { data: suggestions = [], isLoading: isSuggestionsLoading } =
-		useSongSuggestions(songId, 10);
+		useSongSuggestions(songId, 10, {
+			enabled: shouldEnableQuery(),
+		});
 
 	const song = songData?.[0];
+	const filteredSuggestions = getFilteredSongs(suggestions);
 	const isLoading = isSongLoading || isSuggestionsLoading;
+
+	if (isOfflineMode) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<Card className="text-center py-12">
+					<CardContent>
+						<p className="text-muted-foreground">
+							Song details are not available in offline mode.
+							Please disable offline mode to view this song.
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
 
 	if (isLoading) {
 		return (
@@ -191,13 +214,13 @@ export default function SongPage() {
 			</Card>
 
 			{/* Suggestions */}
-			{suggestions.length > 0 && (
+			{filteredSuggestions.length > 0 && (
 				<>
 					<Separator />
 					<div className="space-y-4">
 						<h2 className="text-2xl font-semibold">You Might Also Like</h2>
 						<div className="grid gap-3">
-							{suggestions.map((suggestion) => (
+							{filteredSuggestions.map((suggestion) => (
 								<Card
 									key={suggestion.id}
 									className="overflow-hidden hover:bg-accent/50 transition-colors"

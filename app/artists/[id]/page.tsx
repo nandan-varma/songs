@@ -10,13 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useOffline } from "@/contexts/offline-context";
+import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { useArtist, useArtistAlbums, useArtistSongs } from "@/hooks/queries";
 import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
 
 export default function ArtistPage() {
 	const params = useParams();
 	const artistId = params.id as string;
-	const { playQueue, playSong, addToQueue } = usePlayerActions();
+	const { playQueue, playSong, addToQueue } = useOfflinePlayerActions();
+	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
 	const {
 		data: artist,
@@ -25,10 +28,17 @@ export default function ArtistPage() {
 	} = useArtist(artistId, {
 		songCount: 0,
 		albumCount: 0,
+		queryOptions: {
+			enabled: shouldEnableQuery(),
+		},
 	});
 
-	const songsQuery = useArtistSongs(artistId, "popularity", "desc");
-	const albumsQuery = useArtistAlbums(artistId, "popularity", "desc");
+	const songsQuery = useArtistSongs(artistId, "popularity", "desc", {
+		enabled: shouldEnableQuery(),
+	});
+	const albumsQuery = useArtistAlbums(artistId, "popularity", "desc", {
+		enabled: shouldEnableQuery(),
+	});
 
 	const songsData = songsQuery.data as
 		| { pages: Array<{ total: number; songs: DetailedSong[] }> }
@@ -39,6 +49,7 @@ export default function ArtistPage() {
 
 	const allSongs: DetailedSong[] =
 		songsData?.pages.flatMap((page) => page.songs) ?? [];
+	const filteredSongs = getFilteredSongs(allSongs);
 	const allAlbums: DetailedAlbum[] =
 		albumsData?.pages.flatMap((page) => page.albums) ?? [];
 	const _totalSongs = songsData?.pages[0]?.total ?? 0;
@@ -51,6 +62,21 @@ export default function ArtistPage() {
 	const _fetchNextAlbumsPage = albumsQuery.fetchNextPage;
 	const _hasMoreAlbums = albumsQuery.hasNextPage;
 	const _isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
+
+	if (isOfflineMode) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<Card className="text-center py-12">
+					<CardContent>
+						<p className="text-muted-foreground">
+							Artist details are not available in offline mode.
+							Please disable offline mode to view this artist.
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
 
 	if (isLoading) {
 		return (
@@ -174,12 +200,12 @@ export default function ArtistPage() {
 
 				{/* Top Songs */}
 				<TabsContent value="songs" className="space-y-4">
-					{allSongs.length > 0 ? (
+					{filteredSongs.length > 0 ? (
 						<>
 							<div className="flex gap-2">
 								<Button
 									onClick={() => {
-										playQueue(allSongs);
+										playQueue(filteredSongs);
 										toast.success(`Playing ${artist.name}'s top songs`);
 									}}
 									className="gap-2"
@@ -189,7 +215,7 @@ export default function ArtistPage() {
 								</Button>
 							</div>
 							<div className="grid gap-2">
-								{allSongs.map((song, index) => (
+								{filteredSongs.map((song, index) => (
 									<Card
 										key={song.id}
 										className="overflow-hidden hover:bg-accent/50 transition-colors"

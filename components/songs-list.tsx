@@ -16,7 +16,7 @@ export const SongsList = React.memo(function SongsList({
 	songs,
 }: SongsListProps) {
 	const { playSong, addToQueue } = usePlayerActions();
-	const { addToDownloadQueue } = useDownloadsActions();
+	const { downloadSong } = useDownloadsActions();
 
 	const handlePlay = useCallback(
 		async (song: Song) => {
@@ -50,14 +50,14 @@ export const SongsList = React.memo(function SongsList({
 		async (song: Song) => {
 			try {
 				const detailedSong = await getSongById(song.id);
-				addToDownloadQueue(detailedSong.data[0]);
-				toast.success(`Added to download queue: ${song.title}`);
+				await downloadSong(detailedSong.data[0]);
+				toast.success(`Downloaded: ${song.title}`);
 			} catch (err) {
-				toast.error("Failed to add to download queue");
+				toast.error("Failed to download");
 				console.error(err);
 			}
 		},
-		[addToDownloadQueue],
+		[downloadSong],
 	);
 
 	if (songs.length === 0) {

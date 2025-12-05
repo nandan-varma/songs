@@ -33,7 +33,7 @@ export function AudioPlayer() {
 		setVolume,
 		removeFromQueue,
 	} = usePlayerActions();
-	const { getSongCacheBlob, isSongCached } = useDownloadsActions();
+	const { getSongBlob, isSongCached } = useDownloadsActions();
 	const { isOfflineMode } = useOffline();
 
 	// Store the current song ID to detect actual song changes
@@ -68,7 +68,7 @@ export function AudioPlayer() {
 		let blobUrl: string | null = null;
 
 		// Try to use cached audio first, then fallback to remote URL
-		const cachedBlob = getSongCacheBlob(currentSong.id);
+		const cachedBlob = getSongBlob(currentSong.id);
 		if (cachedBlob) {
 			blobUrl = URL.createObjectURL(cachedBlob);
 			audio.src = blobUrl;
@@ -102,7 +102,7 @@ export function AudioPlayer() {
 				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongCacheBlob]);
+	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongBlob]);
 
 	/** Manages play/pause state */
 	useEffect(() => {

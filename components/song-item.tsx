@@ -7,7 +7,7 @@ import { EntityType, type Song } from "@/lib/types";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { useDownloads } from "@/contexts/downloads-context";
+import { useDownloadsActions } from "@/contexts/downloads-context";
 
 interface SongItemProps {
 	song: Song;
@@ -24,7 +24,7 @@ export const SongItem = memo(function SongItem({
 	onDownload,
 	showDownload = true,
 }: SongItemProps) {
-	const { isSongCached, isSongInQueue } = useDownloads();
+	const { isSongCached, isSongInQueue } = useDownloadsActions();
 	
 	const isDownloaded = isSongCached(song.id);
 	const isInDownloadQueue = isSongInQueue(song.id);

@@ -1,13 +1,14 @@
 "use client";
 
-import type React from "react";
 import {
 	createContext,
 	useCallback,
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
+	type ReactNode,
 } from "react";
 import type { DetailedSong } from "@/lib/types";
 import { musicDB } from "@/lib/db";
@@ -29,6 +30,12 @@ export interface DownloadItem {
 	blob?: Blob;
 }
 
+/**
+ * Split into 2 contexts to minimize re-renders:
+ * - DownloadsStateContext: Frequently changing state (downloads, cachedSongs)
+ * - DownloadsActionsContext: Stable function references (never changes)
+ */
+
 interface DownloadsState {
 	downloads: DownloadItem[];
 	isProcessing: boolean;
@@ -48,14 +55,13 @@ interface DownloadsActions {
 	isSongInQueue: (songId: string) => boolean;
 }
 
-const DownloadsContext = createContext<
-	(DownloadsState & DownloadsActions) | undefined
->(undefined);
+const DownloadsStateContext = createContext<DownloadsState | undefined>(undefined);
+const DownloadsActionsContext = createContext<DownloadsActions | undefined>(undefined);
 
 const CACHE_KEY = "music_app_downloads";
 const MAX_CONCURRENT_DOWNLOADS = 1; // Download one song at a time
 
-export function DownloadsProvider({ children }: { children: React.ReactNode }) {
+export function DownloadsProvider({ children }: { children: ReactNode }) {
 	const [downloads, setDownloads] = useState<DownloadItem[]>([]);
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [cachedSongs, setCachedSongs] = useState<Map<string, DownloadItem>>(
@@ -387,32 +393,52 @@ export function DownloadsProvider({ children }: { children: React.ReactNode }) {
 		}
 	}, [downloads]);
 
+	// Use refs to access latest state without triggering re-renders
+	const cachedSongsRef = useRef(cachedSongs);
+	const downloadsRef = useRef(downloads);
+
+	useEffect(() => {
+		cachedSongsRef.current = cachedSongs;
+	}, [cachedSongs]);
+
+	useEffect(() => {
+		downloadsRef.current = downloads;
+	}, [downloads]);
+
+	// Stable action functions that don't change on every render
 	const getSongCacheBlob = useCallback(
 		(songId: string): Blob | null => {
-			return cachedSongs.get(songId)?.blob || null;
+			return cachedSongsRef.current.get(songId)?.blob || null;
 		},
-		[cachedSongs],
+		[],
 	);
 
 	const isSongCached = useCallback(
 		(songId: string): boolean => {
-			return cachedSongs.has(songId);
+			return cachedSongsRef.current.has(songId);
 		},
-		[cachedSongs],
+		[],
 	);
 
 	const isSongInQueue = useCallback(
 		(songId: string): boolean => {
-			return downloads.some((item) => item.song.id === songId);
+			return downloadsRef.current.some((item: DownloadItem) => item.song.id === songId);
 		},
-		[downloads],
+		[],
 	);
 
-	const value = useMemo(
+	// Memoize state and actions separately
+	const stateValue = useMemo(
 		() => ({
 			downloads,
 			isProcessing,
 			cachedSongs,
+		}),
+		[downloads, isProcessing, cachedSongs],
+	);
+
+	const actionsValue = useMemo(
+		() => ({
 			addToDownloadQueue,
 			addMultipleToDownloadQueue,
 			removeFromQueue,
@@ -425,9 +451,6 @@ export function DownloadsProvider({ children }: { children: React.ReactNode }) {
 			isSongInQueue,
 		}),
 		[
-			downloads,
-			isProcessing,
-			cachedSongs,
 			addToDownloadQueue,
 			addMultipleToDownloadQueue,
 			removeFromQueue,
@@ -442,16 +465,34 @@ export function DownloadsProvider({ children }: { children: React.ReactNode }) {
 	);
 
 	return (
-		<DownloadsContext.Provider value={value}>
-			{children}
-		</DownloadsContext.Provider>
+		<DownloadsStateContext.Provider value={stateValue}>
+			<DownloadsActionsContext.Provider value={actionsValue}>
+				{children}
+			</DownloadsActionsContext.Provider>
+		</DownloadsStateContext.Provider>
 	);
 }
 
-export function useDownloads() {
-	const context = useContext(DownloadsContext);
+export function useDownloadsState() {
+	const context = useContext(DownloadsStateContext);
 	if (context === undefined) {
-		throw new Error("useDownloads must be used within a DownloadsProvider");
+		throw new Error("useDownloadsState must be used within a DownloadsProvider");
 	}
 	return context;
+}
+
+export function useDownloadsActions() {
+	const context = useContext(DownloadsActionsContext);
+	if (context === undefined) {
+		throw new Error("useDownloadsActions must be used within a DownloadsProvider");
+	}
+	return context;
+}
+
+/** Convenience hook that returns both state and actions */
+export function useDownloads() {
+	return {
+		...useDownloadsState(),
+		...useDownloadsActions(),
+	};
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
 	usePlayback,
 	usePlayerActions,
 	useQueue,
 } from "@/contexts/player-context";
-import { useDownloads } from "@/contexts/downloads-context";
+import { useDownloadsActions } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
 import { PlaybackControls } from "./player/playback-controls";
 import { ProgressBar } from "./player/progress-bar";
@@ -33,8 +33,11 @@ export function AudioPlayer() {
 		setVolume,
 		removeFromQueue,
 	} = usePlayerActions();
-	const { getSongCacheBlob, isSongCached } = useDownloads();
+	const { getSongCacheBlob, isSongCached } = useDownloadsActions();
 	const { isOfflineMode } = useOffline();
+	
+	// Store the current song ID to detect actual song changes
+	const previousSongIdRef = useRef<string | null>(null);
 
 	/** Skip uncached songs in offline mode */
 	useEffect(() => {
@@ -48,8 +51,17 @@ export function AudioPlayer() {
 
 	/** Manages audio source loading - only when song actually changes */
 	useEffect(() => {
-		if (!currentSong || !audioRef.current) return;
+		if (!currentSong || !audioRef.current) {
+			previousSongIdRef.current = null;
+			return;
+		}
 
+		// Only load new source if the song ID actually changed
+		if (previousSongIdRef.current === currentSong.id) {
+			return;
+		}
+
+		previousSongIdRef.current = currentSong.id;
 		const audio = audioRef.current;
 		let blobUrl: string | null = null;
 
@@ -88,7 +100,7 @@ export function AudioPlayer() {
 				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, [currentSong?.id, audioRef, isOfflineMode, isPlaying]);
+	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongCacheBlob]);
 
 	/** Manages play/pause state */
 	useEffect(() => {

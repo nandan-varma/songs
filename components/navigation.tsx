@@ -54,12 +54,6 @@ export function Navigation() {
 						) : (
 							<Wifi className="h-4 w-4 text-green-500" />
 						)}
-						<Switch
-							checked={isOfflineMode}
-							onCheckedChange={setOfflineMode}
-							disabled
-							aria-label="Network status (automatic)"
-						/>
 						<span className="hidden sm:inline text-sm font-medium">
 							{isOfflineMode ? "Offline" : "Online"}
 						</span>

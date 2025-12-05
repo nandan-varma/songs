@@ -8,7 +8,7 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import { useDownloads } from "@/contexts/downloads-context";
+import { useDownloadsActions, useDownloadsState } from "@/contexts/downloads-context";
 import type { DetailedSong, Song } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -31,7 +31,8 @@ const OfflineContext = createContext<
 
 export function OfflineProvider({ children }: { children: React.ReactNode }) {
 	const [isOnline, setIsOnline] = useState(true);
-	const { isSongCached, cachedSongs } = useDownloads();
+	const { isSongCached } = useDownloadsActions();
+	const { cachedSongs } = useDownloadsState();
 
 	// Offline mode is purely based on network status
 	const isOfflineMode = !isOnline;

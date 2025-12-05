@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { usePlayerActions } from "@/contexts/player-context";
-import { useDownloads } from "@/contexts/downloads-context";
+import { useDownloadsActions } from "@/contexts/downloads-context";
 import { getSongById } from "@/lib/api";
 import type { Song } from "@/lib/types";
 import { SongItem } from "./song-item";
@@ -14,7 +14,7 @@ interface SongsListProps {
 
 export function SongsList({ songs }: SongsListProps) {
 	const { playSong, addToQueue } = usePlayerActions();
-	const { addToDownloadQueue } = useDownloads();
+	const { addToDownloadQueue } = useDownloadsActions();
 
 	const handlePlay = useCallback(
 		async (song: Song) => {

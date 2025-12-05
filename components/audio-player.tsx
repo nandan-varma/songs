@@ -6,12 +6,17 @@ import {
 	usePlayerActions,
 	useQueue,
 } from "@/contexts/player-context";
+import { useDownloads } from "@/contexts/downloads-context";
+import { useOffline } from "@/contexts/offline-context";
 import { PlaybackControls } from "./player/playback-controls";
 import { ProgressBar } from "./player/progress-bar";
 import { QueueButton } from "./player/queue-button";
 import { SongInfo } from "./player/song-info";
 import { VolumeControl } from "./player/volume-control";
 import { Card } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { WifiOff } from "lucide-react";
+import { toast } from "sonner";
 
 /**
  * Persistent audio player UI with split contexts to minimize re-renders
@@ -28,49 +33,74 @@ export function AudioPlayer() {
 		setVolume,
 		removeFromQueue,
 	} = usePlayerActions();
+	const { getSongCacheBlob, isSongCached } = useDownloads();
+	const { isOfflineMode } = useOffline();
 
-	/** Manages audio source loading and playback state */
+	/** Skip uncached songs in offline mode */
+	useEffect(() => {
+		if (!currentSong || !isOfflineMode) return;
+		
+		if (!isSongCached(currentSong.id)) {
+			toast.error(`"${currentSong.name}" is not available offline. Skipping...`);
+			playNext();
+		}
+	}, [currentSong, isOfflineMode, isSongCached, playNext]);
+
+	/** Manages audio source loading - only when song actually changes */
 	useEffect(() => {
 		if (!currentSong || !audioRef.current) return;
 
-		const downloadUrl =
-			currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
-			currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
-
-		if (!downloadUrl?.url) return;
-
 		const audio = audioRef.current;
-		const needsNewSource = audio.src !== downloadUrl.url;
-		let playWhenReadyHandler: (() => void) | null = null;
+		let blobUrl: string | null = null;
 
-		if (needsNewSource) {
-			audio.src = downloadUrl.url;
-			audio.load();
-
-			if (isPlaying) {
-				playWhenReadyHandler = () => {
-					audio.play().catch(console.error);
-					if (playWhenReadyHandler) {
-						audio.removeEventListener("canplay", playWhenReadyHandler);
-					}
-				};
-				audio.addEventListener("canplay", playWhenReadyHandler);
-			}
+		// Try to use cached audio first, then fallback to remote URL
+		const cachedBlob = getSongCacheBlob(currentSong.id);
+		if (cachedBlob) {
+			blobUrl = URL.createObjectURL(cachedBlob);
+			audio.src = blobUrl;
 		} else {
-			if (isPlaying && audio.paused) {
-				audio.play().catch(console.error);
-			} else if (!isPlaying && !audio.paused) {
-				audio.pause();
-			}
+			// In offline mode, don't try to play remote URLs
+			if (isOfflineMode) return;
+			
+			const downloadUrl =
+				currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
+				currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
+
+			if (!downloadUrl?.url) return;
+			audio.src = downloadUrl.url;
 		}
 
-		// Cleanup function to remove event listener if component unmounts
+		// Load the new source
+		audio.load();
+
+		// If we should be playing, start playback when ready
+		if (isPlaying) {
+			const playWhenReady = () => {
+				audio.play().catch(console.error);
+				audio.removeEventListener("canplay", playWhenReady);
+			};
+			audio.addEventListener("canplay", playWhenReady);
+		}
+
+		// Cleanup: revoke blob URL when song changes or component unmounts
 		return () => {
-			if (playWhenReadyHandler && audio) {
-				audio.removeEventListener("canplay", playWhenReadyHandler);
+			if (blobUrl) {
+				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, [currentSong, isPlaying, audioRef]);
+	}, [currentSong?.id, audioRef, isOfflineMode, isPlaying]);
+
+	/** Manages play/pause state */
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio || !currentSong) return;
+
+		if (isPlaying && audio.paused) {
+			audio.play().catch(console.error);
+		} else if (!isPlaying && !audio.paused) {
+			audio.pause();
+		}
+	}, [isPlaying, currentSong, audioRef]);
 
 	/** Set up Media Session API for OS-level media controls */
 	useEffect(() => {
@@ -182,6 +212,15 @@ export function AudioPlayer() {
 				<audio ref={audioRef}>
 					<track kind="captions" />
 				</audio>
+
+				{isOfflineMode && (
+					<div className="absolute -top-2 right-4 z-10">
+						<Badge variant="secondary" className="flex items-center gap-1 bg-orange-500/90 text-white border-orange-600">
+							<WifiOff className="h-3 w-3" />
+							Offline Mode
+						</Badge>
+					</div>
+				)}
 
 				<div className="px-4 md:px-6 py-4 md:py-5">
 					{/* Mobile Layout */}

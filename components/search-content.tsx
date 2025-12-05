@@ -27,6 +27,7 @@ import type {
 	PlaylistSearchResult,
 } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
+import { useOffline } from "@/contexts/offline-context";
 
 // ============================================================================
 // TYPES & CONSTANTS
@@ -70,6 +71,7 @@ const playlistSearchResultToPlaylist = (
 export function SearchContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
+	const { getFilteredSongs, isOfflineMode, isOnlineContentAvailable, shouldEnableQuery } = useOffline();
 	const queryParam = searchParams.get("q") || "";
 	const tabParam = (searchParams.get("tab") as TabType) || "all";
 
@@ -77,8 +79,8 @@ export function SearchContent() {
 	const [activeTab, setActiveTab] = useState<TabType>(tabParam);
 
 	const searchEnabled = useMemo(
-		() => queryParam.trim().length > 0,
-		[queryParam],
+		() => queryParam.trim().length > 0 && shouldEnableQuery(),
+		[queryParam, shouldEnableQuery],
 	);
 
 	const globalSearchQuery = useGlobalSearch(queryParam, {
@@ -116,13 +118,16 @@ export function SearchContent() {
 			| { pages: Array<{ total: number; results: PlaylistSearchResult[] }> }
 			| undefined;
 
+		const allSongs = songsData?.pages.flatMap((page) =>
+				page.results.map(detailedSongToSong),
+			) ?? [];
+		const filteredSongs = getFilteredSongs(allSongs);
+
 		return {
 			songs: {
-				items:
-					songsData?.pages.flatMap((page) =>
-						page.results.map(detailedSongToSong),
-					) ?? [],
+				items: filteredSongs,
 				total: songsData?.pages[0]?.total ?? 0,
+				hasOfflineContent: isOnlineContentAvailable(allSongs),
 			},
 			albums: {
 				items: albumsData?.pages.flatMap((page) => page.results) ?? [],
@@ -239,6 +244,7 @@ export function SearchContent() {
 								songsQuery.isLoading && processedData.songs.items.length === 0
 							}
 							hasResults={processedData.songs.items.length > 0}
+							hasOfflineContent={processedData.songs.hasOfflineContent}
 							query={queryParam}
 						>
 							<SongsList songs={processedData.songs.items} />

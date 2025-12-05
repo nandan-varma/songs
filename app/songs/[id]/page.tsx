@@ -1,10 +1,11 @@
 "use client";
 
-import { Download, Loader2, Music2, Play, Plus } from "lucide-react";
+import { Download, Loader2, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { ProgressiveImage } from "@/components/progressive-image";
+import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { useOffline } from "@/contexts/offline-context";
 import { useSong, useSongSuggestions } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
+import { detailedSongToSong } from "@/lib/utils";
 
 export default function SongPage() {
 	const params = useParams();
@@ -87,7 +89,7 @@ export default function SongPage() {
 								/>
 							) : (
 								<div className="flex h-full w-full items-center justify-center bg-muted rounded-lg">
-									<Music2 className="h-24 w-24 text-muted-foreground" />
+									<Music className="h-24 w-24 text-muted-foreground" />
 								</div>
 							)}
 						</div>
@@ -218,94 +220,7 @@ export default function SongPage() {
 					<Separator />
 					<div className="space-y-4">
 						<h2 className="text-2xl font-semibold">You Might Also Like</h2>
-						<div className="grid gap-3">
-							{filteredSuggestions.map((suggestion) => (
-								<Card
-									key={suggestion.id}
-									className="overflow-hidden hover:bg-accent/50 transition-colors"
-								>
-									<CardContent className="p-4">
-										<div className="flex items-center gap-4">
-											<div className="relative h-16 w-16 flex-shrink-0">
-												{suggestion.image && suggestion.image.length > 0 && (
-													<ProgressiveImage
-														images={suggestion.image}
-														alt={suggestion.name}
-														entityType={EntityType.SONG}
-														rounded="default"
-													/>
-												)}
-											</div>
-											<div className="flex-1 min-w-0">
-												<Link href={`/songs/${suggestion.id}`}>
-													<h3 className="font-medium truncate hover:underline">
-														{suggestion.name}
-													</h3>
-												</Link>
-												<p className="text-sm text-muted-foreground truncate">
-													{suggestion.artists?.primary
-														?.map((a) => a.name)
-														.join(", ")}
-												</p>
-											</div>
-											<div className="flex gap-2">
-												<Button
-													size="icon"
-													variant="ghost"
-													onClick={(e) => {
-														e.preventDefault();
-														e.stopPropagation();
-														playSong(suggestion);
-														toast.success(`Now playing: ${suggestion.name}`);
-													}}
-													aria-label="Play song"
-												>
-													<Play className="h-4 w-4" />
-												</Button>
-												<Button
-													size="icon"
-													variant="ghost"
-													onClick={(e) => {
-														e.preventDefault();
-														e.stopPropagation();
-														addToQueue(suggestion);
-														toast.success(`Added to queue: ${suggestion.name}`);
-													}}
-													aria-label="Add to queue"
-												>
-													<Plus className="h-4 w-4" />
-												</Button>
-												{suggestion.downloadUrl &&
-													suggestion.downloadUrl.length > 0 && (
-														<Button
-															size="icon"
-															variant="ghost"
-															onClick={(e) => {
-																e.preventDefault();
-																e.stopPropagation();
-															}}
-															asChild
-															aria-label="Download song"
-														>
-															<a
-																href={
-																	suggestion.downloadUrl[
-																		suggestion.downloadUrl.length - 1
-																	]?.url
-																}
-																target="_blank"
-																rel="noopener noreferrer"
-															>
-																<Download className="h-4 w-4" />
-															</a>
-														</Button>
-													)}
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							))}
-						</div>
+						<SongsList songs={filteredSuggestions.map(detailedSongToSong)} />
 					</div>
 				</>
 			)}

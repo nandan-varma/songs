@@ -30,7 +30,8 @@
 			"suspicious": {
 				"useIterableCallbackReturn": "error",
 				"noArrayIndexKey": "warn",
-				"noDocumentCookie": "warn"
+				"noDocumentCookie": "warn",
+				"noExplicitAny": "warn"
 			},
 			"security": {
 				"noDangerouslySetInnerHtml": "warn"
@@ -62,5 +63,13 @@
 				"organizeImports": "on"
 			}
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["components/ui/**"],
+			"linter": {
+				"enabled": false
+			}
+		}
+	]
 }

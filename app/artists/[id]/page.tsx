@@ -1,10 +1,11 @@
 "use client";
 
-import { Download, ExternalLink, Loader2, Play, Plus } from "lucide-react";
+import { ExternalLink, Loader2, Play } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { ProgressiveImage } from "@/components/progressive-image";
+import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,11 +14,12 @@ import { useOffline } from "@/contexts/offline-context";
 import { useArtist, useArtistAlbums, useArtistSongs } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
+import { detailedSongToSong } from "@/lib/utils";
 
 export default function ArtistPage() {
 	const params = useParams();
 	const artistId = params.id as string;
-	const { playQueue, playSong, addToQueue } = useOfflinePlayerActions();
+	const { playQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 
 	const {
@@ -213,107 +215,7 @@ export default function ArtistPage() {
 									Play All
 								</Button>
 							</div>
-							<div className="grid gap-2">
-								{filteredSongs.map((song, index) => (
-									<Card
-										key={song.id}
-										className="overflow-hidden hover:bg-accent/50 transition-colors"
-									>
-										<CardContent className="p-4">
-											<div className="flex items-center gap-4">
-												<span className="text-sm text-muted-foreground w-6">
-													{index + 1}
-												</span>
-												<div className="relative h-12 w-12 flex-shrink-0">
-													<ProgressiveImage
-														images={song.image}
-														alt={song.name}
-														entityType={EntityType.SONG}
-														rounded="default"
-													/>
-												</div>
-												<div className="flex-1 min-w-0">
-													<Link href={`/songs/${song.id}`}>
-														<h3 className="font-medium truncate hover:underline">
-															{song.name}
-														</h3>
-													</Link>
-													{song.album?.id ? (
-														<Link
-															href={`/albums/${song.album.id}`}
-															className="text-sm text-muted-foreground truncate hover:underline block"
-															onClick={(e) => e.stopPropagation()}
-														>
-															{song.album.name}
-														</Link>
-													) : (
-														<p className="text-sm text-muted-foreground truncate">
-															{song.album?.name}
-														</p>
-													)}
-												</div>
-												{song.duration && (
-													<span className="text-sm text-muted-foreground">
-														{Math.floor(song.duration / 60)}:
-														{(song.duration % 60).toString().padStart(2, "0")}
-													</span>
-												)}
-												<div className="flex gap-2">
-													<Button
-														size="icon"
-														variant="ghost"
-														onClick={(e) => {
-															e.preventDefault();
-															e.stopPropagation();
-															playSong(song);
-															toast.success(`Now playing: ${song.name}`);
-														}}
-														aria-label="Play song"
-													>
-														<Play className="h-4 w-4" />
-													</Button>
-													<Button
-														size="icon"
-														variant="ghost"
-														onClick={(e) => {
-															e.preventDefault();
-															e.stopPropagation();
-															addToQueue(song);
-															toast.success(`Added to queue: ${song.name}`);
-														}}
-														aria-label="Add to queue"
-													>
-														<Plus className="h-4 w-4" />
-													</Button>
-													{song.downloadUrl && song.downloadUrl.length > 0 && (
-														<Button
-															size="icon"
-															variant="ghost"
-															onClick={(e) => {
-																e.preventDefault();
-																e.stopPropagation();
-															}}
-															asChild
-															aria-label="Download song"
-														>
-															<a
-																href={
-																	song.downloadUrl[song.downloadUrl.length - 1]
-																		?.url
-																}
-																target="_blank"
-																rel="noopener noreferrer"
-															>
-																<Download className="h-4 w-4" />
-															</a>
-														</Button>
-													)}
-												</div>
-											</div>
-										</CardContent>
-									</Card>
-								))}
-							</div>
+							<SongsList songs={filteredSongs.map(detailedSongToSong)} />
 						</>
 					) : !songsData ? (
 						<div className="flex justify-center py-12">
@@ -374,88 +276,7 @@ export default function ArtistPage() {
 				{/* Singles */}
 				{artist.singles && artist.singles.length > 0 && (
 					<TabsContent value="singles" className="space-y-4">
-						<div className="grid gap-2">
-							{artist.singles.map((song) => (
-								<Card
-									key={song.id}
-									className="overflow-hidden hover:bg-accent/50 transition-colors"
-								>
-									<CardContent className="p-4">
-										<div className="flex items-center gap-4">
-											<div className="relative h-12 w-12 flex-shrink-0">
-												<ProgressiveImage
-													images={song.image}
-													alt={song.name}
-													entityType={EntityType.SONG}
-													rounded="default"
-												/>
-											</div>
-											<div className="flex-1 min-w-0">
-												<Link href={`/songs/${song.id}`}>
-													<h3 className="font-medium truncate hover:underline">
-														{song.name}
-													</h3>
-												</Link>
-												<p className="text-sm text-muted-foreground truncate">
-													{song.year}
-												</p>
-											</div>
-											<div className="flex gap-2">
-												<Button
-													size="icon"
-													variant="ghost"
-													onClick={(e) => {
-														e.preventDefault();
-														e.stopPropagation();
-														playSong(song);
-														toast.success(`Now playing: ${song.name}`);
-													}}
-													aria-label="Play song"
-												>
-													<Play className="h-4 w-4" />
-												</Button>
-												<Button
-													size="icon"
-													variant="ghost"
-													onClick={(e) => {
-														e.preventDefault();
-														e.stopPropagation();
-														addToQueue(song);
-														toast.success(`Added to queue: ${song.name}`);
-													}}
-													aria-label="Add to queue"
-												>
-													<Plus className="h-4 w-4" />
-												</Button>
-												{song.downloadUrl && song.downloadUrl.length > 0 && (
-													<Button
-														size="icon"
-														variant="ghost"
-														onClick={(e) => {
-															e.preventDefault();
-															e.stopPropagation();
-														}}
-														asChild
-														aria-label="Download song"
-													>
-														<a
-															href={
-																song.downloadUrl[song.downloadUrl.length - 1]
-																	?.url
-															}
-															target="_blank"
-															rel="noopener noreferrer"
-														>
-															<Download className="h-4 w-4" />
-														</a>
-													</Button>
-												)}
-											</div>
-										</div>
-									</CardContent>
-								</Card>
-							))}
-						</div>
+						<SongsList songs={artist.singles.map(detailedSongToSong)} />
 					</TabsContent>
 				)}
 

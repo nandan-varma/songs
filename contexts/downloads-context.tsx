@@ -361,8 +361,10 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		try {
 			if ("showDirectoryPicker" in window) {
 				// Use File System Access API for modern browsers
-				const dirHandle = await (window as any).showDirectoryPicker();
-
+				interface WindowWithFS extends Window {
+					showDirectoryPicker(): Promise<FileSystemDirectoryHandle>;
+				}
+				const dirHandle = await (window as WindowWithFS).showDirectoryPicker();
 				for (const download of completedDownloads) {
 					if (download.blob) {
 						const fileName = `${download.song.name}.mp3`

@@ -148,6 +148,7 @@ export function ProgressiveImage({
 	if (hasError) {
 		return (
 			<div className={wrapperClassName}>
+				{/* biome-ignore lint/performance/noImgElement: Intentional use of img for fallback placeholder */}
 				<img
 					src={FALLBACK_URL}
 					alt={imageAlt}

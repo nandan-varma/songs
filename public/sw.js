@@ -4,7 +4,7 @@ const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `images-${CACHE_VERSION}`;
 
 // Static assets to cache immediately
-const STATIC_ASSETS = ["/", "/offline", "/manifest.json"];
+const STATIC_ASSETS = ["/manifest.json"];
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
@@ -12,8 +12,24 @@ self.addEventListener("install", (event) => {
 	event.waitUntil(
 		caches.open(STATIC_CACHE).then((cache) => {
 			console.log("[Service Worker] Caching static assets");
-			return cache.addAll(STATIC_ASSETS).catch((err) => {
-				console.error("[Service Worker] Failed to cache static assets:", err);
+			// Cache assets individually to avoid failure on any single asset
+			return Promise.allSettled(
+				STATIC_ASSETS.map((url) =>
+					fetch(url)
+						.then((response) => {
+							if (response.ok) {
+								return cache.put(url, response);
+							}
+							console.warn(`[Service Worker] Failed to cache ${url}: ${response.status}`);
+							return Promise.resolve();
+						})
+						.catch((err) => {
+							console.warn(`[Service Worker] Failed to fetch ${url}:`, err);
+							return Promise.resolve();
+						})
+				)
+			).then(() => {
+				console.log("[Service Worker] Static assets caching complete");
 			});
 		}),
 	);

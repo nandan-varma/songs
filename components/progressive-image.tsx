@@ -15,6 +15,7 @@ interface ProgressiveImageProps {
 	width?: number;
 	height?: number;
 	rounded?: "none" | "default" | "full";
+	objectFit?: "cover" | "contain";
 }
 
 const FALLBACK_URL = "https://placehold.co/500x500?text=Image+Not+Found";
@@ -28,6 +29,7 @@ export function ProgressiveImage({
 	width,
 	height,
 	rounded = "default",
+	objectFit = "cover",
 }: ProgressiveImageProps) {
 	const [imageSrc, setImageSrc] = useState<string>(() => {
 		// Start with lowest quality image or fallback
@@ -131,9 +133,11 @@ export function ProgressiveImage({
 	};
 
 	const imageClassName = cn(
-		"object-cover transition-opacity duration-300",
+		objectFit === "cover" ? "object-cover" : "object-contain",
+		"transition-opacity duration-300",
 		!isHighQualityLoaded && "blur-sm",
 		isHighQualityLoaded && "blur-0",
+		roundedClasses[rounded],
 		className,
 	);
 
@@ -144,46 +148,17 @@ export function ProgressiveImage({
 
 	const imageAlt = hasError ? "Image not found" : alt || "Image";
 
-	// Use regular img tag for fallback to avoid Next.js Image optimization issues
-	if (hasError) {
-		return (
-			<div className={wrapperClassName}>
-				{/* biome-ignore lint/performance/noImgElement: Intentional use of img for fallback placeholder */}
-				<img
-					src={FALLBACK_URL}
-					alt={imageAlt}
-					className={cn(
-						imageClassName,
-						fill ? "absolute inset-0 w-full h-full" : "",
-					)}
-					style={
-						fill
-							? {
-									position: "absolute",
-									height: "100%",
-									width: "100%",
-									inset: 0,
-								}
-							: undefined
-					}
-				/>
-			</div>
-		);
-	}
-
 	if (fill) {
 		return (
-			<div className={wrapperClassName}>
-				<Image
-					src={imageSrc}
-					alt={imageAlt}
-					fill
-					className={imageClassName}
-					onError={handleError}
-					priority={priority}
-					sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-				/>
-			</div>
+			<Image
+				src={imageSrc}
+				alt={imageAlt}
+				fill
+				className={imageClassName}
+				onError={handleError}
+				priority={priority}
+				sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+			/>
 		);
 	}
 

@@ -94,25 +94,6 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 						});
 					}
 				}
-				// Fallback to localStorage for migration
-				if (cacheMap.size === 0) {
-					const cached = localStorage.getItem(CACHE_KEY);
-					if (cached) {
-						const parsedCache = JSON.parse(cached);
-						for (const item of parsedCache) {
-							if (item.status === DownloadStatus.COMPLETED) {
-								cacheMap.set(item.song.id, {
-									...item,
-									downloadedAt: new Date(item.downloadedAt),
-								});
-								// Migrate to IndexedDB
-								if (item.song) {
-									musicDB.saveSong(item.song).catch(console.error);
-								}
-							}
-						}
-					}
-				}
 
 				setCachedSongs(cacheMap);
 			} catch (error) {
@@ -258,11 +239,11 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				prev.map((item) =>
 					item.id === downloadItem.id
 						? {
-								...item,
-								status: DownloadStatus.FAILED,
-								error:
-									error instanceof Error ? error.message : "Download failed",
-							}
+							...item,
+							status: DownloadStatus.FAILED,
+							error:
+								error instanceof Error ? error.message : "Download failed",
+						}
 						: item,
 				),
 			);
@@ -403,22 +384,6 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				}
 
 				alert(`Successfully saved ${completedDownloads.length} songs!`);
-			} else {
-				// Fallback: download individual files
-				for (const download of completedDownloads) {
-					if (download.blob) {
-						const url = URL.createObjectURL(download.blob);
-						const a = document.createElement("a");
-						a.href = url;
-						a.download = `${download.song.name}.mp3`
-							.replace(/[<>:"/\\|?*]/g, "_")
-							.replace(/\s+/g, "_");
-						document.body.appendChild(a);
-						a.click();
-						document.body.removeChild(a);
-						URL.revokeObjectURL(url);
-					}
-				}
 			}
 		} catch (error) {
 			console.error("Error saving files:", error);

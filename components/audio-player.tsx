@@ -255,11 +255,11 @@ export function AudioPlayer() {
 						<div className="flex items-start gap-3">
 							{currentSong.image && currentSong.image.length > 0 && (
 								<div className="relative h-16 w-16 flex-shrink-0">
-									{/* <img
-										src={currentSong.image[0]?.url}
+									<img
+										src={currentSong.image[2]?.url}
 										alt={currentSong.name}
 										className="h-full w-full object-cover rounded"
-									/> */}
+									/>
 								</div>
 							)}
 

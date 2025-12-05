@@ -114,7 +114,7 @@ export function AudioPlayer() {
 		}
 	}, [isPlaying, currentSong, audioRef]);
 
-	/** Set up Media Session API for OS-level media controls */
+	/** Set up Media Session API metadata - only when song changes */
 	useEffect(() => {
 		if (!("mediaSession" in navigator) || !currentSong) {
 			return;
@@ -141,6 +141,23 @@ export function AudioPlayer() {
 			artwork: artwork.length > 0 ? artwork : undefined,
 		});
 
+		return () => {
+			if ("mediaSession" in navigator) {
+				navigator.mediaSession.metadata = null;
+			}
+		};
+	}, [currentSong]);
+
+	/** Update Media Session playback state */
+	useEffect(() => {
+		if (!("mediaSession" in navigator)) return;
+		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+	}, [isPlaying]);
+
+	/** Set up Media Session action handlers once */
+	useEffect(() => {
+		if (!("mediaSession" in navigator)) return;
+
 		const playHandler = () => {
 			audioRef.current?.play().catch(console.error);
 		};
@@ -157,12 +174,18 @@ export function AudioPlayer() {
 
 		const seekbackwardHandler = (details: MediaSessionActionDetails) => {
 			const skipTime = details.seekOffset || 10;
-			seekTo(Math.max(0, currentTime - skipTime));
+			const audio = audioRef.current;
+			if (audio) {
+				seekTo(Math.max(0, audio.currentTime - skipTime));
+			}
 		};
 
 		const seekforwardHandler = (details: MediaSessionActionDetails) => {
 			const skipTime = details.seekOffset || 10;
-			seekTo(Math.min(duration, currentTime + skipTime));
+			const audio = audioRef.current;
+			if (audio) {
+				seekTo(Math.min(audio.duration || 0, audio.currentTime + skipTime));
+			}
 		};
 
 		navigator.mediaSession.setActionHandler("play", playHandler);
@@ -176,9 +199,6 @@ export function AudioPlayer() {
 		);
 		navigator.mediaSession.setActionHandler("seekforward", seekforwardHandler);
 
-		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
-
-		// Cleanup function to remove action handlers
 		return () => {
 			if ("mediaSession" in navigator) {
 				navigator.mediaSession.setActionHandler("play", null);
@@ -188,19 +208,9 @@ export function AudioPlayer() {
 				navigator.mediaSession.setActionHandler("seekto", null);
 				navigator.mediaSession.setActionHandler("seekbackward", null);
 				navigator.mediaSession.setActionHandler("seekforward", null);
-				navigator.mediaSession.metadata = null;
 			}
 		};
-	}, [
-		currentSong,
-		isPlaying,
-		playNext,
-		playPrevious,
-		seekTo,
-		currentTime,
-		duration,
-		audioRef,
-	]);
+	}, [playNext, playPrevious, seekTo, audioRef]);
 
 	/** Update Media Session position state for scrubbing */
 	useEffect(() => {
@@ -240,11 +250,11 @@ export function AudioPlayer() {
 						<div className="flex items-start gap-3">
 							{currentSong.image && currentSong.image.length > 0 && (
 								<div className="relative h-16 w-16 flex-shrink-0">
-									<img
+									{/* <img
 										src={currentSong.image[0]?.url}
 										alt={currentSong.name}
 										className="h-full w-full object-cover rounded"
-									/>
+									/> */}
 								</div>
 							)}
 

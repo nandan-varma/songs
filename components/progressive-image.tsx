@@ -31,83 +31,54 @@ export function ProgressiveImage({
 	rounded = "default",
 	objectFit = "cover",
 }: ProgressiveImageProps) {
-	const [imageSrc, setImageSrc] = useState<string>(() => {
-		// Start with lowest quality image or fallback
-		return images?.[0]?.url || FALLBACK_URL;
-	});
-	const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(() => {
-		return !images || images.length === 0;
-	});
-	const [hasError, setHasError] = useState(() => {
-		return !images || images.length === 0;
-	});
+	const [imageSrc, setImageSrc] = useState<string>(() => images?.[0]?.url || FALLBACK_URL);
+	const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(() => !images || images.length === 0);
+	const [hasError, setHasError] = useState(() => !images || images.length === 0);
 
 	useEffect(() => {
 		if (!images || images.length === 0) {
+			setImageSrc(FALLBACK_URL);
+			setHasError(true);
+			setIsHighQualityLoaded(true);
 			return;
 		}
 
 		let cancelled = false;
-
-		// Test low quality image first
 		const lowQualityUrl = images[0]?.url;
-		if (!lowQualityUrl) {
-			// Use a timeout to avoid setState in effect
-			const timeout = setTimeout(() => {
-				if (!cancelled) {
-					setImageSrc(FALLBACK_URL);
-					setHasError(true);
-					setIsHighQualityLoaded(true);
-				}
-			}, 0);
-			return () => {
-				cancelled = true;
-				clearTimeout(timeout);
-			};
-		}
+		const highQualityIndex = images.length - 1;
+		const highQualityUrl = images[highQualityIndex]?.url;
 
-		// Preload low quality to check if it works
+		// Start loading both images in parallel
 		const lowImg = new window.Image();
+		const highImg = new window.Image();
+
 		lowImg.src = lowQualityUrl;
+		highImg.src = highQualityUrl;
 
 		lowImg.onload = () => {
 			if (cancelled) return;
-			// Low quality loaded successfully, use it
-			setImageSrc(lowQualityUrl);
+			setImageSrc((prev) => (prev !== lowQualityUrl ? lowQualityUrl : prev));
 			setHasError(false);
 			setIsHighQualityLoaded(false);
-
-			// Now try to load high quality image
-			const highQualityIndex = images.length - 1;
-			if (highQualityIndex > 0 && images[highQualityIndex]?.url) {
-				const highImg = new window.Image();
-				highImg.src = images[highQualityIndex].url;
-				highImg.onload = () => {
-					if (cancelled) return;
-					setImageSrc(images[highQualityIndex].url);
-					setIsHighQualityLoaded(true);
-				};
-				highImg.onerror = () => {
-					if (cancelled) return;
-					// High quality failed, but low quality is working
-					console.warn(
-						"Failed to load high quality image, staying with low quality",
-					);
-					setIsHighQualityLoaded(true);
-				};
-			} else {
-				if (!cancelled) {
-					setIsHighQualityLoaded(true);
-				}
-			}
 		};
 
 		lowImg.onerror = () => {
 			if (cancelled) return;
-			// Low quality failed, use fallback immediately
 			console.warn("Failed to load image, using fallback");
 			setImageSrc(FALLBACK_URL);
 			setHasError(true);
+			setIsHighQualityLoaded(true);
+		};
+
+		highImg.onload = () => {
+			if (cancelled) return;
+			setImageSrc((prev) => (prev !== highQualityUrl ? highQualityUrl : prev));
+			setIsHighQualityLoaded(true);
+		};
+
+		highImg.onerror = () => {
+			if (cancelled) return;
+			console.warn("Failed to load high quality image, staying with low quality");
 			setIsHighQualityLoaded(true);
 		};
 

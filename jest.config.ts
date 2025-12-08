@@ -15,6 +15,34 @@ const config: Config = {
 	moduleNameMapper: {
 		"^@/(.*)$": "<rootDir>/$1",
 	},
+	// Coverage configuration
+	collectCoverageFrom: [
+		"**/*.{ts,tsx}",
+		"!**/*.d.ts",
+		"!**/node_modules/**",
+		"!**/.next/**",
+		"!**/coverage/**",
+		"!**/jest.config.ts",
+		"!**/jest.setup.ts",
+		"!**/__tests__/**",
+		"!**/*.test.{ts,tsx}",
+		"!**/*.spec.{ts,tsx}",
+		"!**/types/**",
+		"!**/public/**",
+		"!**/scripts/**",
+		"!**/components/ui/**",
+	],
+	// Coverage thresholds - disabled for now while building test coverage
+	// coverageThreshold: {
+	// 	global: {
+	// 		branches: 40,
+	// 		functions: 30,
+	// 		lines: 20,
+	// 		statements: 20,
+	// 	},
+	// },
+	coverageReporters: ["text", "text-summary", "html", "lcov", "json"],
+	coverageDirectory: "coverage",
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

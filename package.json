@@ -9,7 +9,11 @@
 		"lint": "biome check",
 		"format": "biome format",
 		"test": "jest",
-		"test:watch": "jest --watch"
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage",
+		"test:coverage:watch": "jest --coverage --watch",
+		"test:ci": "jest --ci --coverage --maxWorkers=2 --silent",
+		"test:coverage:summary": "jest --coverage --coverageReporters=text-summary"
 	},
 	"dependencies": {
 		"@radix-ui/react-accordion": "^1.2.12",

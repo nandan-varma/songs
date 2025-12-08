@@ -7,6 +7,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { toast } from "sonner";
@@ -47,11 +48,11 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 		return cachedSongs.size;
 	}, [cachedSongs]);
 
+	const isInitial = useRef(true);
+
 	// Monitor network status
 	useEffect(() => {
 		if (typeof window === "undefined") return;
-
-		let isInitial = true;
 
 		const updateOnlineStatus = () => {
 			const online = navigator.onLine;
@@ -59,7 +60,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 			setIsOnline(online);
 
 			// Show toast notifications for network changes (skip initial load)
-			if (!isInitial) {
+			if (!isInitial.current) {
 				if (!online) {
 					toast.warning("No internet connection", {
 						description:
@@ -72,7 +73,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 				}
 			}
 
-			isInitial = false;
+			isInitial.current = false;
 		};
 
 		// Set initial state
@@ -86,7 +87,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 			window.removeEventListener("online", updateOnlineStatus);
 			window.removeEventListener("offline", updateOnlineStatus);
 		};
-	}, [isOnline]);
+	}, []);
 
 	// Toggle is disabled - offline mode is automatic based on network
 	const setOfflineMode = useCallback((_enabled: boolean) => {

@@ -77,6 +77,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		if (replaceQueue) {
 			setQueue([song]);
 			setCurrentIndex(0);
+		} else {
+			setQueue((prev) => [...prev, song]);
 		}
 	}, []);
 
@@ -92,15 +94,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
 	/** Toggle between play and pause states */
 	const togglePlayPause = useCallback(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
-
 		setIsPlaying((prev) => {
 			const newState = !prev;
-			if (newState) {
-				audio.play().catch(console.error);
-			} else {
-				audio.pause();
+			const audio = audioRef.current;
+			if (audio) {
+				if (newState) {
+					audio.play().catch(console.error);
+				} else {
+					audio.pause();
+				}
 			}
 			return newState;
 		});

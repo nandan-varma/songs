@@ -8,7 +8,6 @@ const STATIC_ASSETS = ["/manifest.json"];
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
-	console.log("[Service Worker] Installing...");
 	event.waitUntil(
 		caches.open(STATIC_CACHE).then((cache) => {
 			console.log("[Service Worker] Caching static assets");
@@ -20,13 +19,9 @@ self.addEventListener("install", (event) => {
 							if (response.ok) {
 								return cache.put(url, response);
 							}
-							console.warn(
-								`[Service Worker] Failed to cache ${url}: ${response.status}`,
-							);
 							return Promise.resolve();
 						})
-						.catch((err) => {
-							console.warn(`[Service Worker] Failed to fetch ${url}:`, err);
+						.catch(() => {
 							return Promise.resolve();
 						}),
 				),
@@ -40,7 +35,6 @@ self.addEventListener("install", (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener("activate", (event) => {
-	console.log("[Service Worker] Activating...");
 	event.waitUntil(
 		caches.keys().then((cacheNames) => {
 			return Promise.all(
@@ -50,7 +44,6 @@ self.addEventListener("activate", (event) => {
 						cacheName !== DYNAMIC_CACHE &&
 						cacheName !== IMAGE_CACHE
 					) {
-						console.log("[Service Worker] Deleting old cache:", cacheName);
 						return caches.delete(cacheName);
 					}
 					return Promise.resolve();

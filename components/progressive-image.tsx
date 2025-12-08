@@ -31,9 +31,15 @@ export function ProgressiveImage({
 	rounded = "default",
 	objectFit = "cover",
 }: ProgressiveImageProps) {
-	const [imageSrc, setImageSrc] = useState<string>(() => images?.[0]?.url || FALLBACK_URL);
-	const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(() => !images || images.length === 0);
-	const [hasError, setHasError] = useState(() => !images || images.length === 0);
+	const [imageSrc, setImageSrc] = useState<string>(
+		() => images?.[0]?.url || FALLBACK_URL,
+	);
+	const [isHighQualityLoaded, setIsHighQualityLoaded] = useState(
+		() => !images || images.length === 0,
+	);
+	const [hasError, setHasError] = useState(
+		() => !images || images.length === 0,
+	);
 
 	useEffect(() => {
 		if (!images || images.length === 0) {
@@ -78,7 +84,9 @@ export function ProgressiveImage({
 
 		highImg.onerror = () => {
 			if (cancelled) return;
-			console.warn("Failed to load high quality image, staying with low quality");
+			console.warn(
+				"Failed to load high quality image, staying with low quality",
+			);
 			setIsHighQualityLoaded(true);
 		};
 

@@ -1,3 +1,8 @@
+/**
+ * Enums and types for music data structures
+ * Provides type safety for API responses and component props
+ */
+
 // Enums for better type safety
 export enum ImageQuality {
 	LOW = "50x50",
@@ -48,6 +53,9 @@ export enum Language {
 	ASSAMESE = "assamese",
 }
 
+/**
+ * Represents an image with quality and URL
+ */
 export interface Image {
 	quality: ImageQuality | string; // Allow string for flexibility
 	url: string;
@@ -161,6 +169,9 @@ export interface AlbumMini {
 	url: string | null;
 }
 
+/**
+ * Detailed song information including metadata, artists, and download URLs
+ */
 export interface DetailedSong {
 	id: string;
 	name: string;

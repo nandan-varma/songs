@@ -24,7 +24,7 @@ const isDev = process.env.NODE_ENV === "development";
 
 const url = isDev
 	? "http://localhost:3000"
-	: "https://" + process.env.VERCEL_URL
+	: "https://" + process.env.VERCEL_URL;
 
 export const metadata: Metadata = {
 	title: "Music App",

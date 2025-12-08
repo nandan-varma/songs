@@ -13,7 +13,11 @@ import type {
 
 const API_BASE_URL = "https://saavn-api.nandanvarma.com/api";
 
-// Global search
+/**
+ * Search for music across all categories (songs, albums, artists, playlists)
+ * @param query - The search query string
+ * @returns Promise resolving to search results
+ */
 export async function searchMusic(query: string): Promise<SearchResponse> {
 	const response = await fetch(
 		`${API_BASE_URL}/search?query=${encodeURIComponent(query)}`,
@@ -26,7 +30,13 @@ export async function searchMusic(query: string): Promise<SearchResponse> {
 	return response.json();
 }
 
-// Paginated search
+/**
+ * Search for songs with pagination
+ * @param query - The search query string
+ * @param page - Page number (0-based)
+ * @param limit - Number of results per page
+ * @returns Promise resolving to paginated song results
+ */
 export async function searchSongs(
 	query: string,
 	page = 0,
@@ -91,7 +101,11 @@ export async function searchPlaylists(
 	return response.json();
 }
 
-// Songs
+/**
+ * Get detailed information for a single song by ID
+ * @param id - The song ID
+ * @returns Promise resolving to song details
+ */
 export async function getSongById(
 	id: string,
 ): Promise<ApiResponse<DetailedSong[]>> {
@@ -104,6 +118,11 @@ export async function getSongById(
 	return response.json();
 }
 
+/**
+ * Get detailed information for songs by their IDs
+ * @param ids - Array of song IDs
+ * @returns Promise resolving to song details
+ */
 export async function getSongsByIds(
 	ids: string[],
 ): Promise<ApiResponse<DetailedSong[]>> {
@@ -131,7 +150,11 @@ export async function getSongSuggestions(
 	return response.json();
 }
 
-// Albums
+/**
+ * Get detailed information for an album by ID
+ * @param id - The album ID
+ * @returns Promise resolving to album details
+ */
 export async function getAlbumById(
 	id: string,
 ): Promise<ApiResponse<DetailedAlbum>> {
@@ -144,7 +167,12 @@ export async function getAlbumById(
 	return response.json();
 }
 
-// Artists
+/**
+ * Get detailed information for an artist by ID
+ * @param id - The artist ID
+ * @param options - Optional pagination and sorting options
+ * @returns Promise resolving to artist details
+ */
 export async function getArtistById(
 	id: string,
 	options?: {
@@ -209,7 +237,13 @@ export async function getArtistAlbums(
 	return response.json();
 }
 
-// Playlists
+/**
+ * Get detailed information for a playlist by ID
+ * @param id - The playlist ID
+ * @param page - Page number for pagination
+ * @param limit - Number of songs per page
+ * @returns Promise resolving to playlist details
+ */
 export async function getPlaylistById(
 	id: string,
 	page = 0,

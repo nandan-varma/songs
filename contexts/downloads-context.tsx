@@ -3,7 +3,7 @@
 // TypeScript: Add showDirectoryPicker to window type
 declare global {
 	interface Window {
-		showDirectoryPicker?: () => Promise<any>;
+		showDirectoryPicker?: () => Promise<FileSystemDirectoryHandle>;
 	}
 }
 
@@ -175,7 +175,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 
 		try {
 			if (typeof window.showDirectoryPicker !== "function") {
-				alert("Your browser does not support saving files to a folder. Please use a Chromium-based browser.");
+				alert(
+					"Your browser does not support saving files to a folder. Please use a Chromium-based browser.",
+				);
 				return;
 			}
 
@@ -188,7 +190,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				if (!fileName.endsWith(".mp3")) fileName += ".mp3";
 
 				try {
-					const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+					const fileHandle = await dirHandle.getFileHandle(fileName, {
+						create: true,
+					});
 					const writable = await fileHandle.createWritable();
 					await writable.write(cachedSong.blob);
 					await writable.close();
@@ -197,7 +201,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				}
 			}
 
-			alert(`Successfully saved ${cachedSongsArray.length} song${cachedSongsArray.length > 1 ? "s" : ""}!`);
+			alert(
+				`Successfully saved ${cachedSongsArray.length} song${cachedSongsArray.length > 1 ? "s" : ""}!`,
+			);
 		} catch (error) {
 			console.error("Error saving files:", error);
 			alert("Failed to save files. Please try again.");

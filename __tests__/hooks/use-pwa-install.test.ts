@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { usePWAInstall } from "../hooks/use-pwa-install";
+import { usePWAInstall } from "../../hooks/use-pwa-install";
 
 describe("usePWAInstall", () => {
 	beforeEach(() => {

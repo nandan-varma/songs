@@ -1,11 +1,10 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { act } from "@testing-library/react";
-import { DownloadButton } from "../components/download-button";
-import { toast } from "sonner";
+import { DownloadButton } from "../../components/download-button";
 
 // Mock contexts
-jest.mock("../contexts/downloads-context", () => ({
+jest.mock("../../contexts/downloads-context", () => ({
 	useDownloadsActions: jest.fn(),
 }));
 
@@ -67,7 +66,7 @@ const mockSong = {
 
 describe("DownloadButton", () => {
 	const mockUseDownloadsActions =
-		require("../contexts/downloads-context").useDownloadsActions;
+		require("../../contexts/downloads-context").useDownloadsActions;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -81,8 +80,8 @@ describe("DownloadButton", () => {
 
 		render(<DownloadButton song={mockSong} />);
 
-		expect(screen.getByRole("button")).toBeInTheDocument();
-		expect(screen.getByLabelText("Download song")).toBeInTheDocument();
+		expect(screen.getByRole("button")).toBeTruthy();
+		expect(screen.getByLabelText("Download song")).toBeTruthy();
 	});
 
 	it("renders check icon when cached", () => {
@@ -93,8 +92,8 @@ describe("DownloadButton", () => {
 
 		render(<DownloadButton song={mockSong} />);
 
-		expect(screen.getByLabelText("Already downloaded")).toBeInTheDocument();
-		expect(screen.getByRole("button")).toBeDisabled();
+		expect(screen.getByLabelText("Already downloaded")).toBeTruthy();
+		expect(screen.getByRole("button").hasAttribute("disabled")).toBe(true);
 	});
 
 	it("calls downloadSong and shows success toast on click", async () => {
@@ -122,7 +121,7 @@ describe("DownloadButton", () => {
 
 		render(<DownloadButton song={mockSong} />);
 
-		expect(screen.getByRole("button")).toBeDisabled();
+		expect(screen.getByRole("button").hasAttribute("disabled")).toBe(true);
 	});
 
 	it("shows label when showLabel is true", () => {
@@ -133,7 +132,7 @@ describe("DownloadButton", () => {
 
 		render(<DownloadButton song={mockSong} showLabel />);
 
-		expect(screen.getByText("Download")).toBeInTheDocument();
+		expect(screen.getByText("Download")).toBeTruthy();
 	});
 
 	it("shows downloaded label when cached and showLabel", () => {
@@ -144,6 +143,6 @@ describe("DownloadButton", () => {
 
 		render(<DownloadButton song={mockSong} showLabel />);
 
-		expect(screen.getByText("Downloaded")).toBeInTheDocument();
+		expect(screen.getByText("Downloaded")).toBeTruthy();
 	});
 });

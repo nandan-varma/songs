@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { useServiceWorker } from "../hooks/use-service-worker";
+import { useServiceWorker } from "../../hooks/use-service-worker";
 
 describe("useServiceWorker", () => {
 	let mockServiceWorker: any;

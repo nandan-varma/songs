@@ -3,7 +3,7 @@ import {
 	searchSongs,
 	getSongById,
 	getAlbumById,
-} from "../lib/api";
+} from "../../lib/api";
 
 // Mock fetch
 const mockFetch = jest.fn();

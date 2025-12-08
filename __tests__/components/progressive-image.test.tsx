@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { act } from "@testing-library/react";
-import { ProgressiveImage } from "../components/progressive-image";
+import { ProgressiveImage } from "../../components/progressive-image";
 
 // Mock Next.js Image
 jest.mock("next/image", () => ({
@@ -40,7 +40,8 @@ describe("ProgressiveImage", () => {
 		render(<ProgressiveImage images={mockImages} alt="Test image" />);
 
 		const img = screen.getByAltText("Test image");
-		expect(img).toHaveAttribute("src", "low.jpg");
+		expect(img.getAttribute("src")).toBe("low.jpg");
+		expect(img.className).toContain("rounded");
 	});
 
 	it("loads high quality image when available", async () => {
@@ -53,7 +54,7 @@ describe("ProgressiveImage", () => {
 
 		await waitFor(() => {
 			const img = screen.getByAltText("Test image");
-			expect(img).toHaveAttribute("src", "low.jpg");
+			expect(img.getAttribute("src")).toBe("low.jpg");
 		});
 
 		// Trigger high quality load
@@ -63,7 +64,7 @@ describe("ProgressiveImage", () => {
 
 		await waitFor(() => {
 			const img = screen.getByAltText("Test image");
-			expect(img).toHaveAttribute("src", "high.jpg");
+			expect(img.getAttribute("src")).toBe("high.jpg");
 		});
 	});
 
@@ -77,8 +78,7 @@ describe("ProgressiveImage", () => {
 
 		await waitFor(() => {
 			const img = screen.getByAltText("Image not found");
-			expect(img).toHaveAttribute(
-				"src",
+			expect(img.getAttribute("src")).toBe(
 				"https://placehold.co/500x500.webp?text=Image+Not+Found",
 			);
 		});
@@ -88,8 +88,7 @@ describe("ProgressiveImage", () => {
 		render(<ProgressiveImage images={[]} alt="Test image" />);
 
 		const img = screen.getByAltText("Image not found");
-		expect(img).toHaveAttribute(
-			"src",
+		expect(img.getAttribute("src")).toBe(
 			"https://placehold.co/500x500.webp?text=Image+Not+Found",
 		);
 	});
@@ -98,7 +97,9 @@ describe("ProgressiveImage", () => {
 		render(<ProgressiveImage images={mockImages} fill rounded="full" />);
 
 		const img = screen.getByAltText("Image");
-		expect(img).toHaveClass("object-cover", "blur-sm", "rounded-full");
+		expect(img.className).toContain("object-cover");
+		expect(img.className).toContain("blur-sm");
+		expect(img.className).toContain("rounded-full");
 	});
 
 	it("applies correct classes for fixed size", () => {
@@ -112,6 +113,8 @@ describe("ProgressiveImage", () => {
 		);
 
 		const wrapper = screen.getByRole("img").parentElement;
-		expect(wrapper).toHaveClass("overflow-hidden", "bg-muted", "rounded");
+		expect(wrapper?.className).toContain("overflow-hidden");
+		expect(wrapper?.className).toContain("bg-muted");
+		expect(wrapper?.className).toContain("rounded");
 	});
 });

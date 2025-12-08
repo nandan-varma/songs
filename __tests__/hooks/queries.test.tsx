@@ -1,11 +1,11 @@
 import React from "react";
 import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useAlbum } from "../hooks/queries";
-import * as api from "../lib/api";
+import { useAlbum } from "../../hooks/queries";
+import * as api from "../../lib/api";
 
 // Mock API
-jest.mock("../lib/api", () => ({
+jest.mock("../../lib/api", () => ({
 	getAlbumById: jest.fn(),
 }));
 

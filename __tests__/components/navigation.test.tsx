@@ -1,17 +1,18 @@
 import React from "react";
+import "@testing-library/jest-dom";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { Navigation } from "../components/navigation";
+import { Navigation } from "../../components/navigation";
 
 // Mock contexts
-jest.mock("../contexts/downloads-context", () => ({
+jest.mock("../../contexts/downloads-context", () => ({
 	useDownloads: jest.fn(),
 }));
 
-jest.mock("../contexts/offline-context", () => ({
+jest.mock("../../contexts/offline-context", () => ({
 	useOffline: jest.fn(),
 }));
 
-jest.mock("../hooks/use-pwa-install", () => ({
+jest.mock("../../hooks/use-pwa-install", () => ({
 	usePWAInstall: jest.fn(),
 }));
 
@@ -23,9 +24,10 @@ jest.mock("next/link", () => ({
 
 describe("Navigation", () => {
 	const mockUseDownloads =
-		require("../contexts/downloads-context").useDownloads;
-	const mockUseOffline = require("../contexts/offline-context").useOffline;
-	const mockUsePWAInstall = require("../hooks/use-pwa-install").usePWAInstall;
+		require("../../contexts/downloads-context").useDownloads;
+	const mockUseOffline = require("../../contexts/offline-context").useOffline;
+	const mockUsePWAInstall =
+		require("../../hooks/use-pwa-install").usePWAInstall;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -44,9 +46,9 @@ describe("Navigation", () => {
 
 		render(<Navigation />);
 
-		expect(screen.getByText("Music App")).toBeInTheDocument();
-		expect(screen.getByText("Downloads")).toBeInTheDocument();
-		expect(screen.getByText("Online")).toBeInTheDocument();
+		expect(screen.getByText("Music App")).toBeTruthy();
+		expect(screen.getByText("Downloads")).toBeTruthy();
+		expect(screen.getByText("Online")).toBeTruthy();
 	});
 
 	it("shows PWA install button when installable", () => {
@@ -64,7 +66,7 @@ describe("Navigation", () => {
 		render(<Navigation />);
 
 		const installButton = screen.getByText("Install App");
-		expect(installButton).toBeInTheDocument();
+		expect(installButton).toBeTruthy();
 
 		fireEvent.click(installButton);
 		expect(mockPromptInstall).toHaveBeenCalled();
@@ -83,8 +85,8 @@ describe("Navigation", () => {
 
 		render(<Navigation />);
 
-		expect(screen.getByText("Offline")).toBeInTheDocument();
-		expect(screen.getByText("5")).toBeInTheDocument();
+		expect(screen.getByText("Offline")).toBeTruthy();
+		expect(screen.getByText("5")).toBeTruthy();
 	});
 
 	it("shows downloading indicator", () => {
@@ -102,7 +104,7 @@ describe("Navigation", () => {
 
 		// Check for the downloading indicator (the animated bar)
 		const downloadButton = screen.getByText("Downloads");
-		expect(downloadButton).toBeInTheDocument();
+		expect(downloadButton).toBeTruthy();
 		// The indicator is a div with specific classes, but hard to test directly
 	});
 });

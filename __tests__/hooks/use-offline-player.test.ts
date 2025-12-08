@@ -1,7 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { toast } from "sonner";
-import { useOfflinePlayerActions } from "../hooks/use-offline-player";
-import type { DetailedSong } from "../lib/types";
+import { useOfflinePlayerActions } from "../../hooks/use-offline-player";
+import type { DetailedSong } from "../../lib/types";
 
 // Mock toast
 jest.mock("sonner", () => ({
@@ -12,16 +12,17 @@ jest.mock("sonner", () => ({
 }));
 
 // Mock contexts
-jest.mock("../contexts/offline-context", () => ({
+jest.mock("../../contexts/offline-context", () => ({
 	useOffline: jest.fn(() => ({
 		isOfflineMode: false,
 		getFilteredSongs: jest.fn().mockImplementation((songs: any) => songs), // Return all songs by default
+		shouldEnableQuery: () => true,
 	})),
 }));
 
-const mockUseOffline = require("../contexts/offline-context").useOffline;
+const mockUseOffline = require("../../contexts/offline-context").useOffline;
 
-jest.mock("../contexts/player-context", () => ({
+jest.mock("../../contexts/player-context", () => ({
 	usePlayerActions: () => ({
 		playSong: jest.fn(),
 		addToQueue: jest.fn(),

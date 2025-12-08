@@ -19,6 +19,13 @@ const geistMono = Geist_Mono({
 	subsets: ["latin"],
 });
 
+// if dev environment then localhost else production url
+const isDev = process.env.NODE_ENV === "development";
+
+const url = isDev
+	? "http://localhost:3000"
+	: "https://" + process.env.VERCEL_URL
+
 export const metadata: Metadata = {
 	title: "Music App",
 	description: "Stream your favorite music",
@@ -47,7 +54,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		title: "Music App",
 		description: "Stream your favorite music",
-		url: "https://music-app.com",
+		url: url,
 		siteName: "Music App",
 		images: [
 			{

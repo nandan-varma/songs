@@ -18,7 +18,7 @@ interface ProgressiveImageProps {
 	objectFit?: "cover" | "contain";
 }
 
-const FALLBACK_URL = "https://placehold.co/500x500?text=Image+Not+Found";
+const FALLBACK_URL = "https://placehold.co/500x500.webp?text=Image+Not+Found";
 
 export function ProgressiveImage({
 	images,

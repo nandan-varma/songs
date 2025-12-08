@@ -1,13 +1,19 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type React from "react";
 import { AlbumsList } from "../../components/albums-list";
 import type { Album, AlbumSearchResult } from "../../lib/types";
 
 // Mock Next.js components
 jest.mock("next/link", () => ({
 	__esModule: true,
-	default: ({ children, href }: any) => <a href={href}>{children}</a>,
+	default: ({
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	}) => <a href={href}>{children}</a>,
 }));
 
 jest.mock("next/navigation", () => ({
@@ -17,7 +23,7 @@ jest.mock("next/navigation", () => ({
 // Mock ProgressiveImage
 jest.mock("../../components/progressive-image", () => ({
 	ProgressiveImage: ({ alt }: { alt: string }) => (
-		<div data-testid="progressive-image" aria-label={alt}>
+		<div data-testid="progressive-image" role="img" aria-label={alt}>
 			Image
 		</div>
 	),
@@ -25,12 +31,24 @@ jest.mock("../../components/progressive-image", () => ({
 
 // Mock UI components
 jest.mock("../../components/ui/card", () => ({
-	Card: ({ children, className }: any) => (
+	Card: ({
+		children,
+		className,
+	}: {
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<div className={className} data-testid="card">
 			{children}
 		</div>
 	),
-	CardContent: ({ children, className }: any) => (
+	CardContent: ({
+		children,
+		className,
+	}: {
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<div className={className} data-testid="card-content">
 			{children}
 		</div>
@@ -185,8 +203,13 @@ describe("AlbumsList", () => {
 
 		// Mock parent click handler
 		const mockParentClick = jest.fn();
-		const { container } = render(
-			<div onClick={mockParentClick}>
+		render(
+			<div
+				role="button"
+				tabIndex={0}
+				onClick={mockParentClick}
+				onKeyDown={mockParentClick}
+			>
 				<AlbumsList albums={[mockAlbumSearchResult]} />
 			</div>,
 		);
@@ -231,7 +254,7 @@ describe("AlbumsList", () => {
 	it("handles AlbumSearchResult with missing artists", () => {
 		const albumWithoutArtists: AlbumSearchResult = {
 			...mockAlbumSearchResult,
-			artists: undefined as any,
+			artists: undefined as unknown as AlbumSearchResult["artists"],
 		};
 
 		expect(() => {

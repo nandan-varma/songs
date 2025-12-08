@@ -1,8 +1,8 @@
 "use client";
 
-import NextImage from "next/image";
 import { WifiOff } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import NextImage from "next/image";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";

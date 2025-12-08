@@ -1,6 +1,6 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type React from "react";
 import { SongItem } from "../../components/song-item";
 import type { Song } from "../../lib/types";
 
@@ -12,13 +12,19 @@ jest.mock("../../contexts/downloads-context", () => ({
 // Mock Next.js Link
 jest.mock("next/link", () => ({
 	__esModule: true,
-	default: ({ children, href }: any) => <a href={href}>{children}</a>,
+	default: ({
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	}) => <a href={href}>{children}</a>,
 }));
 
 // Mock ProgressiveImage
 jest.mock("../../components/progressive-image", () => ({
 	ProgressiveImage: ({ alt }: { alt: string }) => (
-		<div data-testid="progressive-image" aria-label={alt}>
+		<div data-testid="progressive-image" role="img" aria-label={alt}>
 			Image
 		</div>
 	),
@@ -26,12 +32,24 @@ jest.mock("../../components/progressive-image", () => ({
 
 // Mock UI components
 jest.mock("../../components/ui/card", () => ({
-	Card: ({ children, className }: any) => (
+	Card: ({
+		children,
+		className,
+	}: {
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<div className={className} data-testid="card">
 			{children}
 		</div>
 	),
-	CardContent: ({ children, className }: any) => (
+	CardContent: ({
+		children,
+		className,
+	}: {
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<div className={className} data-testid="card-content">
 			{children}
 		</div>
@@ -39,24 +57,17 @@ jest.mock("../../components/ui/card", () => ({
 }));
 
 jest.mock("../../components/ui/button", () => ({
-	Button: ({
-		children,
-		onClick,
-		disabled,
-		"aria-label": ariaLabel,
-		className,
-		size,
-		variant,
-	}: any) => (
+	Button: (props: Record<string, unknown>) => (
 		<button
-			onClick={onClick}
-			disabled={disabled}
-			aria-label={ariaLabel}
-			className={className}
-			data-size={size}
-			data-variant={variant}
+			type="button"
+			onClick={props.onClick as () => void}
+			disabled={props.disabled as boolean}
+			aria-label={props["aria-label"] as string}
+			className={props.className as string}
+			data-size={String(props.size)}
+			data-variant={String(props.variant)}
 		>
-			{children}
+			{props.children as React.ReactNode}
 		</button>
 	),
 }));
@@ -288,8 +299,13 @@ describe("SongItem", () => {
 
 		// Mock parent click handler
 		const mockParentClick = jest.fn();
-		const { container } = render(
-			<div onClick={mockParentClick}>
+		render(
+			<div
+				role="button"
+				tabIndex={0}
+				onClick={mockParentClick}
+				onKeyDown={mockParentClick}
+			>
 				<SongItem
 					song={mockSong}
 					onPlay={mockOnPlay}

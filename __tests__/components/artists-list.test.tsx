@@ -1,18 +1,24 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
+import type React from "react";
 import { ArtistsList } from "../../components/artists-list";
 import type { Artist, ArtistSearchResult } from "../../lib/types";
 
 // Mock Next.js Link
 jest.mock("next/link", () => ({
 	__esModule: true,
-	default: ({ children, href }: any) => <a href={href}>{children}</a>,
+	default: ({
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	}) => <a href={href}>{children}</a>,
 }));
 
 // Mock ProgressiveImage
 jest.mock("../../components/progressive-image", () => ({
 	ProgressiveImage: ({ alt }: { alt: string }) => (
-		<div data-testid="progressive-image" aria-label={alt}>
+		<div data-testid="progressive-image" role="img" aria-label={alt}>
 			Image
 		</div>
 	),
@@ -20,12 +26,24 @@ jest.mock("../../components/progressive-image", () => ({
 
 // Mock UI components
 jest.mock("../../components/ui/card", () => ({
-	Card: ({ children, className }: any) => (
+	Card: ({
+		children,
+		className,
+	}: {
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<div className={className} data-testid="card">
 			{children}
 		</div>
 	),
-	CardContent: ({ children, className }: any) => (
+	CardContent: ({
+		children,
+		className,
+	}: {
+		children: React.ReactNode;
+		className?: string;
+	}) => (
 		<div className={className} data-testid="card-content">
 			{children}
 		</div>

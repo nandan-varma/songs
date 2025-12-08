@@ -1,11 +1,11 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
+import type React from "react";
 import {
 	PlayerProvider,
 	usePlayback,
-	useQueue,
-	usePlayerActions,
 	usePlayer,
+	usePlayerActions,
+	useQueue,
 } from "../../contexts/player-context";
 import type { DetailedSong } from "../../lib/types";
 
@@ -78,7 +78,7 @@ const mockSong2: DetailedSong = {
 	name: "Test Song 2",
 };
 
-function TestComponent({
+function _TestComponent({
 	children,
 }: {
 	children: (data: any) => React.ReactNode;

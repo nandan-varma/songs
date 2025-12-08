@@ -1,14 +1,14 @@
-import React from "react";
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import type React from "react";
 import {
 	useAlbum,
-	usePlaylist,
-	useSong,
-	useSongSuggestions,
 	useArtist,
 	useArtistSongs,
 	useGlobalSearch,
+	usePlaylist,
+	useSong,
+	useSongSuggestions,
 } from "../../hooks/queries";
 import * as api from "../../lib/api";
 
@@ -71,27 +71,27 @@ const mockArtistSongsPage = {
 	songs: mockSong,
 };
 
-const mockArtistAlbumsPage = {
+const _mockArtistAlbumsPage = {
 	total: 20,
 	albums: [mockAlbum],
 };
 
-const mockSearchSongsPage = {
+const _mockSearchSongsPage = {
 	total: 100,
 	results: mockSong,
 };
 
-const mockSearchAlbumsPage = {
+const _mockSearchAlbumsPage = {
 	total: 50,
 	results: [mockAlbum],
 };
 
-const mockSearchArtistsPage = {
+const _mockSearchArtistsPage = {
 	total: 30,
 	results: [mockArtist],
 };
 
-const mockSearchPlaylistsPage = {
+const _mockSearchPlaylistsPage = {
 	total: 25,
 	results: [mockPlaylist],
 };

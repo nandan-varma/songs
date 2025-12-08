@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SongsList } from "../../components/songs-list";
@@ -20,21 +19,31 @@ jest.mock("../../lib/api", () => ({
 
 // Mock components
 jest.mock("../../components/song-item", () => ({
-	SongItem: ({ song, onPlay, onAddToQueue, onDownload }: any) => (
-		<div data-testid={`song-item-${song.id}`}>
-			<span>{song.title}</span>
-			<button data-testid={`play-${song.id}`} onClick={() => onPlay(song)}>
+	SongItem: (props: Record<string, unknown>) => (
+		<div data-testid={`song-item-${(props.song as { id: string }).id}`}>
+			<span>{String((props.song as { title: string }).title)}</span>
+			<button
+				type="button"
+				data-testid={`play-${(props.song as { id: string }).id}`}
+				onClick={() => (props.onPlay as (song: unknown) => void)(props.song)}
+			>
 				Play
 			</button>
 			<button
-				data-testid={`queue-${song.id}`}
-				onClick={() => onAddToQueue(song)}
+				type="button"
+				data-testid={`queue-${(props.song as { id: string }).id}`}
+				onClick={() =>
+					(props.onAddToQueue as (song: unknown) => void)(props.song)
+				}
 			>
 				Add to Queue
 			</button>
 			<button
-				data-testid={`download-${song.id}`}
-				onClick={() => onDownload(song)}
+				type="button"
+				data-testid={`download-${(props.song as { id: string }).id}`}
+				onClick={() =>
+					(props.onDownload as (song: unknown) => void)(props.song)
+				}
 			>
 				Download
 			</button>

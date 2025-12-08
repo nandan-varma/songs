@@ -1,12 +1,18 @@
-import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
-import { act } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { ProgressiveImage } from "../../components/progressive-image";
 
 // Mock Next.js Image
 jest.mock("next/image", () => ({
 	__esModule: true,
-	default: (props: any) => <img {...props} />,
+	default: (props: Record<string, unknown>) => (
+		<div
+			data-testid="next-image"
+			role="img"
+			data-src={props.src}
+			data-alt={props.alt}
+			className={props.className as string}
+		/>
+	),
 }));
 
 describe("ProgressiveImage", () => {
@@ -15,7 +21,7 @@ describe("ProgressiveImage", () => {
 		{ url: "high.jpg", quality: "500x500" },
 	];
 
-	let imageInstances: any[];
+	let imageInstances: { onload: jest.Mock; onerror: jest.Mock; src: string }[];
 
 	beforeEach(() => {
 		imageInstances = [];
@@ -39,8 +45,8 @@ describe("ProgressiveImage", () => {
 	it("renders with low quality image initially", () => {
 		render(<ProgressiveImage images={mockImages} alt="Test image" />);
 
-		const img = screen.getByAltText("Test image");
-		expect(img.getAttribute("src")).toBe("low.jpg");
+		const img = screen.getByTestId("next-image");
+		expect(img.getAttribute("data-src")).toBe("low.jpg");
 		expect(img.className).toContain("rounded");
 	});
 
@@ -53,8 +59,8 @@ describe("ProgressiveImage", () => {
 		});
 
 		await waitFor(() => {
-			const img = screen.getByAltText("Test image");
-			expect(img.getAttribute("src")).toBe("low.jpg");
+			const img = screen.getByTestId("next-image");
+			expect(img.getAttribute("data-src")).toBe("low.jpg");
 		});
 
 		// Trigger high quality load
@@ -63,8 +69,8 @@ describe("ProgressiveImage", () => {
 		});
 
 		await waitFor(() => {
-			const img = screen.getByAltText("Test image");
-			expect(img.getAttribute("src")).toBe("high.jpg");
+			const img = screen.getByTestId("next-image");
+			expect(img.getAttribute("data-src")).toBe("high.jpg");
 		});
 	});
 
@@ -77,8 +83,8 @@ describe("ProgressiveImage", () => {
 		});
 
 		await waitFor(() => {
-			const img = screen.getByAltText("Image not found");
-			expect(img.getAttribute("src")).toBe(
+			const img = screen.getByTestId("next-image");
+			expect(img.getAttribute("data-src")).toBe(
 				"https://placehold.co/500x500.webp?text=Image+Not+Found",
 			);
 		});
@@ -87,8 +93,8 @@ describe("ProgressiveImage", () => {
 	it("handles empty images array", () => {
 		render(<ProgressiveImage images={[]} alt="Test image" />);
 
-		const img = screen.getByAltText("Image not found");
-		expect(img.getAttribute("src")).toBe(
+		const img = screen.getByTestId("next-image");
+		expect(img.getAttribute("data-src")).toBe(
 			"https://placehold.co/500x500.webp?text=Image+Not+Found",
 		);
 	});
@@ -96,7 +102,7 @@ describe("ProgressiveImage", () => {
 	it("applies correct classes for fill mode", () => {
 		render(<ProgressiveImage images={mockImages} fill rounded="full" />);
 
-		const img = screen.getByAltText("Image");
+		const img = screen.getByTestId("next-image");
 		expect(img.className).toContain("object-cover");
 		expect(img.className).toContain("blur-sm");
 		expect(img.className).toContain("rounded-full");

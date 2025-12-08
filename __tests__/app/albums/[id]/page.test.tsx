@@ -1,8 +1,8 @@
-import React from "react";
+import type React from "react";
 import "@testing-library/jest-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AlbumPage from "@/app/albums/[id]/page";
 import { DownloadsProvider } from "@/contexts/downloads-context";
 import { PlayerProvider } from "@/contexts/player-context";
@@ -25,7 +25,7 @@ jest.mock("next/navigation", () => ({
 // Mock contexts
 jest.mock("@/contexts/offline-context", () => ({
 	useOffline: jest.fn(() => ({
-		getFilteredSongs: (songs: any[]) => songs,
+		getFilteredSongs: (songs: unknown[]) => songs,
 		shouldEnableQuery: () => true,
 		isOfflineMode: false,
 	})),
@@ -78,7 +78,7 @@ jest.mock("@/components/progressive-image", () => ({
 }));
 
 jest.mock("@/components/songs-list", () => ({
-	SongsList: ({ songs }: { songs: any[] }) => (
+	SongsList: ({ songs }: { songs: unknown[] }) => (
 		<div data-testid="songs-list">{songs.length} songs</div>
 	),
 }));
@@ -195,7 +195,7 @@ describe("AlbumPage", () => {
 			error: null,
 		});
 		useOffline.mockReturnValue({
-			getFilteredSongs: (songs: any[]) => songs,
+			getFilteredSongs: (songs: unknown[]) => songs,
 			shouldEnableQuery: () => true,
 			isOfflineMode: false,
 		});
@@ -247,7 +247,7 @@ describe("AlbumPage", () => {
 			error: null,
 		});
 		useOffline.mockReturnValue({
-			getFilteredSongs: (songs: any[]) => songs,
+			getFilteredSongs: (songs: unknown[]) => songs,
 			shouldEnableQuery: () => true,
 			isOfflineMode: false,
 		});
@@ -286,7 +286,7 @@ describe("AlbumPage", () => {
 			error: null,
 		});
 		useOffline.mockReturnValue({
-			getFilteredSongs: (songs: any[]) => songs,
+			getFilteredSongs: (songs: unknown[]) => songs,
 			shouldEnableQuery: () => true,
 			isOfflineMode: false,
 		});

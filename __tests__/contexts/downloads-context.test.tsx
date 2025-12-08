@@ -1,11 +1,10 @@
-import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
 	DownloadsProvider,
 	useDownloads,
-	useDownloadsState,
 	useDownloadsActions,
+	useDownloadsState,
 } from "../../contexts/downloads-context";
 import type { DetailedSong } from "../../lib/types";
 
@@ -81,7 +80,7 @@ const mockSong: DetailedSong = {
 
 const TestComponent = () => {
 	const downloads = useDownloads();
-	const state = useDownloadsState();
+	const _state = useDownloadsState();
 	const actions = useDownloadsActions();
 
 	return (
@@ -91,18 +90,24 @@ const TestComponent = () => {
 				{downloads.isDownloading.toString()}
 			</div>
 			<button
+				type="button"
 				data-testid="download-btn"
 				onClick={() => actions.downloadSong(mockSong)}
 			>
 				Download
 			</button>
 			<button
+				type="button"
 				data-testid="remove-btn"
 				onClick={() => actions.removeSong("song1")}
 			>
 				Remove
 			</button>
-			<button data-testid="save-btn" onClick={() => actions.saveToDevice()}>
+			<button
+				type="button"
+				data-testid="save-btn"
+				onClick={() => actions.saveToDevice()}
+			>
 				Save to Device
 			</button>
 			<div data-testid="is-cached">

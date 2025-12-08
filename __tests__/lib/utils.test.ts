@@ -1,3 +1,4 @@
+import type { DetailedSong } from "../../lib/types";
 import { cn, detailedSongToSong } from "../../lib/utils";
 
 describe("cn", () => {
@@ -82,7 +83,7 @@ describe("detailedSongToSong", () => {
 	};
 
 	it("converts detailed song to song format", () => {
-		const result = detailedSongToSong(mockDetailedSong as any);
+		const result = detailedSongToSong(mockDetailedSong);
 
 		expect(result).toEqual({
 			id: "1",
@@ -102,7 +103,7 @@ describe("detailedSongToSong", () => {
 		const songWithoutLanguage = {
 			...mockDetailedSong,
 			language: undefined,
-		} as any;
+		} as unknown as DetailedSong;
 		const result = detailedSongToSong(songWithoutLanguage);
 		expect(result.language).toBeUndefined();
 	});

@@ -1,5 +1,12 @@
 "use client";
 
+// TypeScript: Add showDirectoryPicker to window type
+declare global {
+	interface Window {
+		showDirectoryPicker?: () => Promise<any>;
+	}
+}
+
 import {
 	createContext,
 	type ReactNode,
@@ -167,27 +174,30 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		}
 
 		try {
-			if ("showDirectoryPicker" in window) {
-				const dirHandle = await (
-					window as Window & {
-						showDirectoryPicker(): Promise<FileSystemDirectoryHandle>;
-					}
-				).showDirectoryPicker();
-				for (const cachedSong of cachedSongsArray) {
-					const fileName = `${cachedSong.song.name}.mp3`
-						.replace(/[<>:"/\\|?*]/g, "_")
-						.replace(/\s+/g, "_");
+			if (typeof window.showDirectoryPicker !== "function") {
+				alert("Your browser does not support saving files to a folder. Please use a Chromium-based browser.");
+				return;
+			}
 
-					const fileHandle = await dirHandle.getFileHandle(fileName, {
-						create: true,
-					});
+			const dirHandle = await window.showDirectoryPicker();
+
+			for (const cachedSong of cachedSongsArray) {
+				// Sanitize file name
+				let fileName = `${cachedSong.song.name || "song"}`;
+				fileName = fileName.replace(/[<>:"/\\|?*]/g, "_").replace(/\s+/g, "_");
+				if (!fileName.endsWith(".mp3")) fileName += ".mp3";
+
+				try {
+					const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
 					const writable = await fileHandle.createWritable();
 					await writable.write(cachedSong.blob);
 					await writable.close();
+				} catch (fileError) {
+					console.error(`Failed to save ${fileName}:`, fileError);
 				}
-
-				alert(`Successfully saved ${cachedSongsArray.length} songs!`);
 			}
+
+			alert(`Successfully saved ${cachedSongsArray.length} song${cachedSongsArray.length > 1 ? "s" : ""}!`);
 		} catch (error) {
 			console.error("Error saving files:", error);
 			alert("Failed to save files. Please try again.");

@@ -53,7 +53,7 @@ export function getImageByQuality(
  */
 export function getImageUrl(
 	images: Image[] | undefined,
-	fallbackUrl: string = "https://placehold.co/500x500?text=No+Image",
+	fallbackUrl: string = "https://placehold.co/500x500.webp?text=No+Image",
 ): string {
 	if (!images || images.length === 0) return fallbackUrl;
 

@@ -200,21 +200,24 @@ describe("AlbumPage", () => {
 			isOfflineMode: false,
 		});
 
-		renderWithProviders(<AlbumPage />);
+		const { container } = renderWithProviders(<AlbumPage />);
 
 		await waitFor(() => {
 			expect(
 				screen.getByRole("heading", { level: 1, name: "Test Album" }),
-			).toBeInTheDocument();
+			).toBeTruthy();
 		});
 
-		expect(screen.getByText("Album")).toBeInTheDocument();
-		expect(screen.getByText("Test Artist")).toBeInTheDocument();
-		expect(screen.getByText("2023")).toBeInTheDocument();
-		expect(screen.getByText("english")).toBeInTheDocument();
-		expect(screen.getByText("A test album")).toBeInTheDocument();
-		expect(screen.getByTestId("progressive-image")).toBeInTheDocument();
-		expect(screen.getByTestId("songs-list")).toBeInTheDocument();
+		expect(screen.getByText("Album")).toBeTruthy();
+		expect(screen.getByText("Test Artist")).toBeTruthy();
+		expect(screen.getByText("2023")).toBeTruthy();
+		expect(screen.getByText("english")).toBeTruthy();
+		expect(screen.getByText("A test album")).toBeTruthy();
+		expect(screen.getByTestId("progressive-image")).toBeTruthy();
+		expect(screen.getByTestId("songs-list")).toBeTruthy();
+
+		// Snapshot test
+		expect(container.firstChild).toMatchSnapshot();
 	});
 
 	it("renders offline mode message", () => {

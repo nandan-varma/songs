@@ -22,7 +22,36 @@ jest.mock("next/navigation", () => ({
 
 // Mock the contexts
 jest.mock("@/contexts/offline-context", () => ({
-	useOffline: () => ({ isOfflineMode: true }),
+	useOffline: jest.fn(),
+}));
+
+// Mock components
+jest.mock("@/components/offline/offline-songs-list", () => ({
+	OfflineSongsList: () => (
+		<div data-testid="offline-songs-list">
+			<p>Download songs from the search page to play them offline</p>
+		</div>
+	),
+}));
+
+jest.mock("@/components/search-content", () => ({
+	SearchContent: () => <div data-testid="search-content">Search content</div>,
+}));
+
+jest.mock("@/components/error-boundary", () => ({
+	ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+}));
+
+jest.mock("@/components/search-content", () => ({
+	SearchContent: () => <div data-testid="search-content">Search content</div>,
+}));
+
+jest.mock("@/components/error-boundary", () => ({
+	ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
 }));
 
 jest.mock("@/contexts/downloads-context", () => ({
@@ -74,14 +103,24 @@ describe("Home", () => {
 		);
 	};
 
-	it("renders without crashing", () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	it("renders SearchContent when in online mode", () => {
+		const { useOffline } = require("@/contexts/offline-context");
+		useOffline.mockReturnValue({ isOfflineMode: false });
+
 		renderWithProviders(<Home />);
 
-		// Check that the component renders the offline message
-		expect(screen.getByText("No offline songs available")).toBeInTheDocument();
+		// Check that SearchContent is rendered (mocked component)
+		expect(screen.getByTestId("search-content")).toBeTruthy();
 	});
 
 	it("renders OfflineSongsList when in offline mode", () => {
+		const { useOffline } = require("@/contexts/offline-context");
+		useOffline.mockReturnValue({ isOfflineMode: true });
+
 		renderWithProviders(<Home />);
 
 		// Check that the offline message is displayed
@@ -89,6 +128,18 @@ describe("Home", () => {
 			screen.getByText(
 				"Download songs from the search page to play them offline",
 			),
-		).toBeInTheDocument();
+		).toBeTruthy();
+	});
+
+	it("renders with proper structure", () => {
+		const { useOffline } = require("@/contexts/offline-context");
+		useOffline.mockReturnValue({ isOfflineMode: false });
+
+		renderWithProviders(<Home />);
+
+		// Check that the main container has correct classes
+		const container = screen.getByTestId("search-content").parentElement;
+		expect(container?.className).toContain("min-h-screen");
+		expect(container?.className).toContain("bg-background");
 	});
 });

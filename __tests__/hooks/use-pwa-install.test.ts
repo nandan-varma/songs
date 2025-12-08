@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { usePWAInstall } from "../../hooks/use-pwa-install";
 
 describe("usePWAInstall", () => {
@@ -87,7 +87,7 @@ describe("usePWAInstall", () => {
 			);
 		});
 
-		let success;
+		let success = false;
 		await act(async () => {
 			success = await result.current.promptInstall();
 		});
@@ -110,7 +110,7 @@ describe("usePWAInstall", () => {
 			);
 		});
 
-		let success;
+		let success = false;
 		await act(async () => {
 			success = await result.current.promptInstall();
 		});

@@ -87,7 +87,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 			window.removeEventListener("online", updateOnlineStatus);
 			window.removeEventListener("offline", updateOnlineStatus);
 		};
-	}, []);
+	}, [isOnline]);
 
 	// Toggle is disabled - offline mode is automatic based on network
 	const setOfflineMode = useCallback((_enabled: boolean) => {

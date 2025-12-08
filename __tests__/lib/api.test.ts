@@ -1,8 +1,8 @@
 import {
+	getAlbumById,
+	getSongById,
 	searchMusic,
 	searchSongs,
-	getSongById,
-	getAlbumById,
 } from "../../lib/api";
 
 // Mock fetch

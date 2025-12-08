@@ -1,6 +1,4 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { act } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { DownloadButton } from "../../components/download-button";
 
 // Mock contexts

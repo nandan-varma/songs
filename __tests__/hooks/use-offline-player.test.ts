@@ -15,7 +15,7 @@ jest.mock("sonner", () => ({
 jest.mock("../../contexts/offline-context", () => ({
 	useOffline: jest.fn(() => ({
 		isOfflineMode: false,
-		getFilteredSongs: jest.fn().mockImplementation((songs: any) => songs), // Return all songs by default
+		getFilteredSongs: jest.fn().mockImplementation((songs: unknown[]) => songs), // Return all songs by default
 		shouldEnableQuery: () => true,
 	})),
 }));

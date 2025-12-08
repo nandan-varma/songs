@@ -1,6 +1,6 @@
-import React from "react";
+import type React from "react";
 import "@testing-library/jest-dom";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Navigation } from "../../components/navigation";
 
 // Mock contexts
@@ -19,7 +19,13 @@ jest.mock("../../hooks/use-pwa-install", () => ({
 // Mock Next.js Link
 jest.mock("next/link", () => ({
 	__esModule: true,
-	default: ({ children, href }: any) => <a href={href}>{children}</a>,
+	default: ({
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	}) => <a href={href}>{children}</a>,
 }));
 
 describe("Navigation", () => {

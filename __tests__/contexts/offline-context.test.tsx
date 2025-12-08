@@ -1,5 +1,4 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { OfflineProvider, useOffline } from "../../contexts/offline-context";
 import type { DetailedSong, Song } from "../../lib/types";
 
@@ -87,10 +86,10 @@ describe("OfflineProvider", () => {
 		require("../../contexts/downloads-context").useDownloadsActions;
 	const mockUseDownloadsState =
 		require("../../contexts/downloads-context").useDownloadsState;
-	const mockToast = require("sonner").toast;
+	const _mockToast = require("sonner").toast;
 
 	let mockIsSongCached: jest.Mock;
-	let mockCachedSongs: Map<string, any>;
+	let mockCachedSongs: Map<string, unknown>;
 
 	beforeEach(() => {
 		jest.clearAllMocks();

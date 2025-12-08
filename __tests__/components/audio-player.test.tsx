@@ -1,4 +1,4 @@
-import { render, screen, act } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { AudioPlayer } from "../../components/audio-player";
 import type { DetailedSong } from "../../lib/types";
 
@@ -19,34 +19,44 @@ jest.mock("../../contexts/offline-context", () => ({
 
 // Mock components
 jest.mock("../../components/player/playback-controls", () => ({
-	PlaybackControls: ({
-		isPlaying,
-		queueLength,
-		onTogglePlayPause,
-		onPlayPrevious,
-		onPlayNext,
-	}: any) => (
+	PlaybackControls: (props: Record<string, unknown>) => (
 		<div data-testid="playback-controls">
-			<button data-testid="play-pause" onClick={onTogglePlayPause}>
-				{isPlaying ? "Pause" : "Play"}
+			<button
+				type="button"
+				data-testid="play-pause"
+				onClick={props.onTogglePlayPause as () => void}
+			>
+				{props.isPlaying ? "Pause" : "Play"}
 			</button>
-			<button data-testid="previous" onClick={onPlayPrevious}>
+			<button
+				type="button"
+				data-testid="previous"
+				onClick={props.onPlayPrevious as () => void}
+			>
 				Previous
 			</button>
-			<button data-testid="next" onClick={onPlayNext}>
+			<button
+				type="button"
+				data-testid="next"
+				onClick={props.onPlayNext as () => void}
+			>
 				Next
 			</button>
-			<span data-testid="queue-length">{queueLength}</span>
+			<span data-testid="queue-length">{String(props.queueLength)}</span>
 		</div>
 	),
 }));
 
 jest.mock("../../components/player/progress-bar", () => ({
-	ProgressBar: ({ currentTime, duration, onSeekTo }: any) => (
+	ProgressBar: (props: Record<string, unknown>) => (
 		<div data-testid="progress-bar">
-			<span data-testid="current-time">{currentTime}</span>
-			<span data-testid="duration">{duration}</span>
-			<button data-testid="seek" onClick={() => onSeekTo(30)}>
+			<span data-testid="current-time">{String(props.currentTime)}</span>
+			<span data-testid="duration">{String(props.duration)}</span>
+			<button
+				type="button"
+				data-testid="seek"
+				onClick={() => (props.onSeekTo as (time: number) => void)(30)}
+			>
 				Seek
 			</button>
 		</div>
@@ -54,11 +64,17 @@ jest.mock("../../components/player/progress-bar", () => ({
 }));
 
 jest.mock("../../components/player/queue-button", () => ({
-	QueueButton: ({ queue, currentIndex, onRemoveFromQueue }: any) => (
+	QueueButton: (props: Record<string, unknown>) => (
 		<div data-testid="queue-button">
-			<span data-testid="queue-count">{queue.length}</span>
-			<span data-testid="current-index">{currentIndex}</span>
-			<button data-testid="remove-queue" onClick={() => onRemoveFromQueue(0)}>
+			<span data-testid="queue-count">
+				{String((props.queue as unknown[]).length)}
+			</span>
+			<span data-testid="current-index">{String(props.currentIndex)}</span>
+			<button
+				type="button"
+				data-testid="remove-queue"
+				onClick={() => (props.onRemoveFromQueue as (index: number) => void)(0)}
+			>
 				Remove
 			</button>
 		</div>
@@ -66,18 +82,24 @@ jest.mock("../../components/player/queue-button", () => ({
 }));
 
 jest.mock("../../components/player/song-info", () => ({
-	SongInfo: ({ currentSong }: any) => (
+	SongInfo: (props: Record<string, unknown>) => (
 		<div data-testid="song-info">
-			<span data-testid="song-name">{currentSong.name}</span>
+			<span data-testid="song-name">
+				{String((props.currentSong as { name: string }).name)}
+			</span>
 		</div>
 	),
 }));
 
 jest.mock("../../components/player/volume-control", () => ({
-	VolumeControl: ({ volume, onSetVolume }: any) => (
+	VolumeControl: (props: Record<string, unknown>) => (
 		<div data-testid="volume-control">
-			<span data-testid="volume">{volume}</span>
-			<button data-testid="set-volume" onClick={() => onSetVolume(0.5)}>
+			<span data-testid="volume">{String(props.volume)}</span>
+			<button
+				type="button"
+				data-testid="set-volume"
+				onClick={() => (props.onSetVolume as (vol: number) => void)(0.5)}
+			>
 				Set Volume
 			</button>
 		</div>
@@ -87,8 +109,12 @@ jest.mock("../../components/player/volume-control", () => ({
 // Mock Next.js Image
 jest.mock("next/image", () => ({
 	__esModule: true,
-	default: ({ src, alt }: any) => (
-		<img src={src} alt={alt} data-testid="next-image" />
+	default: (props: Record<string, unknown>) => (
+		<div
+			data-testid="next-image"
+			data-alt={String(props.alt)}
+			data-src={String(props.src)}
+		/>
 	),
 }));
 
@@ -222,22 +248,16 @@ describe("AudioPlayer", () => {
 			load: jest.fn(),
 			play: jest.fn().mockResolvedValue(undefined),
 			pause: jest.fn(),
-			get paused() {
-				return this._paused;
-			},
-			set paused(value) {
-				this._paused = value;
-			},
+			addEventListener: jest.fn(),
+			removeEventListener: jest.fn(),
 			_paused: false,
 			currentTime: 0,
 			duration: 0,
 			playbackRate: 1,
 			volume: 1,
-			addEventListener: jest.fn(),
-			removeEventListener: jest.fn(),
-		} as any;
+		} as unknown as HTMLAudioElement;
 
-		mockAudioRef = { current: mockAudio as any };
+		mockAudioRef = { current: mockAudio };
 
 		// Setup default mocks
 		mockUsePlayback.mockReturnValue({
@@ -340,8 +360,8 @@ describe("AudioPlayer", () => {
 		expect(mockToast.error).toHaveBeenCalledWith(
 			'"Test Song" is not available offline. Skipping...',
 		);
-		expect(mockAudioRef.current!.src).toBe("http://localhost/"); // JSDOM resolves empty src to base URL
-		expect(mockAudioRef.current!.load).toHaveBeenCalled();
+		expect(mockAudioRef.current?.src).toBe("http://localhost/"); // JSDOM resolves empty src to base URL
+		expect(mockAudioRef.current?.load).toHaveBeenCalled();
 		expect(mockPlayNext).toHaveBeenCalled();
 	});
 
@@ -358,15 +378,15 @@ describe("AudioPlayer", () => {
 
 		expect(mockGetSongBlob).toHaveBeenCalledWith("song1");
 		expect(window.URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
-		expect(mockAudioRef.current!.src).toBe("blob:mock-url");
-		expect(mockAudioRef.current!.load).toHaveBeenCalled();
+		expect(mockAudioRef.current?.src).toBe("blob:mock-url");
+		expect(mockAudioRef.current?.load).toHaveBeenCalled();
 	});
 
 	it("loads remote URL when no cached blob and not offline", () => {
 		render(<AudioPlayer />);
 
-		expect(mockAudioRef.current!.src).toContain("audio-320.mp3");
-		expect(mockAudioRef.current!.load).toHaveBeenCalled();
+		expect(mockAudioRef.current?.src).toContain("audio-320.mp3");
+		expect(mockAudioRef.current?.load).toHaveBeenCalled();
 	});
 
 	it("does not load remote URL in offline mode without cache", () => {
@@ -381,18 +401,18 @@ describe("AudioPlayer", () => {
 
 		render(<AudioPlayer />);
 
-		expect(mockAudioRef.current!.src).toBe("");
-		expect(mockAudioRef.current!.load).not.toHaveBeenCalled();
+		expect(mockAudioRef.current?.src).toBe("");
+		expect(mockAudioRef.current?.load).not.toHaveBeenCalled();
 	});
 
 	it("syncs play/pause state with audio element", () => {
-		(mockAudioRef.current as any).paused = true;
+		(mockAudioRef.current as unknown as { paused: boolean }).paused = true;
 
 		const { rerender } = render(<AudioPlayer />);
 
 		// Initially not playing, should not call play/pause
-		expect(mockAudioRef.current!.play).not.toHaveBeenCalled();
-		expect(mockAudioRef.current!.pause).not.toHaveBeenCalled();
+		expect(mockAudioRef.current?.play).not.toHaveBeenCalled();
+		expect(mockAudioRef.current?.pause).not.toHaveBeenCalled();
 
 		// Change to playing
 		mockUsePlayback.mockReturnValue({
@@ -406,7 +426,7 @@ describe("AudioPlayer", () => {
 
 		rerender(<AudioPlayer />);
 
-		expect(mockAudioRef.current!.play).toHaveBeenCalled();
+		expect(mockAudioRef.current?.play).toHaveBeenCalled();
 	});
 
 	it("sets up Media Session metadata when song changes", () => {
@@ -448,9 +468,27 @@ describe("AudioPlayer", () => {
 			removeFromQueue: jest.fn(),
 		});
 
-		(mockAudioRef.current as any).currentTime = 30;
-		(mockAudioRef.current as any).duration = 180;
-		(mockAudioRef.current as any).playbackRate = 1;
+		(
+			mockAudioRef.current as unknown as {
+				currentTime: number;
+				duration: number;
+				playbackRate: number;
+			}
+		).currentTime = 30;
+		(
+			mockAudioRef.current as unknown as {
+				currentTime: number;
+				duration: number;
+				playbackRate: number;
+			}
+		).duration = 180;
+		(
+			mockAudioRef.current as unknown as {
+				currentTime: number;
+				duration: number;
+				playbackRate: number;
+			}
+		).playbackRate = 1;
 
 		render(<AudioPlayer />);
 

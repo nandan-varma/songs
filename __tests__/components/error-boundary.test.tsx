@@ -1,6 +1,4 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { ErrorBoundary } from "../../components/error-boundary";
 
 // Mock console methods
@@ -123,10 +121,20 @@ describe("ErrorBoundary", () => {
 	});
 
 	it("uses custom fallback component", () => {
-		const CustomFallback = ({ error, resetError, retryCount }: any) => (
+		const CustomFallback = ({
+			error,
+			resetError,
+			retryCount,
+		}: {
+			error?: Error;
+			resetError: () => void;
+			retryCount: number;
+		}) => (
 			<div data-testid="custom-fallback">
 				Custom: {error?.message} (retry: {retryCount})
-				<button onClick={resetError}>Reset</button>
+				<button type="button" onClick={resetError}>
+					Reset
+				</button>
 			</div>
 		);
 

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("should load album page", async ({ page }) => {
 	// Note: This test assumes an album with ID 'test-album' exists.

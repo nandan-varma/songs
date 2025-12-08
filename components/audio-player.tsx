@@ -1,7 +1,8 @@
 "use client";
 
+import NextImage from "next/image";
 import { WifiOff } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
@@ -47,9 +48,14 @@ export function AudioPlayer() {
 			toast.error(
 				`"${currentSong.name}" is not available offline. Skipping...`,
 			);
+			// Clear the audio source to prevent playing wrong content
+			if (audioRef.current) {
+				audioRef.current.src = "";
+				audioRef.current.load();
+			}
 			playNext();
 		}
-	}, [currentSong, isOfflineMode, isSongCached, playNext]);
+	}, [currentSong, isOfflineMode, isSongCached, playNext, audioRef]);
 
 	/** Manages audio source loading - only when song actually changes */
 	useEffect(() => {
@@ -255,9 +261,11 @@ export function AudioPlayer() {
 						<div className="flex items-start gap-3">
 							{currentSong.image && currentSong.image.length > 0 && (
 								<div className="relative h-16 w-16 flex-shrink-0">
-									<img
-										src={currentSong.image[2]?.url}
+									<NextImage
+										src={currentSong.image[2]?.url || ""}
 										alt={currentSong.name}
+										width={64}
+										height={64}
 										className="h-full w-full object-cover rounded"
 									/>
 								</div>

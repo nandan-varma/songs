@@ -28,8 +28,6 @@ export const ProgressBar = memo(function ProgressBar({
 		[onSeekTo],
 	);
 
-	const maxDuration = duration || 100;
-
 	return (
 		<div className="flex items-center gap-3 w-full">
 			<span className="text-xs text-muted-foreground w-10 text-right">
@@ -37,9 +35,10 @@ export const ProgressBar = memo(function ProgressBar({
 			</span>
 			<Slider
 				value={[currentTime]}
-				max={maxDuration}
+				max={duration > 0 ? duration : 0}
 				step={1}
 				onValueChange={handleValueChange}
+				disabled={duration <= 0}
 				className="flex-1"
 				aria-label="Seek"
 			/>

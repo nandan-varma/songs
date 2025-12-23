@@ -13,17 +13,22 @@ import type {
 
 const API_BASE_URL = "https://saavn-api.nandanvarma.com/api";
 
+
+async function fetchAndDecode<T>(url: string, errorMessage: string): Promise<T> {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(errorMessage);
+	}
+	const data = await response.json();
+	return data as T;
+}
+
 // Global search
 export async function searchMusic(query: string): Promise<SearchResponse> {
-	const response = await fetch(
+	return fetchAndDecode<SearchResponse>(
 		`${API_BASE_URL}/search?query=${encodeURIComponent(query)}`,
+		"Failed to fetch search results",
 	);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch search results");
-	}
-
-	return response.json();
 }
 
 // Paginated search
@@ -32,15 +37,10 @@ export async function searchSongs(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<PaginatedResponse<DetailedSong>>> {
-	const response = await fetch(
+	return fetchAndDecode<ApiResponse<PaginatedResponse<DetailedSong>>>(
 		`${API_BASE_URL}/search/songs?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
+		"Failed to search songs",
 	);
-
-	if (!response.ok) {
-		throw new Error("Failed to search songs");
-	}
-
-	return response.json();
 }
 
 export async function searchAlbums(
@@ -48,15 +48,10 @@ export async function searchAlbums(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<PaginatedResponse<AlbumSearchResult>>> {
-	const response = await fetch(
+	return fetchAndDecode<ApiResponse<PaginatedResponse<AlbumSearchResult>>>(
 		`${API_BASE_URL}/search/albums?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
+		"Failed to search albums",
 	);
-
-	if (!response.ok) {
-		throw new Error("Failed to search albums");
-	}
-
-	return response.json();
 }
 
 export async function searchArtists(
@@ -64,15 +59,10 @@ export async function searchArtists(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<PaginatedResponse<ArtistSearchResult>>> {
-	const response = await fetch(
+	return fetchAndDecode<ApiResponse<PaginatedResponse<ArtistSearchResult>>>(
 		`${API_BASE_URL}/search/artists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
+		"Failed to search artists",
 	);
-
-	if (!response.ok) {
-		throw new Error("Failed to search artists");
-	}
-
-	return response.json();
 }
 
 export async function searchPlaylists(
@@ -80,68 +70,37 @@ export async function searchPlaylists(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<PaginatedResponse<PlaylistSearchResult>>> {
-	const response = await fetch(
+	return fetchAndDecode<ApiResponse<PaginatedResponse<PlaylistSearchResult>>>(
 		`${API_BASE_URL}/search/playlists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
+		"Failed to search playlists",
 	);
-
-	if (!response.ok) {
-		throw new Error("Failed to search playlists");
-	}
-
-	return response.json();
 }
 
 // Songs
 export async function getSongById(
 	id: string,
 ): Promise<ApiResponse<DetailedSong[]>> {
-	const response = await fetch(`${API_BASE_URL}/songs/${id}`);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch song");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<DetailedSong[]>>(`${API_BASE_URL}/songs/${id}`, "Failed to fetch song");
 }
 
 export async function getSongsByIds(
 	ids: string[],
 ): Promise<ApiResponse<DetailedSong[]>> {
-	const response = await fetch(`${API_BASE_URL}/songs?ids=${ids.join(",")}`);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch songs");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<DetailedSong[]>>(`${API_BASE_URL}/songs?ids=${ids.join(",")}`, "Failed to fetch songs");
 }
 
 export async function getSongSuggestions(
 	id: string,
 	limit = 10,
 ): Promise<ApiResponse<DetailedSong[]>> {
-	const response = await fetch(
-		`${API_BASE_URL}/songs/${id}/suggestions?limit=${limit}`,
-	);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch song suggestions");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<DetailedSong[]>>(`${API_BASE_URL}/songs/${id}/suggestions?limit=${limit}`, "Failed to fetch song suggestions");
 }
 
 // Albums
 export async function getAlbumById(
 	id: string,
 ): Promise<ApiResponse<DetailedAlbum>> {
-	const response = await fetch(`${API_BASE_URL}/albums?id=${id}`);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch album");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<DetailedAlbum>>(`${API_BASE_URL}/albums?id=${id}`, "Failed to fetch album");
 }
 
 // Artists
@@ -166,13 +125,7 @@ export async function getArtistById(
 	if (options?.sortBy) params.append("sortBy", options.sortBy);
 	if (options?.sortOrder) params.append("sortOrder", options.sortOrder);
 
-	const response = await fetch(`${API_BASE_URL}/artists?${params.toString()}`);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch artist");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<DetailedArtist>>(`${API_BASE_URL}/artists?${params.toString()}`, "Failed to fetch artist");
 }
 
 export async function getArtistSongs(
@@ -181,15 +134,7 @@ export async function getArtistSongs(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<ApiResponse<{ total: number; songs: DetailedSong[] }>> {
-	const response = await fetch(
-		`${API_BASE_URL}/artists/${id}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
-	);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch artist songs");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<{ total: number; songs: DetailedSong[] }>>(`${API_BASE_URL}/artists/${id}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, "Failed to fetch artist songs");
 }
 
 export async function getArtistAlbums(
@@ -198,15 +143,7 @@ export async function getArtistAlbums(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<ApiResponse<{ total: number; albums: DetailedAlbum[] }>> {
-	const response = await fetch(
-		`${API_BASE_URL}/artists/${id}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
-	);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch artist albums");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<{ total: number; albums: DetailedAlbum[] }>>(`${API_BASE_URL}/artists/${id}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, "Failed to fetch artist albums");
 }
 
 // Playlists
@@ -215,13 +152,5 @@ export async function getPlaylistById(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<DetailedPlaylist>> {
-	const response = await fetch(
-		`${API_BASE_URL}/playlists?id=${id}&page=${page}&limit=${limit}`,
-	);
-
-	if (!response.ok) {
-		throw new Error("Failed to fetch playlist");
-	}
-
-	return response.json();
+	return fetchAndDecode<ApiResponse<DetailedPlaylist>>(`${API_BASE_URL}/playlists?id=${id}&page=${page}&limit=${limit}`, "Failed to fetch playlist");
 }

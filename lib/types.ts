@@ -49,12 +49,12 @@ export enum Language {
 }
 
 export interface Image {
-	quality: ImageQuality | string; // Allow string for flexibility
+	quality: ImageQuality;
 	url: string;
 }
 
 export interface DownloadUrl {
-	quality: AudioQuality | string; // Allow string for flexibility
+	quality: AudioQuality
 	url: string;
 }
 

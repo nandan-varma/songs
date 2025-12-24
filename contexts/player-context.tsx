@@ -11,8 +11,8 @@ import {
 	useState,
 } from "react";
 import {
-	useQueue as useQueueState,
 	useQueueActions,
+	useQueue as useQueueState,
 } from "@/contexts/queue-context";
 import type { DetailedSong } from "@/lib/types";
 

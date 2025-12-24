@@ -4,6 +4,7 @@ import React, { useCallback } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useQueueActions } from "@/contexts/queue-context";
 import { getSongById } from "@/lib/api";
 import type { Song } from "@/lib/types";
 import { SongItem } from "./song-item";
@@ -15,7 +16,8 @@ interface SongsListProps {
 export const SongsList = React.memo(function SongsList({
 	songs,
 }: SongsListProps) {
-	const { playSong, addToQueue } = usePlayerActions();
+	const { playSong } = usePlayerActions();
+	const { addSong } = useQueueActions();
 	const { downloadSong } = useDownloadsActions();
 
 	const handlePlay = useCallback(
@@ -23,7 +25,6 @@ export const SongsList = React.memo(function SongsList({
 			try {
 				const detailedSong = await getSongById(song.id);
 				playSong(detailedSong.data[0]);
-				toast.success(`Now playing: ${song.title}`);
 			} catch (err) {
 				toast.error("Failed to play song");
 				console.error(err);
@@ -36,14 +37,13 @@ export const SongsList = React.memo(function SongsList({
 		async (song: Song) => {
 			try {
 				const detailedSong = await getSongById(song.id);
-				addToQueue(detailedSong.data[0]);
-				toast.success(`Added to queue: ${song.title}`);
+				addSong(detailedSong.data[0]);
 			} catch (err) {
 				toast.error("Failed to add to queue");
 				console.error(err);
 			}
 		},
-		[addToQueue],
+		[addSong],
 	);
 
 	const handleDownload = useCallback(

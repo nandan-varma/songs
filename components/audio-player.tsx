@@ -15,6 +15,7 @@ import { ProgressBar } from "./player/progress-bar";
 import { QueueButton } from "./player/queue-button";
 import { SongInfo } from "./player/song-info";
 import { VolumeControl } from "./player/volume-control";
+import { ProgressiveImage } from "./progressive-image";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
 
@@ -255,14 +256,15 @@ export function AudioPlayer() {
 						<div className="flex items-start gap-3">
 							{currentSong.image && currentSong.image.length > 0 && (
 								<div className="relative h-16 w-16 flex-shrink-0">
-									<img
-										src={currentSong.image[2]?.url}
+									<ProgressiveImage
+										images={currentSong.image}
 										alt={currentSong.name}
+										rounded="default"
+										priority
 										className="h-full w-full object-cover rounded"
-									/>
+									/>{" "}
 								</div>
 							)}
-
 							<div className="min-w-0 flex-1">
 								<h3 className="font-semibold truncate text-base">
 									{currentSong.name}

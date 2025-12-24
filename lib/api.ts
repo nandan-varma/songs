@@ -13,8 +13,10 @@ import type {
 
 const API_BASE_URL = "https://saavn-api.nandanvarma.com/api";
 
-
-async function fetchAndDecode<T>(url: string, errorMessage: string): Promise<T> {
+async function fetchAndDecode<T>(
+	url: string,
+	errorMessage: string,
+): Promise<T> {
 	const response = await fetch(url);
 	if (!response.ok) {
 		throw new Error(errorMessage);
@@ -80,27 +82,39 @@ export async function searchPlaylists(
 export async function getSongById(
 	id: string,
 ): Promise<ApiResponse<DetailedSong[]>> {
-	return fetchAndDecode<ApiResponse<DetailedSong[]>>(`${API_BASE_URL}/songs/${id}`, "Failed to fetch song");
+	return fetchAndDecode<ApiResponse<DetailedSong[]>>(
+		`${API_BASE_URL}/songs/${id}`,
+		"Failed to fetch song",
+	);
 }
 
 export async function getSongsByIds(
 	ids: string[],
 ): Promise<ApiResponse<DetailedSong[]>> {
-	return fetchAndDecode<ApiResponse<DetailedSong[]>>(`${API_BASE_URL}/songs?ids=${ids.join(",")}`, "Failed to fetch songs");
+	return fetchAndDecode<ApiResponse<DetailedSong[]>>(
+		`${API_BASE_URL}/songs?ids=${ids.join(",")}`,
+		"Failed to fetch songs",
+	);
 }
 
 export async function getSongSuggestions(
 	id: string,
 	limit = 10,
 ): Promise<ApiResponse<DetailedSong[]>> {
-	return fetchAndDecode<ApiResponse<DetailedSong[]>>(`${API_BASE_URL}/songs/${id}/suggestions?limit=${limit}`, "Failed to fetch song suggestions");
+	return fetchAndDecode<ApiResponse<DetailedSong[]>>(
+		`${API_BASE_URL}/songs/${id}/suggestions?limit=${limit}`,
+		"Failed to fetch song suggestions",
+	);
 }
 
 // Albums
 export async function getAlbumById(
 	id: string,
 ): Promise<ApiResponse<DetailedAlbum>> {
-	return fetchAndDecode<ApiResponse<DetailedAlbum>>(`${API_BASE_URL}/albums?id=${id}`, "Failed to fetch album");
+	return fetchAndDecode<ApiResponse<DetailedAlbum>>(
+		`${API_BASE_URL}/albums?id=${id}`,
+		"Failed to fetch album",
+	);
 }
 
 // Artists
@@ -125,7 +139,10 @@ export async function getArtistById(
 	if (options?.sortBy) params.append("sortBy", options.sortBy);
 	if (options?.sortOrder) params.append("sortOrder", options.sortOrder);
 
-	return fetchAndDecode<ApiResponse<DetailedArtist>>(`${API_BASE_URL}/artists?${params.toString()}`, "Failed to fetch artist");
+	return fetchAndDecode<ApiResponse<DetailedArtist>>(
+		`${API_BASE_URL}/artists?${params.toString()}`,
+		"Failed to fetch artist",
+	);
 }
 
 export async function getArtistSongs(
@@ -134,7 +151,10 @@ export async function getArtistSongs(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<ApiResponse<{ total: number; songs: DetailedSong[] }>> {
-	return fetchAndDecode<ApiResponse<{ total: number; songs: DetailedSong[] }>>(`${API_BASE_URL}/artists/${id}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, "Failed to fetch artist songs");
+	return fetchAndDecode<ApiResponse<{ total: number; songs: DetailedSong[] }>>(
+		`${API_BASE_URL}/artists/${id}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+		"Failed to fetch artist songs",
+	);
 }
 
 export async function getArtistAlbums(
@@ -143,7 +163,12 @@ export async function getArtistAlbums(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<ApiResponse<{ total: number; albums: DetailedAlbum[] }>> {
-	return fetchAndDecode<ApiResponse<{ total: number; albums: DetailedAlbum[] }>>(`${API_BASE_URL}/artists/${id}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`, "Failed to fetch artist albums");
+	return fetchAndDecode<
+		ApiResponse<{ total: number; albums: DetailedAlbum[] }>
+	>(
+		`${API_BASE_URL}/artists/${id}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+		"Failed to fetch artist albums",
+	);
 }
 
 // Playlists
@@ -152,5 +177,8 @@ export async function getPlaylistById(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<DetailedPlaylist>> {
-	return fetchAndDecode<ApiResponse<DetailedPlaylist>>(`${API_BASE_URL}/playlists?id=${id}&page=${page}&limit=${limit}`, "Failed to fetch playlist");
+	return fetchAndDecode<ApiResponse<DetailedPlaylist>>(
+		`${API_BASE_URL}/playlists?id=${id}&page=${page}&limit=${limit}`,
+		"Failed to fetch playlist",
+	);
 }

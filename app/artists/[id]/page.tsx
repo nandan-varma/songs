@@ -3,6 +3,7 @@
 import { ExternalLink, Loader2, Play } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
 import { useArtist, useArtistAlbums, useArtistSongs } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
@@ -22,7 +24,9 @@ function ArtistPageContent() {
 	const artistId = params.id as string;
 	const { playQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+	const { addToHistory } = useHistory();
 
+	// Add to history when artist loads
 	const {
 		data: artist,
 		isLoading,
@@ -34,6 +38,17 @@ function ArtistPageContent() {
 			enabled: shouldEnableQuery(),
 		},
 	});
+
+	useEffect(() => {
+		if (artist) {
+			addToHistory({
+				id: artist.id,
+				type: EntityType.ARTIST,
+				data: artist,
+				timestamp: new Date(),
+			});
+		}
+	}, [artist, addToHistory]);
 
 	const songsQuery = useArtistSongs(artistId, "popularity", "desc", {
 		enabled: shouldEnableQuery(),
@@ -97,6 +112,16 @@ function ArtistPageContent() {
 			</div>
 		);
 	}
+
+	// Add to history when artist loads
+	useEffect(() => {
+		addToHistory({
+			id: artist.id,
+			type: EntityType.ARTIST,
+			data: artist,
+			timestamp: new Date(),
+		});
+	}, [artist, addToHistory]);
 
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
@@ -208,7 +233,6 @@ function ArtistPageContent() {
 								<Button
 									onClick={() => {
 										playQueue(filteredSongs);
-										toast.success(`Playing ${artist.name}'s top songs`);
 									}}
 									className="gap-2"
 								>

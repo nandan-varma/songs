@@ -10,6 +10,10 @@ import {
 	useRef,
 	useState,
 } from "react";
+import {
+	useQueue as useQueueState,
+	useQueueActions,
+} from "@/contexts/queue-context";
 import type { DetailedSong } from "@/lib/types";
 
 /**
@@ -66,29 +70,38 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 
-	const [queue, setQueue] = useState<DetailedSong[]>([]);
-	const [currentIndex, setCurrentIndex] = useState(0);
+	const { queue, currentIndex } = useQueueState();
+	const { addSong, addSongs, removeSong, clearQueue, setCurrentIndex } =
+		useQueueActions();
 
 	/** Play a single song, optionally replacing the queue */
-	const playSong = useCallback((song: DetailedSong, replaceQueue = true) => {
-		setCurrentSong(song);
-		setIsPlaying(true);
+	const playSong = useCallback(
+		(song: DetailedSong, replaceQueue = true) => {
+			setCurrentSong(song);
+			setIsPlaying(true);
 
-		if (replaceQueue) {
-			setQueue([song]);
-			setCurrentIndex(0);
-		}
-	}, []);
+			if (replaceQueue) {
+				clearQueue();
+				addSong(song);
+				setCurrentIndex(0);
+			}
+		},
+		[clearQueue, addSong, setCurrentIndex],
+	);
 
 	/** Play a queue of songs starting at a specific index */
-	const playQueue = useCallback((songs: DetailedSong[], startIndex = 0) => {
-		if (songs.length === 0) return;
+	const playQueue = useCallback(
+		(songs: DetailedSong[], startIndex = 0) => {
+			if (songs.length === 0) return;
 
-		setQueue(songs);
-		setCurrentIndex(startIndex);
-		setCurrentSong(songs[startIndex]);
-		setIsPlaying(true);
-	}, []);
+			clearQueue();
+			addSongs(songs);
+			setCurrentIndex(startIndex);
+			setCurrentSong(songs[startIndex]);
+			setIsPlaying(true);
+		},
+		[clearQueue, addSongs, setCurrentIndex],
+	);
 
 	/** Toggle between play and pause states */
 	const togglePlayPause = useCallback(() => {
@@ -108,19 +121,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
 	/** Skip to the next song in the queue (loops back to start) */
 	const playNext = useCallback(() => {
-		setQueue((q) => {
-			if (q.length === 0) return q;
+		if (queue.length === 0) return;
 
-			setCurrentIndex((idx) => {
-				const nextIndex = (idx + 1) % q.length;
-				setCurrentSong(q[nextIndex]);
-				setIsPlaying(true);
-				return nextIndex;
-			});
-
-			return q;
-		});
-	}, []);
+		const nextIndex = (currentIndex + 1) % queue.length;
+		setCurrentIndex(nextIndex);
+		setCurrentSong(queue[nextIndex]);
+		setIsPlaying(true);
+	}, [queue, currentIndex, setCurrentIndex]);
 
 	/** Go to previous song, or restart current song if > 3 seconds in */
 	const playPrevious = useCallback(() => {
@@ -133,22 +140,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 				return 0;
 			}
 
-			setQueue((q) => {
-				if (q.length === 0) return q;
+			if (queue.length === 0) return ct;
 
-				setCurrentIndex((idx) => {
-					const prevIndex = idx === 0 ? q.length - 1 : idx - 1;
-					setCurrentSong(q[prevIndex]);
-					setIsPlaying(true);
-					return prevIndex;
-				});
-
-				return q;
-			});
+			const prevIndex =
+				currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
+			setCurrentIndex(prevIndex);
+			setCurrentSong(queue[prevIndex]);
+			setIsPlaying(true);
 
 			return ct;
 		});
-	}, []);
+	}, [queue, currentIndex, setCurrentIndex]);
 
 	/** Seek to a specific time in the current song */
 	const seekTo = useCallback((time: number) => {
@@ -175,48 +177,35 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	}, []);
 
 	/** Add a single song to the end of the queue */
-	const addToQueue = useCallback((song: DetailedSong) => {
-		setQueue((prev) => [...prev, song]);
-	}, []);
+	const addToQueue = useCallback(
+		(song: DetailedSong) => {
+			addSong(song);
+		},
+		[addSong],
+	);
 
 	/** Add multiple songs to the end of the queue */
-	const addMultipleToQueue = useCallback((songs: DetailedSong[]) => {
-		setQueue((prev) => [...prev, ...songs]);
-	}, []);
+	const addMultipleToQueue = useCallback(
+		(songs: DetailedSong[]) => {
+			addSongs(songs);
+		},
+		[addSongs],
+	);
 
 	/** Remove a song from the queue by index */
 	const removeFromQueue = useCallback(
 		(index: number) => {
-			setQueue((prev) => {
-				const newQueue = prev.filter((_, i) => i !== index);
-
-				if (index === currentIndex) {
-					if (newQueue.length > 0) {
-						const newIndex = Math.min(currentIndex, newQueue.length - 1);
-						setCurrentIndex(newIndex);
-						setCurrentSong(newQueue[newIndex]);
-					} else {
-						setCurrentIndex(0);
-						setCurrentSong(null);
-						setIsPlaying(false);
-					}
-				} else if (index < currentIndex) {
-					setCurrentIndex((prev) => prev - 1);
-				}
-
-				return newQueue;
-			});
+			removeSong(index);
 		},
-		[currentIndex],
+		[removeSong],
 	);
 
 	/** Clear the entire queue and stop playback */
-	const clearQueue = useCallback(() => {
-		setQueue([]);
-		setCurrentIndex(0);
+	const clearQueueAndStop = useCallback(() => {
+		clearQueue();
 		setCurrentSong(null);
 		setIsPlaying(false);
-	}, []);
+	}, [clearQueue]);
 
 	/**
 	 * Set up HTML5 audio element event listeners
@@ -224,6 +213,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	 * Checks periodically for audio element existence (rendered by child component)
 	 */
 	const playNextRef = useRef(playNext);
+
+	// Sync currentSong with queue changes
+	useEffect(() => {
+		if (queue.length > 0 && currentIndex < queue.length) {
+			setCurrentSong(queue[currentIndex]);
+		} else {
+			setCurrentSong(null);
+		}
+	}, [queue, currentIndex]);
 
 	useEffect(() => {
 		playNextRef.current = playNext;
@@ -328,7 +326,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			addToQueue,
 			addMultipleToQueue,
 			removeFromQueue,
-			clearQueue,
+			clearQueue: clearQueueAndStop,
 			togglePlayPause,
 			playNext,
 			playPrevious,
@@ -341,7 +339,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			addToQueue,
 			addMultipleToQueue,
 			removeFromQueue,
-			clearQueue,
+			clearQueueAndStop,
 			togglePlayPause,
 			playNext,
 			playPrevious,

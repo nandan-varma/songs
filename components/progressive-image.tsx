@@ -101,17 +101,23 @@ export function ProgressiveImage({
 	}
 
 	// classes
-	const objectClass = objectFit === "contain" ? "object-contain" : "object-cover";
+	const objectClass =
+		objectFit === "contain" ? "object-contain" : "object-cover";
 	const roundedClass =
-		rounded === "none" ? "rounded-none" : rounded === "full" ? "rounded-full" : "rounded-md";
-	const blurClass = !highLoaded && !errored ? "blur-sm scale-105" : "blur-0 scale-100";
+		rounded === "none"
+			? "rounded-none"
+			: rounded === "full"
+				? "rounded-full"
+				: "rounded-md";
+	const blurClass =
+		!highLoaded && !errored ? "blur-sm scale-105" : "blur-0 scale-100";
 
 	const imageClassName = cn(
 		"transition-all duration-300 ease-out",
 		objectClass,
 		roundedClass,
 		blurClass,
-		className
+		className,
 	);
 
 	const imageAlt = alt || "image";
@@ -134,4 +140,3 @@ export function ProgressiveImage({
 		</div>
 	);
 }
-

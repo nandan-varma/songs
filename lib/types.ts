@@ -54,7 +54,7 @@ export interface Image {
 }
 
 export interface DownloadUrl {
-	quality: AudioQuality
+	quality: AudioQuality;
 	url: string;
 }
 

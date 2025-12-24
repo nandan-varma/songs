@@ -37,6 +37,7 @@ export function Navigation() {
 								size="sm"
 								onClick={promptInstall}
 								className="hidden sm:flex"
+								aria-label="Install app"
 							>
 								<Smartphone className="h-4 w-4 mr-2" />
 								Install App
@@ -60,10 +61,16 @@ export function Navigation() {
 							)}
 						</div>
 
-						<Link href="/downloads">
-							<Button variant="ghost" size="sm" className="relative">
+						<Link href="/downloads" aria-label="Go to downloads">
+							<Button
+								variant="ghost"
+								size="sm"
+								className="relative"
+								aria-label="Downloads"
+							>
 								<Download className="h-4 w-4" />
 								<span className="hidden sm:inline ml-2">Downloads</span>
+								<span className="sr-only">Downloads</span>
 								{isDownloading && (
 									<div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary rounded animate-pulse" />
 								)}

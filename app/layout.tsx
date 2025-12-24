@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AudioPlayer } from "@/components/audio-player";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
@@ -8,16 +7,6 @@ import { Navigation } from "@/components/navigation";
 import { ServiceWorkerManager } from "@/components/offline/service-worker-manager";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
-
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
 
 // if dev environment then localhost else production url
 const isDev = process.env.NODE_ENV === "development";
@@ -92,7 +81,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
 	width: "device-width",
 	initialScale: 1,
-	maximumScale: 1,
+	userScalable: true,
+	maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -103,7 +93,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
+				className={`antialiased dark`}
 			>
 				<Providers>
 					<ServiceWorkerManager />

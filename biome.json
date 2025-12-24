@@ -69,6 +69,12 @@
 			"includes": ["components/ui/**"],
 			"linter": {
 				"enabled": false
+			},
+			"formatter": {
+				"enabled": false
+			},
+			"assist": {
+				"enabled": false
 			}
 		}
 	]

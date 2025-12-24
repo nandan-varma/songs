@@ -4,7 +4,6 @@ import { ExternalLink, Loader2, Play } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { toast } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
@@ -80,6 +79,18 @@ function ArtistPageContent() {
 	const _hasMoreAlbums = albumsQuery.hasNextPage;
 	const _isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
 
+	// Add to history when artist loads
+	useEffect(() => {
+		if (artist) {
+			addToHistory({
+				id: artist.id,
+				type: EntityType.ARTIST,
+				data: artist,
+				timestamp: new Date(),
+			});
+		}
+	}, [artist, addToHistory]);
+
 	if (isOfflineMode) {
 		return (
 			<div className="container mx-auto px-4 py-8">
@@ -112,16 +123,6 @@ function ArtistPageContent() {
 			</div>
 		);
 	}
-
-	// Add to history when artist loads
-	useEffect(() => {
-		addToHistory({
-			id: artist.id,
-			type: EntityType.ARTIST,
-			data: artist,
-			timestamp: new Date(),
-		});
-	}, [artist, addToHistory]);
 
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">

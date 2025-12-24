@@ -1,12 +1,5 @@
 "use client";
 
-import type {
-	DetailedSong,
-	DetailedAlbum,
-	DetailedArtist,
-	DetailedPlaylist,
-} from "@/lib/types";
-import { EntityType } from "@/lib/types";
 import {
 	createContext,
 	useCallback,
@@ -14,6 +7,13 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import type {
+	DetailedAlbum,
+	DetailedArtist,
+	DetailedPlaylist,
+	DetailedSong,
+	EntityType,
+} from "@/lib/types";
 
 export type HistoryItem =
 	| { id: string; type: EntityType.SONG; data: DetailedSong; timestamp: Date }

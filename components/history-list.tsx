@@ -1,8 +1,8 @@
 "use client";
 
 import { Radio } from "lucide-react";
-import { useQueueActions } from "@/contexts/queue-context";
 import type { HistoryItem } from "@/contexts/history-context";
+import { useQueueActions } from "@/contexts/queue-context";
 import { EntityType } from "@/lib/types";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";

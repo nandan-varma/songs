@@ -1,12 +1,12 @@
 "use client";
 
-import { toast } from "sonner";
 import { createContext, useCallback, useContext, useState } from "react";
+import { toast } from "sonner";
 import type {
-	DetailedSong,
 	DetailedAlbum,
 	DetailedArtist,
 	DetailedPlaylist,
+	DetailedSong,
 } from "@/lib/types";
 
 interface QueueContextType {

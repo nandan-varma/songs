@@ -1,10 +1,11 @@
 "use client";
 
-import { Download, Loader2, Music, Play, Plus } from "lucide-react";
+import { Loader2, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { toast } from "sonner";
+
+import { DownloadButton } from "@/components/download-button";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
@@ -24,26 +25,6 @@ export default function SongPage() {
 	const { playSong, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 	const { addToHistory } = useHistory();
-
-	const handleDownload = async (url: string, filename: string) => {
-		try {
-			toast.info("Download starting...");
-			const response = await fetch(url);
-			const blob = await response.blob();
-			const blobUrl = window.URL.createObjectURL(blob);
-			const a = document.createElement("a");
-			a.href = blobUrl;
-			a.download = filename;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			window.URL.revokeObjectURL(blobUrl);
-			toast.success("Download complete!");
-		} catch (error) {
-			toast.error("Download failed. Please try again.");
-			console.error("Download error:", error);
-		}
-	};
 
 	const {
 		data: songData,
@@ -219,32 +200,8 @@ export default function SongPage() {
 									<Plus className="h-5 w-5" />
 									Add to Queue
 								</Button>
+								<DownloadButton song={song} size="lg" />
 							</div>
-
-							{/* Download Options */}
-							{song.downloadUrl && song.downloadUrl.length > 0 && (
-								<div className="space-y-2">
-									<p className="text-sm font-medium">Download Quality:</p>
-									<div className="flex flex-wrap gap-2">
-										{song.downloadUrl.map((url) => (
-											<Button
-												key={url.quality}
-												variant="outline"
-												size="sm"
-												onClick={() =>
-													handleDownload(
-														url.url,
-														`${song.name}${song.album?.name ? ` - ${song.album.name}` : ""}.mp4`,
-													)
-												}
-											>
-												<Download className="h-4 w-4 mr-2" />
-												{url.quality}
-											</Button>
-										))}
-									</div>
-								</div>
-							)}
 						</div>
 					</div>
 				</CardContent>

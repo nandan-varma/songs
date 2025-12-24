@@ -26,7 +26,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 											<ErrorBoundary context="HistoryProvider">
 												<HistoryProvider>
 													{children}
-													<ReactQueryDevtools />
+													{process.env.NODE_ENV === "development" && (
+														<ReactQueryDevtools />
+													)}
 												</HistoryProvider>
 											</ErrorBoundary>
 										</PlayerProvider>

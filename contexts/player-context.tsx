@@ -111,7 +111,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		setIsPlaying((prev) => {
 			const newState = !prev;
 			if (newState) {
-				audio.play().catch(console.error);
+				audio.play().catch(() => {});
 			} else {
 				audio.pause();
 			}
@@ -160,8 +160,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			try {
 				audio.currentTime = clampedTime;
 				setCurrentTime(clampedTime);
-			} catch (error) {
-				console.error("Error seeking to time:", error);
+			} catch (_error) {
+				// Silent error handling for seeking
 			}
 		}
 	}, []);
@@ -253,8 +253,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			const handlePause = () => {
 				if (isActive) setIsPlaying(false);
 			};
-			const handleError = (e: Event) => {
-				console.error("Audio playback error:", e);
+			const handleError = (_e: Event) => {
 				if (isActive) setIsPlaying(false);
 			};
 

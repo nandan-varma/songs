@@ -70,7 +70,7 @@ const playlistSearchResultToPlaylist = (
 	description: `${playlist.songCount} songs`,
 });
 
-export function SearchContent() {
+export default function SearchContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const { getFilteredSongs, isOnlineContentAvailable, shouldEnableQuery } =

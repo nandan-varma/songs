@@ -4,6 +4,7 @@ import { Radio } from "lucide-react";
 import type { HistoryItem } from "@/contexts/history-context";
 import { useQueueActions } from "@/contexts/queue-context";
 import { EntityType } from "@/lib/types";
+import { DownloadButton } from "./download-button";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -127,6 +128,9 @@ export function HistoryList({ history }: HistoryListProps) {
 									>
 										<Radio className="h-4 w-4" />
 									</Button>
+									{item.type === EntityType.SONG && (
+										<DownloadButton song={item.data} size="icon" />
+									)}
 								</div>
 							</div>
 						</CardContent>

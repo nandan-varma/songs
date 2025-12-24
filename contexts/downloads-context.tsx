@@ -16,6 +16,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { toast } from "sonner";
 import { musicDB } from "@/lib/db";
 import type { DetailedSong } from "@/lib/types";
 
@@ -70,8 +71,8 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				}
 
 				setCachedSongs(cacheMap);
-			} catch (error) {
-				console.error("Error loading cached songs:", error);
+			} catch (_error) {
+				// Silent error handling for cached songs loading
 			}
 		};
 
@@ -119,8 +120,8 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 								{ songId: song.id, quality: img.quality },
 							);
 						}
-					} catch (imgError) {
-						console.warn(`Failed to cache image for ${song.id}:`, imgError);
+					} catch (_imgError) {
+						// Silent error handling for image caching
 					}
 				}
 
@@ -132,8 +133,8 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 				};
 
 				setCachedSongs((prev) => new Map(prev.set(song.id, cachedSong)));
-			} catch (error) {
-				console.error(`Error downloading song ${song.name}:`, error);
+			} catch (_error) {
+				toast.error(`Failed to download ${song.name}`);
 			} finally {
 				setIsDownloading(false);
 			}
@@ -148,7 +149,7 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 			return newMap;
 		});
 		// Remove from IndexedDB
-		musicDB.deleteSong(songId).catch(console.error);
+		musicDB.deleteSong(songId);
 	}, []);
 
 	const getSongBlob = useCallback(
@@ -169,13 +170,13 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		const cachedSongsArray = Array.from(cachedSongs.values());
 
 		if (cachedSongsArray.length === 0) {
-			alert("No downloaded songs to save");
+			toast.info("No downloaded songs to save");
 			return;
 		}
 
 		try {
 			if (typeof window.showDirectoryPicker !== "function") {
-				alert(
+				toast.error(
 					"Your browser does not support saving files to a folder. Please use a Chromium-based browser.",
 				);
 				return;
@@ -196,17 +197,16 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 					const writable = await fileHandle.createWritable();
 					await writable.write(cachedSong.blob);
 					await writable.close();
-				} catch (fileError) {
-					console.error(`Failed to save ${fileName}:`, fileError);
+				} catch (_fileError) {
+					// Silent error handling for individual file save
 				}
 			}
 
-			alert(
+			toast.success(
 				`Successfully saved ${cachedSongsArray.length} song${cachedSongsArray.length > 1 ? "s" : ""}!`,
 			);
-		} catch (error) {
-			console.error("Error saving files:", error);
-			alert("Failed to save files. Please try again.");
+		} catch (_error) {
+			toast.error("Failed to save files. Please try again.");
 		}
 	}, [cachedSongs]);
 

@@ -35,27 +35,24 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 	const addSong = useCallback((song: DetailedSong) => {
 		try {
 			setQueue((prev) => [...prev, song]);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to add song to queue");
-			console.error(error);
 		}
 	}, []);
 
 	const addSongs = useCallback((songs: DetailedSong[]) => {
 		try {
 			setQueue((prev) => [...prev, ...songs]);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to add songs to queue");
-			console.error(error);
 		}
 	}, []);
 
 	const addAlbum = useCallback((album: DetailedAlbum) => {
 		try {
 			setQueue((prev) => [...prev, ...album.songs]);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to add album to queue");
-			console.error(error);
 		}
 	}, []);
 
@@ -63,18 +60,16 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		try {
 			const songs = [...(artist.topSongs || []), ...(artist.singles || [])];
 			setQueue((prev) => [...prev, ...songs]);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to add artist to queue");
-			console.error(error);
 		}
 	}, []);
 
 	const addPlaylist = useCallback((playlist: DetailedPlaylist) => {
 		try {
 			setQueue((prev) => [...prev, ...playlist.songs]);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to add playlist to queue");
-			console.error(error);
 		}
 	}, []);
 
@@ -94,9 +89,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 					}
 					return newQueue;
 				});
-			} catch (error) {
+			} catch (_error) {
 				toast.error("Failed to remove song from queue");
-				console.error(error);
 			}
 		},
 		[currentIndex],
@@ -106,9 +100,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		try {
 			setQueue([]);
 			setCurrentIndexState(0);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to clear queue");
-			console.error(error);
 		}
 	}, []);
 

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
+import { HistoryList } from "@/components/history-list";
 import { PlaylistsList } from "@/components/playlists-list";
 import { GlobalSearchResults } from "@/components/search/global-search-results";
 import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
@@ -11,6 +12,7 @@ import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SearchBar } from "@/components/search-bar";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
 import {
 	useGlobalSearch,
@@ -73,6 +75,7 @@ export function SearchContent() {
 	const searchParams = useSearchParams();
 	const { getFilteredSongs, isOnlineContentAvailable, shouldEnableQuery } =
 		useOffline();
+	const { history } = useHistory();
 	const queryParam = searchParams.get("q") || "";
 	const tabParam = (searchParams.get("tab") as TabType) || "all";
 
@@ -206,13 +209,7 @@ export function SearchContent() {
 				<SearchBar value={query} onChange={setQuery} onSearch={handleSearch} />
 			</div>
 
-			{!queryParam && (
-				<div className="text-center space-y-4">
-					<p className="text-muted-foreground">
-						Search for your favorite songs, albums, and artists
-					</p>
-				</div>
-			)}
+			{!queryParam && <HistoryList history={history} />}
 
 			{hasError && <ErrorState />}
 

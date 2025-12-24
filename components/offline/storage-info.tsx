@@ -66,7 +66,6 @@ export function StorageInfo() {
 				await Promise.all(cacheNames.map((name) => caches.delete(name)));
 			}
 
-			toast.success("All cached data cleared");
 			loadStorageInfo();
 			window.location.reload();
 		} catch (error) {

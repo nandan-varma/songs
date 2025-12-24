@@ -2,6 +2,7 @@
 
 import { Loader2, Play, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
@@ -9,6 +10,7 @@ import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
 import { usePlaylist } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
@@ -20,6 +22,7 @@ function PlaylistPageContent() {
 	const playlistId = params.id as string;
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+	const { addToHistory } = useHistory();
 
 	const {
 		data: playlist,
@@ -30,6 +33,18 @@ function PlaylistPageContent() {
 	});
 
 	const filteredSongs = playlist?.songs ? getFilteredSongs(playlist.songs) : [];
+
+	// Add to history when playlist loads
+	useEffect(() => {
+		if (playlist) {
+			addToHistory({
+				id: playlist.id,
+				type: EntityType.PLAYLIST,
+				data: playlist,
+				timestamp: new Date(),
+			});
+		}
+	}, [playlist, addToHistory]);
 
 	if (isOfflineMode) {
 		return (
@@ -110,7 +125,6 @@ function PlaylistPageContent() {
 									size="lg"
 									onClick={() => {
 										playQueue(filteredSongs);
-										toast.success(`Playing ${playlist.name}`);
 									}}
 									className="gap-2"
 									disabled={filteredSongs.length === 0}
@@ -125,9 +139,6 @@ function PlaylistPageContent() {
 										for (const song of filteredSongs) {
 											addToQueue(song);
 										}
-										toast.success(
-											`Added ${filteredSongs.length} songs to queue`,
-										);
 									}}
 									className="gap-2"
 									disabled={filteredSongs.length === 0}

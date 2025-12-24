@@ -3,6 +3,7 @@
 import { Download, Loader2, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
 import { useSong, useSongSuggestions } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
@@ -21,6 +23,7 @@ export default function SongPage() {
 	const songId = params.id as string;
 	const { playSong, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+	const { addToHistory } = useHistory();
 
 	const handleDownload = async (url: string, filename: string) => {
 		try {
@@ -57,6 +60,18 @@ export default function SongPage() {
 	const song = songData?.[0];
 	const filteredSuggestions = getFilteredSongs(suggestions);
 	const isLoading = isSongLoading || isSuggestionsLoading;
+
+	// Add to history when song loads
+	useEffect(() => {
+		if (song) {
+			addToHistory({
+				id: song.id,
+				type: EntityType.SONG,
+				data: song,
+				timestamp: new Date(),
+			});
+		}
+	}, [song, addToHistory]);
 
 	if (isOfflineMode) {
 		return (
@@ -187,7 +202,6 @@ export default function SongPage() {
 									size="lg"
 									onClick={() => {
 										playSong(song);
-										toast.success(`Now playing: ${song.name}`);
 									}}
 									className="gap-2"
 								>
@@ -199,7 +213,6 @@ export default function SongPage() {
 									variant="outline"
 									onClick={() => {
 										addToQueue(song);
-										toast.success(`Added to queue: ${song.name}`);
 									}}
 									className="gap-2"
 								>

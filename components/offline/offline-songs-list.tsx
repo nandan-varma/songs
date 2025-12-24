@@ -9,6 +9,7 @@ import type { CachedSong } from "@/contexts/downloads-context";
 import { useDownloads } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useQueueActions } from "@/contexts/queue-context";
 import { musicDB } from "@/lib/db";
 
 interface SongItemProps {
@@ -121,7 +122,8 @@ const SongItem = memo(function SongItem({
 export const OfflineSongsList = memo(function OfflineSongsList() {
 	const { cachedSongs, removeSong } = useDownloads();
 	const { isOfflineMode } = useOffline();
-	const { playSong, addToQueue } = usePlayerActions();
+	const { playSong } = usePlayerActions();
+	const { addSong } = useQueueActions();
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
 
@@ -175,8 +177,8 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 		[playSong],
 	);
 	const handleAddToQueue = useCallback(
-		(song: CachedSong["song"]) => addToQueue(song),
-		[addToQueue],
+		(song: CachedSong["song"]) => addSong(song),
+		[addSong],
 	);
 	const handleRemove = useCallback(
 		(songId: string) => removeSong(songId),

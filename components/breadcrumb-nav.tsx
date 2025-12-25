@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, Disc3, Home, ListMusic, Music, User } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -122,7 +123,7 @@ export function BreadcrumbNav() {
 										) : (
 											<BreadcrumbLink asChild>
 												<Link
-													href={crumb.href}
+													href={crumb.href as Route}
 													className="flex items-center gap-1.5"
 												>
 													{crumb.icon}

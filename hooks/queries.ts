@@ -58,7 +58,9 @@ export const queryKeys = {
 // Core entity hooks
 export function useAlbum(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedAlbum>, "queryKey" | "queryFn">,
+	options?: Omit<UseQueryOptions<DetailedAlbum>, "queryKey" | "queryFn"> & {
+		suspense?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: queryKeys.album(id),
@@ -73,7 +75,9 @@ export function useAlbum(
 
 export function usePlaylist(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedPlaylist>, "queryKey" | "queryFn">,
+	options?: Omit<UseQueryOptions<DetailedPlaylist>, "queryKey" | "queryFn"> & {
+		suspense?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: queryKeys.playlist(id),
@@ -88,7 +92,9 @@ export function usePlaylist(
 
 export function useSong(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn">,
+	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
+		suspense?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: queryKeys.song(id),
@@ -128,7 +134,7 @@ export function useArtist(
 		queryOptions?: Omit<
 			UseQueryOptions<DetailedArtist>,
 			"queryKey" | "queryFn"
-		>;
+		> & { suspense?: boolean };
 	},
 ) {
 	const {

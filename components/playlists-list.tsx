@@ -20,7 +20,7 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 			<h2 className="text-2xl font-semibold">Playlists</h2>
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{playlists.map((playlist) => (
-					<Link key={playlist.id} href={`/playlists/${playlist.id}`}>
+					<Link key={playlist.id} href={`/playlist?id=${playlist.id}`}>
 						<Card className="overflow-hidden hover:bg-accent/50 transition-colors">
 							<CardContent className="p-4">
 								<div className="space-y-3">

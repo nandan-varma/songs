@@ -1,8 +1,8 @@
 "use client";
 
-import { Loader2, Music, Play, Plus } from "lucide-react";
+import { Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 
 import { DownloadButton } from "@/components/download-button";
@@ -14,33 +14,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useSong, useSongSuggestions } from "@/hooks/queries";
+import { useSongFromQuery } from "@/hooks/pages/use-song";
+import { useSongSuggestions } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
 
-export default function SongPage() {
-	const params = useParams();
-	const songId = params.id as string;
+export function Client() {
+	const [id] = useQueryState("id");
 	const { playSong, addToQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 	const { addToHistory } = useHistory();
 
-	const {
-		data: songData,
-		isLoading: isSongLoading,
-		error: songError,
-	} = useSong(songId, {
-		enabled: shouldEnableQuery(),
+	const { data: songData } = useSongFromQuery();
+	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
+		enabled: !!id && shouldEnableQuery(),
 	});
-	const { data: suggestions = [], isLoading: isSuggestionsLoading } =
-		useSongSuggestions(songId, 10, {
-			enabled: shouldEnableQuery(),
-		});
 
 	const song = songData?.[0];
 	const filteredSuggestions = getFilteredSongs(suggestions);
-	const isLoading = isSongLoading || isSuggestionsLoading;
 
 	// Add to history when song loads
 	useEffect(() => {
@@ -53,6 +45,14 @@ export default function SongPage() {
 			});
 		}
 	}, [song, addToHistory]);
+
+	if (!id) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Song ID is required</p>
+			</div>
+		);
+	}
 
 	if (isOfflineMode) {
 		return (
@@ -69,20 +69,10 @@ export default function SongPage() {
 		);
 	}
 
-	if (isLoading) {
-		return (
-			<div className="flex justify-center items-center min-h-screen">
-				<Loader2 className="h-8 w-8 animate-spin" />
-			</div>
-		);
-	}
-
-	if (songError || !song) {
+	if (!song) {
 		return (
 			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">
-					{songError instanceof Error ? songError.message : "Song not found"}
-				</p>
+				<p className="text-center text-destructive">Song not found</p>
 			</div>
 		);
 	}
@@ -131,7 +121,7 @@ export default function SongPage() {
 									{song.artists?.primary?.map((artist, index) => (
 										<span key={artist.id}>
 											<Link
-												href={`/artists/${artist.id}`}
+												href={`/artist?id=${artist.id}`}
 												className="text-sm hover:underline"
 											>
 												{artist.name}
@@ -148,7 +138,7 @@ export default function SongPage() {
 										</span>
 										{song.album.id ? (
 											<Link
-												href={`/albums/${song.album.id}`}
+												href={`/album?id=${song.album.id}`}
 												className="text-sm hover:underline"
 											>
 												{song.album.name}

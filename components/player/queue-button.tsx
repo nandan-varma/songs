@@ -78,7 +78,7 @@ export const QueueButton = memo(function QueueButton({
 
 									<div className="flex-1 min-w-0">
 										<Link
-											href={`/songs/${song.id}`}
+											href={`/song?id=${song.id}`}
 											className="text-sm font-medium truncate hover:underline block"
 										>
 											{song.name}
@@ -87,7 +87,7 @@ export const QueueButton = memo(function QueueButton({
 											{song.artists?.primary?.map((artist, idx) => (
 												<span key={artist.id}>
 													<Link
-														href={`/artists/${artist.id}`}
+														href={`/artist?id=${artist.id}`}
 														className="hover:underline"
 													>
 														{artist.name}

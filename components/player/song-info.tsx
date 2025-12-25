@@ -25,7 +25,7 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 			)}
 			<div className="min-w-0 flex-1">
 				<Link
-					href={`/songs/${currentSong.id}`}
+					href={`/song?id=${currentSong.id}`}
 					className="font-semibold truncate text-base hover:underline block"
 				>
 					{currentSong.name}
@@ -33,7 +33,10 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 				<div className="text-sm text-muted-foreground truncate">
 					{currentSong.artists?.primary?.map((artist, index) => (
 						<span key={artist.id}>
-							<Link href={`/artists/${artist.id}`} className="hover:underline">
+							<Link
+								href={`/artist?id=${artist.id}`}
+								className="hover:underline"
+							>
 								{artist.name}
 							</Link>
 							{index < currentSong.artists.primary.length - 1 && ", "}

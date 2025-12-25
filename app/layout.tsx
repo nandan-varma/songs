@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { AudioPlayer } from "@/components/audio-player";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -92,18 +93,18 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body
-				className={`antialiased dark`}
-			>
+			<body className={`antialiased dark`}>
 				<Providers>
-					<ServiceWorkerManager />
-					<Navigation />
-					<BreadcrumbNav />
-					<main className="pb-32 md:pb-36">{children}</main>
-					<ErrorBoundary context="AudioPlayer">
-						<AudioPlayer />
-					</ErrorBoundary>
-					<Toaster />
+					<NuqsAdapter>
+						<ServiceWorkerManager />
+						<Navigation />
+						<BreadcrumbNav />
+						<main className="pb-32 md:pb-36">{children}</main>
+						<ErrorBoundary context="AudioPlayer">
+							<AudioPlayer />
+						</ErrorBoundary>
+						<Toaster />
+					</NuqsAdapter>
 				</Providers>
 			</body>
 		</html>

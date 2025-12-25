@@ -1,9 +1,9 @@
 "use client";
 
-import { Loader2, Play, Plus } from "lucide-react";
-import { useParams } from "next/navigation";
+import { Disc3, Play, Plus } from "lucide-react";
+import Link from "next/link";
+import { useQueryState } from "nuqs";
 import { useEffect } from "react";
-import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
@@ -11,39 +11,40 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
-import { usePlaylist } from "@/hooks/queries";
+import { useAlbumFromQuery } from "@/hooks/pages/use-album";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { EntityType } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
 
-function PlaylistPageContent() {
-	const params = useParams();
-	const playlistId = params.id as string;
+export function Client() {
+	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+	const { getFilteredSongs, isOfflineMode } = useOffline();
 	const { addToHistory } = useHistory();
 
-	const {
-		data: playlist,
-		isLoading,
-		error,
-	} = usePlaylist(playlistId, {
-		enabled: shouldEnableQuery(),
-	});
+	const { data: album, error } = useAlbumFromQuery();
 
-	const filteredSongs = playlist?.songs ? getFilteredSongs(playlist.songs) : [];
+	const filteredSongs = album?.songs ? getFilteredSongs(album.songs) : [];
 
-	// Add to history when playlist loads
+	// Add to history when album loads
 	useEffect(() => {
-		if (playlist) {
+		if (album) {
 			addToHistory({
-				id: playlist.id,
-				type: EntityType.PLAYLIST,
-				data: playlist,
+				id: album.id,
+				type: EntityType.ALBUM,
+				data: album,
 				timestamp: new Date(),
 			});
 		}
-	}, [playlist, addToHistory]);
+	}, [album, addToHistory]);
+
+	if (!id) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Album ID is required</p>
+			</div>
+		);
+	}
 
 	if (isOfflineMode) {
 		return (
@@ -51,8 +52,8 @@ function PlaylistPageContent() {
 				<Card className="text-center py-12">
 					<CardContent>
 						<p className="text-muted-foreground">
-							Playlist details are not available in offline mode. Please disable
-							offline mode to view this playlist.
+							Album details are not available in offline mode. Please disable
+							offline mode to view this album.
 						</p>
 					</CardContent>
 				</Card>
@@ -60,19 +61,11 @@ function PlaylistPageContent() {
 		);
 	}
 
-	if (isLoading) {
-		return (
-			<div className="flex justify-center items-center min-h-screen">
-				<Loader2 className="h-8 w-8 animate-spin" />
-			</div>
-		);
-	}
-
-	if (error || !playlist) {
+	if (error || !album) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<p className="text-center text-destructive">
-					{error instanceof Error ? error.message : "Playlist not found"}
+					{error instanceof Error ? error.message : "Album not found"}
 				</p>
 			</div>
 		);
@@ -80,43 +73,68 @@ function PlaylistPageContent() {
 
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
-			{/* Playlist Header */}
+			{/* Album Header */}
 			<Card>
 				<CardContent className="p-6">
 					<div className="flex flex-col md:flex-row gap-6">
-						{/* Playlist Cover */}
+						{/* Album Art */}
 						<div className="relative aspect-square w-full md:w-64 flex-shrink-0">
-							<ProgressiveImage
-								images={playlist.image}
-								alt={playlist.name}
-								entityType={EntityType.PLAYLIST}
-								rounded="default"
-								priority
-							/>
+							{album.image && album.image.length > 0 ? (
+								<ProgressiveImage
+									images={album.image}
+									alt={album.name}
+									entityType={EntityType.ALBUM}
+									rounded="default"
+									priority
+								/>
+							) : (
+								<div className="flex h-full w-full items-center justify-center bg-muted rounded-lg">
+									<Disc3 className="h-24 w-24 text-muted-foreground" />
+								</div>
+							)}
 						</div>
 
-						{/* Playlist Details */}
+						{/* Album Details */}
 						<div className="flex-1 space-y-4">
 							<div>
 								<Badge variant="secondary" className="mb-2">
-									Playlist
+									Album
 								</Badge>
-								<h1 className="text-4xl font-bold">{playlist.name}</h1>
+								<h1 className="text-4xl font-bold">{album.name}</h1>
 							</div>
 
-							<div className="flex gap-4 text-sm text-muted-foreground">
-								{playlist.year && <span>{playlist.year}</span>}
-								{playlist.language && (
-									<span className="capitalize">{playlist.language}</span>
+							<div className="space-y-2">
+								<div>
+									<span className="text-sm text-muted-foreground">
+										Artists:{" "}
+									</span>
+									{album.artists?.primary?.map((artist, index) => (
+										<span key={artist.id}>
+											<Link
+												href={`/artist?id=${artist.id}`}
+												className="text-sm hover:underline"
+											>
+												{artist.name}
+											</Link>
+											{index < album.artists.primary.length - 1 && ", "}
+										</span>
+									))}
+								</div>
+
+								<div className="flex gap-4 text-sm text-muted-foreground">
+									{album.year && <span>{album.year}</span>}
+									{album.language && (
+										<span className="capitalize">{album.language}</span>
+									)}
+									{album.songCount && <span>{album.songCount} songs</span>}
+								</div>
+
+								{album.description && (
+									<p className="text-sm text-muted-foreground">
+										{album.description}
+									</p>
 								)}
-								{playlist.songCount && <span>{playlist.songCount} songs</span>}
 							</div>
-
-							{playlist.description && (
-								<p className="text-sm text-muted-foreground">
-									{playlist.description}
-								</p>
-							)}
 
 							{/* Action Buttons */}
 							<div className="flex gap-2">
@@ -156,13 +174,5 @@ function PlaylistPageContent() {
 				<SongsList songs={filteredSongs.map(detailedSongToSong)} />
 			)}
 		</div>
-	);
-}
-
-export default function PlaylistPage() {
-	return (
-		<ErrorBoundary context="PlaylistPage">
-			<PlaylistPageContent />
-		</ErrorBoundary>
 	);
 }

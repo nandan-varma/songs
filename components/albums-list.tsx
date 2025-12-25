@@ -33,7 +33,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 			<h2 className="text-2xl font-semibold">Albums</h2>
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{albums.map((album) => (
-					<Link key={album.id} href={`/albums/${album.id}`}>
+					<Link key={album.id} href={`/album?id=${album.id}`}>
 						<Card className="overflow-hidden hover:bg-accent/50 transition-colors">
 							<CardContent className="p-4">
 								<div className="space-y-3">
@@ -67,7 +67,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 															onClick={(e) => {
 																e.preventDefault();
 																e.stopPropagation();
-																router.push(`/artists/${artist.id}`);
+																router.push(`/artist?id=${artist.id}`);
 															}}
 														>
 															{artist.name}

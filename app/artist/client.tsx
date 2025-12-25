@@ -1,10 +1,9 @@
 "use client";
 
-import { ExternalLink, Loader2, Play } from "lucide-react";
+import { ExternalLink, Play } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { useEffect } from "react";
-import { ErrorBoundary } from "@/components/error-boundary";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
@@ -13,30 +12,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useArtist, useArtistAlbums, useArtistSongs } from "@/hooks/queries";
+import { useArtistFromQuery } from "@/hooks/pages/use-artist";
+import { useArtistAlbums, useArtistSongs } from "@/hooks/queries";
 import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
 import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
 import { detailedSongToSong } from "@/lib/utils";
 
-function ArtistPageContent() {
-	const params = useParams();
-	const artistId = params.id as string;
+export function Client() {
+	const [id] = useQueryState("id");
 	const { playQueue } = useOfflinePlayerActions();
 	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
 	const { addToHistory } = useHistory();
 
-	// Add to history when artist loads
-	const {
-		data: artist,
-		isLoading,
-		error,
-	} = useArtist(artistId, {
-		songCount: 0,
-		albumCount: 0,
-		queryOptions: {
-			enabled: shouldEnableQuery(),
-		},
-	});
+	const { data: artist } = useArtistFromQuery();
 
 	useEffect(() => {
 		if (artist) {
@@ -49,11 +37,11 @@ function ArtistPageContent() {
 		}
 	}, [artist, addToHistory]);
 
-	const songsQuery = useArtistSongs(artistId, "popularity", "desc", {
-		enabled: shouldEnableQuery(),
+	const songsQuery = useArtistSongs(id || "", "popularity", "desc", {
+		enabled: !!id && shouldEnableQuery(),
 	});
-	const albumsQuery = useArtistAlbums(artistId, "popularity", "desc", {
-		enabled: shouldEnableQuery(),
+	const albumsQuery = useArtistAlbums(id || "", "popularity", "desc", {
+		enabled: !!id && shouldEnableQuery(),
 	});
 
 	const songsData = songsQuery.data as
@@ -68,28 +56,14 @@ function ArtistPageContent() {
 	const filteredSongs = getFilteredSongs(allSongs);
 	const allAlbums: DetailedAlbum[] =
 		albumsData?.pages.flatMap((page) => page.albums) ?? [];
-	const _totalSongs = songsData?.pages[0]?.total ?? 0;
-	const _totalAlbums = albumsData?.pages[0]?.total ?? 0;
 
-	const _fetchNextSongsPage = songsQuery.fetchNextPage;
-	const _hasMoreSongs = songsQuery.hasNextPage;
-	const _isLoadingMoreSongs = songsQuery.isFetchingNextPage;
-
-	const _fetchNextAlbumsPage = albumsQuery.fetchNextPage;
-	const _hasMoreAlbums = albumsQuery.hasNextPage;
-	const _isLoadingMoreAlbums = albumsQuery.isFetchingNextPage;
-
-	// Add to history when artist loads
-	useEffect(() => {
-		if (artist) {
-			addToHistory({
-				id: artist.id,
-				type: EntityType.ARTIST,
-				data: artist,
-				timestamp: new Date(),
-			});
-		}
-	}, [artist, addToHistory]);
+	if (!id) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Artist ID is required</p>
+			</div>
+		);
+	}
 
 	if (isOfflineMode) {
 		return (
@@ -106,20 +80,10 @@ function ArtistPageContent() {
 		);
 	}
 
-	if (isLoading) {
-		return (
-			<div className="flex justify-center items-center min-h-screen">
-				<Loader2 className="h-8 w-8 animate-spin" />
-			</div>
-		);
-	}
-
-	if (error || !artist) {
+	if (!artist) {
 		return (
 			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">
-					{error instanceof Error ? error.message : "Artist not found"}
-				</p>
+				<p className="text-center text-destructive">Artist not found</p>
 			</div>
 		);
 	}
@@ -245,7 +209,7 @@ function ArtistPageContent() {
 						</>
 					) : !songsData ? (
 						<div className="flex justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin" />
+							<div className="text-muted-foreground">Loading songs...</div>
 						</div>
 					) : (
 						<p className="text-center text-muted-foreground py-8">
@@ -264,7 +228,7 @@ function ArtistPageContent() {
 									className="overflow-hidden hover:bg-accent/50 transition-colors"
 								>
 									<CardContent className="p-4">
-										<Link href={`/albums/${album.id}`}>
+										<Link href={`/album?id=${album.id}`}>
 											<div className="space-y-3">
 												<div className="relative aspect-square w-full">
 													<ProgressiveImage
@@ -290,7 +254,7 @@ function ArtistPageContent() {
 						</div>
 					) : !albumsData ? (
 						<div className="flex justify-center py-12">
-							<Loader2 className="h-8 w-8 animate-spin" />
+							<div className="text-muted-foreground">Loading albums...</div>
 						</div>
 					) : (
 						<p className="text-center text-muted-foreground py-8">
@@ -340,7 +304,7 @@ function ArtistPageContent() {
 								className="overflow-hidden hover:bg-accent/50 transition-colors"
 							>
 								<CardContent className="p-4">
-									<Link href={`/artists/${similarArtist.id}`}>
+									<Link href={`/artist?id=${similarArtist.id}`}>
 										<div className="space-y-3">
 											<div className="relative aspect-square w-full">
 												<ProgressiveImage
@@ -364,13 +328,5 @@ function ArtistPageContent() {
 				</div>
 			)}
 		</div>
-	);
-}
-
-export default function ArtistPage() {
-	return (
-		<ErrorBoundary context="ArtistPage">
-			<ArtistPageContent />
-		</ErrorBoundary>
 	);
 }

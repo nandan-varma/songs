@@ -85,10 +85,10 @@ $CONVERT_CMD "$LOGO_PNG" -resize 512x512 -background none -gravity center -exten
 
 # Generate favicon.ico with multiple sizes
 echo "  - favicon.ico (multi-size)"
-$CONVERT_CMD "$LOGO_PNG" -resize 16x16 -background none -gravity center -extent 16x16 \
-    "$LOGO_PNG" -resize 32x32 -background none -gravity center -extent 32x32 \
-    "$LOGO_PNG" -resize 48x48 -background none -gravity center -extent 48x48 \
-    "$PUBLIC_DIR/favicon.ico"
+$CONVERT_CMD "$LOGO_PNG" \( -clone 0 -resize 16x16 -background none -gravity center -extent 16x16 \) \
+    \( -clone 0 -resize 32x32 -background none -gravity center -extent 32x32 \) \
+    \( -clone 0 -resize 48x48 -background none -gravity center -extent 48x48 \) \
+    -delete 0 "$PUBLIC_DIR/favicon.ico"
 
 # Generate Open Graph images
 echo -e "${GREEN}Generating Open Graph images...${NC}"

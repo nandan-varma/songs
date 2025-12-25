@@ -26,7 +26,7 @@ export function ArtistsList({ artists }: ArtistsListProps) {
 			<h2 className="text-2xl font-semibold">Artists</h2>
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{artists.map((artist) => (
-					<Link key={artist.id} href={`/artists/${artist.id}`}>
+					<Link key={artist.id} href={`/artist?id=${artist.id}`}>
 						<Card className="overflow-hidden hover:bg-accent/50 transition-colors">
 							<CardContent className="p-4">
 								<div className="space-y-3">

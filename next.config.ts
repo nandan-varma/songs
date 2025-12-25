@@ -1,7 +1,18 @@
+import withBundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
 
+const bundleAnalyzer = withBundleAnalyzer({
+	enabled: process.env.ANALYZE === "true",
+});
+
 const nextConfig: NextConfig = {
-	/* config options here */
+	// Experimental features for better performance
+	experimental: {
+		optimizePackageImports: ["@radix-ui/react-*", "lucide-react"],
+		scrollRestoration: true,
+		typedRoutes: true,
+	},
+
 	images: {
 		remotePatterns: [
 			{
@@ -25,7 +36,11 @@ const nextConfig: NextConfig = {
 				pathname: "/**",
 			},
 		],
+		// Optimize images further
+		formats: ["image/webp", "image/avif"],
+		minimumCacheTTL: 60,
 	},
 };
 
-export default nextConfig;
+// Apply bundle analyzer wrapper
+export default bundleAnalyzer(nextConfig);

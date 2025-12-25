@@ -76,7 +76,7 @@ export const SongItem = memo(function SongItem({
 						)}
 					</div>
 					<div className="flex-1 min-w-0">
-						<Link href={`/songs/${song.id}`}>
+						<Link href={`/song?id=${song.id}`}>
 							<h3 className="font-medium truncate hover:underline">
 								{song.title}
 							</h3>

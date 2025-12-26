@@ -17,8 +17,19 @@ const url = isDev
 	: `https://${process.env.VERCEL_URL}`;
 
 export const metadata: Metadata = {
-	title: "Music App",
-	description: "Stream your favorite music",
+	title: "Music App - Stream Your Favorite Music",
+	description:
+		"Discover, stream, and download millions of songs from your favorite artists. Listen to music online or offline with our modern music streaming app.",
+	keywords: [
+		"music",
+		"streaming",
+		"songs",
+		"artists",
+		"albums",
+		"playlists",
+		"download",
+		"offline",
+	],
 	manifest: "/manifest.json",
 	icons: {
 		icon: [

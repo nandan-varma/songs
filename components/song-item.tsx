@@ -4,16 +4,16 @@ import { Check, Download, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 import { useDownloadsActions } from "@/contexts/downloads-context";
-import { EntityType, type Song } from "@/lib/types";
+import { EntityType, type DetailedSong, type Song } from "@/lib/types";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
 interface SongItemProps {
-	song: Song;
-	onPlay: (song: Song) => void;
-	onAddToQueue: (song: Song) => void;
-	onDownload?: (song: Song) => void;
+	song: Song | DetailedSong;
+	onPlay: (song: Song | DetailedSong) => void;
+	onAddToQueue: (song: Song | DetailedSong) => void;
+	onDownload?: (song: Song | DetailedSong) => void;
 	showDownload?: boolean;
 }
 
@@ -22,11 +22,21 @@ export const SongItem = memo(function SongItem({
 	onPlay,
 	onAddToQueue,
 	onDownload,
-	showDownload = true,
+	showDownload = false,
 }: SongItemProps) {
 	const { isSongCached } = useDownloadsActions();
 
 	const isDownloaded = isSongCached(song.id);
+
+	// Display helpers that work with both Song and DetailedSong
+	const songTitle = (song as any).name || (song as any).title;
+	const songArtists =
+		(song as any).artists?.primary?.map((a: any) => a.name).join(", ") ||
+		(song as any).primaryArtists;
+	const songAlbum =
+		typeof (song as any).album === "string"
+			? (song as any).album
+			: (song as any).album?.name;
 
 	const handlePlay = useCallback(
 		(e: React.MouseEvent) => {
@@ -65,7 +75,7 @@ export const SongItem = memo(function SongItem({
 						{song.image && song.image.length > 0 ? (
 							<ProgressiveImage
 								images={song.image}
-								alt={song.title}
+								alt={songTitle}
 								entityType={EntityType.SONG}
 								rounded="default"
 							/>
@@ -78,14 +88,11 @@ export const SongItem = memo(function SongItem({
 					<div className="flex-1 min-w-0">
 						<Link href={`/song?id=${song.id}`}>
 							<h3 className="font-medium truncate hover:underline">
-								{song.title}
+								{songTitle}
 							</h3>
 						</Link>
 						<p className="text-sm text-muted-foreground truncate">
-							{song.primaryArtists}
-						</p>
-						<p className="text-xs text-muted-foreground truncate">
-							{song.album}
+							{songArtists}
 						</p>
 					</div>
 					<div className="flex gap-2 flex-shrink-0">

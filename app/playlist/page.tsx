@@ -27,20 +27,6 @@ export async function generateMetadata({
 			description:
 				playlist.description ||
 				`Listen to "${playlist.name}" playlist. ${playlist.songCount ? `${playlist.songCount} songs` : ""}.`,
-			openGraph: {
-				title: `${playlist.name} - Playlist`,
-				description:
-					playlist.description || `Listen to "${playlist.name}" playlist`,
-				type: "music.playlist",
-				images: playlist.image.length > 0 ? [playlist.image[0].url] : [],
-			},
-			twitter: {
-				card: "summary_large_image",
-				title: `${playlist.name} - Playlist`,
-				description:
-					playlist.description || `Listen to "${playlist.name}" playlist`,
-				images: playlist.image.length > 0 ? [playlist.image[0].url] : [],
-			},
 		};
 	} catch (_error) {
 		return {
@@ -49,10 +35,30 @@ export async function generateMetadata({
 	}
 }
 
-export default function Page() {
+async function PlaylistPage({ id }: { id: string }) {
+	const playlist = await getPlaylist(id);
+
+	return <Client playlist={playlist} />;
+}
+
+export default function Page({ searchParams }: Props) {
 	return (
 		<ErrorBoundary>
-			<Client />
+			<PlaylistPageContent searchParams={searchParams} />
 		</ErrorBoundary>
 	);
+}
+
+async function PlaylistPageContent({ searchParams }: Props) {
+	const id = (await searchParams).id;
+
+	if (!id || typeof id !== "string") {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Playlist ID is required</p>
+			</div>
+		);
+	}
+
+	return <PlaylistPage id={id} />;
 }

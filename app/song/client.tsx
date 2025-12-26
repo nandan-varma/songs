@@ -2,7 +2,6 @@
 
 import { Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
-import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 
 import { DownloadButton } from "@/components/download-button";
@@ -14,24 +13,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useSongFromQuery } from "@/hooks/pages/use-song";
-import { useSongSuggestions } from "@/hooks/queries";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { EntityType } from "@/lib/types";
-import { detailedSongToSong } from "@/lib/utils";
+import { usePlayerActions } from "@/contexts/player-context";
+import { type DetailedSong, EntityType } from "@/lib/types";
 
-export function Client() {
-	const [id] = useQueryState("id");
-	const { playSong, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+interface ClientProps {
+	song: DetailedSong;
+	suggestions: DetailedSong[];
+}
+
+export function Client({ song, suggestions }: ClientProps) {
+	const { playSong, addToQueue } = usePlayerActions();
+	const { getFilteredSongs } = useOffline();
 	const { addToHistory } = useHistory();
 
-	const { data: songData } = useSongFromQuery();
-	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
-		enabled: !!id && shouldEnableQuery(),
-	});
-
-	const song = songData?.[0];
 	const filteredSuggestions = getFilteredSongs(suggestions);
 
 	// Add to history when song loads
@@ -46,45 +40,14 @@ export function Client() {
 		}
 	}, [song, addToHistory]);
 
-	if (!id) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Song ID is required</p>
-			</div>
-		);
-	}
-
-	if (isOfflineMode) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<Card className="text-center py-12">
-					<CardContent>
-						<p className="text-muted-foreground">
-							Song details are not available in offline mode. Please disable
-							offline mode to view this song.
-						</p>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
-
-	if (!song) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Song not found</p>
-			</div>
-		);
-	}
-
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
 			{/* Song Header */}
 			<Card>
 				<CardContent className="p-6">
 					<div className="flex flex-col md:flex-row gap-6">
-						{/* Album Art */}
-						<div className="w-full md:w-64 flex-shrink-0">
+						{/* Song Cover */}
+						<div className="relative aspect-square w-full md:w-64 flex-shrink-0">
 							{song.image && song.image.length > 0 ? (
 								<ProgressiveImage
 									images={song.image}
@@ -92,13 +55,9 @@ export function Client() {
 									entityType={EntityType.SONG}
 									rounded="default"
 									priority
-									objectFit="contain"
-									fill={false}
-									width={256}
-									height={256}
 								/>
 							) : (
-								<div className="flex aspect-square h-full w-full items-center justify-center bg-muted rounded-lg">
+								<div className="flex h-full w-full items-center justify-center bg-muted rounded-lg">
 									<Music className="h-24 w-24 text-muted-foreground" />
 								</div>
 							)}
@@ -118,7 +77,7 @@ export function Client() {
 									<span className="text-sm text-muted-foreground">
 										Artists:{" "}
 									</span>
-									{song.artists?.primary?.map((artist, index) => (
+									{song.artists.primary.map((artist, index) => (
 										<span key={artist.id}>
 											<Link
 												href={`/artist?id=${artist.id}`}
@@ -131,21 +90,17 @@ export function Client() {
 									))}
 								</div>
 
-								{song.album?.name && (
+								{song.album.name && (
 									<div>
 										<span className="text-sm text-muted-foreground">
 											Album:{" "}
 										</span>
-										{song.album.id ? (
-											<Link
-												href={`/album?id=${song.album.id}`}
-												className="text-sm hover:underline"
-											>
-												{song.album.name}
-											</Link>
-										) : (
-											<span className="text-sm">{song.album.name}</span>
-										)}
+										<Link
+											href={`/album?id=${song.album.id}`}
+											className="text-sm hover:underline"
+										>
+											{song.album.name}
+										</Link>
 									</div>
 								)}
 
@@ -161,19 +116,13 @@ export function Client() {
 										</span>
 									)}
 								</div>
-
-								{song.hasLyrics && (
-									<Badge variant="outline">Lyrics Available</Badge>
-								)}
 							</div>
 
 							{/* Action Buttons */}
 							<div className="flex gap-2">
 								<Button
 									size="lg"
-									onClick={() => {
-										playSong(song);
-									}}
+									onClick={() => playSong(song)}
 									className="gap-2"
 								>
 									<Play className="h-5 w-5" />
@@ -182,15 +131,13 @@ export function Client() {
 								<Button
 									size="lg"
 									variant="outline"
-									onClick={() => {
-										addToQueue(song);
-									}}
+									onClick={() => addToQueue(song)}
 									className="gap-2"
 								>
 									<Plus className="h-5 w-5" />
 									Add to Queue
 								</Button>
-								<DownloadButton song={song} size="lg" />
+								<DownloadButton song={song} />
 							</div>
 						</div>
 					</div>
@@ -202,8 +149,8 @@ export function Client() {
 				<>
 					<Separator />
 					<div className="space-y-4">
-						<h2 className="text-2xl font-semibold">You Might Also Like</h2>
-						<SongsList songs={filteredSuggestions.map(detailedSongToSong)} />
+						<h2 className="text-2xl font-bold">You might also like</h2>
+						<SongsList songs={filteredSuggestions} />
 					</div>
 				</>
 			)}

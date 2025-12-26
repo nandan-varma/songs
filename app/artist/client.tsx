@@ -2,7 +2,6 @@
 
 import { ExternalLink, Play } from "lucide-react";
 import Link from "next/link";
-import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
@@ -12,19 +11,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
-import { useArtistFromQuery } from "@/hooks/pages/use-artist";
-import { useArtistAlbums, useArtistSongs } from "@/hooks/queries";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
-import { detailedSongToSong } from "@/lib/utils";
+import { usePlayerActions } from "@/contexts/player-context";
+import { type DetailedArtist, EntityType } from "@/lib/types";
 
-export function Client() {
-	const [id] = useQueryState("id");
-	const { playQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+interface ClientProps {
+	artist: DetailedArtist;
+}
+
+export function Client({ artist }: ClientProps) {
+	const { playQueue } = usePlayerActions();
+	const { getFilteredSongs } = useOffline();
 	const { addToHistory } = useHistory();
-
-	const { data: artist } = useArtistFromQuery();
 
 	useEffect(() => {
 		if (artist) {
@@ -37,48 +34,9 @@ export function Client() {
 		}
 	}, [artist, addToHistory]);
 
-	const songsQuery = useArtistSongs(id || "", "popularity", "desc", {
-		enabled: !!id && shouldEnableQuery(),
-	});
-	const albumsQuery = useArtistAlbums(id || "", "popularity", "desc", {
-		enabled: !!id && shouldEnableQuery(),
-	});
-
-	const songsData = songsQuery.data as
-		| { pages: Array<{ total: number; songs: DetailedSong[] }> }
-		| undefined;
-	const albumsData = albumsQuery.data as
-		| { pages: Array<{ total: number; albums: DetailedAlbum[] }> }
-		| undefined;
-
-	const allSongs: DetailedSong[] =
-		songsData?.pages.flatMap((page) => page.songs) ?? [];
-	const filteredSongs = getFilteredSongs(allSongs);
-	const allAlbums: DetailedAlbum[] =
-		albumsData?.pages.flatMap((page) => page.albums) ?? [];
-
-	if (!id) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Artist ID is required</p>
-			</div>
-		);
-	}
-
-	if (isOfflineMode) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<Card className="text-center py-12">
-					<CardContent>
-						<p className="text-muted-foreground">
-							Artist details are not available in offline mode. Please disable
-							offline mode to view this artist.
-						</p>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
+	const topSongs = artist.topSongs ?? [];
+	const filteredSongs = getFilteredSongs(topSongs);
+	const topAlbums = artist.topAlbums ?? [];
 
 	if (!artist) {
 		return (
@@ -205,12 +163,8 @@ export function Client() {
 									Play All
 								</Button>
 							</div>
-							<SongsList songs={filteredSongs.map(detailedSongToSong)} />
+							<SongsList songs={filteredSongs} />
 						</>
-					) : !songsData ? (
-						<div className="flex justify-center py-12">
-							<div className="text-muted-foreground">Loading songs...</div>
-						</div>
 					) : (
 						<p className="text-center text-muted-foreground py-8">
 							No songs available
@@ -220,9 +174,9 @@ export function Client() {
 
 				{/* Albums */}
 				<TabsContent value="albums" className="space-y-4">
-					{allAlbums.length > 0 ? (
+					{topAlbums.length > 0 ? (
 						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-							{allAlbums.map((album) => (
+							{topAlbums.map((album) => (
 								<Card
 									key={album.id}
 									className="overflow-hidden hover:bg-accent/50 transition-colors"
@@ -252,10 +206,6 @@ export function Client() {
 								</Card>
 							))}
 						</div>
-					) : !albumsData ? (
-						<div className="flex justify-center py-12">
-							<div className="text-muted-foreground">Loading albums...</div>
-						</div>
 					) : (
 						<p className="text-center text-muted-foreground py-8">
 							No albums available
@@ -266,7 +216,7 @@ export function Client() {
 				{/* Singles */}
 				{artist.singles && artist.singles.length > 0 && (
 					<TabsContent value="singles" className="space-y-4">
-						<SongsList songs={artist.singles.map(detailedSongToSong)} />
+						<SongsList songs={artist.singles} />
 					</TabsContent>
 				)}
 

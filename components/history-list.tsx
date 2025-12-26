@@ -1,10 +1,11 @@
 "use client";
 
 import { Radio } from "lucide-react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import type { HistoryItem } from "@/contexts/history-context";
 import { useQueueActions } from "@/contexts/queue-context";
 import { EntityType } from "@/lib/types";
-import { DownloadButton } from "./download-button";
 import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -57,7 +58,23 @@ function getItemSubtitle(item: HistoryItem): string {
 	}
 }
 
+function getItemPath(item: HistoryItem): Route {
+	switch (item.type) {
+		case EntityType.SONG:
+			return `/song?id=${item.id}`;
+		case EntityType.ALBUM:
+			return `/album?id=${item.id}`;
+		case EntityType.ARTIST:
+			return `/artist?id=${item.id}`;
+		case EntityType.PLAYLIST:
+			return `/playlist?id=${item.id}`;
+		default:
+			return "/";
+	}
+}
+
 export function HistoryList({ history }: HistoryListProps) {
+	const router = useRouter();
 	const { addSong, addAlbum, addArtist, addPlaylist } = useQueueActions();
 
 	const handleAddToQueue = (item: HistoryItem) => {
@@ -92,11 +109,12 @@ export function HistoryList({ history }: HistoryListProps) {
 				{history.map((item) => (
 					<Card
 						key={item.id}
-						className="overflow-hidden hover:bg-accent/50 transition-colors"
+						className="overflow-hidden hover:bg-accent/50 transition-colors cursor-pointer"
+						onClick={() => router.push(getItemPath(item))}
 					>
 						<CardContent className="p-4">
 							<div className="flex items-center gap-4">
-								<div className="relative h-16 w-16 flex-shrink-0">
+								<div className="relative h-16 w-16 shrink-0">
 									{item.data.image && item.data.image.length > 0 ? (
 										<ProgressiveImage
 											images={item.data.image}
@@ -119,7 +137,7 @@ export function HistoryList({ history }: HistoryListProps) {
 										{formatRelativeTime(item.timestamp)}
 									</p>
 								</div>
-								<div className="flex gap-2 flex-shrink-0">
+								<div className="flex gap-2 shrink-0">
 									<Button
 										size="icon"
 										variant="ghost"
@@ -128,9 +146,6 @@ export function HistoryList({ history }: HistoryListProps) {
 									>
 										<Radio className="h-4 w-4" />
 									</Button>
-									{item.type === EntityType.SONG && (
-										<DownloadButton song={item.data} size="icon" />
-									)}
 								</div>
 							</div>
 						</CardContent>

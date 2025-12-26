@@ -30,20 +30,6 @@ export async function generateMetadata({
 			description:
 				album.description ||
 				`Listen to ${album.name} by ${primaryArtists}. ${album.songCount ? `${album.songCount} songs` : ""}${album.year ? ` from ${album.year}` : ""}.`,
-			openGraph: {
-				title: `${album.name} - ${primaryArtists}`,
-				description:
-					album.description || `Listen to ${album.name} by ${primaryArtists}`,
-				type: "music.album",
-				images: album.image.length > 0 ? [album.image[0].url] : [],
-			},
-			twitter: {
-				card: "summary_large_image",
-				title: `${album.name} - ${primaryArtists}`,
-				description:
-					album.description || `Listen to ${album.name} by ${primaryArtists}`,
-				images: album.image.length > 0 ? [album.image[0].url] : [],
-			},
 		};
 	} catch (_error) {
 		return {
@@ -52,10 +38,30 @@ export async function generateMetadata({
 	}
 }
 
-export default function Page() {
+async function AlbumPage({ id }: { id: string }) {
+	const album = await getAlbum(id);
+
+	return <Client album={album} />;
+}
+
+export default function Page({ searchParams }: Props) {
 	return (
 		<ErrorBoundary>
-			<Client />
+			<AlbumPageContent searchParams={searchParams} />
 		</ErrorBoundary>
 	);
+}
+
+async function AlbumPageContent({ searchParams }: Props) {
+	const id = (await searchParams).id;
+
+	if (!id || typeof id !== "string") {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Album ID is required</p>
+			</div>
+		);
+	}
+
+	return <AlbumPage id={id} />;
 }

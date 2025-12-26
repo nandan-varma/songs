@@ -1,10 +1,8 @@
 "use client";
 
-import { WifiOff } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
-import { useOffline } from "@/contexts/offline-context";
 import {
 	usePlayback,
 	usePlayerActions,
@@ -34,23 +32,12 @@ export function AudioPlayer() {
 		setVolume,
 		removeFromQueue,
 	} = usePlayerActions();
-	const { getSongBlob, isSongCached } = useDownloadsActions();
-	const { isOfflineMode } = useOffline();
+	const { getSongBlob } = useDownloadsActions();
 
 	// Store the current song ID to detect actual song changes
 	const previousSongIdRef = useRef<string | null>(null);
 
-	/** Skip uncached songs in offline mode */
-	useEffect(() => {
-		if (!currentSong || !isOfflineMode) return;
-
-		if (!isSongCached(currentSong.id)) {
-			toast.error(
-				`"${currentSong.name}" is not available offline. Skipping...`,
-			);
-			playNext();
-		}
-	}, [currentSong, isOfflineMode, isSongCached, playNext]);
+	// Removed offline mode checks - always try to play songs
 
 	/** Manages audio source loading - only when song actually changes */
 	useEffect(() => {
@@ -74,9 +61,7 @@ export function AudioPlayer() {
 			blobUrl = URL.createObjectURL(cachedBlob);
 			audio.src = blobUrl;
 		} else {
-			// In offline mode, don't try to play remote URLs
-			if (isOfflineMode) return;
-
+			// Always try to play remote URLs (downloads will handle offline)
 			const downloadUrl =
 				currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
 				currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
@@ -103,7 +88,7 @@ export function AudioPlayer() {
 				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongBlob]);
+	}, [currentSong, audioRef, isPlaying, getSongBlob]);
 
 	/** Manages play/pause state */
 	useEffect(() => {
@@ -237,18 +222,6 @@ export function AudioPlayer() {
 				<audio ref={audioRef}>
 					<track kind="captions" />
 				</audio>
-
-				{isOfflineMode && (
-					<div className="absolute -top-2 right-4 z-10">
-						<Badge
-							variant="secondary"
-							className="flex items-center gap-1 bg-orange-500/90 text-white border-orange-600"
-						>
-							<WifiOff className="h-3 w-3" />
-							Offline Mode
-						</Badge>
-					</div>
-				)}
 
 				<div className="px-4 md:px-6 py-4 md:py-5">
 					{/* Mobile Layout */}

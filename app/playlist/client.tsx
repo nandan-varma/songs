@@ -1,7 +1,6 @@
 "use client";
 
 import { Play, Plus } from "lucide-react";
-import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 import { ProgressiveImage } from "@/components/progressive-image";
 import { SongsList } from "@/components/songs-list";
@@ -10,18 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
-import { usePlaylistFromQuery } from "@/hooks/pages/use-playlist";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { EntityType } from "@/lib/types";
-import { detailedSongToSong } from "@/lib/utils";
+import { usePlayerActions } from "@/contexts/player-context";
+import { type DetailedPlaylist, EntityType } from "@/lib/types";
 
-export function Client() {
-	const [id] = useQueryState("id");
-	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, isOfflineMode } = useOffline();
+interface ClientProps {
+	playlist: DetailedPlaylist;
+}
+
+export function Client({ playlist }: ClientProps) {
+	const { playQueue, addToQueue } = usePlayerActions();
+	const { getFilteredSongs } = useOffline();
 	const { addToHistory } = useHistory();
-
-	const { data: playlist } = usePlaylistFromQuery();
 
 	const filteredSongs = playlist?.songs ? getFilteredSongs(playlist.songs) : [];
 
@@ -36,37 +34,6 @@ export function Client() {
 			});
 		}
 	}, [playlist, addToHistory]);
-
-	if (!id) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Playlist ID is required</p>
-			</div>
-		);
-	}
-
-	if (isOfflineMode) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<Card className="text-center py-12">
-					<CardContent>
-						<p className="text-muted-foreground">
-							Playlist details are not available in offline mode. Please disable
-							offline mode to view this playlist.
-						</p>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
-
-	if (!playlist) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Playlist not found</p>
-			</div>
-		);
-	}
 
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
@@ -142,9 +109,7 @@ export function Client() {
 			</Card>
 
 			{/* Track List */}
-			{filteredSongs.length > 0 && (
-				<SongsList songs={filteredSongs.map(detailedSongToSong)} />
-			)}
+			{filteredSongs.length > 0 && <SongsList songs={filteredSongs} />}
 		</div>
 	);
 }

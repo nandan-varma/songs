@@ -29,18 +29,6 @@ export async function generateMetadata({
 		return {
 			title: `${artist.name} - Artist`,
 			description: `${bio}${followerCount ? `. ${followerCount}.` : ""}`,
-			openGraph: {
-				title: `${artist.name} - Artist`,
-				description: bio,
-				type: "profile",
-				images: artist.image.length > 0 ? [artist.image[0].url] : [],
-			},
-			twitter: {
-				card: "summary_large_image",
-				title: `${artist.name} - Artist`,
-				description: bio,
-				images: artist.image.length > 0 ? [artist.image[0].url] : [],
-			},
 		};
 	} catch (_error) {
 		return {
@@ -49,10 +37,35 @@ export async function generateMetadata({
 	}
 }
 
-export default function Page() {
+async function ArtistPage({ id }: { id: string }) {
+	const artist = await getArtist(id, {
+		songCount: 20,
+		albumCount: 20,
+		sortBy: "popularity",
+		sortOrder: "desc",
+	});
+
+	return <Client artist={artist} />;
+}
+
+export default function Page({ searchParams }: Props) {
 	return (
 		<ErrorBoundary>
-			<Client />
+			<ArtistPageContent searchParams={searchParams} />
 		</ErrorBoundary>
 	);
+}
+
+async function ArtistPageContent({ searchParams }: Props) {
+	const id = (await searchParams).id;
+
+	if (!id || typeof id !== "string") {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Artist ID is required</p>
+			</div>
+		);
+	}
+
+	return <ArtistPage id={id} />;
 }

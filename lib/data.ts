@@ -4,6 +4,7 @@ import {
 	getArtistById,
 	getPlaylistById,
 	getSongById,
+	getSongSuggestions as getSongSuggestionsApi,
 } from "./api";
 import type {
 	DetailedAlbum,
@@ -19,15 +20,27 @@ export const getAlbum = cache(async (id: string): Promise<DetailedAlbum> => {
 	return response.data;
 });
 
-export const getArtist = cache(async (id: string): Promise<DetailedArtist> => {
-	const response = await getArtistById(id);
-	return response.data;
-});
+export const getArtist = cache(
+	async (
+		id: string,
+		options?: Parameters<typeof getArtistById>[1],
+	): Promise<DetailedArtist> => {
+		const response = await getArtistById(id, options);
+		return response.data;
+	},
+);
 
 export const getSong = cache(async (id: string): Promise<DetailedSong[]> => {
 	const response = await getSongById(id);
 	return response.data;
 });
+
+export const getSongSuggestions = cache(
+	async (id: string, limit = 10): Promise<DetailedSong[]> => {
+		const response = await getSongSuggestionsApi(id, limit);
+		return response.data;
+	},
+);
 
 export const getPlaylist = cache(
 	async (id: string): Promise<DetailedPlaylist> => {

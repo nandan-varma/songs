@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { ErrorBoundary } from "@/components/error-boundary";
-import { getSong } from "@/lib/data";
+import { getSong, getSongSuggestions } from "@/lib/data";
 import { Client } from "./client";
 
 type Props = {
@@ -36,18 +36,6 @@ export async function generateMetadata({
 		return {
 			title: `${song.name} - ${primaryArtists}`,
 			description: `Listen to "${song.name}" by ${primaryArtists} from ${song.album.name}. ${song.language ? `Language: ${song.language}.` : ""} ${song.year ? `Year: ${song.year}.` : ""}`,
-			openGraph: {
-				title: `${song.name} - ${primaryArtists}`,
-				description: `Listen to "${song.name}" by ${primaryArtists} from ${song.album.name}`,
-				type: "music.song",
-				images: song.image.length > 0 ? [song.image[0].url] : [],
-			},
-			twitter: {
-				card: "summary_large_image",
-				title: `${song.name} - ${primaryArtists}`,
-				description: `Listen to "${song.name}" by ${primaryArtists} from ${song.album.name}`,
-				images: song.image.length > 0 ? [song.image[0].url] : [],
-			},
 		};
 	} catch (_error) {
 		return {
@@ -56,10 +44,38 @@ export async function generateMetadata({
 	}
 }
 
-export default function Page() {
+async function SongPage({ id }: { id: string }) {
+	const songs = await getSong(id);
+	const song = songs[0];
+
+	if (!song) {
+		throw new Error("Song not found");
+	}
+
+	// Fetch song suggestions
+	const suggestions = await getSongSuggestions(id, 10);
+
+	return <Client song={song} suggestions={suggestions} />;
+}
+
+export default function Page({ searchParams }: Props) {
 	return (
 		<ErrorBoundary>
-			<Client />
+			<SongPageContent searchParams={searchParams} />
 		</ErrorBoundary>
 	);
+}
+
+async function SongPageContent({ searchParams }: Props) {
+	const id = (await searchParams).id;
+
+	if (!id || typeof id !== "string") {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<p className="text-center text-destructive">Song ID is required</p>
+			</div>
+		);
+	}
+
+	return <SongPage id={id} />;
 }

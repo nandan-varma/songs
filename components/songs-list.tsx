@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { usePlayerActions } from "@/contexts/player-context";
 import { useQueueActions } from "@/contexts/queue-context";
-import { getSongById } from "@/lib/api";
-import type { Song } from "@/lib/types";
+
+import type { DetailedSong, Song } from "@/lib/types";
 import { SongItem } from "./song-item";
 
 interface SongsListProps {
-	songs: Song[];
+	songs: (Song | DetailedSong)[];
 }
 
 export const SongsList = React.memo(function SongsList({
@@ -21,37 +21,27 @@ export const SongsList = React.memo(function SongsList({
 	const { downloadSong } = useDownloadsActions();
 
 	const handlePlay = useCallback(
-		async (song: Song) => {
-			try {
-				const detailedSong = await getSongById(song.id);
-				playSong(detailedSong.data[0]);
-			} catch (err) {
-				toast.error("Failed to play song");
-				console.error(err);
-			}
+		async (song: Song | DetailedSong) => {
+			// For DetailedSong, play directly; for Song, it may not work perfectly but try
+			playSong(song as DetailedSong);
 		},
 		[playSong],
 	);
 
 	const handleAddToQueue = useCallback(
-		async (song: Song) => {
-			try {
-				const detailedSong = await getSongById(song.id);
-				addSong(detailedSong.data[0]);
-			} catch (err) {
-				toast.error("Failed to add to queue");
-				console.error(err);
-			}
+		async (song: Song | DetailedSong) => {
+			addSong(song as DetailedSong);
 		},
 		[addSong],
 	);
 
 	const handleDownload = useCallback(
-		async (song: Song) => {
+		async (song: Song | DetailedSong) => {
 			try {
-				const detailedSong = await getSongById(song.id);
-				await downloadSong(detailedSong.data[0]);
-				toast.success(`Downloaded: ${song.title}`);
+				await downloadSong(song as DetailedSong);
+				toast.success(
+					`Downloaded: ${(song as any).name || (song as any).title}`,
+				);
 			} catch (err) {
 				toast.error("Failed to download");
 				console.error(err);

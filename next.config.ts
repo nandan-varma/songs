@@ -6,12 +6,12 @@ const bundleAnalyzer = withBundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
-	// Experimental features for better performance
+	// Features for better performance
 	experimental: {
 		optimizePackageImports: ["@radix-ui/react-*", "lucide-react"],
 		scrollRestoration: true,
-		typedRoutes: true,
 	},
+	typedRoutes: true,
 
 	images: {
 		remotePatterns: [

@@ -19,6 +19,7 @@ interface QueueContextType {
 	addArtist: (artist: DetailedArtist) => void;
 	addPlaylist: (playlist: DetailedPlaylist) => void;
 	removeSong: (index: number) => void;
+	reorderQueue: (fromIndex: number, toIndex: number) => void;
 	clearQueue: () => void;
 }
 
@@ -34,7 +35,15 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
 	const addSong = useCallback((song: DetailedSong) => {
 		try {
-			setQueue((prev) => [...prev, song]);
+			setQueue((prev) => {
+				// Check if song already exists in queue
+				const isDuplicate = prev.some((s) => s.id === song.id);
+				if (isDuplicate) {
+					toast.info(`"${song.name}" is already in queue`);
+					return prev;
+				}
+				return [...prev, song];
+			});
 		} catch (_error) {
 			toast.error("Failed to add song to queue");
 		}
@@ -42,7 +51,25 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
 	const addSongs = useCallback((songs: DetailedSong[]) => {
 		try {
-			setQueue((prev) => [...prev, ...songs]);
+			setQueue((prev) => {
+				// Filter out duplicates
+				const existingIds = new Set(prev.map((s) => s.id));
+				const newSongs = songs.filter((song) => !existingIds.has(song.id));
+
+				if (newSongs.length === 0) {
+					toast.info("All songs are already in queue");
+					return prev;
+				}
+
+				const duplicateCount = songs.length - newSongs.length;
+				if (duplicateCount > 0) {
+					toast.info(
+						`Added ${newSongs.length} songs, skipped ${duplicateCount} duplicate${duplicateCount > 1 ? "s" : ""}`,
+					);
+				}
+
+				return [...prev, ...newSongs];
+			});
 		} catch (_error) {
 			toast.error("Failed to add songs to queue");
 		}
@@ -96,6 +123,35 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		[currentIndex],
 	);
 
+	const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
+		try {
+			if (fromIndex === toIndex) return;
+
+			setQueue((prev) => {
+				const newQueue = [...prev];
+				const [movedSong] = newQueue.splice(fromIndex, 1);
+				newQueue.splice(toIndex, 0, movedSong);
+				return newQueue;
+			});
+
+			// Update current index if affected
+			setCurrentIndexState((prevIndex) => {
+				if (prevIndex === fromIndex) {
+					return toIndex;
+				}
+				if (fromIndex < prevIndex && toIndex >= prevIndex) {
+					return prevIndex - 1;
+				}
+				if (fromIndex > prevIndex && toIndex <= prevIndex) {
+					return prevIndex + 1;
+				}
+				return prevIndex;
+			});
+		} catch (_error) {
+			toast.error("Failed to reorder queue");
+		}
+	}, []);
+
 	const clearQueue = useCallback(() => {
 		try {
 			setQueue([]);
@@ -115,6 +171,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		addArtist,
 		addPlaylist,
 		removeSong,
+		reorderQueue,
 		clearQueue,
 	};
 

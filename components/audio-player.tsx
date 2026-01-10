@@ -33,6 +33,7 @@ export function AudioPlayer() {
 		seekTo,
 		setVolume,
 		removeFromQueue,
+		reorderQueue,
 	} = usePlayerActions();
 	const { getSongBlob, isSongCached } = useDownloadsActions();
 	const { isOfflineMode } = useOffline();
@@ -283,6 +284,7 @@ export function AudioPlayer() {
 								queue={queue}
 								currentIndex={currentIndex}
 								onRemoveFromQueue={removeFromQueue}
+								onReorderQueue={reorderQueue}
 							/>
 						</div>
 
@@ -331,6 +333,7 @@ export function AudioPlayer() {
 								queue={queue}
 								currentIndex={currentIndex}
 								onRemoveFromQueue={removeFromQueue}
+								onReorderQueue={reorderQueue}
 							/>
 						</div>
 					</div>

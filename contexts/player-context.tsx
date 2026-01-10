@@ -43,6 +43,7 @@ interface PlayerActions {
 	addToQueue: (song: DetailedSong) => void;
 	addMultipleToQueue: (songs: DetailedSong[]) => void;
 	removeFromQueue: (index: number) => void;
+	reorderQueue: (fromIndex: number, toIndex: number) => void;
 	clearQueue: () => void;
 	togglePlayPause: () => void;
 	playNext: () => void;
@@ -71,8 +72,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const [duration, setDuration] = useState(0);
 
 	const { queue, currentIndex } = useQueueState();
-	const { addSong, addSongs, removeSong, clearQueue, setCurrentIndex } =
-		useQueueActions();
+	const {
+		addSong,
+		addSongs,
+		removeSong,
+		clearQueue,
+		setCurrentIndex,
+		reorderQueue: reorderQueueAction,
+	} = useQueueActions();
 
 	/** Play a single song, optionally replacing the queue */
 	const playSong = useCallback(
@@ -200,6 +207,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		[removeSong],
 	);
 
+	/** Reorder the queue by moving a song from one position to another */
+	const reorderQueue = useCallback(
+		(fromIndex: number, toIndex: number) => {
+			reorderQueueAction(fromIndex, toIndex);
+		},
+		[reorderQueueAction],
+	);
+
 	/** Clear the entire queue and stop playback */
 	const clearQueueAndStop = useCallback(() => {
 		clearQueue();
@@ -325,6 +340,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			addToQueue,
 			addMultipleToQueue,
 			removeFromQueue,
+			reorderQueue,
 			clearQueue: clearQueueAndStop,
 			togglePlayPause,
 			playNext,
@@ -338,6 +354,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			addToQueue,
 			addMultipleToQueue,
 			removeFromQueue,
+			reorderQueue,
 			clearQueueAndStop,
 			togglePlayPause,
 			playNext,

@@ -96,7 +96,7 @@ export function HistoryList({ history }: HistoryListProps) {
 					>
 						<CardContent className="p-4">
 							<div className="flex items-center gap-4">
-								<div className="relative h-16 w-16 flex-shrink-0">
+								<div className="relative h-16 w-16 shrink-0">
 									{item.data.image && item.data.image.length > 0 ? (
 										<ProgressiveImage
 											images={item.data.image}
@@ -119,7 +119,7 @@ export function HistoryList({ history }: HistoryListProps) {
 										{formatRelativeTime(item.timestamp)}
 									</p>
 								</div>
-								<div className="flex gap-2 flex-shrink-0">
+								<div className="flex gap-2 shrink-0">
 									<Button
 										size="icon"
 										variant="ghost"

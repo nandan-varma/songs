@@ -66,4 +66,12 @@ export class IDBConnection {
 			IMAGES: STORE_IMAGES,
 		};
 	}
+
+	close() {
+		if (this.db) {
+			this.db.close();
+			this.db = null;
+			this.dbPromise = null;
+		}
+	}
 }

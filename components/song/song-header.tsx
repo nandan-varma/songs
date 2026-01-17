@@ -5,7 +5,7 @@ import { ProgressiveImage } from "@/components/progressive-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { EntityType, type DetailedSong } from "@/lib/types";
+import { type DetailedSong, EntityType } from "@/lib/types";
 
 interface SongHeaderProps {
 	song: DetailedSong;
@@ -96,7 +96,9 @@ export function SongHeader({ song, onPlay, onAddToQueue }: SongHeaderProps) {
 								)}
 							</div>
 
-							{song.hasLyrics && <Badge variant="outline">Lyrics Available</Badge>}
+							{song.hasLyrics && (
+								<Badge variant="outline">Lyrics Available</Badge>
+							)}
 						</div>
 
 						{/* Action Buttons */}

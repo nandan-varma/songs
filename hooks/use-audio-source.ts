@@ -5,7 +5,6 @@ interface UseAudioSourceProps {
 	currentSong: DetailedSong | null;
 	audioRef: RefObject<HTMLAudioElement | null>;
 	isOfflineMode: boolean;
-	isPlaying: boolean;
 	getSongBlob: (songId: string) => Blob | null;
 }
 
@@ -17,7 +16,6 @@ export function useAudioSource({
 	currentSong,
 	audioRef,
 	isOfflineMode,
-	isPlaying,
 	getSongBlob,
 }: UseAudioSourceProps) {
 	const previousSongIdRef = useRef<string | null>(null);
@@ -54,25 +52,9 @@ export function useAudioSource({
 			audio.src = downloadUrl.url;
 		}
 
-		// Load the new source and ensure metadata is loaded
+		// Reset state and load the new source
+		audio.currentTime = 0;
 		audio.load();
-
-		// Wait for metadata to be loaded before playing
-		const handleLoadedMetadata = () => {
-			// Metadata loaded, duration is now available
-			if (isPlaying) {
-				audio.play().catch(console.error);
-			}
-			audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-		};
-
-		audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-
-		// Fallback to canplay event if metadata loads early
-		if (audio.readyState >= 1) {
-			// HAVE_METADATA or higher, duration is already available
-			handleLoadedMetadata();
-		}
 
 		// Cleanup: revoke blob URL when song changes or component unmounts
 		return () => {
@@ -80,5 +62,5 @@ export function useAudioSource({
 				URL.revokeObjectURL(blobUrl);
 			}
 		};
-	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongBlob]);
+	}, [currentSong, audioRef, isOfflineMode, getSongBlob]);
 }

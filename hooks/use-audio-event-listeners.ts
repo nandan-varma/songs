@@ -40,7 +40,13 @@ export function useAudioEventListeners(
 				if (isActive) handlersRef.current.onTimeUpdate(audio.currentTime);
 			};
 			const handleDurationChange = () => {
-				if (isActive) handlersRef.current.onDurationChange(audio.duration || 0);
+				if (isActive) {
+					const duration = audio.duration;
+					// Only update if duration is a valid number
+					if (!Number.isNaN(duration) && Number.isFinite(duration)) {
+						handlersRef.current.onDurationChange(duration);
+					}
+				}
 			};
 			const handleEnded = () => {
 				if (isActive) handlersRef.current.onEnded();
@@ -61,6 +67,12 @@ export function useAudioEventListeners(
 			audio.addEventListener("play", handlePlay);
 			audio.addEventListener("pause", handlePause);
 			audio.addEventListener("error", handleError);
+
+			// Immediately read duration if already loaded
+			if (audio.readyState >= 1) {
+				// HAVE_METADATA or higher
+				handleDurationChange();
+			}
 
 			cleanup = () => {
 				audio.removeEventListener("timeupdate", handleTimeUpdate);

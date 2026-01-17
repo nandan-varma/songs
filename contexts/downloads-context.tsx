@@ -1,12 +1,7 @@
 "use client";
 
-import {
-	createContext,
-	type ReactNode,
-	useContext,
-	useMemo,
-} from "react";
-import { useCacheManager } from "@/hooks/use-cache-manager";
+import { createContext, type ReactNode, useContext, useMemo } from "react";
+import { type CachedSong, useCacheManager } from "@/hooks/use-cache-manager";
 import { useDeviceStorage } from "@/hooks/use-device-storage";
 import { useDownloadOperations } from "@/hooks/use-download-operations";
 import type { DetailedSong } from "@/lib/types";

@@ -1,75 +1,95 @@
 import { IDBConnection } from "./connection";
-import { IDBOperations } from "./operations";
+import {
+	AudioOperations,
+	type CachedSong,
+	ImageOperations,
+	SongOperations,
+	StorageOperations,
+} from "./operations";
 
-export type { CachedSong } from "./operations";
+export type { CachedSong };
 
 /**
- * Main database facade that combines connection and operations
- * Provides a clean interface for the rest of the application
+ * Facade for IndexedDB operations
+ * Provides unified API with separated concerns
  */
 class MusicDatabase {
 	private connection: IDBConnection;
-	private operations: IDBOperations;
+	private songs: SongOperations;
+	private audio: AudioOperations;
+	private images: ImageOperations;
+	private storage: StorageOperations;
 
 	constructor() {
 		this.connection = new IDBConnection();
-		this.operations = new IDBOperations(this.connection);
+		this.songs = new SongOperations(this.connection);
+		this.audio = new AudioOperations(this.connection);
+		this.images = new ImageOperations(this.connection);
+		this.storage = new StorageOperations();
 	}
 
-	// Delegate all operations to the operations class
-	async open() {
-		return this.connection.open();
+	// Song operations
+	async saveSong(song: Parameters<SongOperations["saveSong"]>[0]) {
+		return this.songs.saveSong(song);
 	}
 
-	async saveSong(song: Parameters<IDBOperations["saveSong"]>[0]) {
-		return this.operations.saveSong(song);
+	async getSong(songId: string) {
+		return this.songs.getSong(songId);
 	}
 
-	async saveAudioBlob(
-		songId: string,
-		blob: Blob,
-	) {
-		return this.operations.saveAudioBlob(songId, blob);
+	async getAllSongs() {
+		return this.songs.getAllSongs();
 	}
 
+	async deleteSong(songId: string) {
+		await Promise.all([
+			this.songs.deleteSong(songId),
+			this.audio.deleteAudioBlob(songId),
+		]);
+	}
+
+	async updateLastAccessed(songId: string) {
+		return this.songs.updateLastAccessed(songId);
+	}
+
+	// Audio operations
+	async saveAudioBlob(songId: string, blob: Blob) {
+		return this.audio.saveAudioBlob(songId, blob);
+	}
+
+	async getAudioBlob(songId: string) {
+		return this.audio.getAudioBlob(songId);
+	}
+
+	// Image operations
 	async saveImageBlob(
 		key: string,
 		blob: Blob,
 		metadata?: { songId: string; quality: string },
 	) {
-		return this.operations.saveImageBlob(key, blob, metadata);
-	}
-
-	async getSong(songId: string) {
-		return this.operations.getSong(songId);
-	}
-
-	async getAudioBlob(songId: string) {
-		return this.operations.getAudioBlob(songId);
+		return this.images.saveImageBlob(key, blob, metadata);
 	}
 
 	async getImageBlob(key: string) {
-		return this.operations.getImageBlob(key);
+		return this.images.getImageBlob(key);
 	}
 
-	async getAllSongs() {
-		return this.operations.getAllSongs();
-	}
-
-	async deleteSong(songId: string) {
-		return this.operations.deleteSong(songId);
-	}
-
-	async updateLastAccessed(songId: string) {
-		return this.operations.updateLastAccessed(songId);
-	}
-
-	async clearAll() {
-		return this.operations.clearAll();
-	}
-
+	// Storage operations
 	async getStorageSize() {
-		return this.operations.getStorageSize();
+		return this.storage.getStorageSize();
+	}
+
+	async getStorageQuota() {
+		return this.storage.getStorageQuota();
+	}
+
+	// Bulk operations
+	async clearAll() {
+		await Promise.all([
+			this.songs.clear(),
+			this.audio.clear(),
+			this.images.clear(),
+		]);
 	}
 }
 

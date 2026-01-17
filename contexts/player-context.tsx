@@ -241,6 +241,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		}
 	}, [queue, currentIndex]);
 
+	// Reset playback state when song changes to prevent stale values
+	useEffect(() => {
+		if (currentSong) {
+			setCurrentTime(0);
+			setDuration(0);
+		}
+	}, [currentSong]);
+
 	const playbackValue = useMemo<PlaybackState>(
 		() => ({
 			currentSong,

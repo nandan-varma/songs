@@ -14,6 +14,7 @@ import {
 	useQueueActions,
 	useQueue as useQueueState,
 } from "@/contexts/queue-context";
+import { useAudioEventListeners } from "@/hooks/use-audio-event-listeners";
 import type { DetailedSong } from "@/lib/types";
 
 /**
@@ -60,7 +61,6 @@ const PlayerActionsContext = createContext<PlayerActions | undefined>(
 
 const DEFAULT_VOLUME = 0.7;
 const RESTART_THRESHOLD_SECONDS = 3;
-const AUDIO_CHECK_INTERVAL_MS = 100;
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
@@ -80,6 +80,26 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		setCurrentIndex,
 		reorderQueue: reorderQueueAction,
 	} = useQueueActions();
+
+	/** Play next song - stored in ref to avoid recreating playNext callback */
+	const playNext = useCallback(() => {
+		if (queue.length === 0) return;
+
+		const nextIndex = (currentIndex + 1) % queue.length;
+		setCurrentIndex(nextIndex);
+		setCurrentSong(queue[nextIndex]);
+		setIsPlaying(true);
+	}, [queue, currentIndex, setCurrentIndex]);
+
+	/** Set up audio event listeners */
+	useAudioEventListeners(audioRef, {
+		onTimeUpdate: setCurrentTime,
+		onDurationChange: setDuration,
+		onEnded: playNext,
+		onPlay: () => setIsPlaying(true),
+		onPause: () => setIsPlaying(false),
+		onError: () => setIsPlaying(false),
+	});
 
 	/** Play a single song, optionally replacing the queue */
 	const playSong = useCallback(
@@ -125,16 +145,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			return newState;
 		});
 	}, []);
-
-	/** Skip to the next song in the queue (loops back to start) */
-	const playNext = useCallback(() => {
-		if (queue.length === 0) return;
-
-		const nextIndex = (currentIndex + 1) % queue.length;
-		setCurrentIndex(nextIndex);
-		setCurrentSong(queue[nextIndex]);
-		setIsPlaying(true);
-	}, [queue, currentIndex, setCurrentIndex]);
 
 	/** Go to previous song, or restart current song if > 3 seconds in */
 	const playPrevious = useCallback(() => {
@@ -222,13 +232,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		setIsPlaying(false);
 	}, [clearQueue]);
 
-	/**
-	 * Set up HTML5 audio element event listeners
-	 * Uses a ref to avoid recreating the playNext callback in dependencies
-	 * Checks periodically for audio element existence (rendered by child component)
-	 */
-	const playNextRef = useRef(playNext);
-
 	// Sync currentSong with queue changes
 	useEffect(() => {
 		if (queue.length > 0 && currentIndex < queue.length) {
@@ -237,81 +240,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			setCurrentSong(null);
 		}
 	}, [queue, currentIndex]);
-
-	useEffect(() => {
-		playNextRef.current = playNext;
-	}, [playNext]);
-
-	useEffect(() => {
-		let cleanup: (() => void) | null = null;
-		let checkInterval: NodeJS.Timeout | null = null;
-		let isActive = true;
-
-		const setupListeners = () => {
-			if (!isActive) return false;
-
-			const audio = audioRef.current;
-			if (!audio) return false;
-
-			const handleTimeUpdate = () => {
-				if (isActive) setCurrentTime(audio.currentTime);
-			};
-			const handleDurationChange = () => {
-				if (isActive) setDuration(audio.duration || 0);
-			};
-			const handleEnded = () => {
-				if (isActive) playNextRef.current();
-			};
-			const handlePlay = () => {
-				if (isActive) setIsPlaying(true);
-			};
-			const handlePause = () => {
-				if (isActive) setIsPlaying(false);
-			};
-			const handleError = (_e: Event) => {
-				if (isActive) setIsPlaying(false);
-			};
-
-			audio.addEventListener("timeupdate", handleTimeUpdate);
-			audio.addEventListener("durationchange", handleDurationChange);
-			audio.addEventListener("ended", handleEnded);
-			audio.addEventListener("play", handlePlay);
-			audio.addEventListener("pause", handlePause);
-			audio.addEventListener("error", handleError);
-
-			cleanup = () => {
-				audio.removeEventListener("timeupdate", handleTimeUpdate);
-				audio.removeEventListener("durationchange", handleDurationChange);
-				audio.removeEventListener("ended", handleEnded);
-				audio.removeEventListener("play", handlePlay);
-				audio.removeEventListener("pause", handlePause);
-				audio.removeEventListener("error", handleError);
-			};
-
-			return true;
-		};
-
-		// Try to setup listeners immediately
-		if (!setupListeners()) {
-			// If audio element not ready, poll for it
-			checkInterval = setInterval(() => {
-				if (setupListeners() && checkInterval) {
-					clearInterval(checkInterval);
-					checkInterval = null;
-				}
-			}, AUDIO_CHECK_INTERVAL_MS);
-		}
-
-		return () => {
-			isActive = false;
-			if (cleanup) {
-				cleanup();
-			}
-			if (checkInterval) {
-				clearInterval(checkInterval);
-			}
-		};
-	}, []);
 
 	const playbackValue = useMemo<PlaybackState>(
 		() => ({

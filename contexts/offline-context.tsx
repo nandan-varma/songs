@@ -5,15 +5,13 @@ import {
 	createContext,
 	useCallback,
 	useContext,
-	useEffect,
 	useMemo,
-	useState,
 } from "react";
-import { toast } from "sonner";
 import {
 	useDownloadsActions,
 	useDownloadsState,
 } from "@/contexts/downloads-context";
+import { useNetworkDetection } from "@/hooks/use-network-detection";
 import type { DetailedSong, Song } from "@/lib/types";
 
 interface OfflineState {
@@ -36,7 +34,7 @@ const OfflineContext = createContext<
 >(undefined);
 
 export function OfflineProvider({ children }: { children: React.ReactNode }) {
-	const [isOnline, setIsOnline] = useState(true);
+	const { isOnline } = useNetworkDetection();
 	const { isSongCached } = useDownloadsActions();
 	const { cachedSongs } = useDownloadsState();
 
@@ -46,47 +44,6 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 	const cachedSongsCount = useMemo(() => {
 		return cachedSongs.size;
 	}, [cachedSongs]);
-
-	// Monitor network status
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-
-		let isInitial = true;
-
-		const updateOnlineStatus = () => {
-			const online = navigator.onLine;
-			const wasOnline = isOnline;
-			setIsOnline(online);
-
-			// Show toast notifications for network changes (skip initial load)
-			if (!isInitial) {
-				if (!online) {
-					toast.warning("No internet connection", {
-						description:
-							"Switched to offline mode. Only cached songs are available.",
-					});
-				} else if (wasOnline === false) {
-					toast.success("Back online", {
-						description: "Internet connection restored.",
-					});
-				}
-			}
-
-			isInitial = false;
-		};
-
-		// Set initial state
-		updateOnlineStatus();
-
-		// Listen for network changes
-		window.addEventListener("online", updateOnlineStatus);
-		window.addEventListener("offline", updateOnlineStatus);
-
-		return () => {
-			window.removeEventListener("online", updateOnlineStatus);
-			window.removeEventListener("offline", updateOnlineStatus);
-		};
-	}, [isOnline]);
 
 	// Toggle is disabled - offline mode is automatic based on network
 	const setOfflineMode = useCallback((_enabled: boolean) => {

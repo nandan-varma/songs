@@ -1,8 +1,6 @@
 "use client";
 
 import { WifiOff } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
 import {
@@ -10,6 +8,10 @@ import {
 	usePlayerActions,
 	useQueue,
 } from "@/contexts/player-context";
+import { useAudioPlayback } from "@/hooks/use-audio-playback";
+import { useAudioSource } from "@/hooks/use-audio-source";
+import { useMediaSession } from "@/hooks/use-media-session";
+import { useOfflineSkip } from "@/hooks/use-offline-skip";
 import { PlaybackControls } from "./player/playback-controls";
 import { ProgressBar } from "./player/progress-bar";
 import { QueueButton } from "./player/queue-button";
@@ -38,195 +40,26 @@ export function AudioPlayer() {
 	const { getSongBlob, isSongCached } = useDownloadsActions();
 	const { isOfflineMode } = useOffline();
 
-	// Store the current song ID to detect actual song changes
-	const previousSongIdRef = useRef<string | null>(null);
-
-	/** Skip uncached songs in offline mode */
-	useEffect(() => {
-		if (!currentSong || !isOfflineMode) return;
-
-		if (!isSongCached(currentSong.id)) {
-			toast.error(
-				`"${currentSong.name}" is not available offline. Skipping...`,
-			);
-			playNext();
-		}
-	}, [currentSong, isOfflineMode, isSongCached, playNext]);
-
-	/** Manages audio source loading - only when song actually changes */
-	useEffect(() => {
-		if (!currentSong || !audioRef.current) {
-			previousSongIdRef.current = null;
-			return;
-		}
-
-		// Only load new source if the song ID actually changed
-		if (previousSongIdRef.current === currentSong.id) {
-			return;
-		}
-
-		previousSongIdRef.current = currentSong.id;
-		const audio = audioRef.current;
-		let blobUrl: string | null = null;
-
-		// Try to use cached audio first, then fallback to remote URL
-		const cachedBlob = getSongBlob(currentSong.id);
-		if (cachedBlob) {
-			blobUrl = URL.createObjectURL(cachedBlob);
-			audio.src = blobUrl;
-		} else {
-			// In offline mode, don't try to play remote URLs
-			if (isOfflineMode) return;
-
-			const downloadUrl =
-				currentSong.downloadUrl?.find((url) => url.quality === "320kbps") ||
-				currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
-
-			if (!downloadUrl?.url) return;
-			audio.src = downloadUrl.url;
-		}
-
-		// Load the new source
-		audio.load();
-
-		// If we should be playing, start playback when ready
-		if (isPlaying) {
-			const playWhenReady = () => {
-				audio.play().catch(console.error);
-				audio.removeEventListener("canplay", playWhenReady);
-			};
-			audio.addEventListener("canplay", playWhenReady);
-		}
-
-		// Cleanup: revoke blob URL when song changes or component unmounts
-		return () => {
-			if (blobUrl) {
-				URL.revokeObjectURL(blobUrl);
-			}
-		};
-	}, [currentSong, audioRef, isOfflineMode, isPlaying, getSongBlob]);
-
-	/** Manages play/pause state */
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio || !currentSong) return;
-
-		if (isPlaying && audio.paused) {
-			audio.play().catch(console.error);
-		} else if (!isPlaying && !audio.paused) {
-			audio.pause();
-		}
-	}, [isPlaying, currentSong, audioRef]);
-
-	/** Set up Media Session API metadata - only when song changes */
-	useEffect(() => {
-		if (!("mediaSession" in navigator) || !currentSong) {
-			return;
-		}
-
-		const artwork =
-			currentSong.image?.map((img) => ({
-				src: img.url,
-				sizes:
-					img.quality === "500x500"
-						? "500x500"
-						: img.quality === "150x150"
-							? "150x150"
-							: "50x50",
-				type: "image/jpeg",
-			})) || [];
-
-		navigator.mediaSession.metadata = new MediaMetadata({
-			title: currentSong.name,
-			artist:
-				currentSong.artists?.primary?.map((a) => a.name).join(", ") ||
-				"Unknown Artist",
-			album: currentSong.album?.name || "Unknown Album",
-			artwork: artwork.length > 0 ? artwork : undefined,
-		});
-
-		return () => {
-			if ("mediaSession" in navigator) {
-				navigator.mediaSession.metadata = null;
-			}
-		};
-	}, [currentSong]);
-
-	/** Update Media Session playback state */
-	useEffect(() => {
-		if (!("mediaSession" in navigator)) return;
-		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
-	}, [isPlaying]);
-
-	/** Set up Media Session action handlers once */
-	useEffect(() => {
-		if (!("mediaSession" in navigator)) return;
-
-		const playHandler = () => {
-			audioRef.current?.play().catch(console.error);
-		};
-
-		const pauseHandler = () => {
-			audioRef.current?.pause();
-		};
-
-		const seektoHandler = (details: MediaSessionActionDetails) => {
-			if (details.seekTime) {
-				seekTo(details.seekTime);
-			}
-		};
-
-		const seekbackwardHandler = (details: MediaSessionActionDetails) => {
-			const skipTime = details.seekOffset || 10;
-			const audio = audioRef.current;
-			if (audio) {
-				seekTo(Math.max(0, audio.currentTime - skipTime));
-			}
-		};
-
-		const seekforwardHandler = (details: MediaSessionActionDetails) => {
-			const skipTime = details.seekOffset || 10;
-			const audio = audioRef.current;
-			if (audio) {
-				seekTo(Math.min(audio.duration || 0, audio.currentTime + skipTime));
-			}
-		};
-
-		navigator.mediaSession.setActionHandler("play", playHandler);
-		navigator.mediaSession.setActionHandler("pause", pauseHandler);
-		navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
-		navigator.mediaSession.setActionHandler("nexttrack", playNext);
-		navigator.mediaSession.setActionHandler("seekto", seektoHandler);
-		navigator.mediaSession.setActionHandler(
-			"seekbackward",
-			seekbackwardHandler,
-		);
-		navigator.mediaSession.setActionHandler("seekforward", seekforwardHandler);
-
-		return () => {
-			if ("mediaSession" in navigator) {
-				navigator.mediaSession.setActionHandler("play", null);
-				navigator.mediaSession.setActionHandler("pause", null);
-				navigator.mediaSession.setActionHandler("previoustrack", null);
-				navigator.mediaSession.setActionHandler("nexttrack", null);
-				navigator.mediaSession.setActionHandler("seekto", null);
-				navigator.mediaSession.setActionHandler("seekbackward", null);
-				navigator.mediaSession.setActionHandler("seekforward", null);
-			}
-		};
-	}, [playNext, playPrevious, seekTo, audioRef]);
-
-	/** Update Media Session position state for scrubbing */
-	useEffect(() => {
-		if (!("mediaSession" in navigator) || !audioRef.current || duration <= 0)
-			return;
-
-		navigator.mediaSession.setPositionState({
-			duration: duration,
-			playbackRate: audioRef.current.playbackRate || 1,
-			position: currentTime,
-		});
-	}, [currentTime, duration, audioRef]);
+	// Audio management hooks - each with single responsibility
+	useOfflineSkip({ currentSong, isOfflineMode, isSongCached, playNext });
+	useAudioSource({
+		currentSong,
+		audioRef,
+		isOfflineMode,
+		isPlaying,
+		getSongBlob,
+	});
+	useAudioPlayback({ currentSong, audioRef, isPlaying });
+	useMediaSession({
+		currentSong,
+		audioRef,
+		isPlaying,
+		currentTime,
+		duration,
+		playNext,
+		playPrevious,
+		seekTo,
+	});
 
 	if (!currentSong) {
 		return null;
@@ -234,7 +67,7 @@ export function AudioPlayer() {
 
 	return (
 		<div className="fixed bottom-6 left-4 right-4 md:left-6 md:right-6 z-50 max-w-7xl mx-auto">
-			<Card className="bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/90 border shadow-2xl">
+			<Card className="bg-background/95 backdrop-blur-xl supports-backdrop-filter:bg-background/90 border shadow-2xl">
 				<audio ref={audioRef}>
 					<track kind="captions" />
 				</audio>
@@ -256,14 +89,14 @@ export function AudioPlayer() {
 					<div className="md:hidden space-y-4">
 						<div className="flex items-start gap-3">
 							{currentSong.image && currentSong.image.length > 0 && (
-								<div className="relative h-16 w-16 flex-shrink-0">
+								<div className="relative h-16 w-16 shrink-0">
 									<ProgressiveImage
 										images={currentSong.image}
 										alt={currentSong.name}
 										rounded="default"
 										priority
 										className="h-full w-full object-cover rounded"
-									/>{" "}
+									/>
 								</div>
 							)}
 							<div className="min-w-0 flex-1">

@@ -6,11 +6,13 @@ interface UseAudioSourceProps {
 	audioRef: RefObject<HTMLAudioElement | null>;
 	isOfflineMode: boolean;
 	getSongBlob: (songId: string) => Blob | null;
+	isPlaying: boolean;
 }
 
 /**
  * Manages audio source loading with caching support
  * Handles switching between cached blobs and remote URLs
+ * Note: Play handling moved to useAudioPlayback for proper state synchronization
  */
 export function useAudioSource({
 	currentSong,

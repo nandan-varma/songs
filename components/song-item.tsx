@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Download, Music, Play, Plus } from "lucide-react";
+import { Check, Download, Loader2, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 import { useDownloadsActions } from "@/contexts/downloads-context";
@@ -15,6 +15,7 @@ interface SongItemProps {
 	onAddToQueue: (song: Song) => void;
 	onDownload?: (song: Song) => void;
 	showDownload?: boolean;
+	isLoading?: boolean;
 }
 
 export const SongItem = memo(function SongItem({
@@ -23,6 +24,7 @@ export const SongItem = memo(function SongItem({
 	onAddToQueue,
 	onDownload,
 	showDownload = true,
+	isLoading = false,
 }: SongItemProps) {
 	const { isSongCached } = useDownloadsActions();
 
@@ -93,24 +95,34 @@ export const SongItem = memo(function SongItem({
 							size="icon"
 							variant="ghost"
 							onClick={handlePlay}
+							disabled={isLoading}
 							aria-label="Play song"
 						>
-							<Play className="h-4 w-4" />
+							{isLoading ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<Play className="h-4 w-4" />
+							)}
 						</Button>
 						<Button
 							size="icon"
 							variant="ghost"
 							onClick={handleAddToQueue}
+							disabled={isLoading}
 							aria-label="Add to queue"
 						>
-							<Plus className="h-4 w-4" />
+							{isLoading ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<Plus className="h-4 w-4" />
+							)}
 						</Button>
 						{showDownload && (
 							<Button
 								size="icon"
 								variant="ghost"
 								onClick={handleDownload}
-								disabled={isDownloaded || !onDownload}
+								disabled={isDownloaded || !onDownload || isLoading}
 								aria-label={
 									isDownloaded ? "Already downloaded" : "Download song"
 								}

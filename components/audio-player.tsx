@@ -41,6 +41,7 @@ export function AudioPlayer() {
 		audioRef,
 		isOfflineMode,
 		getSongBlob,
+		isPlaying,
 	});
 	useAudioPlayback({ currentSong, audioRef, isPlaying });
 	useMediaSession({
@@ -54,13 +55,11 @@ export function AudioPlayer() {
 		seekTo,
 	});
 
-	if (!currentSong) {
-		return null;
-	}
+	const hasCurrentSong = !!currentSong;
 
 	const layoutProps = {
-		currentSong,
-		isPlaying,
+		currentSong: currentSong ?? null,
+		isPlaying: hasCurrentSong && isPlaying,
 		volume,
 		currentTime,
 		duration,

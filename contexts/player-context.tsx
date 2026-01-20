@@ -98,7 +98,14 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		onEnded: playNext,
 		onPlay: () => setIsPlaying(true),
 		onPause: () => setIsPlaying(false),
-		onError: () => setIsPlaying(false),
+		onError: (error) => {
+			setIsPlaying(false);
+			setCurrentTime(0);
+			setDuration(0);
+			if (error) {
+				console.error("Audio playback error:", error.message);
+			}
+		},
 	});
 
 	/** Play a single song, optionally replacing the queue */
@@ -138,7 +145,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		setIsPlaying((prev) => {
 			const newState = !prev;
 			if (newState) {
-				audio.play().catch(() => {});
+				audio.play().catch(() => {
+					setIsPlaying(false);
+				});
 			} else {
 				audio.pause();
 			}

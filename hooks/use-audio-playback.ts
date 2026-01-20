@@ -9,7 +9,7 @@ interface UseAudioPlaybackProps {
 
 /**
  * Manages audio element play/pause state synchronization
- * Waits for audio to be loaded before attempting playback to prevent race conditions
+ * Handles iOS audio autoplay restrictions by waiting for canplay event
  */
 export function useAudioPlayback({
 	currentSong,
@@ -17,8 +17,18 @@ export function useAudioPlayback({
 	isPlaying,
 }: UseAudioPlaybackProps) {
 	const currentSongIdRef = useRef<string | null>(null);
+	const canPlayHandlerRef = useRef<(() => void) | null>(null);
 
-	// Handle song changes and initial load
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio || !currentSong) return;
+
+		if (canPlayHandlerRef.current) {
+			audio.removeEventListener("canplay", canPlayHandlerRef.current);
+			canPlayHandlerRef.current = null;
+		}
+	}, [audioRef, currentSong]);
+
 	useEffect(() => {
 		const audio = audioRef.current;
 		if (!audio || !currentSong) return;
@@ -27,43 +37,53 @@ export function useAudioPlayback({
 		currentSongIdRef.current = currentSong.id;
 
 		if (songChanged && isPlaying) {
-			// Wait for audio to be loaded before playing
 			const handleCanPlay = () => {
-				if (currentSongIdRef.current === currentSong.id && isPlaying) {
-					audio.play().catch(console.error);
+				if (currentSongIdRef.current === currentSong.id) {
+					audio.play().catch(() => {});
 				}
 				audio.removeEventListener("canplay", handleCanPlay);
+				canPlayHandlerRef.current = null;
 			};
 
+			canPlayHandlerRef.current = handleCanPlay;
 			audio.addEventListener("canplay", handleCanPlay);
 
-			// If already ready, play immediately
 			if (audio.readyState >= 3) {
-				// HAVE_FUTURE_DATA or higher
-				handleCanPlay();
-			}
-
-			return () => {
 				audio.removeEventListener("canplay", handleCanPlay);
-			};
+				canPlayHandlerRef.current = null;
+				audio.play().catch(() => {});
+			}
 		}
 	}, [currentSong, audioRef, isPlaying]);
 
-	// Handle play/pause toggle for current song
 	useEffect(() => {
 		const audio = audioRef.current;
 		if (!audio || !currentSong) return;
 
-		// Only handle play/pause if song hasn't changed
 		if (currentSongIdRef.current !== currentSong.id) return;
 
-		if (isPlaying && audio.paused) {
-			// Only play if audio is ready
-			if (audio.readyState >= 3) {
-				audio.play().catch(console.error);
+		if (isPlaying) {
+			if (audio.paused) {
+				if (audio.readyState >= 3) {
+					audio.play().catch(() => {});
+				} else {
+					if (!canPlayHandlerRef.current) {
+						const handleCanPlay = () => {
+							if (isPlaying && audio.paused) {
+								audio.play().catch(() => {});
+							}
+							audio.removeEventListener("canplay", handleCanPlay);
+							canPlayHandlerRef.current = null;
+						};
+						canPlayHandlerRef.current = handleCanPlay;
+						audio.addEventListener("canplay", handleCanPlay);
+					}
+				}
 			}
-		} else if (!isPlaying && !audio.paused) {
-			audio.pause();
+		} else {
+			if (!audio.paused) {
+				audio.pause();
+			}
 		}
 	}, [isPlaying, currentSong, audioRef]);
 }

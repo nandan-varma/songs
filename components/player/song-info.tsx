@@ -6,10 +6,28 @@ import { type DetailedSong, EntityType } from "@/lib/types";
 import { ProgressiveImage } from "../progressive-image";
 
 interface SongInfoProps {
-	currentSong: DetailedSong;
+	currentSong: DetailedSong | null;
 }
 
 export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
+	if (!currentSong) {
+		return (
+			<div className="flex items-center gap-4 min-w-0 w-72">
+				<div className="relative h-16 w-16 flex-shrink-0 bg-muted rounded flex items-center justify-center">
+					<div className="h-8 w-8 bg-muted-foreground/20 rounded" />
+				</div>
+				<div className="min-w-0 flex-1">
+					<div className="font-semibold truncate text-base text-muted-foreground">
+						No song playing
+					</div>
+					<div className="text-sm text-muted-foreground truncate">
+						Select a song to play
+					</div>
+				</div>
+			</div>
+		);
+	}
+
 	return (
 		<div className="flex items-center gap-4 min-w-0 w-72">
 			{currentSong.image && currentSong.image.length > 0 && (
@@ -39,7 +57,7 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 							>
 								{artist.name}
 							</Link>
-							{index < currentSong.artists.primary.length - 1 && ", "}
+							{index < (currentSong.artists.primary?.length ?? 0) - 1 && ", "}
 						</span>
 					))}
 				</div>

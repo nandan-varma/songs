@@ -6,7 +6,7 @@ import { QueueButton } from "./queue-button";
 import { VolumeControl } from "./volume-control";
 
 interface MobileLayoutProps {
-	currentSong: DetailedSong;
+	currentSong: DetailedSong | null;
 	isPlaying: boolean;
 	volume: number;
 	currentTime: number;
@@ -45,7 +45,7 @@ export function MobileLayout({
 	return (
 		<div className="md:hidden space-y-4">
 			<div className="flex items-start gap-3">
-				{currentSong.image && currentSong.image.length > 0 && (
+				{currentSong?.image && currentSong.image.length > 0 ? (
 					<div className="relative h-16 w-16 shrink-0">
 						<ProgressiveImage
 							images={currentSong.image}
@@ -55,18 +55,22 @@ export function MobileLayout({
 							className="h-full w-full object-cover rounded"
 						/>
 					</div>
+				) : (
+					<div className="h-16 w-16 shrink-0 bg-muted rounded flex items-center justify-center">
+						<div className="h-8 w-8 bg-muted-foreground/20 rounded" />
+					</div>
 				)}
 				<div className="min-w-0 flex-1">
 					<h3 className="font-semibold truncate text-base">
-						{currentSong.name}
+						{currentSong?.name || "No song playing"}
 					</h3>
 					<div className="text-sm text-muted-foreground truncate">
-						{currentSong.artists?.primary?.map((artist, index) => (
+						{currentSong?.artists?.primary?.map((artist, index) => (
 							<span key={artist.id}>
 								{artist.name}
-								{index < currentSong.artists.primary.length - 1 && ", "}
+								{index < (currentSong.artists.primary.length ?? 0) - 1 && ", "}
 							</span>
-						))}
+						)) || "Select a song to play"}
 					</div>
 				</div>
 

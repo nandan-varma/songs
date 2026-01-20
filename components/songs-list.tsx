@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
 import { usePlayerActions } from "@/contexts/player-context";
@@ -20,14 +20,19 @@ export const SongsList = React.memo(function SongsList({
 	const { addSong } = useQueueActions();
 	const { downloadSong } = useDownloadsActions();
 
+	const [loadingSongId, setLoadingSongId] = useState<string | null>(null);
+
 	const handlePlay = useCallback(
 		async (song: Song) => {
+			setLoadingSongId(song.id);
 			try {
 				const detailedSong = await getSongById(song.id);
 				playSong(detailedSong.data[0]);
 			} catch (err) {
 				toast.error("Failed to play song");
 				console.error(err);
+			} finally {
+				setLoadingSongId(null);
 			}
 		},
 		[playSong],
@@ -35,12 +40,15 @@ export const SongsList = React.memo(function SongsList({
 
 	const handleAddToQueue = useCallback(
 		async (song: Song) => {
+			setLoadingSongId(song.id);
 			try {
 				const detailedSong = await getSongById(song.id);
 				addSong(detailedSong.data[0]);
 			} catch (err) {
 				toast.error("Failed to add to queue");
 				console.error(err);
+			} finally {
+				setLoadingSongId(null);
 			}
 		},
 		[addSong],
@@ -48,6 +56,7 @@ export const SongsList = React.memo(function SongsList({
 
 	const handleDownload = useCallback(
 		async (song: Song) => {
+			setLoadingSongId(song.id);
 			try {
 				const detailedSong = await getSongById(song.id);
 				await downloadSong(detailedSong.data[0]);
@@ -55,6 +64,8 @@ export const SongsList = React.memo(function SongsList({
 			} catch (err) {
 				toast.error("Failed to download");
 				console.error(err);
+			} finally {
+				setLoadingSongId(null);
 			}
 		},
 		[downloadSong],
@@ -76,6 +87,7 @@ export const SongsList = React.memo(function SongsList({
 						onAddToQueue={handleAddToQueue}
 						onDownload={handleDownload}
 						showDownload={true}
+						isLoading={loadingSongId === song.id}
 					/>
 				))}
 			</div>

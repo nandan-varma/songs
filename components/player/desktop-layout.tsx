@@ -6,7 +6,7 @@ import { SongInfo } from "./song-info";
 import { VolumeControl } from "./volume-control";
 
 interface DesktopLayoutProps {
-	currentSong: DetailedSong;
+	currentSong: DetailedSong | null;
 	isPlaying: boolean;
 	volume: number;
 	currentTime: number;

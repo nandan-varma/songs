@@ -8,7 +8,7 @@ interface AudioEventHandlers {
 	onEnded: () => void;
 	onPlay: () => void;
 	onPause: () => void;
-	onError: () => void;
+	onError: (error: MediaError | null) => void;
 }
 
 /**
@@ -58,7 +58,15 @@ export function useAudioEventListeners(
 				if (isActive) handlersRef.current.onPause();
 			};
 			const handleError = () => {
-				if (isActive) handlersRef.current.onError();
+				if (isActive) {
+					const error = audio.error;
+					if (error) {
+						console.error(
+							`Audio error code: ${error.code}, message: ${error.message}`,
+						);
+					}
+					handlersRef.current.onError(error);
+				}
 			};
 
 			audio.addEventListener("timeupdate", handleTimeUpdate);

@@ -15,52 +15,21 @@ import {
 	useQueue as useQueueState,
 } from "@/contexts/queue-context";
 import { useAudioEventListeners } from "@/hooks/use-audio-event-listeners";
+import { logAudioError } from "@/lib/audio-error";
 import type { DetailedSong } from "@/lib/types";
+import {
+	DEFAULT_VOLUME,
+	type PlayerActions,
+	type PlayerState,
+	type QueueState,
+	RESTART_THRESHOLD_SECONDS,
+} from "@/types/player";
 
-/**
- * Split into 3 contexts to minimize re-renders:
- * - PlaybackContext: High frequency updates (currentTime every second)
- * - QueueContext: Medium frequency updates (queue modifications)
- * - PlayerActionsContext: Stable function references (never changes)
- */
-
-interface PlaybackState {
-	currentSong: DetailedSong | null;
-	isPlaying: boolean;
-	volume: number;
-	currentTime: number;
-	duration: number;
-	audioRef: React.RefObject<HTMLAudioElement | null>;
-}
-
-interface QueueState {
-	queue: DetailedSong[];
-	currentIndex: number;
-}
-
-interface PlayerActions {
-	playSong: (song: DetailedSong, replaceQueue?: boolean) => void;
-	playQueue: (songs: DetailedSong[], startIndex?: number) => void;
-	addToQueue: (song: DetailedSong) => void;
-	addMultipleToQueue: (songs: DetailedSong[]) => void;
-	removeFromQueue: (index: number) => void;
-	reorderQueue: (fromIndex: number, toIndex: number) => void;
-	clearQueue: () => void;
-	togglePlayPause: () => void;
-	playNext: () => void;
-	playPrevious: () => void;
-	seekTo: (time: number) => void;
-	setVolume: (volume: number) => void;
-}
-
-const PlaybackContext = createContext<PlaybackState | undefined>(undefined);
+const PlaybackContext = createContext<PlayerState | undefined>(undefined);
 const QueueContext = createContext<QueueState | undefined>(undefined);
 const PlayerActionsContext = createContext<PlayerActions | undefined>(
 	undefined,
 );
-
-const DEFAULT_VOLUME = 0.7;
-const RESTART_THRESHOLD_SECONDS = 3;
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
@@ -102,9 +71,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			setIsPlaying(false);
 			setCurrentTime(0);
 			setDuration(0);
-			if (error) {
-				console.error("Audio playback error:", error.message);
-			}
+			logAudioError(error, "PlayerContext");
 		},
 	});
 
@@ -258,7 +225,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		}
 	}, [currentSong]);
 
-	const playbackValue = useMemo<PlaybackState>(
+	const playbackValue = useMemo<PlayerState>(
 		() => ({
 			currentSong,
 			isPlaying,

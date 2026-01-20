@@ -1,16 +1,6 @@
-import { type RefObject, useEffect } from "react";
-import type { DetailedSong } from "@/lib/types";
-
-interface UseMediaSessionProps {
-	currentSong: DetailedSong | null;
-	audioRef: RefObject<HTMLAudioElement | null>;
-	isPlaying: boolean;
-	currentTime: number;
-	duration: number;
-	playNext: () => void;
-	playPrevious: () => void;
-	seekTo: (time: number) => void;
-}
+import { useEffect } from "react";
+import { logAudioError } from "@/lib/audio-error";
+import { SEEK_OFFSET_SECONDS, type UseMediaSessionProps } from "@/types/player";
 
 /**
  * Manages Media Session API integration for system-level media controls
@@ -25,7 +15,6 @@ export function useMediaSession({
 	playPrevious,
 	seekTo,
 }: UseMediaSessionProps) {
-	// Set up metadata when song changes
 	useEffect(() => {
 		if (!("mediaSession" in navigator) || !currentSong) {
 			return;
@@ -59,18 +48,18 @@ export function useMediaSession({
 		};
 	}, [currentSong]);
 
-	// Update playback state
 	useEffect(() => {
 		if (!("mediaSession" in navigator)) return;
 		navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
 	}, [isPlaying]);
 
-	// Set up action handlers once
 	useEffect(() => {
 		if (!("mediaSession" in navigator)) return;
 
 		const playHandler = () => {
-			audioRef.current?.play().catch(console.error);
+			audioRef.current?.play().catch((error) => {
+				logAudioError(error as MediaError, "MediaSessionPlay");
+			});
 		};
 
 		const pauseHandler = () => {
@@ -84,7 +73,7 @@ export function useMediaSession({
 		};
 
 		const seekbackwardHandler = (details: MediaSessionActionDetails) => {
-			const skipTime = details.seekOffset || 10;
+			const skipTime = details.seekOffset || SEEK_OFFSET_SECONDS;
 			const audio = audioRef.current;
 			if (audio) {
 				seekTo(Math.max(0, audio.currentTime - skipTime));
@@ -92,7 +81,7 @@ export function useMediaSession({
 		};
 
 		const seekforwardHandler = (details: MediaSessionActionDetails) => {
-			const skipTime = details.seekOffset || 10;
+			const skipTime = details.seekOffset || SEEK_OFFSET_SECONDS;
 			const audio = audioRef.current;
 			if (audio) {
 				seekTo(Math.min(audio.duration || 0, audio.currentTime + skipTime));
@@ -123,10 +112,10 @@ export function useMediaSession({
 		};
 	}, [playNext, playPrevious, seekTo, audioRef]);
 
-	// Update position state for scrubbing
 	useEffect(() => {
-		if (!("mediaSession" in navigator) || !audioRef.current || duration <= 0)
+		if (!("mediaSession" in navigator) || !audioRef.current || duration <= 0) {
 			return;
+		}
 
 		navigator.mediaSession.setPositionState({
 			duration: duration,

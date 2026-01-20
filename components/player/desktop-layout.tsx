@@ -1,4 +1,4 @@
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";

@@ -2,8 +2,8 @@
 
 import { Search } from "lucide-react";
 import { memo, useCallback } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 // ============================================================================
 // TYPES

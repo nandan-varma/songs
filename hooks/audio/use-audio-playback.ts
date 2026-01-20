@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { logAudioError } from "@/lib/audio-error";
+import { logAudioError } from "@/lib/utils/audio-error";
 import type { UseAudioPlaybackProps } from "@/types/player";
 
 /**

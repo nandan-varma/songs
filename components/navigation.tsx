@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDownloads } from "@/contexts/downloads-context";
 import { useOffline } from "@/contexts/offline-context";
-import { usePWAInstall } from "@/hooks/use-pwa-install";
+import { usePWAInstall } from "@/hooks/ui/use-pwa-install";
 
 export function Navigation() {
 	const { isDownloading } = useDownloads();

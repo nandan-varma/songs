@@ -4,7 +4,7 @@ import { Check, Download } from "lucide-react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 import { Button } from "./ui/button";
 
 interface DownloadButtonProps {

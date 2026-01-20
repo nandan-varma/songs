@@ -56,7 +56,9 @@ const SongItem = memo(function SongItem({
 	}, [imageUrl, isOfflineMode, item.song.image]);
 
 	const artistsText = useMemo(() => {
-		return item.song.artists.primary.map((a) => a.name).join(", ");
+		return item.song.artists.primary
+			.map((a: { name: string }) => a.name)
+			.join(", ");
 	}, [item.song.artists.primary]);
 
 	return (

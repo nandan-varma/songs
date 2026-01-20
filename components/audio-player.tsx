@@ -7,10 +7,10 @@ import {
 	usePlayerActions,
 	useQueue,
 } from "@/contexts/player-context";
-import { useAudioPlayback } from "@/hooks/use-audio-playback";
-import { useAudioSource } from "@/hooks/use-audio-source";
-import { useMediaSession } from "@/hooks/use-media-session";
-import { useOfflineSkip } from "@/hooks/use-offline-skip";
+import { useAudioPlayback } from "@/hooks/audio/use-audio-playback";
+import { useAudioSource } from "@/hooks/audio/use-audio-source";
+import { useMediaSession } from "@/hooks/audio/use-media-session";
+import { useOfflineSkip } from "@/hooks/player/use-offline-skip";
 import { DesktopLayout } from "./player/desktop-layout";
 import { MobileLayout } from "./player/mobile-layout";
 import { PlayerContainer } from "./player/player-container";

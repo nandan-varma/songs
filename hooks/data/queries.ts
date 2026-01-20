@@ -27,7 +27,7 @@ import type {
 	DetailedSong,
 	PlaylistSearchResult,
 	SearchResponse,
-} from "@/lib/types";
+} from "@/types/api";
 
 // Query Keys
 export const queryKeys = {

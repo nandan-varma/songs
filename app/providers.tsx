@@ -3,7 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type * as React from "react";
 import { getQueryClient } from "@/app/get-query-client";
-import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { DownloadsProvider } from "@/contexts/downloads-context";
 import { HistoryProvider } from "@/contexts/history-context";
 import { OfflineProvider } from "@/contexts/offline-context";

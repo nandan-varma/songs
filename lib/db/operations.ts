@@ -1,4 +1,4 @@
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 import type { IDBConnection } from "./connection";
 
 export interface CachedSong {

@@ -1,6 +1,6 @@
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 
-export { AudioQuality } from "@/lib/types";
+export { AudioQuality } from "@/types/entity";
 
 export const PREFERRED_AUDIO_QUALITY = "320kbps" as const;
 export const SEEK_OFFSET_SECONDS = 10 as const;

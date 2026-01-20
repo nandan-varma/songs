@@ -1,6 +1,6 @@
 import { useQueryState } from "nuqs";
 import { useOffline } from "@/contexts/offline-context";
-import { useArtist } from "../queries";
+import { useArtist } from "../data/queries";
 
 export function useArtistFromQuery() {
 	const [id] = useQueryState("id");

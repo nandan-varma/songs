@@ -1,6 +1,6 @@
 "use client";
 
-import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import { StorageInfo } from "@/components/offline/storage-info";
 import { Button } from "@/components/ui/button";

@@ -3,9 +3,9 @@
 import { Radio } from "lucide-react";
 import type { HistoryItem } from "@/contexts/history-context";
 import { useQueueActions } from "@/contexts/queue-context";
-import { EntityType } from "@/lib/types";
+import { EntityType } from "@/types/entity";
+import { ProgressiveImage } from "./common/progressive-image";
 import { DownloadButton } from "./download-button";
-import { ProgressiveImage } from "./progressive-image";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 

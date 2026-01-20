@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import { useOffline } from "@/contexts/offline-context";
 import { usePlayerActions } from "@/contexts/player-context";
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 
 /**
  * Offline-aware player actions that automatically filter songs based on offline mode

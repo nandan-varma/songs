@@ -1,6 +1,6 @@
 import { SongsList } from "@/components/songs-list";
 import { Separator } from "@/components/ui/separator";
-import type { Song } from "@/lib/types";
+import type { Song } from "@/types/entity";
 
 interface SongSuggestionsProps {
 	suggestions: Song[];

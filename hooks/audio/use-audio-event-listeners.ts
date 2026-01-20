@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
-import { logAudioError } from "@/lib/audio-error";
+import { logAudioError } from "@/lib/utils/audio-error";
 import {
 	AUDIO_CHECK_INTERVAL_MS,
 	type AudioEventCallbacks,

@@ -7,7 +7,7 @@ import type {
 	DetailedArtist,
 	DetailedPlaylist,
 	DetailedSong,
-} from "@/lib/types";
+} from "@/types/entity";
 
 interface QueueContextType {
 	queue: DetailedSong[];

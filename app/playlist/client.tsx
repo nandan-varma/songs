@@ -3,7 +3,7 @@
 import { Play, Plus } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
-import { ProgressiveImage } from "@/components/progressive-image";
+import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
 import { usePlaylistFromQuery } from "@/hooks/pages/use-playlist";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { EntityType } from "@/lib/types";
+import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");

@@ -6,7 +6,7 @@ import { useDownloadsActions } from "@/contexts/downloads-context";
 import { usePlayerActions } from "@/contexts/player-context";
 import { useQueueActions } from "@/contexts/queue-context";
 import { getSongById } from "@/lib/api";
-import type { Song } from "@/lib/types";
+import type { Song } from "@/types/entity";
 import { SongItem } from "./song-item";
 
 interface SongsListProps {

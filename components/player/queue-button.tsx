@@ -20,8 +20,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, ListMusic, Minus } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
-import { type DetailedSong, EntityType } from "@/lib/types";
-import { ProgressiveImage } from "../progressive-image";
+import { ProgressiveImage } from "@/components/common/progressive-image";
+import { type DetailedSong, EntityType } from "@/types/entity";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import {

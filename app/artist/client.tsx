@@ -4,7 +4,7 @@ import { ExternalLink, Play } from "lucide-react";
 import Link from "next/link";
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
-import { ProgressiveImage } from "@/components/progressive-image";
+import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
+import { useArtistAlbums, useArtistSongs } from "@/hooks/data/queries";
 import { useArtistFromQuery } from "@/hooks/pages/use-artist";
-import { useArtistAlbums, useArtistSongs } from "@/hooks/queries";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { type DetailedAlbum, type DetailedSong, EntityType } from "@/lib/types";
+import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import {
+	type DetailedAlbum,
+	type DetailedSong,
+	EntityType,
+} from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");

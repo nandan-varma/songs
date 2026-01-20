@@ -2,6 +2,7 @@
 
 import { Volume2, VolumeX } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import { percentToVolume, volumeToPercent } from "@/lib/time";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 
@@ -30,7 +31,7 @@ export const VolumeControl = memo(function VolumeControl({
 
 	const handleVolumeChange = useCallback(
 		([value]: number[]) => {
-			const newVolume = value / 100;
+			const newVolume = percentToVolume(value);
 			onSetVolume(newVolume);
 
 			if (value > 0 && isMuted) {
@@ -59,7 +60,7 @@ export const VolumeControl = memo(function VolumeControl({
 			</Button>
 
 			<Slider
-				value={[volume * 100]}
+				value={[volumeToPercent(volume)]}
 				max={100}
 				step={1}
 				onValueChange={handleVolumeChange}

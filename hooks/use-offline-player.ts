@@ -17,9 +17,9 @@ export function useOfflinePlayerActions() {
 	} = usePlayerActions();
 
 	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
-		const filteredSongs = getFilteredSongs([song]);
+		const filtered = getFilteredSongs([song]);
 
-		if (filteredSongs.length === 0 && isOfflineMode) {
+		if (filtered.length === 0 && isOfflineMode) {
 			toast.error("Song not available offline");
 			return;
 		}
@@ -28,29 +28,29 @@ export function useOfflinePlayerActions() {
 	};
 
 	const playQueueOfflineAware = (songs: DetailedSong[], startIndex = 0) => {
-		const filteredSongs = getFilteredSongs(songs);
+		const filtered = getFilteredSongs(songs);
 
-		if (filteredSongs.length === 0) {
+		if (filtered.length === 0) {
 			if (isOfflineMode) {
 				toast.error("No cached songs available for offline playback");
 			}
 			return;
 		}
 
-		if (filteredSongs.length < songs.length && isOfflineMode) {
+		if (filtered.length < songs.length && isOfflineMode) {
 			toast.info(
-				`Playing ${filteredSongs.length} of ${songs.length} songs (offline mode)`,
+				`Playing ${filtered.length} of ${songs.length} songs (offline mode)`,
 			);
 		}
 
-		const validStartIndex = Math.min(startIndex, filteredSongs.length - 1);
-		playQueue(filteredSongs, validStartIndex);
+		const validStartIndex = Math.min(startIndex, filtered.length - 1);
+		playQueue(filtered, validStartIndex);
 	};
 
 	const addToQueueOfflineAware = (song: DetailedSong) => {
-		const filteredSongs = getFilteredSongs([song]);
+		const filtered = getFilteredSongs([song]);
 
-		if (filteredSongs.length === 0 && isOfflineMode) {
+		if (filtered.length === 0 && isOfflineMode) {
 			toast.error("Song not available offline");
 			return;
 		}
@@ -59,20 +59,20 @@ export function useOfflinePlayerActions() {
 	};
 
 	const addMultipleToQueueOfflineAware = (songs: DetailedSong[]) => {
-		const filteredSongs = getFilteredSongs(songs);
+		const filtered = getFilteredSongs(songs);
 
-		if (filteredSongs.length === 0 && isOfflineMode) {
+		if (filtered.length === 0 && isOfflineMode) {
 			toast.error("No songs available offline");
 			return;
 		}
 
-		if (filteredSongs.length < songs.length && isOfflineMode) {
+		if (filtered.length < songs.length && isOfflineMode) {
 			toast.info(
-				`Added ${filteredSongs.length} of ${songs.length} songs (offline mode)`,
+				`Added ${filtered.length} of ${songs.length} songs (offline mode)`,
 			);
 		}
 
-		addMultipleToQueue(filteredSongs);
+		addMultipleToQueue(filtered);
 	};
 
 	return {
@@ -81,7 +81,6 @@ export function useOfflinePlayerActions() {
 		playQueue: playQueueOfflineAware,
 		addToQueue: addToQueueOfflineAware,
 		addMultipleToQueue: addMultipleToQueueOfflineAware,
-		// Keep original functions available
 		playSongUnfiltered: playSong,
 		playQueueUnfiltered: playQueue,
 		addToQueueUnfiltered: addToQueue,

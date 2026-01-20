@@ -1,15 +1,9 @@
 import { type RefObject, useEffect, useRef } from "react";
-
-const AUDIO_CHECK_INTERVAL_MS = 100;
-
-interface AudioEventHandlers {
-	onTimeUpdate: (currentTime: number) => void;
-	onDurationChange: (duration: number) => void;
-	onEnded: () => void;
-	onPlay: () => void;
-	onPause: () => void;
-	onError: (error: MediaError | null) => void;
-}
+import { logAudioError } from "@/lib/audio-error";
+import {
+	AUDIO_CHECK_INTERVAL_MS,
+	type AudioEventCallbacks,
+} from "@/types/player";
 
 /**
  * Sets up HTML5 audio element event listeners
@@ -17,7 +11,7 @@ interface AudioEventHandlers {
  */
 export function useAudioEventListeners(
 	audioRef: RefObject<HTMLAudioElement | null>,
-	handlers: AudioEventHandlers,
+	handlers: AudioEventCallbacks,
 ) {
 	const handlersRef = useRef(handlers);
 
@@ -37,34 +31,42 @@ export function useAudioEventListeners(
 			if (!audio) return false;
 
 			const handleTimeUpdate = () => {
-				if (isActive) handlersRef.current.onTimeUpdate(audio.currentTime);
+				if (isActive) {
+					handlersRef.current.onTimeUpdate(audio.currentTime);
+				}
 			};
+
 			const handleDurationChange = () => {
 				if (isActive) {
 					const duration = audio.duration;
-					// Only update if duration is a valid number
 					if (!Number.isNaN(duration) && Number.isFinite(duration)) {
 						handlersRef.current.onDurationChange(duration);
 					}
 				}
 			};
+
 			const handleEnded = () => {
-				if (isActive) handlersRef.current.onEnded();
+				if (isActive) {
+					handlersRef.current.onEnded();
+				}
 			};
+
 			const handlePlay = () => {
-				if (isActive) handlersRef.current.onPlay();
+				if (isActive) {
+					handlersRef.current.onPlay();
+				}
 			};
+
 			const handlePause = () => {
-				if (isActive) handlersRef.current.onPause();
+				if (isActive) {
+					handlersRef.current.onPause();
+				}
 			};
+
 			const handleError = () => {
 				if (isActive) {
 					const error = audio.error;
-					if (error) {
-						console.error(
-							`Audio error code: ${error.code}, message: ${error.message}`,
-						);
-					}
+					logAudioError(error, "AudioEventListeners");
 					handlersRef.current.onError(error);
 				}
 			};
@@ -76,9 +78,7 @@ export function useAudioEventListeners(
 			audio.addEventListener("pause", handlePause);
 			audio.addEventListener("error", handleError);
 
-			// Immediately read duration if already loaded
 			if (audio.readyState >= 1) {
-				// HAVE_METADATA or higher
 				handleDurationChange();
 			}
 
@@ -94,9 +94,7 @@ export function useAudioEventListeners(
 			return true;
 		};
 
-		// Try to setup listeners immediately
 		if (!setupListeners()) {
-			// If audio element not ready, poll for it
 			checkInterval = setInterval(() => {
 				if (setupListeners() && checkInterval) {
 					clearInterval(checkInterval);

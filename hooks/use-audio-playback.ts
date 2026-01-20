@@ -1,11 +1,6 @@
-import { type RefObject, useEffect, useRef } from "react";
-import type { DetailedSong } from "@/lib/types";
-
-interface UseAudioPlaybackProps {
-	currentSong: DetailedSong | null;
-	audioRef: RefObject<HTMLAudioElement | null>;
-	isPlaying: boolean;
-}
+import { useEffect, useRef } from "react";
+import { logAudioError } from "@/lib/audio-error";
+import type { UseAudioPlaybackProps } from "@/types/player";
 
 /**
  * Manages audio element play/pause state synchronization
@@ -39,7 +34,9 @@ export function useAudioPlayback({
 		if (songChanged && isPlaying) {
 			const handleCanPlay = () => {
 				if (currentSongIdRef.current === currentSong.id) {
-					audio.play().catch(() => {});
+					audio.play().catch((error) => {
+						logAudioError(error as MediaError, "AudioPlaybackSongChange");
+					});
 				}
 				audio.removeEventListener("canplay", handleCanPlay);
 				canPlayHandlerRef.current = null;
@@ -51,7 +48,9 @@ export function useAudioPlayback({
 			if (audio.readyState >= 3) {
 				audio.removeEventListener("canplay", handleCanPlay);
 				canPlayHandlerRef.current = null;
-				audio.play().catch(() => {});
+				audio.play().catch((error) => {
+					logAudioError(error as MediaError, "AudioPlaybackReadyState");
+				});
 			}
 		}
 	}, [currentSong, audioRef, isPlaying]);
@@ -65,12 +64,19 @@ export function useAudioPlayback({
 		if (isPlaying) {
 			if (audio.paused) {
 				if (audio.readyState >= 3) {
-					audio.play().catch(() => {});
+					audio.play().catch((error) => {
+						logAudioError(error as MediaError, "AudioPlaybackToggle");
+					});
 				} else {
 					if (!canPlayHandlerRef.current) {
 						const handleCanPlay = () => {
 							if (isPlaying && audio.paused) {
-								audio.play().catch(() => {});
+								audio.play().catch((error) => {
+									logAudioError(
+										error as MediaError,
+										"AudioPlaybackCanPlayFallback",
+									);
+								});
 							}
 							audio.removeEventListener("canplay", handleCanPlay);
 							canPlayHandlerRef.current = null;

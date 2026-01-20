@@ -41,7 +41,6 @@ export function AudioPlayer() {
 		audioRef,
 		isOfflineMode,
 		getSongBlob,
-		isPlaying,
 	});
 	useAudioPlayback({ currentSong, audioRef, isPlaying });
 	useMediaSession({

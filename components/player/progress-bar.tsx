@@ -1,19 +1,13 @@
 "use client";
 
 import { memo, useCallback } from "react";
+import { formatTime } from "@/lib/time";
 import { Slider } from "../ui/slider";
 
 interface ProgressBarProps {
 	currentTime: number;
 	duration: number;
 	onSeekTo: (time: number) => void;
-}
-
-function formatTime(seconds: number): string {
-	if (Number.isNaN(seconds)) return "0:00";
-	const mins = Math.floor(seconds / 60);
-	const secs = Math.floor(seconds % 60);
-	return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 export const ProgressBar = memo(function ProgressBar({

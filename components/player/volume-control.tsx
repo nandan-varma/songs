@@ -2,7 +2,7 @@
 
 import { Volume2, VolumeX } from "lucide-react";
 import { memo, useCallback, useState } from "react";
-import { percentToVolume, volumeToPercent } from "@/lib/time";
+import { percentToVolume, volumeToPercent } from "@/lib/utils/time";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 

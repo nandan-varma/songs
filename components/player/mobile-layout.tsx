@@ -1,5 +1,5 @@
-import { ProgressiveImage } from "@/components/progressive-image";
-import type { DetailedSong } from "@/lib/types";
+import { ProgressiveImage } from "@/components/common/progressive-image";
+import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";

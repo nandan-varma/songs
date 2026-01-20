@@ -8,11 +8,11 @@ import { SongSuggestions } from "@/components/song/song-suggestions";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
+import { useSongSuggestions } from "@/hooks/data/queries";
 import { useSongFromQuery } from "@/hooks/pages/use-song";
-import { useSongSuggestions } from "@/hooks/queries";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { EntityType } from "@/lib/types";
+import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");

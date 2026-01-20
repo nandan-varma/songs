@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import type { EntityType, Image as ImageType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import type { EntityType, Image as ImageType } from "@/types/entity";
 
 interface ProgressiveImageProps {
 	images: ImageType[];

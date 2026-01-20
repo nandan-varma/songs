@@ -9,7 +9,7 @@ import type {
 	PaginatedResponse,
 	PlaylistSearchResult,
 	SearchResponse,
-} from "./types";
+} from "@/types/api";
 
 const API_BASE_URL = "https://saavn-api.nandanvarma.com/api";
 

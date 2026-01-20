@@ -13,7 +13,7 @@ import type {
 	DetailedPlaylist,
 	DetailedSong,
 	EntityType,
-} from "@/lib/types";
+} from "@/types/entity";
 
 export type HistoryItem =
 	| { id: string; type: EntityType.SONG; data: DetailedSong; timestamp: Date }

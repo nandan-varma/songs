@@ -6,8 +6,8 @@ import {
 	useDownloadsActions,
 	useDownloadsState,
 } from "@/contexts/downloads-context";
-import { useNetworkDetection } from "@/hooks/use-network-detection";
-import type { DetailedSong, Song } from "@/lib/types";
+import { useNetworkDetection } from "@/hooks/network/use-network-detection";
+import type { DetailedSong, Song } from "@/types/entity";
 
 interface OfflineState {
 	isOfflineMode: boolean;

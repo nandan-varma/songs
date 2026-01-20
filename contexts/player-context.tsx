@@ -14,9 +14,9 @@ import {
 	useQueueActions,
 	useQueue as useQueueState,
 } from "@/contexts/queue-context";
-import { useAudioEventListeners } from "@/hooks/use-audio-event-listeners";
-import { logAudioError } from "@/lib/audio-error";
-import type { DetailedSong } from "@/lib/types";
+import { useAudioEventListeners } from "@/hooks/audio/use-audio-event-listeners";
+import { logAudioError } from "@/lib/utils/audio-error";
+import type { DetailedSong } from "@/types/entity";
 import {
 	DEFAULT_VOLUME,
 	type PlayerActions,

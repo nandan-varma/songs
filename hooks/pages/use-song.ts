@@ -1,6 +1,6 @@
 import { useQueryState } from "nuqs";
 import { useOffline } from "@/contexts/offline-context";
-import { useSong } from "../queries";
+import { useSong } from "../data/queries";
 
 export function useSongFromQuery() {
 	const [id] = useQueryState("id");

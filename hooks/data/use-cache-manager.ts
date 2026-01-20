@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { musicDB } from "@/lib/db";
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 
 export interface CachedSong {
 	song: DetailedSong;

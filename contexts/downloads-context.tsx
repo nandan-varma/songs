@@ -1,12 +1,15 @@
 "use client";
 
 import { createContext, type ReactNode, useContext, useMemo } from "react";
-import { type CachedSong, useCacheManager } from "@/hooks/use-cache-manager";
-import { useDeviceStorage } from "@/hooks/use-device-storage";
-import { useDownloadOperations } from "@/hooks/use-download-operations";
-import type { DetailedSong } from "@/lib/types";
+import {
+	type CachedSong,
+	useCacheManager,
+} from "@/hooks/data/use-cache-manager";
+import { useDeviceStorage } from "@/hooks/storage/use-device-storage";
+import { useDownloadOperations } from "@/hooks/storage/use-download-operations";
+import type { DetailedSong } from "@/types/entity";
 
-export type { CachedSong } from "@/hooks/use-cache-manager";
+export type { CachedSong } from "@/hooks/data/use-cache-manager";
 
 interface DownloadsState {
 	cachedSongs: Map<string, CachedSong>;

@@ -2,8 +2,8 @@
 
 import { ListMusic } from "lucide-react";
 import Link from "next/link";
-import { EntityType, type Playlist } from "@/lib/types";
-import { ProgressiveImage } from "./progressive-image";
+import { EntityType, type Playlist } from "@/types/entity";
+import { ProgressiveImage } from "./common/progressive-image";
 import { Card, CardContent } from "./ui/card";
 
 interface PlaylistsListProps {

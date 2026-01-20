@@ -2,8 +2,12 @@
 
 import { Users } from "lucide-react";
 import Link from "next/link";
-import { type Artist, type ArtistSearchResult, EntityType } from "@/lib/types";
-import { ProgressiveImage } from "./progressive-image";
+import {
+	type Artist,
+	type ArtistSearchResult,
+	EntityType,
+} from "@/types/entity";
+import { ProgressiveImage } from "./common/progressive-image";
 import { Card, CardContent } from "./ui/card";
 
 interface ArtistsListProps {

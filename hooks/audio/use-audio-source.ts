@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
-import type { DetailedSong } from "@/lib/types";
+import type { DetailedSong } from "@/types/entity";
 import { PREFERRED_AUDIO_QUALITY } from "@/types/player";
 
 interface UseAudioSourceProps {

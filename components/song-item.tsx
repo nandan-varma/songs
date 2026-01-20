@@ -3,9 +3,9 @@
 import { Check, Download, Loader2, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
+import { ProgressiveImage } from "@/components/common/progressive-image";
 import { useDownloadsActions } from "@/contexts/downloads-context";
-import { EntityType, type Song } from "@/lib/types";
-import { ProgressiveImage } from "./progressive-image";
+import { EntityType, type Song } from "@/types/entity";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 

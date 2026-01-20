@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
-import type { CachedSong } from "./use-cache-manager";
+import type { CachedSong } from "@/hooks/data/use-cache-manager";
 
 // TypeScript: Add showDirectoryPicker to window type
 declare global {

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useServiceWorker } from "@/hooks/use-service-worker";
+import { useServiceWorker } from "@/hooks/network/use-service-worker";
 
 export function ServiceWorkerManager() {
 	const { updateAvailable, updateServiceWorker } = useServiceWorker();

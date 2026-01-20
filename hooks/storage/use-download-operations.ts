@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import type { CachedSong } from "@/hooks/data/use-cache-manager";
 import { musicDB } from "@/lib/db";
-import type { DetailedSong } from "@/lib/types";
-import type { CachedSong } from "./use-cache-manager";
+import type { DetailedSong } from "@/types/entity";
 
 interface UseDownloadOperationsProps {
 	cachedSongs: Map<string, CachedSong>;

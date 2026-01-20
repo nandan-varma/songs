@@ -1,11 +1,11 @@
 import { Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
+import { ProgressiveImage } from "@/components/common/progressive-image";
 import { DownloadButton } from "@/components/download-button";
-import { ProgressiveImage } from "@/components/progressive-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { type DetailedSong, EntityType } from "@/lib/types";
+import { type DetailedSong, EntityType } from "@/types/entity";
 
 interface SongHeaderProps {
 	song: DetailedSong;

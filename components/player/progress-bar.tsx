@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback } from "react";
-import { formatTime } from "@/lib/time";
+import { formatTime } from "@/lib/utils/time";
 import { Slider } from "../ui/slider";
 
 interface ProgressBarProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import type { useGlobalSearch } from "@/hooks/queries";
+import type { useGlobalSearch } from "@/hooks/data/queries";
 import { AlbumsList } from "../albums-list";
 import { ArtistsList } from "../artists-list";
 import { PlaylistsList } from "../playlists-list";

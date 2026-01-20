@@ -8,9 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/contexts/offline-context";
 import { useAlbumFromQuery } from "@/hooks/pages/use-album";
-import { useOfflinePlayerActions } from "@/hooks/use-offline-player";
-import { EntityType } from "@/lib/types";
+import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");

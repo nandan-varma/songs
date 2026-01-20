@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { Suspense } from "react";
-import { ErrorBoundary } from "@/components/error-boundary";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import SearchContent from "@/components/search-content";
 import { useOffline } from "@/contexts/offline-context";

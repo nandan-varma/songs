@@ -4,12 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
+import { SearchBar } from "@/components/common/search-bar";
 import { HistoryList } from "@/components/history-list";
 import { PlaylistsList } from "@/components/playlists-list";
 import { GlobalSearchResults } from "@/components/search/global-search-results";
 import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
 import { SearchTabContent } from "@/components/search/search-tab-content";
-import { SearchBar } from "@/components/search-bar";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHistory } from "@/contexts/history-context";
@@ -20,7 +20,8 @@ import {
 	useSearchArtists,
 	useSearchPlaylists,
 	useSearchSongs,
-} from "@/hooks/queries";
+} from "@/hooks/data/queries";
+import { detailedSongToSong } from "@/lib/utils";
 import type {
 	AlbumSearchResult,
 	Artist,
@@ -28,8 +29,7 @@ import type {
 	DetailedSong,
 	Playlist,
 	PlaylistSearchResult,
-} from "@/lib/types";
-import { detailedSongToSong } from "@/lib/utils";
+} from "@/types/entity";
 
 // ============================================================================
 // TYPES & CONSTANTS

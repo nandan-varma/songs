@@ -48,21 +48,6 @@ function getItemTitle(item: HistoryItem): string {
 	}
 }
 
-function getItemHref(item: HistoryItem): string {
-	switch (item.type) {
-		case EntityType.SONG:
-			return `/song?id=${item.id}`;
-		case EntityType.ALBUM:
-			return `/album?id=${item.id}`;
-		case EntityType.ARTIST:
-			return `/artist?id=${item.id}`;
-		case EntityType.PLAYLIST:
-			return `/playlist?id=${item.id}`;
-		default:
-			return "#";
-	}
-}
-
 interface SubtitleProps {
 	item: HistoryItem;
 	router: ReturnType<typeof useRouter>;
@@ -225,7 +210,17 @@ export function HistoryList({ history }: HistoryListProps) {
 									)}
 								</div>
 								<div className="flex-1 min-w-0">
-									<Link href={{ pathname: getItemHref(item) }}>
+									<Link
+										href={
+											item.type === EntityType.SONG
+												? `/song?id=${item.id}`
+												: item.type === EntityType.ALBUM
+													? `/album?id=${item.id}`
+													: item.type === EntityType.ARTIST
+														? `/artist?id=${item.id}`
+														: `/playlist?id=${item.id}`
+										}
+									>
 										<h3 className="font-medium truncate hover:underline">
 											{getItemTitle(item)}
 										</h3>

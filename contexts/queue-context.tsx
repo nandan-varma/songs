@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
+} from "react";
 import { toast } from "sonner";
 import type {
 	DetailedAlbum,
@@ -9,15 +15,21 @@ import type {
 	DetailedSong,
 } from "@/types/entity";
 
+const SHUFFLE_STORAGE_KEY = "music-app-shuffle-enabled";
+
 interface QueueContextType {
 	queue: DetailedSong[];
 	currentIndex: number;
 	setCurrentIndex: (index: number) => void;
+	isShuffleEnabled: boolean;
+	toggleShuffle: () => void;
+	setShuffleEnabled: (enabled: boolean) => void;
 	addSong: (song: DetailedSong) => void;
 	addSongs: (songs: DetailedSong[]) => void;
 	addAlbum: (album: DetailedAlbum) => void;
 	addArtist: (artist: DetailedArtist) => void;
 	addPlaylist: (playlist: DetailedPlaylist) => void;
+	insertSongAt: (song: DetailedSong, index: number) => void;
 	removeSong: (index: number) => void;
 	reorderQueue: (fromIndex: number, toIndex: number) => void;
 	clearQueue: () => void;
@@ -25,9 +37,65 @@ interface QueueContextType {
 
 const QueueContext = createContext<QueueContextType | undefined>(undefined);
 
+function shuffleArray<T>(array: T[]): T[] {
+	const shuffled = [...array];
+	for (let i = shuffled.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+	}
+	return shuffled;
+}
+
 export function QueueProvider({ children }: { children: React.ReactNode }) {
 	const [queue, setQueue] = useState<DetailedSong[]>([]);
 	const [currentIndex, setCurrentIndexState] = useState(0);
+	const [originalQueue, setOriginalQueue] = useState<DetailedSong[]>([]);
+	const [isShuffleEnabled, setIsShuffleEnabledState] = useState(false);
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		try {
+			const stored = localStorage.getItem(SHUFFLE_STORAGE_KEY);
+			if (stored) {
+				setIsShuffleEnabledState(stored === "true");
+			}
+		} catch {
+			// Silent error
+		}
+	}, []);
+
+	const setShuffleEnabled = useCallback(
+		(enabled: boolean) => {
+			setIsShuffleEnabledState((prev) => {
+				if (prev === enabled) return prev;
+
+				setQueue((currentQueue) => {
+					if (enabled && currentQueue.length > 0) {
+						const currentSong = currentQueue[0];
+						const remainingSongs = currentQueue.slice(1);
+						const shuffled = shuffleArray(remainingSongs);
+						setOriginalQueue(currentQueue);
+						return [currentSong, ...shuffled];
+					} else if (!enabled && originalQueue.length > 0) {
+						const result = originalQueue;
+						setOriginalQueue([]);
+						return result;
+					}
+					return currentQueue;
+				});
+
+				if (typeof window !== "undefined") {
+					localStorage.setItem(SHUFFLE_STORAGE_KEY, String(enabled));
+				}
+				return enabled;
+			});
+		},
+		[originalQueue],
+	);
+
+	const toggleShuffle = useCallback(() => {
+		setShuffleEnabled(!isShuffleEnabled);
+	}, [isShuffleEnabled, setShuffleEnabled]);
 
 	const setCurrentIndex = useCallback((index: number) => {
 		setCurrentIndexState(index);
@@ -36,7 +104,6 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 	const addSong = useCallback((song: DetailedSong) => {
 		try {
 			setQueue((prev) => {
-				// Check if song already exists in queue
 				const isDuplicate = prev.some((s) => s.id === song.id);
 				if (isDuplicate) {
 					toast.info(`"${song.name}" is already in queue`);
@@ -52,7 +119,6 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 	const addSongs = useCallback((songs: DetailedSong[]) => {
 		try {
 			setQueue((prev) => {
-				// Filter out duplicates
 				const existingIds = new Set(prev.map((s) => s.id));
 				const newSongs = songs.filter((song) => !existingIds.has(song.id));
 
@@ -100,6 +166,27 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		}
 	}, []);
 
+	const insertSongAt = useCallback(
+		(song: DetailedSong, index: number) => {
+			try {
+				setQueue((prev) => {
+					const newQueue = [...prev];
+					newQueue.splice(index, 0, song);
+					return newQueue;
+				});
+
+				if (index <= currentIndex) {
+					setCurrentIndexState((prev) => prev + 1);
+				}
+
+				toast.success(`Playing "${song.name}" next`);
+			} catch (_error) {
+				toast.error("Failed to play next");
+			}
+		},
+		[currentIndex],
+	);
+
 	const removeSong = useCallback(
 		(index: number) => {
 			try {
@@ -134,7 +221,6 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 				return newQueue;
 			});
 
-			// Update current index if affected
 			setCurrentIndexState((prevIndex) => {
 				if (prevIndex === fromIndex) {
 					return toIndex;
@@ -156,6 +242,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		try {
 			setQueue([]);
 			setCurrentIndexState(0);
+			setOriginalQueue([]);
 		} catch (_error) {
 			toast.error("Failed to clear queue");
 		}
@@ -165,11 +252,15 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		queue,
 		currentIndex,
 		setCurrentIndex,
+		isShuffleEnabled,
+		toggleShuffle,
+		setShuffleEnabled,
 		addSong,
 		addSongs,
 		addAlbum,
 		addArtist,
 		addPlaylist,
+		insertSongAt,
 		removeSong,
 		reorderQueue,
 		clearQueue,
@@ -193,5 +284,5 @@ export function useQueue() {
 	if (context === undefined) {
 		throw new Error("useQueue must be used within a QueueProvider");
 	}
-	return { queue: context.queue, currentIndex: context.currentIndex };
+	return context;
 }

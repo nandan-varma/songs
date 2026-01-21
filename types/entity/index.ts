@@ -160,6 +160,14 @@ export interface PlaylistSearchResult {
 	explicitContent: boolean;
 }
 
+export interface LocalPlaylist {
+	id: string;
+	name: string;
+	songs: DetailedSong[];
+	createdAt: number;
+	updatedAt: number;
+}
+
 export interface DetailedSong {
 	id: string;
 	name: string;

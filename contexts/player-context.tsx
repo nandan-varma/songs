@@ -40,7 +40,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	const [currentTime, setCurrentTime] = useState(0);
 	const [duration, setDuration] = useState(0);
 
-	const { queue, currentIndex } = useQueueState();
+	const { queue, currentIndex, isShuffleEnabled } = useQueueState();
 	const {
 		addSong,
 		addSongs,
@@ -241,8 +241,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 		() => ({
 			queue,
 			currentIndex,
+			isShuffleEnabled,
 		}),
-		[queue, currentIndex],
+		[queue, currentIndex, isShuffleEnabled],
 	);
 
 	const actionsValue = useMemo<PlayerActions>(

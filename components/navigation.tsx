@@ -1,6 +1,13 @@
 "use client";
 
-import { Download, Music, Smartphone, Wifi, WifiOff } from "lucide-react";
+import {
+	Download,
+	Library,
+	Music,
+	Smartphone,
+	Wifi,
+	WifiOff,
+} from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,6 +81,14 @@ export function Navigation() {
 								{isDownloading && (
 									<div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary rounded animate-pulse" />
 								)}
+							</Button>
+						</Link>
+
+						<Link href="/library" aria-label="Go to library">
+							<Button variant="ghost" size="sm" aria-label="Library">
+								<Library className="h-4 w-4" />
+								<span className="hidden sm:inline ml-2">Library</span>
+								<span className="sr-only">Library</span>
 							</Button>
 						</Link>
 					</div>

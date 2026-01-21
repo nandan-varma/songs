@@ -6,6 +6,7 @@ import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { Navigation } from "@/components/navigation";
 import { ServiceWorkerManager } from "@/components/offline/service-worker-manager";
+import { KeyboardShortcutsManager } from "@/components/ui/keyboard-shortcuts-manager";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "./providers";
 
@@ -100,6 +101,7 @@ export default function RootLayout({
 						<Navigation />
 						<BreadcrumbNav />
 						<main className="pb-32 md:pb-36">{children}</main>
+						<KeyboardShortcutsManager />
 						<ErrorBoundary context="AudioPlayer">
 							<AudioPlayer />
 						</ErrorBoundary>

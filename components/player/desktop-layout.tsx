@@ -1,5 +1,6 @@
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
+import { PlaybackMenu } from "./playback-menu";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
 import { SongInfo } from "./song-info";
@@ -47,13 +48,16 @@ export function DesktopLayout({
 			<SongInfo currentSong={currentSong} />
 
 			<div className="flex flex-col items-center gap-3 flex-1 max-w-2xl">
-				<PlaybackControls
-					isPlaying={isPlaying}
-					queueLength={queue.length}
-					onTogglePlayPause={onTogglePlayPause}
-					onPlayPrevious={onPlayPrevious}
-					onPlayNext={onPlayNext}
-				/>
+				<div className="flex items-center gap-4">
+					<PlaybackMenu />
+					<PlaybackControls
+						isPlaying={isPlaying}
+						queueLength={queue.length}
+						onTogglePlayPause={onTogglePlayPause}
+						onPlayPrevious={onPlayPrevious}
+						onPlayNext={onPlayNext}
+					/>
+				</div>
 
 				<ProgressBar
 					currentTime={currentTime}

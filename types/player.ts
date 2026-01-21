@@ -20,6 +20,7 @@ export interface PlayerState {
 export interface QueueState {
 	queue: DetailedSong[];
 	currentIndex: number;
+	isShuffleEnabled: boolean;
 }
 
 export interface PlayerActions {

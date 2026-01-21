@@ -1,6 +1,7 @@
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
+import { PlaybackMenu } from "./playback-menu";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
 import { VolumeControl } from "./volume-control";
@@ -89,6 +90,7 @@ export function MobileLayout({
 			/>
 
 			<div className="flex items-center justify-between">
+				<PlaybackMenu />
 				<PlaybackControls
 					isPlaying={isPlaying}
 					queueLength={queue.length}

@@ -1,11 +1,12 @@
 "use client";
 
-import { Check, Download, Loader2, Music, Play, Plus } from "lucide-react";
+import { Download, Loader2, Music, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
+import { SongActionMenu } from "@/components/common/song-action-menu";
 import { useDownloadsActions } from "@/contexts/downloads-context";
-import { EntityType, type Song } from "@/types/entity";
+import type { Song } from "@/types/entity";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
@@ -68,7 +69,6 @@ export const SongItem = memo(function SongItem({
 							<ProgressiveImage
 								images={song.image}
 								alt={song.title}
-								entityType={EntityType.SONG}
 								rounded="default"
 							/>
 						) : (
@@ -129,12 +129,13 @@ export const SongItem = memo(function SongItem({
 								className={isDownloaded ? "text-green-600" : ""}
 							>
 								{isDownloaded ? (
-									<Check className="h-4 w-4" />
+									<Download className="h-4 w-4" />
 								) : (
 									<Download className="h-4 w-4" />
 								)}
 							</Button>
 						)}
+						<SongActionMenu song={song} />
 					</div>
 				</div>
 			</CardContent>

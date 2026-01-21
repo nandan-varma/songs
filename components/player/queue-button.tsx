@@ -87,7 +87,10 @@ function QueueItem({
 				<div className="text-xs text-muted-foreground truncate">
 					{song.artists?.primary?.map((artist, idx) => (
 						<span key={artist.id}>
-							<Link href={`/artist?id=${artist.id}`} className="hover:underline">
+							<Link
+								href={`/artist?id=${artist.id}`}
+								className="hover:underline"
+							>
 								{artist.name}
 							</Link>
 							{idx < song.artists.primary.length - 1 && ", "}

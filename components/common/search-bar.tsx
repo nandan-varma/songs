@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Search } from "lucide-react";
+import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

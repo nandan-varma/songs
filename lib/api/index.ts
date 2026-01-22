@@ -14,6 +14,14 @@ import type {
 const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_URL ?? "https://saavn-api.nandanvarma.com/api";
 
+const ENTITY_ID_REGEX = /^[a-zA-Z0-9-]{5,50}$/;
+
+function validateEntityId(id: string): void {
+	if (!ENTITY_ID_REGEX.test(id)) {
+		throw new Error(`Invalid entity ID format: ${id}`);
+	}
+}
+
 /**
  * Internal helper to fetch and decode API responses
  * @internal
@@ -128,8 +136,9 @@ export async function searchPlaylists(
 export async function getSongById(
 	id: string,
 ): Promise<ApiResponse<DetailedSong[]>> {
+	validateEntityId(id);
 	return fetchAndDecode<ApiResponse<DetailedSong[]>>(
-		`${API_BASE_URL}/songs/${id}`,
+		`${API_BASE_URL}/songs/${encodeURIComponent(id)}`,
 		"Failed to fetch song",
 	);
 }
@@ -158,8 +167,9 @@ export async function getSongSuggestions(
 	id: string,
 	limit = 10,
 ): Promise<ApiResponse<DetailedSong[]>> {
+	validateEntityId(id);
 	return fetchAndDecode<ApiResponse<DetailedSong[]>>(
-		`${API_BASE_URL}/songs/${id}/suggestions?limit=${limit}`,
+		`${API_BASE_URL}/songs/${encodeURIComponent(id)}/suggestions?limit=${limit}`,
 		"Failed to fetch song suggestions",
 	);
 }
@@ -172,8 +182,9 @@ export async function getSongSuggestions(
 export async function getAlbumById(
 	id: string,
 ): Promise<ApiResponse<DetailedAlbum>> {
+	validateEntityId(id);
 	return fetchAndDecode<ApiResponse<DetailedAlbum>>(
-		`${API_BASE_URL}/albums?id=${id}`,
+		`${API_BASE_URL}/albums?id=${encodeURIComponent(id)}`,
 		"Failed to fetch album",
 	);
 }
@@ -194,7 +205,8 @@ export async function getArtistById(
 		sortOrder?: "asc" | "desc";
 	},
 ): Promise<ApiResponse<DetailedArtist>> {
-	const params = new URLSearchParams({ id });
+	validateEntityId(id);
+	const params = new URLSearchParams({ id: encodeURIComponent(id) });
 
 	if (options?.page !== undefined)
 		params.append("page", options.page.toString());
@@ -225,8 +237,9 @@ export async function getArtistSongs(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<ApiResponse<{ total: number; songs: DetailedSong[] }>> {
+	validateEntityId(id);
 	return fetchAndDecode<ApiResponse<{ total: number; songs: DetailedSong[] }>>(
-		`${API_BASE_URL}/artists/${id}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+		`${API_BASE_URL}/artists/${encodeURIComponent(id)}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
 		"Failed to fetch artist songs",
 	);
 }
@@ -245,10 +258,11 @@ export async function getArtistAlbums(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<ApiResponse<{ total: number; albums: DetailedAlbum[] }>> {
+	validateEntityId(id);
 	return fetchAndDecode<
 		ApiResponse<{ total: number; albums: DetailedAlbum[] }>
 	>(
-		`${API_BASE_URL}/artists/${id}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+		`${API_BASE_URL}/artists/${encodeURIComponent(id)}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
 		"Failed to fetch artist albums",
 	);
 }
@@ -265,8 +279,9 @@ export async function getPlaylistById(
 	page = 0,
 	limit = 10,
 ): Promise<ApiResponse<DetailedPlaylist>> {
+	validateEntityId(id);
 	return fetchAndDecode<ApiResponse<DetailedPlaylist>>(
-		`${API_BASE_URL}/playlists?id=${id}&page=${page}&limit=${limit}`,
+		`${API_BASE_URL}/playlists?id=${encodeURIComponent(id)}&page=${page}&limit=${limit}`,
 		"Failed to fetch playlist",
 	);
 }

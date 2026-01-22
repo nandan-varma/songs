@@ -8,6 +8,7 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
+import { logError } from "@/lib/utils/logger";
 import type {
 	DetailedAlbum,
 	DetailedArtist,
@@ -114,7 +115,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 				}
 				return [...prev, song];
 			});
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.addSong", error);
 			toast.error("Failed to add song to queue");
 		}
 	}, []);
@@ -139,7 +141,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 
 				return [...prev, ...newSongs];
 			});
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.addSongs", error);
 			toast.error("Failed to add songs to queue");
 		}
 	}, []);
@@ -147,7 +150,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 	const addAlbum = useCallback((album: DetailedAlbum) => {
 		try {
 			setQueue((prev) => [...prev, ...album.songs]);
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.addAlbum", error);
 			toast.error("Failed to add album to queue");
 		}
 	}, []);
@@ -156,7 +160,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 		try {
 			const songs = [...(artist.topSongs || []), ...(artist.singles || [])];
 			setQueue((prev) => [...prev, ...songs]);
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.addArtist", error);
 			toast.error("Failed to add artist to queue");
 		}
 	}, []);
@@ -164,7 +169,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 	const addPlaylist = useCallback((playlist: DetailedPlaylist) => {
 		try {
 			setQueue((prev) => [...prev, ...playlist.songs]);
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.addPlaylist", error);
 			toast.error("Failed to add playlist to queue");
 		}
 	}, []);
@@ -183,7 +189,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 				}
 
 				toast.success(`Playing "${song.name}" next`);
-			} catch (_error) {
+			} catch (error) {
+				logError("QueueContext.insertSongAt", error);
 				toast.error("Failed to play next");
 			}
 		},
@@ -206,7 +213,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 					}
 					return newQueue;
 				});
-			} catch (_error) {
+			} catch (error) {
+				logError("QueueContext.removeSong", error);
 				toast.error("Failed to remove song from queue");
 			}
 		},
@@ -238,7 +246,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 				}
 				return prevIndex;
 			});
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.reorderQueue", error);
 			toast.error("Failed to reorder queue");
 		}
 	}, []);
@@ -248,7 +257,8 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 			setQueue([]);
 			setCurrentIndexState(0);
 			setOriginalQueue([]);
-		} catch (_error) {
+		} catch (error) {
+			logError("QueueContext.clearQueue", error);
 			toast.error("Failed to clear queue");
 		}
 	}, []);

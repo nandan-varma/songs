@@ -28,7 +28,6 @@ export function useDownloadOperations({
 			setIsDownloading(true);
 
 			try {
-				// Get the highest quality download URL
 				const downloadUrl =
 					song.downloadUrl.find((url) => url.quality === "320kbps") ||
 					song.downloadUrl[0];
@@ -37,7 +36,6 @@ export function useDownloadOperations({
 					throw new Error("No download URL available");
 				}
 
-				// Fetch the audio file
 				const response = await fetch(downloadUrl.url);
 
 				if (!response.ok) {
@@ -46,11 +44,9 @@ export function useDownloadOperations({
 
 				const blob = await response.blob();
 
-				// Save to IndexedDB
 				await musicDB.saveSong(song);
 				await musicDB.saveAudioBlob(song.id, blob);
 
-				// Cache images
 				for (const img of song.image) {
 					try {
 						const imgResponse = await fetch(img.url);
@@ -62,12 +58,11 @@ export function useDownloadOperations({
 								{ songId: song.id, quality: img.quality },
 							);
 						}
-					} catch (_imgError) {
+					} catch {
 						// Silent error handling for image caching
 					}
 				}
 
-				// Add to cache
 				const cachedSong: CachedSong = {
 					song,
 					blob,
@@ -75,7 +70,9 @@ export function useDownloadOperations({
 				};
 
 				addToCache(song.id, cachedSong);
-			} catch (_error) {
+
+				await musicDB.evictOldestIfNeeded();
+			} catch {
 				toast.error(`Failed to download ${song.name}`);
 			} finally {
 				setIsDownloading(false);
@@ -87,7 +84,6 @@ export function useDownloadOperations({
 	const removeSong = useCallback(
 		(songId: string) => {
 			removeFromCache(songId);
-			// Remove from IndexedDB
 			musicDB.deleteSong(songId);
 		},
 		[removeFromCache],

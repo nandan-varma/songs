@@ -36,7 +36,7 @@ async function evictOldest(cacheName, maxItems) {
 }
 
 // Helper: Evict by size when over limit
-async function manageCacheSize(cacheName) {
+async function _manageCacheSize(cacheName) {
 	const size = await getCacheSize(cacheName);
 	if (size > MAX_CACHE_SIZE) {
 		await evictOldest(cacheName, Math.floor(MAX_ITEMS_PER_CACHE / 2));

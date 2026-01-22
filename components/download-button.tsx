@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Check, Download } from "lucide-react";
+import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import { useDownloadsActions } from "@/contexts/downloads-context";

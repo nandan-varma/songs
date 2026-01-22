@@ -19,7 +19,7 @@ interface DownloadsState {
 interface DownloadsActions {
 	downloadSong: (song: DetailedSong) => Promise<void>;
 	removeSong: (songId: string) => void;
-	getSongBlob: (songId: string) => Blob | null;
+	getSongBlob: (songId: string) => Promise<Blob | null>;
 	isSongCached: (songId: string) => boolean;
 	saveToDevice: () => Promise<void>;
 }

@@ -1,11 +1,13 @@
-import { motion } from "motion/react";
 import { Music, Play, Plus } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
+import { memo } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { DownloadButton } from "@/components/download-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAnimationPreferences } from "@/hooks/ui/use-animation-preferences";
 import { type DetailedSong, EntityType } from "@/types/entity";
 
 interface SongHeaderProps {
@@ -17,12 +19,18 @@ interface SongHeaderProps {
 /**
  * Displays song hero section with album art, metadata, and action buttons
  */
-export function SongHeader({ song, onPlay, onAddToQueue }: SongHeaderProps) {
+export const SongHeader = memo(function SongHeader({
+	song,
+	onPlay,
+	onAddToQueue,
+}: SongHeaderProps) {
+	const { getTransition } = useAnimationPreferences();
+
 	return (
 		<motion.div
 			initial="hidden"
 			animate="show"
-			transition={{ staggerChildren: 0.1 }}
+			transition={getTransition({ staggerChildren: 0.1 }, { duration: 0 })}
 		>
 			<Card>
 				<CardContent className="p-6">
@@ -154,4 +162,4 @@ export function SongHeader({ song, onPlay, onAddToQueue }: SongHeaderProps) {
 			</Card>
 		</motion.div>
 	);
-}
+});

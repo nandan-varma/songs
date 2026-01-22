@@ -14,9 +14,20 @@ export function useKeyboardShortcuts() {
 	} = usePlayer();
 
 	const volumeRef = useRef(volume);
+	const currentTimeRef = useRef(currentTime);
+	const durationRef = useRef(duration);
+
 	useEffect(() => {
 		volumeRef.current = volume;
 	}, [volume]);
+
+	useEffect(() => {
+		currentTimeRef.current = currentTime;
+	}, [currentTime]);
+
+	useEffect(() => {
+		durationRef.current = duration;
+	}, [duration]);
 
 	useEffect(() => {
 		function handleKeyDown(e: KeyboardEvent) {
@@ -35,17 +46,17 @@ export function useKeyboardShortcuts() {
 				}
 				case "ArrowRight": {
 					if (e.shiftKey) {
-						seekTo(Math.min(duration, currentTime + 10));
+						seekTo(Math.min(durationRef.current, currentTimeRef.current + 10));
 					} else {
-						seekTo(Math.min(duration, currentTime + 5));
+						seekTo(Math.min(durationRef.current, currentTimeRef.current + 5));
 					}
 					break;
 				}
 				case "ArrowLeft": {
 					if (e.shiftKey) {
-						seekTo(Math.max(0, currentTime - 10));
+						seekTo(Math.max(0, currentTimeRef.current - 10));
 					} else {
-						seekTo(Math.max(0, currentTime - 5));
+						seekTo(Math.max(0, currentTimeRef.current - 5));
 					}
 					break;
 				}
@@ -76,13 +87,5 @@ export function useKeyboardShortcuts() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [
-		togglePlayPause,
-		playNext,
-		playPrevious,
-		seekTo,
-		setVolume,
-		currentTime,
-		duration,
-	]);
+	}, [togglePlayPause, playNext, playPrevious, seekTo, setVolume]);
 }

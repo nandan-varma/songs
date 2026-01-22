@@ -3,17 +3,20 @@ import { logAudioError } from "@/lib/utils/audio-error";
 import {
 	AUDIO_CHECK_INTERVAL_MS,
 	type AudioEventCallbacks,
+	TIMEUPDATE_THROTTLE_MS,
 } from "@/types/player";
 
 /**
  * Sets up HTML5 audio element event listeners
  * Polls for audio element existence and manages cleanup
+ * Implements throttled timeupdate for better performance
  */
 export function useAudioEventListeners(
 	audioRef: RefObject<HTMLAudioElement | null>,
 	handlers: AudioEventCallbacks,
 ) {
 	const handlersRef = useRef(handlers);
+	const lastTimeUpdateRef = useRef<number>(0);
 
 	useEffect(() => {
 		handlersRef.current = handlers;
@@ -30,10 +33,17 @@ export function useAudioEventListeners(
 			const audio = audioRef.current;
 			if (!audio) return false;
 
-			const handleTimeUpdate = () => {
-				if (isActive) {
+			const throttledTimeUpdate = () => {
+				if (!isActive) return;
+				const now = performance.now();
+				if (now - lastTimeUpdateRef.current >= TIMEUPDATE_THROTTLE_MS) {
+					lastTimeUpdateRef.current = now;
 					handlersRef.current.onTimeUpdate(audio.currentTime);
 				}
+			};
+
+			const handleTimeUpdate = () => {
+				throttledTimeUpdate();
 			};
 
 			const handleDurationChange = () => {

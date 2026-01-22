@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Heart } from "lucide-react";
+import { motion } from "motion/react";
+import { memo } from "react";
 import { useFavorites } from "@/contexts/favorites-context";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
@@ -12,7 +13,7 @@ interface FavoriteButtonProps {
 	variant?: "ghost" | "outline" | "default";
 }
 
-export function FavoriteButton({
+export const FavoriteButton = memo(function FavoriteButton({
 	song,
 	size = "default",
 	variant = "ghost",
@@ -49,4 +50,4 @@ export function FavoriteButton({
 			</Button>
 		</motion.div>
 	);
-}
+});

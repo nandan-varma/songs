@@ -3,6 +3,7 @@
  * Central interface for all storage operations (localStorage, IndexedDB, remote API)
  */
 
+import { logInfo } from "@/lib/utils/logger";
 import {
 	type ExportData,
 	INDEXED_DB,
@@ -55,8 +56,9 @@ class StorageManager {
 					continue;
 				}
 
-				console.log(
-					`Migrating storage from ${migration.fromVersion} to ${migration.toVersion}`,
+				logInfo(
+					"StorageMigration",
+					`Migrating from ${migration.fromVersion} to ${migration.toVersion}`,
 				);
 			}
 
@@ -522,8 +524,9 @@ class StorageManager {
 				continue;
 			}
 
-			console.log(
-				`Migrating storage from ${migration.fromVersion} to ${migration.toVersion}`,
+			logInfo(
+				"StorageMigration",
+				`Migrating from ${migration.fromVersion} to ${migration.toVersion}`,
 			);
 
 			currentVersion = migration.toVersion;

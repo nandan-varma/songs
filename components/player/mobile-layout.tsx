@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
@@ -27,7 +28,7 @@ interface MobileLayoutProps {
  * Mobile-optimized player layout
  * Single responsibility: Mobile UI composition
  */
-export function MobileLayout({
+export const MobileLayout = memo(function MobileLayout({
 	currentSong,
 	isPlaying,
 	volume,
@@ -103,4 +104,4 @@ export function MobileLayout({
 			</div>
 		</div>
 	);
-}
+});

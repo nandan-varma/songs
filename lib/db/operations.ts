@@ -10,6 +10,38 @@ export interface CachedSong {
 	lastAccessed: number;
 }
 
+const MAX_CACHED_SONGS = 100;
+const MAX_STORAGE_MB = 500;
+const EVICTION_BATCH_PERCENT = 0.1;
+
+function getStorageUsageMB(usage: number): number {
+	return usage / (1024 * 1024);
+}
+
+async function getStorageEstimate(): Promise<{
+	usage: number;
+	quota: number;
+	usageMB: number;
+	quotaMB: number;
+}> {
+	if (
+		typeof navigator !== "undefined" &&
+		"storage" in navigator &&
+		"estimate" in navigator.storage
+	) {
+		const estimate = await navigator.storage.estimate();
+		const usage = estimate.usage || 0;
+		const quota = estimate.quota || 0;
+		return {
+			usage,
+			quota,
+			usageMB: getStorageUsageMB(usage),
+			quotaMB: getStorageUsageMB(quota),
+		};
+	}
+	return { usage: 0, quota: 0, usageMB: 0, quotaMB: 0 };
+}
+
 /**
  * Handles song metadata operations
  * Single responsibility: Song CRUD operations
@@ -51,10 +83,7 @@ export class SongOperations {
 			request.onsuccess = () => {
 				const song = request.result as CachedSong | undefined;
 				if (song) {
-					// Update last accessed time without blocking
-					this.updateLastAccessed(songId).catch(() => {
-						// Silent error - non-critical path
-					});
+					this.updateLastAccessed(songId).catch(() => {});
 				}
 				resolve(song || null);
 			};
@@ -118,6 +147,43 @@ export class SongOperations {
 			request.onsuccess = () => resolve();
 			request.onerror = () => reject(request.error);
 		});
+	}
+
+	async evictOldestIfNeeded(): Promise<void> {
+		const { usageMB, quotaMB } = await getStorageEstimate();
+		const songs = await this.getAllSongs();
+
+		const needsEvictionByCount = songs.length >= MAX_CACHED_SONGS;
+		const needsEvictionByStorage = quotaMB > 0 && usageMB >= MAX_STORAGE_MB;
+
+		if (!needsEvictionByCount && !needsEvictionByStorage) {
+			return;
+		}
+
+		const sortedByAccess = [...songs].sort(
+			(a, b) => a.lastAccessed - b.lastAccessed,
+		);
+
+		const evictCount = Math.ceil(songs.length * EVICTION_BATCH_PERCENT);
+		const toEvict = sortedByAccess.slice(0, evictCount);
+
+		for (const song of toEvict) {
+			await this.deleteSong(song.id);
+		}
+	}
+
+	async getStorageInfo(): Promise<{
+		songCount: number;
+		usageMB: number;
+		quotaMB: number;
+	}> {
+		const songs = await this.getAllSongs();
+		const { usageMB, quotaMB } = await getStorageEstimate();
+		return {
+			songCount: songs.length,
+			usageMB,
+			quotaMB,
+		};
 	}
 }
 

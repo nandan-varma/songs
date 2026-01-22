@@ -64,7 +64,7 @@ class StorageManager {
 		}
 	}
 
-	private versionCompare(v1: string, v2: string): number {
+	public versionCompare(v1: string, v2: string): number {
 		const a = v1.split(".").map(Number);
 		const b = v2.split(".").map(Number);
 		for (let i = 0; i < Math.max(a.length, b.length); i++) {
@@ -455,8 +455,15 @@ class StorageManager {
 			indexedDBData[dbKey] = {};
 
 			for (const storeKey of Object.values(dbConfig.STORES) as string[]) {
-				const items = await this.idbGetAll<JsonValue>(dbKey, storeKey);
-				indexedDBData[dbKey][storeKey] = items;
+				try {
+					const items = await this.idbGetAll<JsonValue>(dbKey, storeKey);
+					indexedDBData[dbKey][storeKey] = items;
+				} catch {
+					console.warn(
+						`Failed to export store "${storeKey}" from database "${dbKey}", store may not exist yet`,
+					);
+					indexedDBData[dbKey][storeKey] = [];
+				}
 			}
 		}
 

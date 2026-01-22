@@ -3,6 +3,7 @@
  * Tools for migrating data between versions or exporting/importing
  */
 
+import type { Migration } from "./config";
 import {
 	type ExportData,
 	LOCAL_STORAGE_KEYS,
@@ -24,6 +25,37 @@ const LEGACY_KEYS = {
 };
 
 /**
+ * Version-specific migrations
+ */
+const MIGRATIONS: Migration[] = [
+	{
+		fromVersion: "0.0.0",
+		toVersion: "1.0.0",
+		migrate: (data: unknown): unknown => {
+			const appData = data as Record<string, unknown>;
+			if (appData["music-app-queue"]) {
+				try {
+					const queueData = JSON.parse(appData["music-app-queue"] as string);
+					if (queueData.songs && Array.isArray(queueData.songs)) {
+						queueData.songs = queueData.songs.map(
+							(song: Record<string, unknown>) => ({
+								...song,
+								migrated: true,
+								migratedAt: Date.now(),
+							}),
+						);
+					}
+					return queueData;
+				} catch {
+					return appData["music-app-queue"];
+				}
+			}
+			return data;
+		},
+	},
+];
+
+/**
  * Migrate legacy localStorage keys to new prefixed keys
  */
 export function migrateLegacyKeys(): void {
@@ -34,7 +66,6 @@ export function migrateLegacyKeys(): void {
 		if (value && !localStorage.getItem(newKey)) {
 			localStorage.setItem(newKey, value);
 		}
-		// Don't remove legacy key immediately - let users verify migration
 	}
 }
 
@@ -80,8 +111,10 @@ export function clearLocalStorageOnly(): void {
  * Clear only IndexedDB (keeps localStorage)
  */
 export async function clearIndexedDBOnly(): Promise<void> {
-	await storage.clearAll(); // This clears both
-	// Note: We need to restore localStorage after clearAll
+	const idbKeys = Object.keys(storage.getBackend("MAIN") || {});
+	for (const key of idbKeys) {
+		await storage.clear(key);
+	}
 }
 
 /**
@@ -134,12 +167,35 @@ export async function runFullMigration(): Promise<{
 		return { version: currentVersion, migrated: false };
 	}
 
-	// Migrate legacy keys
 	migrateLegacyKeys();
 
-	// Run any version-specific migrations here in the future
+	let migratedData: Record<string, unknown> = {};
 
-	// Update version
+	try {
+		const allData = await storage.exportData();
+		for (const [key, value] of Object.entries(allData.localStorage)) {
+			migratedData[key] = value;
+		}
+	} catch {
+		console.warn("Could not export data for migration");
+	}
+
+	for (const migration of MIGRATIONS) {
+		if (storage.versionCompare(currentVersion, migration.fromVersion) <= 0) {
+			continue;
+		}
+		if (storage.versionCompare(migration.toVersion, STORAGE_VERSION) > 0) {
+			continue;
+		}
+
+		console.log(
+			`Running migration from ${migration.fromVersion} to ${migration.toVersion}`,
+		);
+		migratedData =
+			(migration.migrate(migratedData) as Record<string, unknown>) ||
+			migratedData;
+	}
+
 	storage.bumpVersion();
 
 	return { version: STORAGE_VERSION, migrated: true };
@@ -164,4 +220,20 @@ export function logStorageStatus(): void {
 		console.log("Storage Estimate:", estimate);
 		console.groupEnd();
 	});
+}
+
+/**
+ * Register version-specific migrations
+ */
+export function registerMigrations(migrations: Migration[]): void {
+	for (const migration of migrations) {
+		storage.addMigration(migration);
+	}
+}
+
+/**
+ * Get list of all registered migrations
+ */
+export function getRegisteredMigrations(): Migration[] {
+	return [...MIGRATIONS];
 }

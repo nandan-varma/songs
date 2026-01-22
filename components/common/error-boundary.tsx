@@ -44,7 +44,7 @@ export class ErrorBoundary extends React.Component<
 		return { hasError: true, error };
 	}
 
-	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		const context = this.props.context || "Component";
 
 		// Log error with context
@@ -73,7 +73,7 @@ export class ErrorBoundary extends React.Component<
 		// }
 	}
 
-	componentDidUpdate(prevProps: ErrorBoundaryProps) {
+	override componentDidUpdate(prevProps: ErrorBoundaryProps) {
 		// Auto-reset if resetKeys change
 		if (this.state.hasError && this.props.resetKeys) {
 			const prevKeys = prevProps.resetKeys || [];
@@ -196,7 +196,7 @@ export class ErrorBoundary extends React.Component<
 		};
 	}
 
-	render() {
+	override render() {
 		if (this.state.hasError) {
 			if (this.props.fallback) {
 				const FallbackComponent = this.props.fallback;

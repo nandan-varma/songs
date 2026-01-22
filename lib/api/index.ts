@@ -11,13 +11,19 @@ import type {
 	SearchResponse,
 } from "@/types/api";
 
-const API_BASE_URL = "https://saavn-api.nandanvarma.com/api";
+const API_BASE_URL =
+	process.env.NEXT_PUBLIC_API_URL ?? "https://saavn-api.nandanvarma.com/api";
 
+/**
+ * Internal helper to fetch and decode API responses
+ * @internal
+ */
 async function fetchAndDecode<T>(
 	url: string,
 	errorMessage: string,
+	options?: { signal?: AbortSignal },
 ): Promise<T> {
-	const response = await fetch(url);
+	const response = await fetch(url, { signal: options?.signal });
 	if (!response.ok) {
 		throw new Error(errorMessage);
 	}
@@ -25,15 +31,30 @@ async function fetchAndDecode<T>(
 	return data as T;
 }
 
-// Global search
-export async function searchMusic(query: string): Promise<SearchResponse> {
+/**
+ * Performs a global search across all content types
+ * @param query - The search query string
+ * @param options - Optional fetch options (e.g., abort signal)
+ * @returns Promise resolving to combined search results
+ */
+export async function searchMusic(
+	query: string,
+	options?: { signal?: AbortSignal },
+): Promise<SearchResponse> {
 	return fetchAndDecode<SearchResponse>(
 		`${API_BASE_URL}/search?query=${encodeURIComponent(query)}`,
 		"Failed to fetch search results",
+		options,
 	);
 }
 
-// Paginated search
+/**
+ * Searches for songs with pagination
+ * @param query - The search query string
+ * @param page - Page number (0-indexed, default: 0)
+ * @param limit - Number of results per page (default: 10)
+ * @returns Promise resolving to paginated song results
+ */
 export async function searchSongs(
 	query: string,
 	page = 0,
@@ -45,6 +66,13 @@ export async function searchSongs(
 	);
 }
 
+/**
+ * Searches for albums with pagination
+ * @param query - The search query string
+ * @param page - Page number (0-indexed, default: 0)
+ * @param limit - Number of results per page (default: 10)
+ * @returns Promise resolving to paginated album results
+ */
 export async function searchAlbums(
 	query: string,
 	page = 0,
@@ -56,6 +84,13 @@ export async function searchAlbums(
 	);
 }
 
+/**
+ * Searches for artists with pagination
+ * @param query - The search query string
+ * @param page - Page number (0-indexed, default: 0)
+ * @param limit - Number of results per page (default: 10)
+ * @returns Promise resolving to paginated artist results
+ */
 export async function searchArtists(
 	query: string,
 	page = 0,
@@ -67,6 +102,13 @@ export async function searchArtists(
 	);
 }
 
+/**
+ * Searches for playlists with pagination
+ * @param query - The search query string
+ * @param page - Page number (0-indexed, default: 0)
+ * @param limit - Number of results per page (default: 10)
+ * @returns Promise resolving to paginated playlist results
+ */
 export async function searchPlaylists(
 	query: string,
 	page = 0,
@@ -78,7 +120,11 @@ export async function searchPlaylists(
 	);
 }
 
-// Songs
+/**
+ * Fetches a single song by its ID
+ * @param id - The unique song identifier
+ * @returns Promise resolving to song details
+ */
 export async function getSongById(
 	id: string,
 ): Promise<ApiResponse<DetailedSong[]>> {
@@ -88,6 +134,11 @@ export async function getSongById(
 	);
 }
 
+/**
+ * Fetches multiple songs by their IDs
+ * @param ids - Array of song identifiers
+ * @returns Promise resolving to array of song details
+ */
 export async function getSongsByIds(
 	ids: string[],
 ): Promise<ApiResponse<DetailedSong[]>> {
@@ -97,6 +148,12 @@ export async function getSongsByIds(
 	);
 }
 
+/**
+ * Fetches suggested songs based on a given song ID
+ * @param id - The source song identifier
+ * @param limit - Maximum number of suggestions (default: 10)
+ * @returns Promise resolving to suggested songs
+ */
 export async function getSongSuggestions(
 	id: string,
 	limit = 10,
@@ -107,7 +164,11 @@ export async function getSongSuggestions(
 	);
 }
 
-// Albums
+/**
+ * Fetches a single album by its ID
+ * @param id - The unique album identifier
+ * @returns Promise resolving to album details with tracks
+ */
 export async function getAlbumById(
 	id: string,
 ): Promise<ApiResponse<DetailedAlbum>> {
@@ -117,7 +178,12 @@ export async function getAlbumById(
 	);
 }
 
-// Artists
+/**
+ * Fetches a single artist by their ID with optional parameters
+ * @param id - The unique artist identifier
+ * @param options - Optional parameters for page, counts, and sorting
+ * @returns Promise resolving to artist details
+ */
 export async function getArtistById(
 	id: string,
 	options?: {
@@ -145,6 +211,14 @@ export async function getArtistById(
 	);
 }
 
+/**
+ * Fetches songs by a specific artist with pagination and sorting
+ * @param id - The artist identifier
+ * @param page - Page number (0-indexed, default: 0)
+ * @param sortBy - Sort field (default: popularity)
+ * @param sortOrder - Sort direction (default: desc)
+ * @returns Promise resolving to paginated artist songs
+ */
 export async function getArtistSongs(
 	id: string,
 	page = 0,
@@ -157,6 +231,14 @@ export async function getArtistSongs(
 	);
 }
 
+/**
+ * Fetches albums by a specific artist with pagination and sorting
+ * @param id - The artist identifier
+ * @param page - Page number (0-indexed, default: 0)
+ * @param sortBy - Sort field (default: popularity)
+ * @param sortOrder - Sort direction (default: desc)
+ * @returns Promise resolving to paginated artist albums
+ */
 export async function getArtistAlbums(
 	id: string,
 	page = 0,
@@ -171,7 +253,13 @@ export async function getArtistAlbums(
 	);
 }
 
-// Playlists
+/**
+ * Fetches a single playlist by its ID
+ * @param id - The unique playlist identifier
+ * @param page - Page number for tracks (0-indexed, default: 0)
+ * @param limit - Number of tracks per page (default: 10)
+ * @returns Promise resolving to playlist details with tracks
+ */
 export async function getPlaylistById(
 	id: string,
 	page = 0,

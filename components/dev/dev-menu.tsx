@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import type { ExportData } from "@/lib/storage/config";
+import { storage } from "@/lib/storage/core";
 import {
 	bustCache,
 	exportForBackup,
@@ -17,8 +19,8 @@ import {
 	getStorageVersion,
 	importFromBackup,
 	needsMigration,
-	storage,
-} from "@/lib/storage";
+} from "@/lib/storage/migrate";
+import { BackupDataSchema } from "@/lib/validations/backup";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -78,8 +80,11 @@ export function DevMenu() {
 			a.click();
 			URL.revokeObjectURL(url);
 			toast.success("Exported backup");
-		} catch {
-			toast.error("Failed to export");
+		} catch (error) {
+			console.error("Export failed:", error);
+			toast.error(
+				`Failed to export: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	};
 
@@ -88,13 +93,35 @@ export function DevMenu() {
 
 		setIsImporting(true);
 		try {
-			const data = JSON.parse(importData);
-			await importFromBackup(data);
+			const rawData = JSON.parse(importData);
+
+			// Validate the backup data structure
+			const validatedData = BackupDataSchema.parse(rawData);
+
+			// Build ExportData from validated backup data
+			const exportData: ExportData = {
+				version: validatedData.version,
+				timestamp: validatedData.timestamp,
+				localStorage: (validatedData.localStorage || {}) as Record<
+					string,
+					import("@/lib/storage/config").JsonValue
+				>,
+				indexedDB: (validatedData.indexedDB || {}) as Record<
+					string,
+					Record<string, import("@/lib/storage/config").JsonValue[]>
+				>,
+			};
+
+			await importFromBackup(exportData);
 			toast.success("Imported successfully! Refresh the page.");
 			setImportData("");
-		} catch {
-			toast.error("Failed to import. Check console for details.");
-			console.error("Import error:", importData);
+		} catch (error) {
+			console.error("Import error:", error);
+			if (error instanceof Error) {
+				toast.error(`Failed to import: ${error.message}`);
+			} else {
+				toast.error("Failed to import. Check console for details.");
+			}
 		} finally {
 			setIsImporting(false);
 		}

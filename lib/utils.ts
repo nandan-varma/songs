@@ -5,7 +5,7 @@ import {
 	type Image,
 	ImageQuality,
 	type Song,
-} from "./types";
+} from "@/types/entity";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));

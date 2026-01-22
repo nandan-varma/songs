@@ -254,7 +254,9 @@ export function LocalPlaylistsProvider({
 
 			const songs = [...playlist.songs];
 			const [movedSong] = songs.splice(fromIndex, 1);
-			songs.splice(toIndex, 0, movedSong);
+			if (movedSong) {
+				songs.splice(toIndex, 0, movedSong);
+			}
 
 			const updated = { ...playlist, songs, updatedAt: Date.now() };
 

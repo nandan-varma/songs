@@ -1,13 +1,14 @@
 "use client";
 
-import { motion } from "motion/react";
 import { HardDrive, Trash2 } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { musicDB } from "@/lib/db";
+import { logError } from "@/lib/utils/logger";
 
 export function StorageInfo() {
 	const [storageUsed, setStorageUsed] = useState(0);
@@ -29,7 +30,7 @@ export function StorageInfo() {
 			const songs = await musicDB.getAllSongs();
 			setSongCount(songs.length);
 		} catch (error) {
-			console.error("Failed to load storage info:", error);
+			logError("StorageInfo:load", error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -70,7 +71,7 @@ export function StorageInfo() {
 			loadStorageInfo();
 			window.location.reload();
 		} catch (error) {
-			console.error("Failed to clear cache:", error);
+			logError("StorageInfo:clear", error);
 			toast.error("Failed to clear cache");
 		}
 	};

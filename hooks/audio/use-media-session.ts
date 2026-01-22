@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { logAudioError } from "@/lib/utils/audio-error";
 import { SEEK_OFFSET_SECONDS, type UseMediaSessionProps } from "@/types/player";
 
@@ -15,6 +15,8 @@ export function useMediaSession({
 	playPrevious,
 	seekTo,
 }: UseMediaSessionProps) {
+	const actionHandlersRef = useRef<Set<string>>(new Set());
+
 	useEffect(() => {
 		if (!("mediaSession" in navigator) || !currentSong) {
 			return;
@@ -88,26 +90,29 @@ export function useMediaSession({
 			}
 		};
 
-		navigator.mediaSession.setActionHandler("play", playHandler);
-		navigator.mediaSession.setActionHandler("pause", pauseHandler);
-		navigator.mediaSession.setActionHandler("previoustrack", playPrevious);
-		navigator.mediaSession.setActionHandler("nexttrack", playNext);
-		navigator.mediaSession.setActionHandler("seekto", seektoHandler);
-		navigator.mediaSession.setActionHandler(
-			"seekbackward",
-			seekbackwardHandler,
-		);
-		navigator.mediaSession.setActionHandler("seekforward", seekforwardHandler);
+		const actions = [
+			{ name: "play", handler: playHandler },
+			{ name: "pause", handler: pauseHandler },
+			{ name: "previoustrack", handler: playPrevious },
+			{ name: "nexttrack", handler: playNext },
+			{ name: "seekto", handler: seektoHandler },
+			{ name: "seekbackward", handler: seekbackwardHandler },
+			{ name: "seekforward", handler: seekforwardHandler },
+		] as const;
+
+		for (const { name, handler } of actions) {
+			navigator.mediaSession.setActionHandler(name, handler);
+			actionHandlersRef.current.add(name);
+		}
 
 		return () => {
 			if ("mediaSession" in navigator) {
-				navigator.mediaSession.setActionHandler("play", null);
-				navigator.mediaSession.setActionHandler("pause", null);
-				navigator.mediaSession.setActionHandler("previoustrack", null);
-				navigator.mediaSession.setActionHandler("nexttrack", null);
-				navigator.mediaSession.setActionHandler("seekto", null);
-				navigator.mediaSession.setActionHandler("seekbackward", null);
-				navigator.mediaSession.setActionHandler("seekforward", null);
+				for (const { name } of actions) {
+					if (actionHandlersRef.current.has(name)) {
+						navigator.mediaSession.setActionHandler(name, null);
+						actionHandlersRef.current.delete(name);
+					}
+				}
 			}
 		};
 	}, [playNext, playPrevious, seekTo, audioRef]);

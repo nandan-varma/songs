@@ -1,16 +1,25 @@
 "use client";
 
+import {
+	Album,
+	ListMusic,
+	type LucideIcon,
+	Mic2,
+	Music,
+	Play,
+	Trash2,
+} from "lucide-react";
 import { motion } from "motion/react";
-import { Album, ListMusic, Mic2, Music, Play, Trash2 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { memo, useCallback, useState } from "react";
+import { ProgressiveImage } from "@/components/common/progressive-image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { HistoryItem } from "@/contexts/history-context";
 import { useHistory } from "@/contexts/history-context";
 import { usePlayerActions } from "@/contexts/player-context";
 import { EntityType, type Image } from "@/types/entity";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ProgressiveImage } from "@/components/common/progressive-image";
 
 interface HistoryItemProps {
 	item: HistoryItem;
@@ -23,7 +32,7 @@ interface DisplayData {
 	secondaryInfo: string | null;
 	images: Image[];
 	href: string;
-	icon: any;
+	icon: LucideIcon;
 	canPlay: boolean;
 }
 
@@ -48,8 +57,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 					song.artists.primary
 						.map((a) => a.name)
 						.slice(0, 2)
-						.join(", ") +
-					(song.artists.primary.length > 2 ? "..." : "");
+						.join(", ") + (song.artists.primary.length > 2 ? "..." : "");
 				return {
 					title: song.name,
 					subtitle: artists,
@@ -66,8 +74,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 					album.artists?.primary
 						.map((a) => a.name)
 						.slice(0, 2)
-						.join(", ") +
-					(album.artists.primary.length > 2 ? "..." : "");
+						.join(", ") + (album.artists.primary.length > 2 ? "..." : "");
 				return {
 					title: album.name,
 					subtitle: artists || album.description,
@@ -108,25 +115,24 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 	};
 
 	const data = getDisplayData();
-	if (!data) return null;
 
 	const handlePlay = useCallback(
 		async (e: React.MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 
-			if (!data.canPlay || item.type !== EntityType.SONG) return;
+			if (!data?.canPlay || item.type !== EntityType.SONG) return;
 
 			setIsLoading(true);
 			try {
-				playSong(item.data as any);
+				playSong(item.data);
 			} catch (error) {
 				console.error("Error playing song:", error);
 			} finally {
 				setIsLoading(false);
 			}
 		},
-		[data.canPlay, item, playSong],
+		[data, item, playSong],
 	);
 
 	const handleRemove = useCallback(
@@ -137,6 +143,8 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 		},
 		[item.id, removeFromHistory],
 	);
+
+	if (!data) return null;
 
 	const Icon = data.icon;
 	const imageSize = compact
@@ -157,7 +165,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 				<div className="flex items-start gap-2 sm:gap-3 max-w-full">
 					{/* Thumbnail */}
 					<Link
-						href={data.href as any}
+						href={data.href as Route}
 						className={`relative ${imageSize} shrink-0 overflow-hidden rounded`}
 					>
 						{data.images && data.images.length > 0 ? (
@@ -175,7 +183,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 
 					{/* Content */}
 					<div className="flex-1 min-w-0 py-0.5">
-						<Link href={data.href as any} className="block group">
+						<Link href={data.href as Route} className="block group">
 							<h3
 								className={`font-medium truncate group-hover:text-primary transition-colors ${
 									compact ? "text-xs sm:text-sm" : "text-sm sm:text-base"
@@ -206,7 +214,10 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 					<div className="flex gap-0.5 sm:gap-1 shrink-0 items-start pt-0.5">
 						{/* Play Button - Only for songs */}
 						{data.canPlay && (
-							<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+							<motion.div
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+							>
 								<Button
 									size="icon"
 									variant="ghost"
@@ -272,7 +283,11 @@ export const HistoryList = memo(function HistoryList({
 			className={`space-y-2 ${compact ? "sm:space-y-1.5" : "sm:space-y-2"} overflow-x-hidden ${className}`}
 		>
 			{items.map((item) => (
-				<HistoryItemComponent key={`${item.type}-${item.id}`} item={item} compact={compact} />
+				<HistoryItemComponent
+					key={`${item.type}-${item.id}`}
+					item={item}
+					compact={compact}
+				/>
 			))}
 		</div>
 	);

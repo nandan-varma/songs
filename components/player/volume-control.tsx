@@ -31,11 +31,13 @@ export const VolumeControl = memo(function VolumeControl({
 
 	const handleVolumeChange = useCallback(
 		([value]: number[]) => {
-			const newVolume = percentToVolume(value);
-			onSetVolume(newVolume);
+			if (value !== undefined) {
+				const newVolume = percentToVolume(value);
+				onSetVolume(newVolume);
 
-			if (value > 0 && isMuted) {
-				setIsMuted(false);
+				if (value > 0 && isMuted) {
+					setIsMuted(false);
+				}
 			}
 		},
 		[onSetVolume, isMuted],

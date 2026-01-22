@@ -9,9 +9,11 @@ export function usePlaybackSpeed() {
 
 	const cycleSpeed = useCallback(() => {
 		setSpeedState((prev) => {
-			const currentIndex = PLAYBACK_SPEEDS.indexOf(prev);
+			const safePrev = prev ?? 1;
+			const currentIndex = PLAYBACK_SPEEDS.indexOf(safePrev);
 			const nextIndex = (currentIndex + 1) % PLAYBACK_SPEEDS.length;
-			return PLAYBACK_SPEEDS[nextIndex];
+			const nextSpeed = PLAYBACK_SPEEDS[nextIndex];
+			return nextSpeed ?? 1;
 		});
 	}, []);
 

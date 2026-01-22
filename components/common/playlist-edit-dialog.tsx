@@ -40,12 +40,28 @@ function SongItem({
 
 	return (
 		<div
+			role="button"
+			tabIndex={0}
 			draggable
-			onDragStart={() => onDragStart(index)}
-			onDragEnter={() => onDragEnter(index)}
-			onDragEnd={onDragEnd}
-			onDragOver={(e) => e.preventDefault()}
-			className={`flex items-center gap-3 p-2 rounded-lg border transition-all ${
+			onDragStart={(e) => {
+				e.stopPropagation();
+				onDragStart(index);
+			}}
+			onDragEnter={(e) => {
+				e.stopPropagation();
+				onDragEnter(index);
+			}}
+			onDragEnd={(e) => {
+				e.stopPropagation();
+				onDragEnd();
+			}}
+			onDragOver={(e) => {
+				e.preventDefault();
+			}}
+			onClick={(e) => {
+				e.stopPropagation();
+			}}
+			className={`flex items-center gap-3 p-2 rounded-lg border transition-all w-full text-left ${
 				isDragging
 					? "opacity-40 scale-95"
 					: "hover:bg-accent/50 bg-background cursor-move"
@@ -167,6 +183,7 @@ export function PlaylistEditDialog({
 
 		const newSongs = [...songs];
 		const [draggedSong] = newSongs.splice(draggedIndex, 1);
+		if (!draggedSong) return songs;
 		newSongs.splice(dragOverIndex, 0, draggedSong);
 		return newSongs;
 	}, [songs, draggedIndex, dragOverIndex]);
@@ -196,7 +213,7 @@ export function PlaylistEditDialog({
 						</div>
 					) : (
 						<div className="p-4 space-y-2">
-							{displaySongs.map((song, visualIndex) => {
+							{displaySongs.map((song, _visualIndex) => {
 								const originalIndex = songs.findIndex((s) => s.id === song.id);
 								return (
 									<SongItem

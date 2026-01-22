@@ -52,7 +52,9 @@ export function SongActionMenu({
 		setIsLoading(true);
 		try {
 			const response = await getSongById(song.id);
-			setDetailedSong(response.data[0]);
+			if (response.data[0]) {
+				setDetailedSong(response.data[0]);
+			}
 		} catch {
 			// Silent error
 		} finally {

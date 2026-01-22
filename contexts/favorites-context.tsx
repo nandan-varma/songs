@@ -9,11 +9,8 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
+import { favoritesStorage } from "@/lib/storage";
 import type { DetailedSong } from "@/types/entity";
-
-const FAVORITES_DB_NAME = "MusicAppFavoritesDB";
-const FAVORITES_VERSION = 1;
-const FAVORITES_STORE = "favorites";
 
 interface FavoritesContextType {
 	favorites: DetailedSong[];
@@ -28,45 +25,14 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(
 	undefined,
 );
 
-async function openFavoritesDB(): Promise<IDBDatabase> {
-	if (typeof window === "undefined") {
-		throw new Error("IndexedDB is not available");
-	}
-
-	return new Promise((resolve, reject) => {
-		const request = indexedDB.open(FAVORITES_DB_NAME, FAVORITES_VERSION);
-
-		request.onerror = () => reject(request.error);
-		request.onsuccess = () => resolve(request.result);
-
-		request.onupgradeneeded = (event) => {
-			const db = (event.target as IDBOpenDBRequest).result;
-			if (!db.objectStoreNames.contains(FAVORITES_STORE)) {
-				db.createObjectStore(FAVORITES_STORE, { keyPath: "songId" });
-			}
-		};
-	});
-}
-
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const [favorites, setFavorites] = useState<DetailedSong[]>([]);
 
 	useEffect(() => {
 		const loadFavorites = async () => {
 			try {
-				const db = await openFavoritesDB();
-				const transaction = db.transaction(FAVORITES_STORE, "readonly");
-				const store = transaction.objectStore(FAVORITES_STORE);
-				const request = store.getAll();
-
-				request.onsuccess = () => {
-					const items = request.result as Array<{ song: DetailedSong }>;
-					setFavorites(items.map((item) => item.song));
-				};
-
-				request.onerror = () => {
-					setFavorites([]);
-				};
+				const items = await favoritesStorage.getAll();
+				setFavorites(items);
 			} catch {
 				setFavorites([]);
 			}
@@ -85,26 +51,12 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const addFavorite = useCallback((song: DetailedSong) => {
 		const addToDB = async () => {
 			try {
-				const db = await openFavoritesDB();
-				const transaction = db.transaction(FAVORITES_STORE, "readwrite");
-				const store = transaction.objectStore(FAVORITES_STORE);
-				store.put({
-					songId: song.id,
-					song,
-					addedAt: Date.now(),
+				await favoritesStorage.add(song);
+				setFavorites((prev) => {
+					if (prev.some((s) => s.id === song.id)) return prev;
+					return [...prev, song];
 				});
-
-				transaction.oncomplete = () => {
-					setFavorites((prev) => {
-						if (prev.some((s) => s.id === song.id)) return prev;
-						return [...prev, song];
-					});
-					toast.success(`Added "${song.name}" to favorites`);
-				};
-
-				transaction.onerror = () => {
-					toast.error("Failed to add to favorites");
-				};
+				toast.success(`Added "${song.name}" to favorites`);
 			} catch {
 				toast.error("Failed to add to favorites");
 			}
@@ -116,19 +68,9 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const removeFavorite = useCallback((songId: string) => {
 		const removeFromDB = async () => {
 			try {
-				const db = await openFavoritesDB();
-				const transaction = db.transaction(FAVORITES_STORE, "readwrite");
-				const store = transaction.objectStore(FAVORITES_STORE);
-				store.delete(songId);
-
-				transaction.oncomplete = () => {
-					setFavorites((prev) => prev.filter((song) => song.id !== songId));
-					toast.success("Removed from favorites");
-				};
-
-				transaction.onerror = () => {
-					toast.error("Failed to remove from favorites");
-				};
+				await favoritesStorage.remove(songId);
+				setFavorites((prev) => prev.filter((song) => song.id !== songId));
+				toast.success("Removed from favorites");
 			} catch {
 				toast.error("Failed to remove from favorites");
 			}
@@ -151,19 +93,9 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const clearAll = useCallback(() => {
 		const clearDB = async () => {
 			try {
-				const db = await openFavoritesDB();
-				const transaction = db.transaction(FAVORITES_STORE, "readwrite");
-				const store = transaction.objectStore(FAVORITES_STORE);
-				store.clear();
-
-				transaction.oncomplete = () => {
-					setFavorites([]);
-					toast.success("Cleared all favorites");
-				};
-
-				transaction.onerror = () => {
-					toast.error("Failed to clear favorites");
-				};
+				await favoritesStorage.clear();
+				setFavorites([]);
+				toast.success("Cleared all favorites");
 			} catch {
 				toast.error("Failed to clear favorites");
 			}

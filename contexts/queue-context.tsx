@@ -41,7 +41,9 @@ function shuffleArray<T>(array: T[]): T[] {
 	const shuffled = [...array];
 	for (let i = shuffled.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
-		[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+		const temp = shuffled[i] as T;
+		shuffled[i] = shuffled[j] as T;
+		shuffled[j] = temp;
 	}
 	return shuffled;
 }
@@ -72,6 +74,7 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 				setQueue((currentQueue) => {
 					if (enabled && currentQueue.length > 0) {
 						const currentSong = currentQueue[0];
+						if (!currentSong) return currentQueue;
 						const remainingSongs = currentQueue.slice(1);
 						const shuffled = shuffleArray(remainingSongs);
 						setOriginalQueue(currentQueue);
@@ -217,7 +220,9 @@ export function QueueProvider({ children }: { children: React.ReactNode }) {
 			setQueue((prev) => {
 				const newQueue = [...prev];
 				const [movedSong] = newQueue.splice(fromIndex, 1);
-				newQueue.splice(toIndex, 0, movedSong);
+				if (movedSong) {
+					newQueue.splice(toIndex, 0, movedSong);
+				}
 				return newQueue;
 			});
 

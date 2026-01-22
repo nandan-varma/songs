@@ -8,7 +8,9 @@ import {
 	Wifi,
 	WifiOff,
 } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
+import { DevMenu } from "@/components/dev/dev-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useDownloads } from "@/contexts/downloads-context";
@@ -39,16 +41,21 @@ export function Navigation() {
 					<div className="flex items-center gap-4">
 						{/* PWA Install Button */}
 						{isInstallable && (
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={promptInstall}
-								className="hidden sm:flex"
-								aria-label="Install app"
+							<motion.div
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.98 }}
 							>
-								<Smartphone className="h-4 w-4 mr-2" />
-								Install App
-							</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={promptInstall}
+									className="hidden sm:flex"
+									aria-label="Install app"
+								>
+									<Smartphone className="h-4 w-4 mr-2" />
+									Install App
+								</Button>
+							</motion.div>
 						)}
 
 						{/* Offline Mode Toggle */}
@@ -91,6 +98,9 @@ export function Navigation() {
 								<span className="sr-only">Library</span>
 							</Button>
 						</Link>
+
+						{process.env.NODE_ENV === "development" && <DevMenu />}
+
 					</div>
 				</div>
 			</div>

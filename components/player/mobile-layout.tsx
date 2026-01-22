@@ -44,8 +44,8 @@ export function MobileLayout({
 	onReorderQueue,
 }: MobileLayoutProps) {
 	return (
-		<div className="md:hidden space-y-4">
-			<div className="flex items-start gap-3">
+		<div className="md:hidden space-y-2.5">
+			<div className="flex items-start gap-2.5">
 				{currentSong?.image && currentSong.image.length > 0 ? (
 					<div className="relative h-16 w-16 shrink-0">
 						<ProgressiveImage
@@ -57,15 +57,15 @@ export function MobileLayout({
 						/>
 					</div>
 				) : (
-					<div className="h-16 w-16 shrink-0 bg-muted rounded flex items-center justify-center">
-						<div className="h-8 w-8 bg-muted-foreground/20 rounded" />
+					<div className="h-12 w-12 shrink-0 bg-muted rounded flex items-center justify-center">
+						<div className="h-6 w-6 bg-muted-foreground/20 rounded" />
 					</div>
 				)}
 				<div className="min-w-0 flex-1">
-					<h3 className="font-semibold truncate text-base">
+					<h3 className="font-semibold truncate text-sm">
 						{currentSong?.name || "No song playing"}
 					</h3>
-					<div className="text-sm text-muted-foreground truncate">
+					<div className="text-xs text-muted-foreground truncate">
 						{currentSong?.artists?.primary?.map((artist, index) => (
 							<span key={artist.id}>
 								{artist.name}

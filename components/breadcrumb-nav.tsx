@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { ChevronLeft, Disc3, Home, ListMusic, Music, User } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -89,18 +90,25 @@ export function BreadcrumbNav() {
 	}
 
 	return (
-		<div className="border-b bg-muted/30">
+		<motion.div
+			className="border-b bg-muted/30"
+			initial={{ y: -10, opacity: 0 }}
+			animate={{ y: 0, opacity: 1 }}
+			transition={{ duration: 0.3 }}
+		>
 			<div className="container mx-auto px-4 py-3">
 				<div className="flex items-center gap-4">
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => router.back()}
-						className="flex-shrink-0"
-						aria-label="Go back"
-					>
-						<ChevronLeft className="h-5 w-5" />
-					</Button>
+					<motion.div whileHover={{ x: -3 }} whileTap={{ scale: 0.95 }}>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => router.back()}
+							className="flex-shrink-0"
+							aria-label="Go back"
+						>
+							<ChevronLeft className="h-5 w-5" />
+						</Button>
+					</motion.div>
 					<Breadcrumb>
 						<BreadcrumbList>
 							<BreadcrumbItem>
@@ -138,6 +146,6 @@ export function BreadcrumbNav() {
 					</Breadcrumb>
 				</div>
 			</div>
-		</div>
+		</motion.div>
 	);
 }

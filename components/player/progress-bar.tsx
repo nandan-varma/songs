@@ -25,8 +25,8 @@ export const ProgressBar = memo(function ProgressBar({
 	const maxDuration = duration || 100;
 
 	return (
-		<div className="flex items-center gap-3 w-full">
-			<span className="text-xs text-muted-foreground w-10 text-right">
+		<div className="flex items-center gap-2 md:gap-3 w-full">
+			<span className="text-xs text-muted-foreground w-9 md:w-10 text-right">
 				{formatTime(currentTime)}
 			</span>
 			<Slider
@@ -37,7 +37,7 @@ export const ProgressBar = memo(function ProgressBar({
 				className="flex-1"
 				aria-label="Seek"
 			/>
-			<span className="text-xs text-muted-foreground w-10">
+			<span className="text-xs text-muted-foreground w-9 md:w-10">
 				{formatTime(duration)}
 			</span>
 		</div>

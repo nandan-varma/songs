@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Check, Download } from "lucide-react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
@@ -65,18 +66,22 @@ export const DownloadButton = memo(function DownloadButton({
 	};
 
 	return (
-		<Button
-			size={size}
-			variant={variant}
-			onClick={handleDownload}
-			disabled={isDownloaded}
-			aria-label={getAriaLabel()}
-			className={getButtonClassName()}
-		>
-			{getIcon()}
-			{showLabel && (
-				<span className="ml-2">{isDownloaded ? "Downloaded" : "Download"}</span>
-			)}
-		</Button>
+		<motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+			<Button
+				size={size}
+				variant={variant}
+				onClick={handleDownload}
+				disabled={isDownloaded}
+				aria-label={getAriaLabel()}
+				className={getButtonClassName()}
+			>
+				{getIcon()}
+				{showLabel && (
+					<span className="ml-2">
+						{isDownloaded ? "Downloaded" : "Download"}
+					</span>
+				)}
+			</Button>
+		</motion.div>
 	);
 });

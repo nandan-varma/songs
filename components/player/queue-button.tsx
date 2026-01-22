@@ -42,7 +42,31 @@ const QueueItem = memo(function QueueItem({
 	onDragEnd,
 	isDragging,
 }: QueueItemProps) {
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (isCurrentSong) return;
+
+		switch (e.key) {
+			case "Enter":
+			case " ": {
+				e.preventDefault();
+				// Could play the song or show options
+				break;
+			}
+			case "ArrowUp": {
+				e.preventDefault();
+				onDragEnter(Math.max(0, index - 1));
+				break;
+			}
+			case "ArrowDown": {
+				e.preventDefault();
+				onDragEnter(Math.min(0, index + 1)); // Will be handled by parent
+				break;
+			}
+		}
+	};
+
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: div required for draggable functionality
 		<div
 			role="button"
 			tabIndex={0}
@@ -65,6 +89,7 @@ const QueueItem = memo(function QueueItem({
 			onClick={(e) => {
 				e.stopPropagation();
 			}}
+			onKeyDown={handleKeyDown}
 			className={`flex items-center gap-3 p-2 rounded border transition-all w-full text-left ${
 				isDragging
 					? "opacity-40 scale-95"

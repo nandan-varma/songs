@@ -3,6 +3,7 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { logError } from "@/lib/utils/logger";
 
 interface ErrorBoundaryState {
 	hasError: boolean;
@@ -47,34 +48,20 @@ export class ErrorBoundary extends React.Component<
 	override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		const context = this.props.context || "Component";
 
-		// Log error with context
-		console.error(`[ErrorBoundary:${context}] Caught error:`, {
-			error,
-			errorInfo,
-			componentStack: errorInfo.componentStack,
-			retryCount: this.state.retryCount,
-		});
+		logError(`ErrorBoundary:${context}`, error);
 
-		// Store error info for display
 		this.setState({ errorInfo });
 
-		// Call custom error handler if provided
 		if (this.props.onError) {
 			try {
 				this.props.onError(error, errorInfo);
 			} catch (handlerError) {
-				console.error("Error in onError handler:", handlerError);
+				logError("ErrorBoundary:onError", handlerError as Error);
 			}
 		}
-
-		// TODO: Send to error reporting service (Sentry, LogRocket, etc.)
-		// if (typeof window !== 'undefined' && window.errorReporter) {
-		//   window.errorReporter.captureException(error, { context, errorInfo });
-		// }
 	}
 
 	override componentDidUpdate(prevProps: ErrorBoundaryProps) {
-		// Auto-reset if resetKeys change
 		if (this.state.hasError && this.props.resetKeys) {
 			const prevKeys = prevProps.resetKeys || [];
 			const currentKeys = this.props.resetKeys || [];
@@ -84,9 +71,6 @@ export class ErrorBoundary extends React.Component<
 			);
 
 			if (keysChanged) {
-				console.log(
-					`[ErrorBoundary:${this.props.context}] Reset keys changed, auto-resetting`,
-				);
 				this.resetError();
 			}
 		}
@@ -94,11 +78,6 @@ export class ErrorBoundary extends React.Component<
 
 	resetError = () => {
 		const newRetryCount = this.state.retryCount + 1;
-		const maxRetries = this.props.maxRetries || 3;
-
-		console.log(
-			`[ErrorBoundary:${this.props.context}] Resetting error (attempt ${newRetryCount}/${maxRetries})`,
-		);
 
 		this.setState({
 			hasError: false,

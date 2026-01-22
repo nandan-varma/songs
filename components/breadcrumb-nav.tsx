@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
 import { ChevronLeft, Disc3, Home, ListMusic, Music, User } from "lucide-react";
+import { motion } from "motion/react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

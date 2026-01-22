@@ -1,5 +1,6 @@
 import { WifiOff } from "lucide-react";
 import type { ReactNode } from "react";
+import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -13,7 +14,7 @@ interface PlayerContainerProps {
  * Container with offline badge and card styling
  * Single responsibility: Layout wrapper
  */
-export function PlayerContainer({
+export const PlayerContainer = memo(function PlayerContainer({
 	isOfflineMode,
 	audioElement,
 	children,
@@ -39,4 +40,4 @@ export function PlayerContainer({
 			</Card>
 		</div>
 	);
-}
+});

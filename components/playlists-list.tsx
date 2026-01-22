@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
 import { ListMusic } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { EntityType, type Playlist } from "@/types/entity";
 import { ProgressiveImage } from "./common/progressive-image";

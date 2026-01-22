@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Disc3 } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Album, type AlbumSearchResult, EntityType } from "@/types/entity";

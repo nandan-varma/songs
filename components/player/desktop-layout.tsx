@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
 import { PlaybackMenu } from "./playback-menu";
@@ -27,7 +28,7 @@ interface DesktopLayoutProps {
  * Desktop-optimized player layout
  * Single responsibility: Desktop UI composition
  */
-export function DesktopLayout({
+export const DesktopLayout = memo(function DesktopLayout({
 	currentSong,
 	isPlaying,
 	volume,
@@ -77,4 +78,4 @@ export function DesktopLayout({
 			</div>
 		</div>
 	);
-}
+});

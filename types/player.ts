@@ -7,6 +7,7 @@ export const SEEK_OFFSET_SECONDS = 10 as const;
 export const DEFAULT_VOLUME = 0.7;
 export const RESTART_THRESHOLD_SECONDS = 3;
 export const AUDIO_CHECK_INTERVAL_MS = 100;
+export const TIMEUPDATE_THROTTLE_MS = 250;
 
 export interface PlayerState {
 	currentSong: DetailedSong | null;
@@ -51,7 +52,7 @@ export interface UseAudioSourceProps {
 	currentSong: DetailedSong | null;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
 	isOfflineMode: boolean;
-	getSongBlob: (songId: string) => Blob | null;
+	getSongBlob: (songId: string) => Promise<Blob | null>;
 }
 
 export interface UseAudioPlaybackProps {

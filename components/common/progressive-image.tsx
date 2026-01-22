@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { getLargestImage, getSmallestImage } from "@/lib/utils/image";
 import type { EntityType, Image as ImageType } from "@/types/entity";
 
 interface ProgressiveImageProps {
@@ -19,7 +20,7 @@ interface ProgressiveImageProps {
 }
 
 const FALLBACK_URL = "https://placehold.co/500x500.webp?text=Image+Not+Found";
-const BLUR_TIMEOUT = 3000; // ms to remove blur if high-quality doesn't load
+const BLUR_TIMEOUT = 1500; // ms to remove blur if high-quality doesn't load
 
 // Component for progressive image loading with blur effect
 export function ProgressiveImage({
@@ -33,17 +34,7 @@ export function ProgressiveImage({
 	rounded = "default",
 	objectFit = "cover",
 }: ProgressiveImageProps) {
-	const [src, setSrc] = useState<string>(() => {
-		if (!images || images.length === 0) return FALLBACK_URL;
-		// choose the smallest available image as the initial placeholder
-		const bySize = images
-			.map((i) => ({
-				url: i.url,
-				size: parseInt(i.quality?.split("x")[0] || "0", 10) || 0,
-			}))
-			.sort((a, b) => a.size - b.size);
-		return bySize[0]?.url || FALLBACK_URL;
-	});
+	const [src, setSrc] = useState<string>(() => getSmallestImage(images));
 
 	const [highLoaded, setHighLoaded] = useState(false);
 	const [errored, setErrored] = useState(false);
@@ -52,32 +43,22 @@ export function ProgressiveImage({
 	useEffect(() => {
 		if (!images || images.length === 0) return;
 
-		// pick highest quality as target
-		const bySize = images
-			.map((i) => ({
-				url: i.url,
-				size: parseInt(i.quality?.split("x")[0] || "0", 10) || 0,
-			}))
-			.sort((a, b) => a.size - b.size);
+		const targetUrl = getLargestImage(images);
 
-		const target = bySize[bySize.length - 1] || bySize[0];
+		if (!targetUrl || targetUrl === FALLBACK_URL) return;
 
-		if (!target || !target.url) return;
-
-		// start a blur timeout to remove placeholder even if high quality doesn't load
 		timeoutRef.current = window.setTimeout(() => {
 			setHighLoaded(true);
 		}, BLUR_TIMEOUT);
 
-		// pre-load high-res image
 		const img = new window.Image();
-		img.src = target.url;
+		img.src = targetUrl;
 		img.onload = () => {
 			if (timeoutRef.current) {
 				window.clearTimeout(timeoutRef.current);
 				timeoutRef.current = null;
 			}
-			setSrc(target.url);
+			setSrc(targetUrl);
 			setHighLoaded(true);
 		};
 		img.onerror = () => {

@@ -36,6 +36,71 @@ interface DisplayData {
 	canPlay: boolean;
 }
 
+function getDisplayData(item: HistoryItem): DisplayData | null {
+	switch (item.type) {
+		case EntityType.SONG: {
+			const song = item.data;
+			const artists =
+				song.artists.primary
+					.map((a) => a.name)
+					.slice(0, 2)
+					.join(", ") + (song.artists.primary.length > 2 ? "..." : "");
+			return {
+				title: song.name,
+				subtitle: artists,
+				secondaryInfo: song.album?.name || null,
+				images: song.image,
+				href: `/song?id=${song.id}`,
+				icon: Music,
+				canPlay: true,
+			};
+		}
+		case EntityType.ALBUM: {
+			const album = item.data;
+			const artists =
+				album.artists?.primary
+					.map((a) => a.name)
+					.slice(0, 2)
+					.join(", ") + (album.artists.primary.length > 2 ? "..." : "");
+			return {
+				title: album.name,
+				subtitle: artists || album.description,
+				secondaryInfo: album.year ? `${album.year}` : null,
+				images: album.image,
+				href: `/album?id=${album.id}`,
+				icon: Album,
+				canPlay: false,
+			};
+		}
+		case EntityType.ARTIST: {
+			const artist = item.data;
+			return {
+				title: artist.name,
+				subtitle: artist.type || "Artist",
+				secondaryInfo: null,
+				images: artist.image,
+				href: `/artist?id=${artist.id}`,
+				icon: Mic2,
+				canPlay: false,
+			};
+		}
+		case EntityType.PLAYLIST: {
+			const playlist = item.data;
+			return {
+				title: playlist.name,
+				subtitle: `${playlist.songCount || 0} songs`,
+				secondaryInfo: null,
+				images: playlist.image,
+				href: `/playlist?id=${playlist.id}`,
+				icon: ListMusic,
+				canPlay: false,
+			};
+		}
+		default:
+			return null;
+	}
+}
+
 /**
  * Individual history item component with type-aware rendering
  * Supports: Songs, Albums, Artists, Playlists
@@ -48,73 +113,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 	const { playSong } = usePlayerActions();
 	const { removeFromHistory } = useHistory();
 
-	// Get display data based on entity type
-	const getDisplayData = (): DisplayData | null => {
-		switch (item.type) {
-			case EntityType.SONG: {
-				const song = item.data;
-				const artists =
-					song.artists.primary
-						.map((a) => a.name)
-						.slice(0, 2)
-						.join(", ") + (song.artists.primary.length > 2 ? "..." : "");
-				return {
-					title: song.name,
-					subtitle: artists,
-					secondaryInfo: song.album?.name || null,
-					images: song.image,
-					href: `/song?id=${song.id}`,
-					icon: Music,
-					canPlay: true,
-				};
-			}
-			case EntityType.ALBUM: {
-				const album = item.data;
-				const artists =
-					album.artists?.primary
-						.map((a) => a.name)
-						.slice(0, 2)
-						.join(", ") + (album.artists.primary.length > 2 ? "..." : "");
-				return {
-					title: album.name,
-					subtitle: artists || album.description,
-					secondaryInfo: album.year ? `${album.year}` : null,
-					images: album.image,
-					href: `/album?id=${album.id}`,
-					icon: Album,
-					canPlay: false,
-				};
-			}
-			case EntityType.ARTIST: {
-				const artist = item.data;
-				return {
-					title: artist.name,
-					subtitle: artist.type || "Artist",
-					secondaryInfo: null,
-					images: artist.image,
-					href: `/artist?id=${artist.id}`,
-					icon: Mic2,
-					canPlay: false,
-				};
-			}
-			case EntityType.PLAYLIST: {
-				const playlist = item.data;
-				return {
-					title: playlist.name,
-					subtitle: `${playlist.songCount || 0} songs`,
-					secondaryInfo: null,
-					images: playlist.image,
-					href: `/playlist?id=${playlist.id}`,
-					icon: ListMusic,
-					canPlay: false,
-				};
-			}
-			default:
-				return null;
-		}
-	};
-
-	const data = getDisplayData();
+	const data = getDisplayData(item);
 
 	const handlePlay = useCallback(
 		async (e: React.MouseEvent) => {

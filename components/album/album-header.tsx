@@ -1,10 +1,11 @@
-import { motion } from "motion/react";
 import { Disc3, Play, Plus } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAnimationPreferences } from "@/hooks/ui/use-animation-preferences";
 import { type DetailedAlbum, EntityType } from "@/types/entity";
 
 interface AlbumHeaderProps {
@@ -23,11 +24,13 @@ export function AlbumHeader({
 	onPlayAll,
 	onAddAllToQueue,
 }: AlbumHeaderProps) {
+	const { getTransition } = useAnimationPreferences();
+
 	return (
 		<motion.div
 			initial="hidden"
 			animate="show"
-			transition={{ staggerChildren: 0.1 }}
+			transition={getTransition({ staggerChildren: 0.1 }, { duration: 0 })}
 		>
 			<Card>
 				<CardContent className="p-6">

@@ -1,8 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import type { Song } from "@/types/entity";
 import { SongItem } from "@/components/song-item";
+import type { Song } from "@/types/entity";
 
 interface SongsListProps {
 	songs: Song[];
@@ -37,11 +37,7 @@ export const SongsList = memo(function SongsList({
 			className={`space-y-2 ${compact ? "sm:space-y-1.5" : "sm:space-y-2"} overflow-x-hidden ${className}`}
 		>
 			{songs.map((song) => (
-				<SongItem
-					key={song.id}
-					song={song}
-					compact={compact}
-				/>
+				<SongItem key={song.id} song={song} compact={compact} />
 			))}
 		</div>
 	);

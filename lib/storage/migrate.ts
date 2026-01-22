@@ -3,6 +3,7 @@
  * Tools for migrating data between versions or exporting/importing
  */
 
+import { debug, logWarning } from "@/lib/utils/logger";
 import type { Migration } from "./config";
 import {
 	type ExportData,
@@ -75,7 +76,7 @@ export function migrateLegacyKeys(): void {
 export async function bustCache(): Promise<void> {
 	await storage.clearAll();
 	storage.bumpVersion();
-	console.log("Cache busted! Storage version:", STORAGE_VERSION);
+	debug("Storage", "Cache busted! Storage version:", STORAGE_VERSION);
 }
 
 /**
@@ -96,7 +97,7 @@ export async function exportForBackup(): Promise<
  */
 export async function importFromBackup(data: ExportData): Promise<void> {
 	await storage.importData(data);
-	console.log("Data imported successfully");
+	debug("Storage", "Data imported successfully");
 }
 
 /**
@@ -177,7 +178,7 @@ export async function runFullMigration(): Promise<{
 			migratedData[key] = value;
 		}
 	} catch {
-		console.warn("Could not export data for migration");
+		logWarning("StorageMigration", "Could not export data for migration");
 	}
 
 	for (const migration of MIGRATIONS) {
@@ -188,8 +189,9 @@ export async function runFullMigration(): Promise<{
 			continue;
 		}
 
-		console.log(
-			`Running migration from ${migration.fromVersion} to ${migration.toVersion}`,
+		debug(
+			"StorageMigration",
+			`Running from ${migration.fromVersion} to ${migration.toVersion}`,
 		);
 		migratedData =
 			(migration.migrate(migratedData) as Record<string, unknown>) ||
@@ -205,20 +207,19 @@ export async function runFullMigration(): Promise<{
  * Print storage status to console (useful for debugging)
  */
 export function logStorageStatus(): void {
-	console.group("Storage Status");
-	console.log("Version:", getStorageVersion());
-	console.log("Needs Migration:", needsMigration());
+	debug("Storage", "Version:", getStorageVersion());
+	debug("Storage", "Needs Migration:", needsMigration());
 
 	if (typeof window !== "undefined") {
-		console.log(
+		debug(
+			"Storage",
 			"localStorage Keys:",
 			Object.keys(localStorage).filter((k) => k.startsWith("music-app")),
 		);
 	}
 
 	getStorageEstimate().then((estimate) => {
-		console.log("Storage Estimate:", estimate);
-		console.groupEnd();
+		debug("Storage", "Estimate:", estimate);
 	});
 }
 

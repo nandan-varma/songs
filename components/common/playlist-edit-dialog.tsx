@@ -38,7 +38,29 @@ function SongItem({
 }: SongItemProps) {
 	const artistNames = song.artists.all.map((a) => a.name).join(", ");
 
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		switch (e.key) {
+			case "Enter":
+			case " ": {
+				e.preventDefault();
+				onPlay();
+				break;
+			}
+			case "ArrowUp": {
+				e.preventDefault();
+				onDragEnter(Math.max(0, index - 1));
+				break;
+			}
+			case "ArrowDown": {
+				e.preventDefault();
+				onDragEnter(index + 1);
+				break;
+			}
+		}
+	};
+
 	return (
+		// biome-ignore lint/a11y/useSemanticElements: div required for draggable functionality
 		<div
 			role="button"
 			tabIndex={0}
@@ -61,6 +83,7 @@ function SongItem({
 			onClick={(e) => {
 				e.stopPropagation();
 			}}
+			onKeyDown={handleKeyDown}
 			className={`flex items-center gap-3 p-2 rounded-lg border transition-all w-full text-left ${
 				isDragging
 					? "opacity-40 scale-95"

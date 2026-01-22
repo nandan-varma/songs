@@ -6,7 +6,7 @@ interface UseAudioSourceProps {
 	currentSong: DetailedSong | null;
 	audioRef: RefObject<HTMLAudioElement | null>;
 	isOfflineMode: boolean;
-	getSongBlob: (songId: string) => Blob | null;
+	getSongBlob: (songId: string) => Promise<Blob | null>;
 }
 
 /**
@@ -43,25 +43,29 @@ export function useAudioSource({
 
 		previousSongIdRef.current = currentSong.id;
 
-		const cachedBlob = getSongBlob(currentSong.id);
-		if (cachedBlob) {
-			newBlobUrl = URL.createObjectURL(cachedBlob);
-			audio.src = newBlobUrl;
-			blobUrlRef.current = newBlobUrl;
-		} else {
-			if (isOfflineMode) return;
+		const loadSource = async () => {
+			const cachedBlob = await getSongBlob(currentSong.id);
+			if (cachedBlob) {
+				newBlobUrl = URL.createObjectURL(cachedBlob);
+				audio.src = newBlobUrl;
+				blobUrlRef.current = newBlobUrl;
+			} else {
+				if (isOfflineMode) return;
 
-			const downloadUrl =
-				currentSong.downloadUrl?.find(
-					(url) => url.quality === PREFERRED_AUDIO_QUALITY,
-				) || currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
+				const downloadUrl =
+					currentSong.downloadUrl?.find(
+						(url) => url.quality === PREFERRED_AUDIO_QUALITY,
+					) || currentSong.downloadUrl?.[currentSong.downloadUrl.length - 1];
 
-			if (!downloadUrl?.url) return;
-			audio.src = downloadUrl.url;
-		}
+				if (!downloadUrl?.url) return;
+				audio.src = downloadUrl.url;
+			}
 
-		audio.currentTime = 0;
-		audio.load();
+			audio.currentTime = 0;
+			audio.load();
+		};
+
+		loadSource();
 	}, [currentSong, audioRef, isOfflineMode, getSongBlob]);
 
 	useEffect(() => {

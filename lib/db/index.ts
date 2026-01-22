@@ -52,6 +52,14 @@ class MusicDatabase {
 		return this.songs.updateLastAccessed(songId);
 	}
 
+	async evictOldestIfNeeded() {
+		return this.songs.evictOldestIfNeeded();
+	}
+
+	async getStorageInfo() {
+		return this.songs.getStorageInfo();
+	}
+
 	// Audio operations
 	async saveAudioBlob(songId: string, blob: Blob) {
 		return this.audio.saveAudioBlob(songId, blob);

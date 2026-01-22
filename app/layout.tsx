@@ -95,12 +95,20 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`antialiased dark`}>
+				<a
+					href="#main-content"
+					className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+				>
+					Skip to main content
+				</a>
 				<Providers>
 					<NuqsAdapter>
 						<ServiceWorkerManager />
 						<Navigation />
 						<BreadcrumbNav />
-						<main className="pb-32 md:pb-36">{children}</main>
+						<main id="main-content" className="pb-32 md:pb-36">
+							{children}
+						</main>
 						<KeyboardShortcutsManager />
 						<ErrorBoundary context="AudioPlayer">
 							<AudioPlayer />

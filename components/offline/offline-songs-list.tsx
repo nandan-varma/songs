@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Music, Play, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -62,62 +63,73 @@ const SongItem = memo(function SongItem({
 	}, [item.song.artists.primary]);
 
 	return (
-		<Card className="hover:bg-accent/50 transition-colors">
-			<CardContent className="p-4">
-				<div className="flex items-center gap-4">
-					<div className="relative">
-						<Image
-							src={src}
-							alt={item.song.name}
-							width={56}
-							height={56}
-							className="rounded"
-						/>
-					</div>
+		<motion.div
+			whileHover={{ y: -2 }}
+			transition={{ type: "spring", stiffness: 400, damping: 25 }}
+		>
+			<Card className="hover:bg-accent/50 transition-colors">
+				<CardContent className="p-2 md:p-4">
+					<div className="flex items-center gap-2 md:gap-4">
+						<div className="relative">
+							<Image
+								src={src}
+								alt={item.song.name}
+								width={48}
+								height={48}
+								className="rounded md:w-14 md:h-14"
+							/>
+						</div>
 
-					<div className="flex-1 min-w-0">
-						<h4 className="font-medium truncate">{item.song.name}</h4>
-						<p className="text-sm text-muted-foreground truncate">
-							{artistsText}
-						</p>
-						{item.song.album && (
-							<p className="text-xs text-muted-foreground truncate">
-								{item.song.album.name}
+						<div className="flex-1 min-w-0">
+							<h4 className="font-medium text-sm md:text-base truncate">
+								{item.song.name}
+							</h4>
+							<p className="text-xs md:text-sm text-muted-foreground truncate">
+								{artistsText}
 							</p>
-						)}
-					</div>
+							{item.song.album && (
+								<p className="text-xs text-muted-foreground truncate hidden sm:block">
+									{item.song.album.name}
+								</p>
+							)}
+						</div>
 
-					<div className="text-sm text-muted-foreground">{formatDuration}</div>
+						<div className="text-xs md:text-sm text-muted-foreground hidden md:block">
+							{formatDuration}
+						</div>
 
-					<div className="flex items-center gap-2">
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={handlePlay}
-							title="Play"
-						>
-							<Play className="h-4 w-4" />
-						</Button>
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={handleAddToQueue}
-							title="Add to Queue"
-						>
-							<Plus className="h-4 w-4" />
-						</Button>
-						<Button
-							size="sm"
-							variant="destructive"
-							onClick={handleRemove}
-							title="Delete"
-						>
-							<Trash2 className="h-4 w-4" />
-						</Button>
+						<div className="flex items-center gap-1 md:gap-2">
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={handlePlay}
+								title="Play"
+							>
+								<Play className="h-4 w-4" />
+							</Button>
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={handleAddToQueue}
+								title="Add to Queue"
+								className="hidden sm:block"
+							>
+								<Plus className="h-4 w-4" />
+							</Button>
+							<Button
+								size="sm"
+								variant="destructive"
+								onClick={handleRemove}
+								title="Delete"
+								className="hidden md:block"
+							>
+								<Trash2 className="h-4 w-4" />
+							</Button>
+						</div>
 					</div>
-				</div>
-			</CardContent>
-		</Card>
+				</CardContent>
+			</Card>
+		</motion.div>
 	);
 });
 
@@ -207,20 +219,32 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 
 	return (
 		<div className="container mx-auto px-4 py-8">
-			<div className="space-y-2">
+			<motion.div
+				className="space-y-2"
+				initial="hidden"
+				animate="show"
+				transition={{ staggerChildren: 0.05 }}
+			>
 				{/* Cached Songs */}
 				{cachedSongsArray.map((item) => (
-					<SongItem
+					<motion.div
 						key={`cached-${item.song.id}`}
-						item={item}
-						imageUrl={imageUrls.get(item.song.id)}
-						isOfflineMode={isOfflineMode}
-						onPlay={handlePlay}
-						onAddToQueue={handleAddToQueue}
-						onRemove={handleRemove}
-					/>
+						variants={{
+							hidden: { opacity: 0, y: 10 },
+							show: { opacity: 1, y: 0 },
+						}}
+					>
+						<SongItem
+							item={item}
+							imageUrl={imageUrls.get(item.song.id)}
+							isOfflineMode={isOfflineMode}
+							onPlay={handlePlay}
+							onAddToQueue={handleAddToQueue}
+							onRemove={handleRemove}
+						/>
+					</motion.div>
 				))}
-			</div>
+			</motion.div>
 		</div>
 	);
 });

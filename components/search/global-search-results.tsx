@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { memo } from "react";
 import type { useGlobalSearch } from "@/hooks/data/queries";
 import { AlbumsList } from "../albums-list";
@@ -32,26 +33,55 @@ export const GlobalSearchResults = memo(function GlobalSearchResults({
 	}
 
 	return (
-		<div className="space-y-8">
+		<motion.div
+			className="space-y-8"
+			initial="hidden"
+			animate="show"
+			transition={{ staggerChildren: 0.1 }}
+		>
 			{hasAnySongs && (
-				<>
+				<motion.div
+					variants={{
+						hidden: { opacity: 0, y: 20 },
+						show: { opacity: 1, y: 0 },
+					}}
+				>
 					<SongsList songs={songs.results} />
 					<Separator />
-				</>
+				</motion.div>
 			)}
 			{hasAnyAlbums && (
-				<>
+				<motion.div
+					variants={{
+						hidden: { opacity: 0, y: 20 },
+						show: { opacity: 1, y: 0 },
+					}}
+				>
 					<AlbumsList albums={albums.results} />
 					<Separator />
-				</>
+				</motion.div>
 			)}
 			{hasAnyArtists && (
-				<>
+				<motion.div
+					variants={{
+						hidden: { opacity: 0, y: 20 },
+						show: { opacity: 1, y: 0 },
+					}}
+				>
 					<ArtistsList artists={artists.results} />
 					<Separator />
-				</>
+				</motion.div>
 			)}
-			{hasAnyPlaylists && <PlaylistsList playlists={playlists.results} />}
-		</div>
+			{hasAnyPlaylists && (
+				<motion.div
+					variants={{
+						hidden: { opacity: 0, y: 20 },
+						show: { opacity: 1, y: 0 },
+					}}
+				>
+					<PlaylistsList playlists={playlists.results} />
+				</motion.div>
+			)}
+		</motion.div>
 	);
 });

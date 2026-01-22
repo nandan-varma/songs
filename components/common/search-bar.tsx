@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Search } from "lucide-react";
 import { memo, useCallback } from "react";
 import { Button } from "../ui/button";
@@ -49,7 +50,11 @@ export const SearchBar = memo(function SearchBar({
 
 	return (
 		<div className="flex gap-2 w-full max-w-2xl">
-			<div className="relative flex-1">
+			<motion.div
+				className="relative flex-1"
+				whileFocus={{ scale: 1.01 }}
+				transition={{ duration: 0.2 }}
+			>
 				<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
 				<Input
 					type="text"
@@ -61,7 +66,7 @@ export const SearchBar = memo(function SearchBar({
 					autoComplete="off"
 					spellCheck="false"
 				/>
-			</div>
+			</motion.div>
 			<Button
 				onClick={onSearch}
 				size="icon"

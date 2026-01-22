@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { HardDrive, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -91,63 +92,72 @@ export function StorageInfo() {
 	};
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						<HardDrive className="h-5 w-5" />
-						Storage Usage
+		<motion.div
+			initial={{ opacity: 0, y: 20 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.4 }}
+		>
+			<Card>
+				<CardHeader>
+					<CardTitle className="flex items-center justify-between">
+						<div className="flex items-center gap-2">
+							<HardDrive className="h-5 w-5" />
+							Storage Usage
+						</div>
+						{isLoading && (
+							<span className="text-xs text-muted-foreground">Loading...</span>
+						)}
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<p className="text-xs text-muted-foreground mb-1">Songs Cached</p>
+							<p className="text-2xl font-bold">{songCount}</p>
+						</div>
+						<div>
+							<p className="text-xs text-muted-foreground mb-1">Storage Used</p>
+							<p className="text-2xl font-bold">{formatBytes(storageUsed)}</p>
+						</div>
 					</div>
-					{isLoading && (
-						<span className="text-xs text-muted-foreground">Loading...</span>
-					)}
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				<div className="grid grid-cols-2 gap-4">
-					<div>
-						<p className="text-xs text-muted-foreground mb-1">Songs Cached</p>
-						<p className="text-2xl font-bold">{songCount}</p>
-					</div>
-					<div>
-						<p className="text-xs text-muted-foreground mb-1">Storage Used</p>
-						<p className="text-2xl font-bold">{formatBytes(storageUsed)}</p>
-					</div>
-				</div>
 
-				<div>
-					<div className="flex justify-between text-xs mb-2">
-						<span className="text-muted-foreground">Available Storage</span>
-						<span className="font-medium">
-							{formatBytes(storageQuota - storageUsed)} remaining
-						</span>
-					</div>
-					<Progress
-						value={usagePercent}
-						className={`h-2 ${getProgressColor()}`}
-					/>
-					<p className="text-xs text-muted-foreground mt-1">
-						{usagePercent.toFixed(1)}% used of {formatBytes(storageQuota)} total
-					</p>
-				</div>
-
-				<div className="pt-4 border-t">
-					<div className="flex items-center justify-between">
-						<p className="text-xs text-muted-foreground">
-							Clear all cached data to free up space
+					<div>
+						<div className="flex justify-between text-xs mb-2">
+							<span className="text-muted-foreground">Available Storage</span>
+							<span className="font-medium">
+								{formatBytes(storageQuota - storageUsed)} remaining
+							</span>
+						</div>
+						<Progress
+							value={usagePercent}
+							className={`h-2 ${getProgressColor()}`}
+						/>
+						<p className="text-xs text-muted-foreground mt-1">
+							{usagePercent.toFixed(1)}% used of {formatBytes(storageQuota)}{" "}
+							total
 						</p>
-						<Button
-							variant="destructive"
-							size="sm"
-							onClick={handleClearAll}
-							disabled={songCount === 0}
-						>
-							<Trash2 className="h-4 w-4 mr-2" />
-							Clear All
-						</Button>
 					</div>
-				</div>
-			</CardContent>
-		</Card>
+
+					<div className="pt-4 border-t">
+						<div className="flex items-center justify-between">
+							<p className="text-xs text-muted-foreground">
+								Clear all cached data to free up space
+							</p>
+							<motion.div whileTap={{ scale: 0.95 }}>
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={handleClearAll}
+									disabled={songCount === 0}
+								>
+									<Trash2 className="h-4 w-4 mr-2" />
+									Clear All
+								</Button>
+							</motion.div>
+						</div>
+					</div>
+				</CardContent>
+			</Card>
+		</motion.div>
 	);
 }

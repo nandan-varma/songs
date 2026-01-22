@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import Link from "next/link";
 import { memo } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
@@ -29,7 +30,13 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 	}
 
 	return (
-		<div className="flex items-center gap-4 min-w-0 w-72">
+		<motion.div
+			key={currentSong.id}
+			className="flex items-center gap-4 min-w-0 w-72"
+			initial={{ opacity: 0, x: -10 }}
+			animate={{ opacity: 1, x: 0 }}
+			transition={{ duration: 0.3 }}
+		>
 			{currentSong.image && currentSong.image.length > 0 && (
 				<div className="relative h-16 w-16 flex-shrink-0">
 					<ProgressiveImage
@@ -62,6 +69,6 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 					))}
 				</div>
 			</div>
-		</div>
+		</motion.div>
 	);
 });

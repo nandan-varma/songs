@@ -35,7 +35,7 @@ export function PlayerContainer({
 					</div>
 				)}
 
-				<div className="px-4 md:px-6 py-4 md:py-5">{children}</div>
+				<div className="px-3 md:px-6 py-2.5 md:py-5">{children}</div>
 			</Card>
 		</div>
 	);

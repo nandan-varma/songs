@@ -39,7 +39,7 @@ export function ProgressiveImage({
 		const bySize = images
 			.map((i) => ({
 				url: i.url,
-				size: parseInt(i.quality.split("x")[0], 10) || 0,
+				size: parseInt(i.quality?.split("x")[0] || "0", 10) || 0,
 			}))
 			.sort((a, b) => a.size - b.size);
 		return bySize[0]?.url || FALLBACK_URL;
@@ -56,7 +56,7 @@ export function ProgressiveImage({
 		const bySize = images
 			.map((i) => ({
 				url: i.url,
-				size: parseInt(i.quality.split("x")[0], 10) || 0,
+				size: parseInt(i.quality?.split("x")[0] || "0", 10) || 0,
 			}))
 			.sort((a, b) => a.size - b.size);
 

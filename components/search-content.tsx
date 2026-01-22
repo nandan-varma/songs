@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlbumsList } from "@/components/albums-list";
@@ -210,7 +209,7 @@ export default function SearchContent() {
 				<SearchBar value={query} onChange={setQuery} onSearch={handleSearch} />
 			</div>
 
-			{!queryParam && <HistoryList history={history} />}
+			{!queryParam && <HistoryList items={history} />}
 
 			{hasError && <ErrorState />}
 

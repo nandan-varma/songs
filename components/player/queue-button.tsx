@@ -32,7 +32,7 @@ interface QueueItemProps {
 	isDragging: boolean;
 }
 
-function QueueItem({
+const QueueItem = memo(function QueueItem({
 	song,
 	index,
 	isCurrentSong,
@@ -44,12 +44,28 @@ function QueueItem({
 }: QueueItemProps) {
 	return (
 		<div
+			role="button"
+			tabIndex={0}
 			draggable={!isCurrentSong}
-			onDragStart={() => !isCurrentSong && onDragStart(index)}
-			onDragEnter={() => !isCurrentSong && onDragEnter(index)}
-			onDragEnd={onDragEnd}
-			onDragOver={(e) => e.preventDefault()}
-			className={`flex items-center gap-3 p-2 rounded border transition-all ${
+			onDragStart={(e) => {
+				e.stopPropagation();
+				if (!isCurrentSong) onDragStart(index);
+			}}
+			onDragEnter={(e) => {
+				e.stopPropagation();
+				if (!isCurrentSong) onDragEnter(index);
+			}}
+			onDragEnd={(e) => {
+				e.stopPropagation();
+				onDragEnd();
+			}}
+			onDragOver={(e) => {
+				e.preventDefault();
+			}}
+			onClick={(e) => {
+				e.stopPropagation();
+			}}
+			className={`flex items-center gap-3 p-2 rounded border transition-all w-full text-left ${
 				isDragging
 					? "opacity-40 scale-95"
 					: isCurrentSong
@@ -114,7 +130,7 @@ function QueueItem({
 			)}
 		</div>
 	);
-}
+});
 
 export const QueueButton = memo(function QueueButton({
 	queue,
@@ -170,6 +186,7 @@ export const QueueButton = memo(function QueueButton({
 
 		const newQueue = [...queue];
 		const [draggedSong] = newQueue.splice(draggedIndex, 1);
+		if (!draggedSong) return queue;
 		newQueue.splice(dragOverIndex, 0, draggedSong);
 		return newQueue;
 	}, [queue, draggedIndex, dragOverIndex]);
@@ -200,7 +217,7 @@ export const QueueButton = memo(function QueueButton({
 				</SheetHeader>
 				<div className="h-[calc(100vh-8rem)] mt-4 overflow-y-auto">
 					<div className="space-y-2 pr-4">
-						{displayQueue.map((song, visualIndex) => {
+						{displayQueue.map((song, _visualIndex) => {
 							const originalIndex = queue.findIndex((s) => s.id === song.id);
 							const isCurrentSong = originalIndex === currentIndex;
 

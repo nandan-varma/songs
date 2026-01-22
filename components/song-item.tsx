@@ -1,18 +1,18 @@
 "use client";
 
-import { motion } from "motion/react";
 import { Loader2, Play, Plus } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { memo, useCallback, useState } from "react";
-import type { Song } from "@/types/entity";
+import { ProgressiveImage } from "@/components/common/progressive-image";
+import { SongActionMenu } from "@/components/common/song-action-menu";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { usePlayerActions } from "@/contexts/player-context";
 import { useQueueActions } from "@/contexts/queue-context";
 import { getSongById } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { DownloadButton } from "@/components/download-button";
-import { ProgressiveImage } from "@/components/common/progressive-image";
-import { SongActionMenu } from "@/components/common/song-action-menu";
+import { logError } from "@/lib/utils/logger";
+import type { Song } from "@/types/entity";
 
 interface SongItemProps {
 	song: Song;
@@ -48,7 +48,7 @@ export const SongItem = memo(function SongItem({
 					playSong(response.data[0]);
 				}
 			} catch (error) {
-				console.error("Error playing song:", error);
+				logError("SongItem:play", error);
 			} finally {
 				setIsLoading(false);
 			}
@@ -70,7 +70,7 @@ export const SongItem = memo(function SongItem({
 					addSong(response.data[0]);
 				}
 			} catch (error) {
-				console.error("Error adding to queue:", error);
+				logError("SongItem:addToQueue", error);
 			} finally {
 				setIsLoading(false);
 			}
@@ -109,18 +109,15 @@ export const SongItem = memo(function SongItem({
 						className={`relative ${imageSize} shrink-0 overflow-hidden rounded`}
 					>
 						<ProgressiveImage
-						images={song.image}
-						alt={song.title}
-						className="object-cover transition-transform hover:scale-105"
+							images={song.image}
+							alt={song.title}
+							className="object-cover transition-transform hover:scale-105"
 						/>
 					</Link>
 
 					{/* Song Info */}
 					<div className="flex-1 min-w-0 py-0.5">
-						<Link
-							href={`/song?id=${song.id}`}
-							className="block group"
-						>
+						<Link href={`/song?id=${song.id}`} className="block group">
 							<h3
 								className={`font-medium truncate group-hover:text-primary transition-colors ${
 									compact ? "text-xs sm:text-sm" : "text-sm sm:text-base"
@@ -182,7 +179,6 @@ export const SongItem = memo(function SongItem({
 								<Plus className={iconSize} />
 							</Button>
 						</motion.div>
-
 
 						{/* Action Menu */}
 						<SongActionMenu song={song} />

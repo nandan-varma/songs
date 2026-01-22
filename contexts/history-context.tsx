@@ -7,6 +7,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { logError } from "@/lib/utils/logger";
 import type {
 	DetailedAlbum,
 	DetailedArtist,
@@ -85,7 +86,7 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
 				setHistory(withDates);
 			}
 		} catch (error) {
-			console.error("Failed to load history from localStorage:", error);
+			logError("HistoryContext:load", error);
 		}
 	}, []);
 
@@ -94,7 +95,7 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
 		try {
 			localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
 		} catch (error) {
-			console.error("Failed to save history to localStorage:", error);
+			logError("HistoryContext:save", error);
 		}
 	}, [history]);
 

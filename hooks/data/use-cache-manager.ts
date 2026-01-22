@@ -22,18 +22,29 @@ export function useCacheManager() {
 		const loadCachedSongs = async () => {
 			try {
 				const dbSongs = await musicDB.getAllSongs();
-				const cacheMap = new Map<string, CachedSong>();
 
-				for (const cachedSong of dbSongs) {
-					const audioBlob = await musicDB.getAudioBlob(cachedSong.id);
-					if (audioBlob && cachedSong.metadata) {
-						cacheMap.set(cachedSong.id, {
-							song: cachedSong.metadata,
-							blob: audioBlob,
-							downloadedAt: new Date(cachedSong.cachedAt),
-						});
-					}
-				}
+				const cacheEntries = await Promise.all(
+					dbSongs.map(async (cachedSong) => {
+						const audioBlob = await musicDB.getAudioBlob(cachedSong.id);
+						if (audioBlob && cachedSong.metadata) {
+							return [
+								cachedSong.id,
+								{
+									song: cachedSong.metadata,
+									blob: audioBlob,
+									downloadedAt: new Date(cachedSong.cachedAt),
+								},
+							] as [string, CachedSong];
+						}
+						return null;
+					}),
+				);
+
+				const cacheMap = new Map<string, CachedSong>(
+					cacheEntries.filter(
+						(entry): entry is [string, CachedSong] => entry !== null,
+					),
+				);
 
 				setCachedSongs(cacheMap);
 			} catch (_error) {

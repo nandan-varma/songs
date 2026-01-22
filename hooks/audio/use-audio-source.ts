@@ -20,10 +20,12 @@ export function useAudioSource({
 	getSongBlob,
 }: UseAudioSourceProps) {
 	const previousSongIdRef = useRef<string | null>(null);
+	const blobUrlRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		if (!currentSong || !audioRef.current) {
 			previousSongIdRef.current = null;
+			blobUrlRef.current = null;
 			return;
 		}
 
@@ -31,14 +33,21 @@ export function useAudioSource({
 			return;
 		}
 
-		previousSongIdRef.current = currentSong.id;
 		const audio = audioRef.current;
-		let blobUrl: string | null = null;
+		let newBlobUrl: string | null = null;
+
+		if (blobUrlRef.current) {
+			URL.revokeObjectURL(blobUrlRef.current);
+			blobUrlRef.current = null;
+		}
+
+		previousSongIdRef.current = currentSong.id;
 
 		const cachedBlob = getSongBlob(currentSong.id);
 		if (cachedBlob) {
-			blobUrl = URL.createObjectURL(cachedBlob);
-			audio.src = blobUrl;
+			newBlobUrl = URL.createObjectURL(cachedBlob);
+			audio.src = newBlobUrl;
+			blobUrlRef.current = newBlobUrl;
 		} else {
 			if (isOfflineMode) return;
 
@@ -53,11 +62,14 @@ export function useAudioSource({
 
 		audio.currentTime = 0;
 		audio.load();
+	}, [currentSong, audioRef, isOfflineMode, getSongBlob]);
 
+	useEffect(() => {
 		return () => {
-			if (blobUrl) {
-				URL.revokeObjectURL(blobUrl);
+			if (blobUrlRef.current) {
+				URL.revokeObjectURL(blobUrlRef.current);
+				blobUrlRef.current = null;
 			}
 		};
-	}, [currentSong, audioRef, isOfflineMode, getSongBlob]);
+	}, []);
 }

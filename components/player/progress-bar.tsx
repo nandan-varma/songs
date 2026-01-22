@@ -17,7 +17,9 @@ export const ProgressBar = memo(function ProgressBar({
 }: ProgressBarProps) {
 	const handleValueChange = useCallback(
 		([value]: number[]) => {
-			onSeekTo(value);
+			if (value !== undefined) {
+				onSeekTo(value);
+			}
 		},
 		[onSeekTo],
 	);

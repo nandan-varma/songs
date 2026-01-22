@@ -92,4 +92,16 @@ export function useAudioPlayback({
 			}
 		}
 	}, [isPlaying, currentSong, audioRef]);
+
+	useEffect(() => {
+		return () => {
+			if (canPlayHandlerRef.current && audioRef.current) {
+				audioRef.current.removeEventListener(
+					"canplay",
+					canPlayHandlerRef.current,
+				);
+				canPlayHandlerRef.current = null;
+			}
+		};
+	}, [audioRef]);
 }

@@ -56,7 +56,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
 		const nextIndex = (currentIndex + 1) % queue.length;
 		setCurrentIndex(nextIndex);
-		setCurrentSong(queue[nextIndex]);
+		const nextSong = queue[nextIndex];
+		if (nextSong) {
+			setCurrentSong(nextSong);
+		}
 		setIsPlaying(true);
 	}, [queue, currentIndex, setCurrentIndex]);
 
@@ -98,7 +101,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			clearQueue();
 			addSongs(songs);
 			setCurrentIndex(startIndex);
-			setCurrentSong(songs[startIndex]);
+			const songToPlay = songs[startIndex];
+			if (songToPlay) {
+				setCurrentSong(songToPlay);
+			}
 			setIsPlaying(true);
 		},
 		[clearQueue, addSongs, setCurrentIndex],
@@ -138,7 +144,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 			const prevIndex =
 				currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
 			setCurrentIndex(prevIndex);
-			setCurrentSong(queue[prevIndex]);
+			const prevSong = queue[prevIndex];
+			if (prevSong) {
+				setCurrentSong(prevSong);
+			}
 			setIsPlaying(true);
 
 			return ct;
@@ -211,7 +220,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 	// Sync currentSong with queue changes
 	useEffect(() => {
 		if (queue.length > 0 && currentIndex < queue.length) {
-			setCurrentSong(queue[currentIndex]);
+			const song = queue[currentIndex];
+			if (song) {
+				setCurrentSong(song);
+			}
 		} else {
 			setCurrentSong(null);
 		}

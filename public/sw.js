@@ -3,8 +3,45 @@ const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `images-${CACHE_VERSION}`;
 
+// Cache limits
+const MAX_CACHE_SIZE = 500 * 1024 * 1024; // 500MB total
+const MAX_ITEMS_PER_CACHE = 100; // Max items per cache type
+
 // Static assets to cache immediately
 const STATIC_ASSETS = ["/manifest.json"];
+
+// Helper: Get cache size
+async function getCacheSize(cacheName) {
+	const cache = await caches.open(cacheName);
+	const keys = await cache.keys();
+	let totalSize = 0;
+	for (const request of keys) {
+		const response = await cache.match(request);
+		if (response) {
+			const blob = await response.clone().blob();
+			totalSize += blob.size;
+		}
+	}
+	return totalSize;
+}
+
+// Helper: Evict oldest items from a cache
+async function evictOldest(cacheName, maxItems) {
+	const cache = await caches.open(cacheName);
+	const keys = await cache.keys();
+	if (keys.length <= maxItems) return;
+
+	const itemsToDelete = keys.slice(0, keys.length - maxItems);
+	await Promise.all(itemsToDelete.map((request) => cache.delete(request)));
+}
+
+// Helper: Evict by size when over limit
+async function manageCacheSize(cacheName) {
+	const size = await getCacheSize(cacheName);
+	if (size > MAX_CACHE_SIZE) {
+		await evictOldest(cacheName, Math.floor(MAX_ITEMS_PER_CACHE / 2));
+	}
+}
 
 // Install event - cache static assets
 self.addEventListener("install", (event) => {
@@ -90,6 +127,7 @@ self.addEventListener("fetch", (event) => {
 							const responseClone = networkResponse.clone();
 							caches.open(IMAGE_CACHE).then((cache) => {
 								cache.put(request, responseClone);
+								evictOldest(IMAGE_CACHE, MAX_ITEMS_PER_CACHE);
 							});
 						}
 						return networkResponse;
@@ -115,6 +153,7 @@ self.addEventListener("fetch", (event) => {
 					const responseClone = response.clone();
 					caches.open(DYNAMIC_CACHE).then((cache) => {
 						cache.put(request, responseClone);
+						evictOldest(DYNAMIC_CACHE, MAX_ITEMS_PER_CACHE);
 					});
 					return response;
 				})
@@ -152,12 +191,14 @@ self.addEventListener("fetch", (event) => {
 						const responseClone = networkResponse.clone();
 						caches.open(STATIC_CACHE).then((cache) => {
 							cache.put(request, responseClone);
+							evictOldest(STATIC_CACHE, MAX_ITEMS_PER_CACHE);
 						});
 					} else {
 						// Cache other resources in dynamic cache
 						const responseClone = networkResponse.clone();
 						caches.open(DYNAMIC_CACHE).then((cache) => {
 							cache.put(request, responseClone);
+							evictOldest(DYNAMIC_CACHE, MAX_ITEMS_PER_CACHE);
 						});
 					}
 					return networkResponse;

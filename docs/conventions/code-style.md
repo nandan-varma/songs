@@ -1,10 +1,11 @@
-# Style Guide
+# Code Style
 
-This style guide defines the coding conventions for the Songs PWA project.
+TypeScript, React, and formatting guidelines for the Songs PWA.
 
 ## TypeScript
 
 ### Strict Mode
+
 TypeScript strict mode is enabled. Always define types.
 
 ```typescript
@@ -20,6 +21,7 @@ function greet(name) {
 ```
 
 ### Type Inference
+
 Use inference when types are obvious:
 
 ```typescript
@@ -44,6 +46,7 @@ interface UserAction {
 ```
 
 ### Type Assertions
+
 Avoid `any`. Use `unknown` when type is truly unknown:
 
 ```typescript
@@ -103,11 +106,11 @@ export const ComponentName = memo(function ComponentName({
 // GOOD - custom hook
 function useForm<T extends Record<string, unknown>>(initialValues: T) {
 	const [values, setValues] = useState(initialValues);
-	
+
 	const handleChange = useCallback((name: keyof T, value: unknown) => {
 		setValues((prev) => ({ ...prev, [name]: value }));
 	}, []);
-	
+
 	return { values, handleChange, setValues };
 }
 
@@ -136,24 +139,29 @@ return <Context.Provider value={value}>{children}</Context.Provider>;
 ```typescript
 // 1. React
 import { useState, useCallback, useMemo } from "react";
+import { memo } from "react";
 
-// 2. External libraries
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+// 2. Next.js
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// 3. Absolute imports (components)
+// 3. External libraries
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { motion } from "motion/react";
+
+// 4. Absolute imports (components)
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-// 4. Absolute imports (hooks)
+// 5. Absolute imports (hooks)
 import { usePlayer } from "@/contexts/player-context";
 import { useQueue } from "@/contexts/queue-context";
 
-// 5. Absolute imports (types)
+// 6. Absolute imports (types)
 import type { DetailedSong } from "@/types/entity";
 
-// 6. Relative imports
+// 7. Relative imports
 import { formatTime } from "@/lib/utils/time";
 import { logError } from "@/lib/utils/error";
 ```
@@ -223,76 +231,15 @@ interface PlaybackContextValue {
 }
 ```
 
-## Error Handling
-
-### Try/Catch
-
-```typescript
-// GOOD - with error handling
-async function fetchData(id: string): Promise<Data> {
-	try {
-		const response = await fetch(`/api/data/${id}`);
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-		return response.json();
-	} catch (error) {
-		console.error("Failed to fetch data:", error);
-		throw error;
-	}
-}
-
-// GOOD - returning default on error
-function getSafeValue<T>(value: T | null, defaultValue: T): T {
-	try {
-		return value ?? defaultValue;
-	} catch {
-		return defaultValue;
-	}
-}
-```
-
-### Toast Notifications
-
-```typescript
-import { toast } from "sonner";
-
-// GOOD - success
-toast.success("Song downloaded successfully");
-
-// GOOD - error
-toast.error("Failed to download song");
-
-// GOOD - info
-toast.info("Song added to queue");
-```
-
 ## File Naming
 
-```typescript
-// Components - kebab-case
-song-item.tsx
-audio-player.tsx
-progress-bar.tsx
-
-// Hooks - camelCase with use prefix
-use-audio-playback.ts
-use-media-session.ts
-use-offline-skip.ts
-
-// Contexts - kebab-case with context suffix
-player-context.tsx
-queue-context.tsx
-
-// Utilities - camelCase
-time.ts
-audio-error.ts
-api.ts
-
-// Types - PascalCase
-PlayerState.ts
-SongTypes.ts
-```
+| Type | Convention | Example |
+|------|------------|---------|
+| Components | kebab-case | `song-item.tsx`, `audio-player.tsx` |
+| Hooks | `use-*` prefix, kebab-case | `use-audio-playback.ts` |
+| Contexts | kebab-case | `player-context.tsx` |
+| Utilities | camelCase | `time.ts`, `audio-error.ts` |
+| Types | PascalCase | `PlayerState.ts`, `SongTypes.ts` |
 
 ## Formatting
 
@@ -423,29 +370,46 @@ audio.currentTime = 0;
 counter = counter + 1;
 ```
 
-## Testing
+## Error Handling
 
-### Test Structure
+### Try/Catch
 
 ```typescript
-describe("ComponentName", () => {
-	beforeEach(() => {
-		// Setup
-	});
+// GOOD - with error handling
+async function fetchData(id: string): Promise<Data> {
+	try {
+		const response = await fetch(`/api/data/${id}`);
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		return response.json();
+	} catch (error) {
+		console.error("Failed to fetch data:", error);
+		throw error;
+	}
+}
 
-	afterEach(() => {
-		// Cleanup
-	});
+// GOOD - returning default on error
+function getSafeValue<T>(value: T | null, defaultValue: T): T {
+	try {
+		return value ?? defaultValue;
+	} catch {
+		return defaultValue;
+	}
+}
+```
 
-	it("renders correctly", () => {
-		render(<ComponentName />);
-	});
+### Toast Notifications
 
-	it("handles user interaction", () => {
-		const onAction = vi.fn();
-		render(<ComponentName onAction={onAction} />);
-		fireEvent.click(screen.getByRole("button"));
-		expect(onAction).toHaveBeenCalled();
-	});
-});
+```typescript
+import { toast } from "sonner";
+
+// GOOD - success
+toast.success("Song downloaded successfully");
+
+// GOOD - error
+toast.error("Failed to download song");
+
+// GOOD - info
+toast.info("Song added to queue");
 ```

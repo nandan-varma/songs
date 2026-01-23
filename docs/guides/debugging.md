@@ -1,12 +1,11 @@
-# Debugging Guide
+# Debugging
 
-This guide provides tips and tools for debugging the Songs PWA.
+Techniques and tools for debugging the Songs PWA.
 
 ## Browser DevTools
 
-### Chrome/Edge DevTools
+### Console
 
-#### Console
 ```javascript
 // Log current playback state
 console.log("Current song:", currentSong);
@@ -23,13 +22,15 @@ console.log("Queue:", queue);
 console.log("Current index:", currentIndex);
 ```
 
-#### Network Tab
+### Network Tab
+
 - Check API requests/responses
 - Verify correct endpoints are called
 - Check request/response headers
 - Monitor response times
 
-#### Application Tab
+### Application Tab
+
 - Check IndexedDB contents
 - Verify local storage
 - Monitor Service Worker status
@@ -38,12 +39,14 @@ console.log("Current index:", currentIndex);
 ### React Developer Tools
 
 #### Components Tab
+
 - View component hierarchy
 - Inspect props and state
 - Trace re-renders
 - Profile performance
 
 #### Profiler Tab
+
 - Record performance profiles
 - Identify re-render causes
 - Measure render times
@@ -60,8 +63,8 @@ audioRef.current.readyState;    // Is it ready? (4 = HAVE_ENOUGH_DATA)
 audioRef.current.error;         // Any errors?
 
 // Check browser autoplay policy
-console.log("Autoplay allowed:", 
-  audioRef.current?.play().catch(e => e) !== "NotAllowedError"
+console.log("Autoplay allowed:",
+	audioRef.current?.play().catch(e => e) !== "NotAllowedError"
 );
 ```
 
@@ -88,9 +91,9 @@ console.log("Response ok:", response.ok);
 
 // Check error
 try {
-  await fetch(url);
+	await fetch(url);
 } catch (error) {
-  console.error("Fetch error:", error);
+	console.error("Fetch error:", error);
 }
 ```
 
@@ -124,7 +127,6 @@ function logState(label: string, state: any) {
 	}
 }
 
-// Usage
 logState("Playback", { currentSong, isPlaying, currentTime });
 ```
 
@@ -154,11 +156,11 @@ function measureRender(name: string, Component: ComponentType) {
 			<Component {...props} />
 		) : null;
 		const end = performance.now();
-		
+
 		if (end - start > 16) {
 			console.warn(`${name} took ${end - start}ms to render`);
 		}
-		
+
 		return result;
 	};
 }
@@ -263,7 +265,7 @@ export function DebugToggle() {
 
 ## Common Debugging Scenarios
 
-### Scenario: Song not loading
+### Scenario: Song Not Loading
 
 1. Check network tab for failed requests
 2. Verify API response format
@@ -271,21 +273,21 @@ export function DebugToggle() {
 4. Verify song ID is correct
 5. Check if song exists in database
 
-### Scenario: Audio not playing on iOS
+### Scenario: Audio Not Playing on iOS
 
 1. Check if audio is in a user gesture
 2. Verify canplay event fired
 3. Check if audio element is properly mounted
 4. Verify audio source is valid
 
-### Scenario: Offline mode not working
+### Scenario: Offline Mode Not Working
 
 1. Check Service Worker registration
 2. Verify IndexedDB has cached data
 3. Check network detection hook
 4. Verify cache strategy is correct
 
-### Scenario: Queue not updating
+### Scenario: Queue Not Updating
 
 1. Check queue context state
 2. Verify queue operations are called
@@ -319,10 +321,7 @@ charles &
 
 ### Lighthouse
 
-```bash
-# Run Lighthouse in Chrome DevTools
-# Works > Lighthouse tab
-```
+Run Lighthouse in Chrome DevTools > Lighthouse tab.
 
 ### Web Vitals
 

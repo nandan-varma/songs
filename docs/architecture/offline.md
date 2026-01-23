@@ -1,53 +1,47 @@
-# Offline Architecture
+# Offline Mode
 
-This document describes the offline functionality and architecture of the Songs PWA.
+The Songs PWA provides full offline functionality through a multi-layered architecture.
 
-## Overview
-
-The Songs PWA provides full offline functionality through:
-1. **IndexedDB Storage** - Persistent storage for songs and metadata
-2. **Service Worker** - Network interception and caching
-3. **Network Detection** - Automatic online/offline state management
-4. **Smart Caching** - LRU-style cache management with size limits
-
-## Architecture Diagram
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Service Worker                            │
-│  - Intercepts network requests                                   │
-│  - Implements caching strategies                                 │
-│  - Handles offline fallback                                      │
+│                      Service Worker                              │
+│  - Network interception                                         │
+│  - Cache strategies                                             │
+│  - Offline fallback                                            │
 └─────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Network Detection                            │
-│  - Monitors navigator.onLine                                    │
-│  - Triggers online/offline state changes                        │
+│                    Network Detection                             │
+│  - navigator.onLine monitoring                                  │
+│  - online/offline events                                        │
 │  - Coordinates with Service Worker                              │
 └─────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                       IndexedDB                                  │
-│  - songs: { id, blob, metadata, cachedAt }                      │
-│  - images: { url, blob, cachedAt }                              │
-│  - metadata: { id, data, cachedAt }                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐   │
+│  │     songs     │  │    images    │  │      metadata        │   │
+│  │  {id, blob}   │  │  {url, blob} │  │    {id, data}        │   │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Cache Manager                               │
-│  - LRU eviction strategy                                         │
-│  - Storage size tracking                                         │
-│  - Cache cleanup and maintenance                                │
+│                     Cache Manager                                │
+│  - LRU eviction                                                 │
+│  - Storage size tracking                                        │
+│  - Cache cleanup                                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ## IndexedDB Schema
 
 ### Songs Store
+
 ```typescript
 interface CachedSong {
 	id: string;
@@ -56,15 +50,23 @@ interface CachedSong {
 	cachedAt: number;
 	size: number;
 }
+```
 
-interface ImageCache {
+### Images Store
+
+```typescript
+interface CachedImage {
 	url: string;
 	blob: Blob;
 	cachedAt: number;
 	size: number;
 }
+```
 
-interface MetadataCache {
+### Metadata Store
+
+```typescript
+interface CachedMetadata {
 	id: string;
 	data: DetailedSong;
 	cachedAt: number;
@@ -81,12 +83,10 @@ class CacheManager {
 	private currentSize: number;
 
 	async addSong(song: CachedSong): Promise<void> {
-		// Remove oldest if over capacity
 		if (this.currentSize + song.size > this.maxSize) {
 			await this.evictOldest();
 		}
 
-		// Add new song
 		await this.db.add("songs", song);
 		this.currentSize += song.size;
 	}
@@ -94,9 +94,11 @@ class CacheManager {
 	private async evictOldest(): Promise<void> {
 		const songs = await this.db.getAll("songs");
 		const oldest = songs.sort((a, b) => a.cachedAt - b.cachedAt)[0];
-		
-		await this.db.delete("songs", oldest.id);
-		this.currentSize -= oldest.size;
+
+		if (oldest) {
+			await this.db.delete("songs", oldest.id);
+			this.currentSize -= oldest.size;
+		}
 	}
 }
 ```
@@ -104,7 +106,7 @@ class CacheManager {
 ### Storage Limits
 
 ```typescript
-// In lib/constants/index.ts
+// lib/constants/index.ts
 export const MAX_CACHE_SIZE = 500 * 1024 * 1024; // 500MB
 export const SONG_SIZE_ESTIMATE = 5 * 1024 * 1024; // ~5MB per song
 ```
@@ -133,7 +135,6 @@ export function useNetworkDetection() {
 		window.addEventListener("online", handleOnline);
 		window.addEventListener("offline", handleOffline);
 
-		// Initial state
 		setIsOnline(navigator.onLine);
 		setIsOfflineMode(!navigator.onLine);
 
@@ -143,8 +144,45 @@ export function useNetworkDetection() {
 		};
 	}, []);
 
-	return { isOnline, isOfflineMode };
+	return { isOnline, isOfflineMode, isOffline: !isOnline };
 }
+```
+
+## Service Worker Strategy
+
+### Caching Levels
+
+| Level | Strategy | Content |
+|-------|----------|---------|
+| API | Network-first | /api/* - Fall back to cache |
+| Static | Cache-first | /static/*, /_next/* - Always from cache |
+| User Data | Stale-while-revalidate | Downloads, images |
+
+### Service Worker Code
+
+```typescript
+// public/sw.js
+const CACHE_STRATEGIES = {
+	API: "network-first",
+	STATIC: "cache-first",
+	USER_DATA: "stale-while-revalidate",
+};
+
+self.addEventListener("fetch", (event) => {
+	const url = new URL(event.request.url);
+
+	let strategy;
+	if (url.pathname.startsWith("/api/")) {
+		strategy = CACHE_STRATEGIES.API;
+	} else if (url.pathname.startsWith("/static/") ||
+	           url.pathname.startsWith("/_next/")) {
+		strategy = CACHE_STRATEGIES.STATIC;
+	} else {
+		strategy = CACHE_STRATEGIES.USER_DATA;
+	}
+
+	// Apply strategy based on fetch event
+});
 ```
 
 ## Offline-Aware Actions
@@ -157,7 +195,10 @@ export function useOfflinePlayerActions() {
 	const { getFilteredSongs, isOfflineMode } = useOffline();
 	const { playSong: rawPlaySong } = usePlayerActions();
 
-	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
+	const playSongOfflineAware = (
+		song: DetailedSong,
+		replaceQueue = true
+	) => {
 		const filtered = getFilteredSongs([song]);
 
 		if (filtered.length === 0 && isOfflineMode) {
@@ -168,40 +209,8 @@ export function useOfflinePlayerActions() {
 		rawPlaySong(song, replaceQueue);
 	};
 
-	// Similar for other actions...
+	return { playSong: playSongOfflineAware };
 }
-```
-
-## Service Worker Strategy
-
-### Caching Levels
-
-1. **Network First** - API requests (fall back to cache)
-2. **Cache First** - Static assets (always from cache)
-3. **Stale While Revalidate** - User data (serve cache, update in background)
-
-```javascript
-// public/sw.js
-const CACHE_STRATEGIES = {
-	API: "network-first",
-	STATIC: "cache-first",
-	USER_DATA: "stale-while-revalidate",
-};
-
-self.addEventListener("fetch", (event) => {
-	const url = new URL(event.request.url);
-	
-	let strategy;
-	if (url.pathname.startsWith("/api/")) {
-		strategy = CACHE_STRATEGIES.API;
-	} else if (url.pathname.startsWith("/static/")) {
-		strategy = CACHE_STRATEGIES.STATIC;
-	} else {
-		strategy = CACHE_STRATEGIES.USER_DATA;
-	}
-
-	// Apply strategy...
-});
 ```
 
 ## Offline Playback Flow
@@ -277,18 +286,17 @@ useEffect(() => {
 
 ### Manual Testing
 
-1. **Enable offline mode in DevTools** > Network > Offline
-2. **Play cached songs** - Should work normally
-3. **Try to play uncached songs** - Should show error/toast
-4. **Go back online** - Should resume normal behavior
-5. **Check IndexedDB** - Data should persist
+1. **Enable offline mode**: DevTools > Network > Offline
+2. **Play cached songs**: Should work normally
+3. **Play uncached songs**: Should show error/toast
+4. **Go back online**: Should resume normal behavior
+5. **Check IndexedDB**: Data should persist
 
 ### Automated Testing
 
 ```typescript
 describe("Offline Mode", () => {
 	beforeEach(() => {
-		// Mock navigator.onLine
 		Object.defineProperty(navigator, "onLine", {
 			value: false,
 			configurable: true,
@@ -318,3 +326,42 @@ describe("Offline Mode", () => {
 4. **Handle errors gracefully** - Skip songs, don't crash
 5. **Test on real devices** - Emulated offline differs from real
 6. **Consider data limits** - Warn users on mobile data
+
+## Storage Management
+
+### Check Available Storage
+
+```typescript
+// hooks/storage/use-device-storage.ts
+export function useDeviceStorage() {
+	const [storageEstimate, setStorageEstimate] = useState<StorageEstimate>();
+
+	useEffect(() => {
+		if ("storage" in navigator && "estimate" in navigator.storage) {
+			navigator.storage.estimate().then(setStorageEstimate);
+		}
+	}, []);
+
+	return {
+		usage: storageEstimate?.usage ?? 0,
+		quota: storageEstimate?.quota ?? 0,
+		percentage: storageEstimate?.usage && storageEstimate?.quota
+			? (storageEstimate.usage / storageEstimate.quota) * 100
+			: 0,
+	};
+}
+```
+
+### Clear Cache
+
+```typescript
+async function clearCache(): Promise<void> {
+	const db = await openDB("songs-db", 1);
+
+	await db.transaction(["songs", "images", "metadata"], "readwrite", (tx) => {
+		tx.objectStore("songs").clear();
+		tx.objectStore("images").clear();
+		tx.objectStore("metadata").clear();
+	});
+}
+```

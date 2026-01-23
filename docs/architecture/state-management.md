@@ -1,58 +1,70 @@
 # State Management
 
-This document describes the state management patterns used in the Songs PWA.
+The Songs PWA uses a multi-layered state management approach combining React Context, TanStack Query, and persistent storage.
 
 ## State Categories
 
 ### 1. Server State
-Data from the API that needs to be cached and synchronized.
+
+Data fetched from the API with caching via TanStack Query.
 
 | State | Source | Cache Strategy |
 |-------|--------|----------------|
-| Song details | Saavn API | React Query (10min stale) |
-| Search results | Saavn API | React Query (1min stale) |
-| Artist details | Saavn API | React Query (10min stale) |
-| Album details | Saavn API | React Query (10min stale) |
+| Song details | Saavn API | staleTime: 10min |
+| Album details | Saavn API | staleTime: 10min |
+| Artist details | Saavn API | staleTime: 10min |
+| Playlist details | Saavn API | staleTime: 10min |
+| Search results | Saavn API | staleTime: 1min |
 
 ### 2. UI State
-Local component state for UI interactions.
+
+Component-local state for interactions.
 
 | State | Location | Purpose |
 |-------|----------|---------|
-| Modal visibility | Component | Show/hide modals |
-| Form values | Component | Track form input |
-| Loading states | Component | Show spinners/skeletons |
-| Collapse state | Component | Accordion, collapsible sections |
+| Modal visibility | Component | Show/hide dialogs |
+| Form values | Component | Track form inputs |
+| Loading states | Component | Show loading indicators |
+| Collapse state | Component | Accordion sections |
+| Search query | Component | Track search input |
 
 ### 3. Global UI State
-Shared across multiple components.
+
+Shared across components via React Context.
 
 | State | Context | Update Frequency |
-|-------|---------|-----------------|
-| Current song | PlaybackContext | Every second (timeupdate) |
-| Playback status | PlaybackContext | On play/pause |
-| Volume | PlaybackContext | On volume change |
-| Queue | QueueContext | On add/remove/reorder |
+|-------|---------|------------------|
+| Current song | PlaybackContext | ~10/sec |
+| Is playing | PlaybackContext | On play/pause |
+| Volume | PlaybackContext | On change |
+| Queue | QueueContext | On queue change |
+| Current index | QueueContext | On skip |
+| Favorites | FavoritesContext | On favorite toggle |
+| Playlists | LocalPlaylistsContext | On playlist change |
+| History | HistoryContext | On song play |
 
 ### 4. Persistent State
-Data that survives page refreshes.
+
+Data surviving page refreshes.
 
 | State | Storage | Purpose |
 |-------|---------|---------|
 | Downloaded songs | IndexedDB | Offline playback |
 | Playback history | IndexedDB | Recently played |
-| User preferences | LocalStorage | Theme, language |
+| Favorites | IndexedDB | User favorites |
+| Local playlists | IndexedDB | User playlists |
+| Preferences | LocalStorage | Theme, animations |
 
 ## Context Architecture
 
-### Split Context Strategy
+### Player Context (3-Tier Split)
 
-To minimize unnecessary re-renders, state is split into three contexts:
+The player context is split to minimize re-renders:
 
 ```
 PlayerProvider
     │
-    ├── PlaybackContext (High-frequency updates)
+    ├── PlaybackContext (High-frequency)
     │   ├── currentSong
     │   ├── isPlaying
     │   ├── volume
@@ -60,45 +72,61 @@ PlayerProvider
     │   ├── duration
     │   └── audioRef
     │
-    ├── QueueContext (Medium-frequency updates)
+    ├── QueueContext (Medium-frequency)
     │   ├── queue
-    │   └── currentIndex
+    │   ├── currentIndex
+    │   └── isShuffleEnabled
     │
-    └── PlayerActionsContext (Stable references)
-        ├── playSong
-        ├── playQueue
-        ├── addToQueue
-        └── ... (all action functions)
+    └── PlayerActionsContext (Stable)
+        ├── playSong()
+        ├── playNext()
+        ├── playPrevious()
+        ├── togglePlayPause()
+        ├── seekTo()
+        ├── setVolume()
+        ├── addToQueue()
+        └── reorderQueue()
 ```
 
 ### Why Split?
 
-| Context | Updates | Re-renders | Impact |
-|---------|---------|------------|--------|
-| PlaybackContext | ~10/sec (timeupdate) | High | UI needs fast updates |
-| QueueContext | On user action | Medium | Queue changes |
-| ActionsContext | Never | None | Stable references |
+| Context | Updates/Second | Re-renders | Impact |
+|---------|----------------|------------|--------|
+| PlaybackContext | ~10 | High | Time updates |
+| QueueContext | <1 | Medium | Queue changes |
+| ActionsContext | 0 | None | Stable refs |
 
 ### Implementation
 
 ```typescript
 // contexts/player-context.tsx
 export function PlayerProvider({ children }: { children: ReactNode }) {
+	const audioRef = useRef<HTMLAudioElement>(null);
+
 	// High-frequency state
 	const [currentSong, setCurrentSong] = useState<DetailedSong | null>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
+	const [volume, setVolumeState] = useState(DEFAULT_VOLUME);
 	const [currentTime, setCurrentTime] = useState(0);
+	const [duration, setDuration] = useState(0);
 
 	// Medium-frequency state
 	const [queue, setQueue] = useState<DetailedSong[]>([]);
 	const [currentIndex, setCurrentIndex] = useState(0);
+	const [isShuffleEnabled, setShuffleEnabled] = useState(false);
 
-	// Stable actions (never change)
+	// Stable actions
 	const actions = useMemo(() => ({
-		playSong: (song: DetailedSong) => { /* ... */ },
+		playSong: (song: DetailedSong, replaceQueue = true) => { /* ... */ },
 		playNext: () => { /* ... */ },
+		playPrevious: () => { /* ... */ },
 		togglePlayPause: () => { /* ... */ },
-		// ... more actions
+		seekTo: (time: number) => { /* ... */ },
+		setVolume: (vol: number) => { /* ... */ },
+		addToQueue: (song: DetailedSong) => { /* ... */ },
+		reorderQueue: (from: number, to: number) => { /* ... */ },
+		clearQueue: () => { /* ... */ },
+		toggleShuffle: () => { /* ... */ },
 	}), []);
 
 	// Context values
@@ -114,7 +142,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 	const queueValue = useMemo(() => ({
 		queue,
 		currentIndex,
-	}), [queue, currentIndex]);
+		isShuffleEnabled,
+	}), [queue, currentIndex, isShuffleEnabled]);
 
 	const actionsValue = useMemo(() => actions, [actions]);
 
@@ -130,7 +159,82 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 }
 ```
 
-## React Query for Server State
+## All Contexts
+
+### FavoritesContext
+
+Manages user favorite songs.
+
+```typescript
+interface FavoritesContextType {
+	favorites: DetailedSong[];
+	isLoading: boolean;
+	addFavorite: (song: DetailedSong) => void;
+	removeFavorite: (songId: string) => void;
+	isFavorite: (songId: string) => boolean;
+	toggleFavorite: (song: DetailedSong) => void;
+}
+```
+
+### LocalPlaylistsContext
+
+Manages user-created playlists with full CRUD.
+
+```typescript
+interface LocalPlaylistsContextType {
+	playlists: LocalPlaylist[];
+	createPlaylist: (name: string) => LocalPlaylist;
+	deletePlaylist: (id: string) => void;
+	addSongToPlaylist: (playlistId: string, song: DetailedSong) => void;
+	removeSongFromPlaylist: (playlistId: string, songId: string) => void;
+	renamePlaylist: (id: string, name: string) => void;
+	reorderPlaylistSongs: (playlistId: string, songs: DetailedSong[]) => void;
+}
+```
+
+### HistoryContext
+
+Manages playback history.
+
+```typescript
+interface HistoryContextType {
+	history: DetailedSong[];
+	addToHistory: (song: DetailedSong) => void;
+	clearHistory: () => void;
+	removeFromHistory: (songId: string) => void;
+}
+```
+
+### DownloadsContext
+
+Manages downloaded songs and progress.
+
+```typescript
+interface DownloadsContextType {
+	downloads: DownloadedSong[];
+	isDownloading: boolean;
+	downloadProgress: Record<string, number>;
+	startDownload: (song: DetailedSong) => void;
+	cancelDownload: (songId: string) => void;
+	deleteDownload: (songId: string) => void;
+	isDownloaded: (songId: string) => boolean;
+}
+```
+
+### OfflineContext
+
+Manages network state.
+
+```typescript
+interface OfflineContextType {
+	isOnline: boolean;
+	isOfflineMode: boolean;
+	isOffline: boolean;
+	getFilteredSongs: (songs: DetailedSong[]) => DetailedSong[];
+}
+```
+
+## React Query
 
 ### Configuration
 
@@ -140,7 +244,7 @@ export const queryClient = new QueryClient({
 	defaultOptions: {
 		queries: {
 			staleTime: 1000 * 60 * 10, // 10 minutes
-			gcTime: 1000 * 60 * 60, // 1 hour
+			gcTime: 1000 * 60 * 60,    // 1 hour
 			retry: 3,
 			refetchOnWindowFocus: false,
 		},
@@ -151,105 +255,60 @@ export const queryClient = new QueryClient({
 ### Usage Pattern
 
 ```typescript
-// In components
-function SongPage() {
-	const { data: song, isLoading, error } = useSong(id);
-
-	if (isLoading) return <LoadingSpinner />;
-	if (error) return <ErrorMessage />;
-
-	return <SongDetail song={song} />;
-}
-
-// Custom hook wrapping React Query
+// Custom hook
 function useSong(id: string) {
 	return useQuery({
-		queryKey: ["song", id],
+		queryKey: ["song", id] as const,
 		queryFn: () => getSongById(id),
 		enabled: !!id,
 	});
 }
-```
 
-## State Updates Flow
+// In component
+function SongPage({ id }: { id: string }) {
+	const { data: song, isLoading, error } = useSong(id);
 
-### Playback State Update
+	if (isLoading) return <Skeleton />;
+	if (error) return <ErrorMessage />;
 
-```
-User clicks play
-        │
-        ▼
-togglePlayPause() called
-        │
-        ▼
-setIsPlaying(true)
-        │
-        ▼
-useAudioPlayback hook detects change
-        │
-        ▼
-audioRef.current.play()
-        │
-        ▼
-HTML audio element plays
-        │
-        ▼
-'audio' event fires
-        │
-        ▼
-onPlay handler sets isPlaying(true)
-        │
-        ▼
-UI updates (play button shows pause icon)
-```
-
-### Queue Update
-
-```
-User adds song to queue
-        │
-        ▼
-addToQueue(song) called
-        │
-        ▼
-QueueContext updates queue state
-        │
-        ▼
-All components using QueueContext re-render
-        │
-        ▼
-Queue sheet shows updated list
+	return <SongDetail song={song} />;
+}
 ```
 
 ## State Persistence
 
-### IndexedDB Pattern
+### IndexedDB
 
 ```typescript
 // lib/db/operations.ts
-async function saveSongToCache(song: DetailedSong, blob: Blob) {
-	const transaction = db.transaction(["songs", "metadata"], "readwrite");
-	const songsStore = transaction.objectStore("songs");
-	const metadataStore = transaction.objectStore("metadata");
+async function saveToCache(song: DetailedSong, blob: Blob) {
+	const db = await openDB("songs-db", 1);
 
-	await songsStore.put({
-		id: song.id,
-		blob,
-		metadata: song,
-		cachedAt: Date.now(),
-	});
+	await db.transaction(["songs", "metadata"], "readwrite", (tx) => {
+		tx.objectStore("songs").put({
+			id: song.id,
+			blob,
+			metadata: song,
+			cachedAt: Date.now(),
+		});
 
-	await metadataStore.put({
-		id: song.id,
-		data: song,
-		cachedAt: Date.now(),
+		tx.objectStore("metadata").put({
+			id: song.id,
+			data: song,
+			cachedAt: Date.now(),
+		});
 	});
+}
+
+async function getFromCache(id: string) {
+	const db = await openDB("songs-db", 1);
+	return db.get("songs", id);
 }
 ```
 
 ## State Synchronization
 
-### Queue ↔ Playback Sync
+### Queue ↔ Playback
 
 ```typescript
 // Ensure currentSong stays in sync with queue
@@ -262,12 +321,10 @@ useEffect(() => {
 }, [queue, currentIndex]);
 ```
 
-### Offline ↔ Online Sync
+### Offline ↔ Online
 
 ```typescript
 // Switch between cached and streamed content
-const { isOfflineMode } = useOffline();
-
 const songSource = useMemo(() => {
 	if (isOfflineMode) {
 		return getCachedBlob(song.id) || null;
@@ -281,102 +338,90 @@ const songSource = useMemo(() => {
 ### Memoization
 
 ```typescript
-// Memoize expensive computations
+// Expensive computation
 const processedData = useMemo(() => {
 	return data.map(expensiveTransform).filter(predicate);
 }, [data]);
 
-// Memoize callbacks
-const handleItemClick = useCallback((id: string) => {
+// Callback
+const handleClick = useCallback((id: string) => {
 	onItemClick(id);
-	trackEvent("item_click", { id });
 }, [onItemClick]);
 ```
 
 ### Selective Subscriptions
 
 ```typescript
-// Only subscribe to what you need
 function PlaybackControls() {
 	// Only re-renders when isPlaying changes
 	const { isPlaying } = usePlayback();
-	
+
 	// Only re-renders when queue changes
 	const { queue } = useQueue();
-	
+
 	// Actions never cause re-renders
 	const { togglePlayPause } = usePlayerActions();
 }
 ```
 
-## Anti-Patterns to Avoid
+### URL State with nuqs
 
-### 1. Excessive Context Splitting
 ```typescript
-// BAD - Over-splitting
+// For shareable filter/sort state
+import { useQueryStates, parseAsString, parseAsBoolean } from "nuqs";
+
+function SearchPage() {
+	const [params, setParams] = useQueryStates({
+		query: parseAsString.withDefault(""),
+		filter: parseAsString,
+		includeExplicit: parseAsBoolean.withDefault(false),
+	});
+
+	return (
+		<input
+			value={params.query}
+			onChange={(e) => setParams({ query: e.target.value })}
+		/>
+	);
+}
+```
+
+## Anti-Patterns
+
+### Don't Over-Split Contexts
+
+```typescript
+// BAD
 const VolumeContext = createContext<number>(0.7);
 const MuteContext = createContext<boolean>(false);
 
-// These always change together, keep them together
+// GOOD - Keep related state together
+const PlaybackSettingsContext = createContext<{
+	volume: number;
+	isMuted: boolean;
+}>();
 ```
 
-### 2. Large Context Values
+### Don't Put Large Objects in Context
+
 ```typescript
-// BAD - Large object in context
-const contextValue = {
-	// 50+ properties
-	allAppState: true,
-};
+// BAD
+const contextValue = { allAppState: true, 50: properties };
 
 // GOOD - Split into focused contexts
-const playbackValue = { /* playback state only */ };
-const themeValue = { /* theme state only */ };
+const playbackValue = { currentSong, isPlaying };
 ```
 
-### 3. Stale Closures
+### Don't Use Stale Closures
+
 ```typescript
-// BAD - Stale state in callback
+// BAD
 useEffect(() => {
 	fetchData(state.id).then(setData);
-}, [state.id]); // If state.id is object, may not work as expected
+}, [state.id]); // state.id may be stale
 
-// GOOD - Use functional updates
+// GOOD
 useEffect(() => {
 	fetchData(id).then(setData);
 }, [id]); // Use stable id
-```
-
-### 4. Unnecessary Re-renders
-```typescript
-// BAD - Creating objects in render
-return <Component data={{ a: 1, b: 2 }} />;
-
-// GOOD - Memoize or use context
-const data = useMemo(() => ({ a: 1, b: 2 }), []);
-return <Component data={data} />;
-```
-
-## Debugging State
-
-### React DevTools
-
-1. Open React DevTools
-2. Select component
-3. Check "Updates" tab to see why it re-rendered
-4. Compare props/state before/after
-
-### State Logging
-
-```typescript
-// Add to critical state updates
-function setIsPlaying(value: boolean) {
-	if (process.env.NODE_ENV === "development") {
-		console.log("[State] isPlaying:", {
-			from: isPlayingRef.current,
-			to: value,
-			stack: new Error().stack,
-		});
-	}
-	setIsPlaying(value);
-}
 ```

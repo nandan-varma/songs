@@ -3,11 +3,10 @@
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import { StorageInfo } from "@/components/offline/storage-info";
-import { Button } from "@/components/ui/button";
-import { useDownloads } from "@/contexts/downloads-context";
+import { useDownloadsStore } from "@/stores/downloads-store";
 
 function DownloadsPageContent() {
-	const { cachedSongs, saveToDevice } = useDownloads();
+	const cachedSongs = useDownloadsStore((state) => state.cachedSongs);
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -17,14 +16,6 @@ function DownloadsPageContent() {
 					<p className="text-muted-foreground mt-1">
 						{cachedSongs.size} cached songs
 					</p>
-				</div>
-
-				<div className="flex items-center gap-2">
-					{cachedSongs.size > 0 && (
-						<Button variant="default" size="sm" onClick={saveToDevice}>
-							Save to Device
-						</Button>
-					)}
 				</div>
 			</div>
 

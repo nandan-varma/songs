@@ -10,18 +10,26 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { DevMenu } from "@/components/dev/dev-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useDownloads } from "@/contexts/downloads-context";
-import { useOffline } from "@/contexts/offline-context";
 import { usePWAInstall } from "@/hooks/ui/use-pwa-install";
+import { useDownloadsStore } from "@/stores/downloads-store";
+import { useOfflineStore } from "@/stores/offline-store";
 
 export const Navigation = memo(function Navigation() {
-	const { isDownloading } = useDownloads();
-	const { isOfflineMode, cachedSongsCount } = useOffline();
+	const [mounted, setMounted] = useState(false);
+	const isDownloading = useDownloadsStore((state) => state.isDownloading);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+	const cachedSongsCount = useOfflineStore((state) => state.cachedSongsCount());
 	const { isInstallable, promptInstall } = usePWAInstall();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isOfflineMode = !isOnline;
 
 	return (
 		<nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky top-0 z-40">
@@ -60,16 +68,19 @@ export const Navigation = memo(function Navigation() {
 						)}
 
 						{/* Offline Mode Toggle */}
-						<div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-card">
-							{isOfflineMode ? (
+						<div
+							className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-card"
+							suppressHydrationWarning
+						>
+							{mounted && isOfflineMode ? (
 								<WifiOff className="h-4 w-4 text-orange-500" />
 							) : (
 								<Wifi className="h-4 w-4 text-green-500" />
 							)}
 							<span className="hidden sm:inline text-sm font-medium">
-								{isOfflineMode ? "Offline" : "Online"}
+								{mounted && isOfflineMode ? "Offline" : "Online"}
 							</span>
-							{isOfflineMode && cachedSongsCount > 0 && (
+							{mounted && isOfflineMode && cachedSongsCount > 0 && (
 								<Badge variant="secondary" className="text-xs">
 									{cachedSongsCount}
 								</Badge>

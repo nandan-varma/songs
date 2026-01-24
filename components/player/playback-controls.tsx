@@ -1,11 +1,12 @@
 "use client";
 
-import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { Loader2, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { memo } from "react";
 import { Button } from "../ui/button";
 
 interface PlaybackControlsProps {
 	isPlaying: boolean;
+	isLoading?: boolean;
 	queueLength: number;
 	onTogglePlayPause: () => void;
 	onPlayPrevious: () => void;
@@ -14,6 +15,7 @@ interface PlaybackControlsProps {
 
 export const PlaybackControls = memo(function PlaybackControls({
 	isPlaying,
+	isLoading = false,
 	queueLength,
 	onTogglePlayPause,
 	onPlayPrevious,
@@ -27,7 +29,7 @@ export const PlaybackControls = memo(function PlaybackControls({
 				variant="ghost"
 				size="icon"
 				onClick={onPlayPrevious}
-				disabled={!hasQueue}
+				disabled={!hasQueue || isLoading}
 				className="h-8 w-8 md:h-10 md:w-10"
 				aria-label="Previous track"
 			>
@@ -38,10 +40,13 @@ export const PlaybackControls = memo(function PlaybackControls({
 				variant="default"
 				size="icon"
 				onClick={onTogglePlayPause}
+				disabled={isLoading}
 				className="h-10 w-10 md:h-12 md:w-12"
 				aria-label={isPlaying ? "Pause" : "Play"}
 			>
-				{isPlaying ? (
+				{isLoading ? (
+					<Loader2 className="h-5 w-5 md:h-6 md:w-6 animate-spin" />
+				) : isPlaying ? (
 					<Pause className="h-5 w-5 md:h-6 md:w-6" />
 				) : (
 					<Play className="h-5 w-5 md:h-6 md:w-6 ml-0.5" />
@@ -52,7 +57,7 @@ export const PlaybackControls = memo(function PlaybackControls({
 				variant="ghost"
 				size="icon"
 				onClick={onPlayNext}
-				disabled={!hasQueue}
+				disabled={!hasQueue || isLoading}
 				className="h-8 w-8 md:h-10 md:w-10"
 				aria-label="Next track"
 			>

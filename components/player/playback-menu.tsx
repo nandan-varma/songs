@@ -9,13 +9,12 @@ import {
 	Zap,
 } from "lucide-react";
 import * as React from "react";
-import { useQueue } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import {
 	PLAYBACK_SPEEDS,
 	usePlaybackSpeed,
 } from "@/hooks/playback/use-playback-speed";
 import { useSleepTimer } from "@/hooks/playback/use-sleep-timer";
+import { usePlayerActions, usePlayerStore } from "@/stores/player-store";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -43,8 +42,8 @@ function formatTime(seconds: number | null): string {
 }
 
 export function PlaybackMenu() {
-	const { isShuffleEnabled } = useQueue();
-	const { toggleShuffle } = useQueueActions();
+	const isShuffleEnabled = usePlayerStore((state) => state.isShuffleEnabled);
+	const { toggleShuffle } = usePlayerActions();
 	const { speed, cycleSpeed } = usePlaybackSpeed();
 	const { isActive, timeRemaining, presets, startTimer, cancelTimer } =
 		useSleepTimer();

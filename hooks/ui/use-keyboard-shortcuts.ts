@@ -1,17 +1,15 @@
 import { useEffect, useRef } from "react";
-import { usePlayer } from "@/contexts/player-context";
+import { usePlayerStore } from "@/stores/player-store";
 
 export function useKeyboardShortcuts() {
-	const {
-		togglePlayPause,
-		playNext,
-		playPrevious,
-		seekTo,
-		setVolume,
-		currentTime,
-		duration,
-		volume,
-	} = usePlayer();
+	const currentTime = usePlayerStore((state) => state.currentTime);
+	const duration = usePlayerStore((state) => state.duration);
+	const volume = usePlayerStore((state) => state.volume);
+	const togglePlayPause = usePlayerStore((state) => state.togglePlayPause);
+	const playNext = usePlayerStore((state) => state.playNext);
+	const playPrevious = usePlayerStore((state) => state.playPrevious);
+	const seekTo = usePlayerStore((state) => state.seekTo);
+	const setVolume = usePlayerStore((state) => state.setVolume);
 
 	const volumeRef = useRef(volume);
 	const currentTimeRef = useRef(currentTime);
@@ -87,5 +85,6 @@ export function useKeyboardShortcuts() {
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [togglePlayPause, playNext, playPrevious, seekTo, setVolume]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [playNext, playPrevious, seekTo, setVolume, togglePlayPause]);
 }

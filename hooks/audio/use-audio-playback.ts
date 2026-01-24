@@ -4,104 +4,60 @@ import type { UseAudioPlaybackProps } from "@/types/player";
 
 /**
  * Manages audio element play/pause state synchronization
- * Handles iOS audio autoplay restrictions by waiting for canplay event
+ *
+ * Key principle: Let audio element events drive the isPlaying state
+ *
+ * Auto-play behavior:
+ * - ALWAYS auto-play when song changes (user clicked play button)
+ * - User can pause, but new song selections always start playing
  */
 export function useAudioPlayback({
 	currentSong,
 	audioRef,
-	isPlaying,
 }: UseAudioPlaybackProps) {
-	const currentSongIdRef = useRef<string | null>(null);
-	const canPlayHandlerRef = useRef<(() => void) | null>(null);
+	const previousSongIdRef = useRef<string | null>(null);
+	const playAttemptedRef = useRef(false);
 
+	// When song changes, always auto-play
 	useEffect(() => {
 		const audio = audioRef.current;
-		if (!audio || !currentSong) return;
-
-		if (canPlayHandlerRef.current) {
-			audio.removeEventListener("canplay", canPlayHandlerRef.current);
-			canPlayHandlerRef.current = null;
+		if (!audio || !currentSong) {
+			previousSongIdRef.current = null;
+			playAttemptedRef.current = false;
+			return;
 		}
-	}, [audioRef, currentSong]);
 
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio || !currentSong) return;
+		const songChanged = previousSongIdRef.current !== currentSong.id;
+		previousSongIdRef.current = currentSong.id;
 
-		const songChanged = currentSongIdRef.current !== currentSong.id;
-		currentSongIdRef.current = currentSong.id;
+		if (songChanged) {
+			playAttemptedRef.current = false;
 
-		if (songChanged && isPlaying) {
-			const handleCanPlay = () => {
-				if (currentSongIdRef.current === currentSong.id) {
+			// Auto-play new songs (changing song = user intent to play)
+			const attemptPlay = () => {
+				if (audio.readyState >= 2 && !playAttemptedRef.current) {
+					playAttemptedRef.current = true;
 					audio.play().catch((error) => {
-						logAudioError(error as MediaError, "AudioPlaybackSongChange");
+						logAudioError(error as MediaError, "AudioPlayback:SongChange");
 					});
 				}
-				audio.removeEventListener("canplay", handleCanPlay);
-				canPlayHandlerRef.current = null;
 			};
 
-			canPlayHandlerRef.current = handleCanPlay;
-			audio.addEventListener("canplay", handleCanPlay);
+			// Try immediately if ready
+			attemptPlay();
 
-			if (audio.readyState >= 3) {
-				audio.removeEventListener("canplay", handleCanPlay);
-				canPlayHandlerRef.current = null;
-				audio.play().catch((error) => {
-					logAudioError(error as MediaError, "AudioPlaybackReadyState");
-				});
+			// Otherwise wait for canplay
+			if (audio.readyState < 2) {
+				const handleCanPlay = () => {
+					attemptPlay();
+					audio.removeEventListener("canplay", handleCanPlay);
+				};
+				audio.addEventListener("canplay", handleCanPlay);
+
+				return () => {
+					audio.removeEventListener("canplay", handleCanPlay);
+				};
 			}
 		}
-	}, [currentSong, audioRef, isPlaying]);
-
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio || !currentSong) return;
-
-		if (currentSongIdRef.current !== currentSong.id) return;
-
-		if (isPlaying) {
-			if (audio.paused) {
-				if (audio.readyState >= 3) {
-					audio.play().catch((error) => {
-						logAudioError(error as MediaError, "AudioPlaybackToggle");
-					});
-				} else {
-					if (!canPlayHandlerRef.current) {
-						const handleCanPlay = () => {
-							if (isPlaying && audio.paused) {
-								audio.play().catch((error) => {
-									logAudioError(
-										error as MediaError,
-										"AudioPlaybackCanPlayFallback",
-									);
-								});
-							}
-							audio.removeEventListener("canplay", handleCanPlay);
-							canPlayHandlerRef.current = null;
-						};
-						canPlayHandlerRef.current = handleCanPlay;
-						audio.addEventListener("canplay", handleCanPlay);
-					}
-				}
-			}
-		} else {
-			if (!audio.paused) {
-				audio.pause();
-			}
-		}
-	}, [isPlaying, currentSong, audioRef]);
-
-	useEffect(() => {
-		return () => {
-			if (canPlayHandlerRef.current && audioRef.current) {
-				audioRef.current.removeEventListener(
-					"canplay",
-					canPlayHandlerRef.current,
-				);
-				canPlayHandlerRef.current = null;
-			}
-		};
-	}, [audioRef]);
+	}, [currentSong, audioRef]);
 }

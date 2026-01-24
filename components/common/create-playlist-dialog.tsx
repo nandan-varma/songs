@@ -2,7 +2,7 @@
 
 import { Loader2, Plus } from "lucide-react";
 import * as React from "react";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
+import { usePlaylistsStore } from "@/stores/playlists-store";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 import {
@@ -29,7 +29,10 @@ export function CreatePlaylistDialog({
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: CreatePlaylistDialogProps) {
-	const { createPlaylist, addSongToPlaylist } = useLocalPlaylists();
+	const createPlaylist = usePlaylistsStore((state) => state.createPlaylist);
+	const addSongToPlaylist = usePlaylistsStore(
+		(state) => state.addSongToPlaylist,
+	);
 	const [playlistName, setPlaylistName] = React.useState("");
 	const [isCreating, setIsCreating] = React.useState(false);
 	const [internalOpen, setInternalOpen] = React.useState(false);

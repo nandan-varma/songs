@@ -12,8 +12,6 @@ import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
 import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
 import {
 	useGlobalSearch,
 	useSearchAlbums,
@@ -22,6 +20,8 @@ import {
 	useSearchSongs,
 } from "@/hooks/data/queries";
 import { detailedSongToSong } from "@/lib/utils";
+import { useHistoryStore } from "@/stores/history-store";
+import { useOfflineStore } from "@/stores/offline-store";
 import type {
 	AlbumSearchResult,
 	Artist,
@@ -73,14 +73,20 @@ const playlistSearchResultToPlaylist = (
 export default function SearchContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const { getFilteredSongs, isOnlineContentAvailable, shouldEnableQuery } =
-		useOffline();
-	const { history } = useHistory();
+	const getFilteredSongs = useOfflineStore((state) => state.getFilteredSongs);
+	const cachedSongsCount = useOfflineStore((state) => state.cachedSongsCount());
+	const shouldEnableQuery = useOfflineStore((state) => state.shouldEnableQuery);
+	const history = useHistoryStore((state) => state.history);
 	const queryParam = searchParams.get("q") || "";
 	const tabParam = (searchParams.get("tab") as TabType) || "all";
 
 	const [query, setQuery] = useState(queryParam);
 	const [activeTab, setActiveTab] = useState<TabType>(tabParam);
+
+	const isOnlineContentAvailable = useCallback(
+		(songs: unknown[]) => cachedSongsCount > 0 || songs.length > 0,
+		[cachedSongsCount],
+	);
 
 	const searchEnabled = useMemo(
 		() => queryParam.trim().length > 0 && shouldEnableQuery(),

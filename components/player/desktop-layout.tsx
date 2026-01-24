@@ -10,6 +10,7 @@ import { VolumeControl } from "./volume-control";
 interface DesktopLayoutProps {
 	currentSong: DetailedSong | null;
 	isPlaying: boolean;
+	isLoading?: boolean;
 	volume: number;
 	currentTime: number;
 	duration: number;
@@ -31,6 +32,7 @@ interface DesktopLayoutProps {
 export const DesktopLayout = memo(function DesktopLayout({
 	currentSong,
 	isPlaying,
+	isLoading = false,
 	volume,
 	currentTime,
 	duration,
@@ -53,6 +55,7 @@ export const DesktopLayout = memo(function DesktopLayout({
 					<PlaybackMenu />
 					<PlaybackControls
 						isPlaying={isPlaying}
+						isLoading={isLoading}
 						queueLength={queue.length}
 						onTogglePlayPause={onTogglePlayPause}
 						onPlayPrevious={onPlayPrevious}

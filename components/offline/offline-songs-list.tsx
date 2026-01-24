@@ -6,12 +6,10 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { CachedSong } from "@/contexts/downloads-context";
-import { useDownloads } from "@/contexts/downloads-context";
-import { useOffline } from "@/contexts/offline-context";
-import { usePlayerActions } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import { musicDB } from "@/lib/db";
+import { type CachedSong, useDownloadsStore } from "@/stores/downloads-store";
+import { useOfflineStore } from "@/stores/offline-store";
+import { usePlayerActions } from "@/stores/player-store";
 
 interface SongItemProps {
 	item: CachedSong;
@@ -134,10 +132,11 @@ const SongItem = memo(function SongItem({
 });
 
 export const OfflineSongsList = memo(function OfflineSongsList() {
-	const { cachedSongs, removeSong } = useDownloads();
-	const { isOfflineMode } = useOffline();
-	const { playSong } = usePlayerActions();
-	const { addSong } = useQueueActions();
+	const cachedSongs = useDownloadsStore((state) => state.cachedSongs);
+	const removeSong = useDownloadsStore((state) => state.removeSong);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+	const isOfflineMode = !isOnline;
+	const { playSong, addSong } = usePlayerActions();
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
 

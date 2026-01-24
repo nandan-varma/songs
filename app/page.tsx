@@ -1,18 +1,25 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import SearchContent from "@/components/search-content";
-import { useOffline } from "@/contexts/offline-context";
+import { useOfflineStore } from "@/stores/offline-store";
 
 export default function Home() {
-	const { isOfflineMode } = useOffline();
+	const [mounted, setMounted] = useState(false);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isOfflineMode = !isOnline;
 
 	return (
-		<div className="min-h-screen bg-background">
-			{isOfflineMode ? (
+		<div className="min-h-screen bg-background" suppressHydrationWarning>
+			{mounted && isOfflineMode ? (
 				<ErrorBoundary context="OfflineSongsList">
 					<OfflineSongsList />
 				</ErrorBoundary>

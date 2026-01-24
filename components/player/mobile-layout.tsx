@@ -10,6 +10,7 @@ import { VolumeControl } from "./volume-control";
 interface MobileLayoutProps {
 	currentSong: DetailedSong | null;
 	isPlaying: boolean;
+	isLoading?: boolean;
 	volume: number;
 	currentTime: number;
 	duration: number;
@@ -31,6 +32,7 @@ interface MobileLayoutProps {
 export const MobileLayout = memo(function MobileLayout({
 	currentSong,
 	isPlaying,
+	isLoading = false,
 	volume,
 	currentTime,
 	duration,
@@ -94,6 +96,7 @@ export const MobileLayout = memo(function MobileLayout({
 				<PlaybackMenu />
 				<PlaybackControls
 					isPlaying={isPlaying}
+					isLoading={isLoading}
 					queueLength={queue.length}
 					onTogglePlayPause={onTogglePlayPause}
 					onPlayPrevious={onPlayPrevious}

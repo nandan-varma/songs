@@ -2,10 +2,10 @@
 
 import { Heart, ListPlus, Loader2, MoreHorizontal, Play } from "lucide-react";
 import * as React from "react";
-import { useFavorites } from "@/contexts/favorites-context";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import { getSongById } from "@/lib/api";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { usePlayerActions } from "@/stores/player-store";
+import { usePlaylistsStore } from "@/stores/playlists-store";
 import type { DetailedSong, Song } from "@/types/entity";
 import { Button } from "../ui/button";
 import {
@@ -36,9 +36,13 @@ export function SongActionMenu({
 	showAddToQueue = true,
 	onPlay,
 }: SongActionMenuProps) {
-	const { isFavorite, toggleFavorite } = useFavorites();
-	const { addSong, insertSongAt } = useQueueActions();
-	const { playlists, addSongToPlaylist } = useLocalPlaylists();
+	const isFavorite = useFavoritesStore((state) => state.isFavorite);
+	const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+	const { addSong, insertSongAt } = usePlayerActions();
+	const playlists = usePlaylistsStore((state) => state.playlists);
+	const addSongToPlaylist = usePlaylistsStore(
+		(state) => state.addSongToPlaylist,
+	);
 	const [detailedSong, setDetailedSong] = React.useState<DetailedSong | null>(
 		null,
 	);

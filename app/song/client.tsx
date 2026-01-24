@@ -6,19 +6,22 @@ import { useEffect } from "react";
 import { SongHeader } from "@/components/song/song-header";
 import { SongSuggestions } from "@/components/song/song-suggestions";
 import { Card, CardContent } from "@/components/ui/card";
-import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
 import { useSongSuggestions } from "@/hooks/data/queries";
 import { useSongFromQuery } from "@/hooks/pages/use-song";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import { useHistoryStore } from "@/stores/history-store";
+import { useOfflineStore } from "@/stores/offline-store";
 import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playSong, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
-	const { addToHistory } = useHistory();
+	const getFilteredSongs = useOfflineStore((state) => state.getFilteredSongs);
+	const shouldEnableQuery = useOfflineStore((state) => state.shouldEnableQuery);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+	const isOfflineMode = !isOnline;
+	const addToHistory = useHistoryStore((state) => state.addToHistory);
 
 	const { data: songData } = useSongFromQuery();
 	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {

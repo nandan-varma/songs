@@ -16,9 +16,8 @@ import { memo, useCallback, useState } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { HistoryItem } from "@/contexts/history-context";
-import { useHistory } from "@/contexts/history-context";
-import { usePlayerActions } from "@/contexts/player-context";
+import { type HistoryItem, useHistoryStore } from "@/stores/history-store";
+import { usePlayerActions } from "@/stores/player-store";
 import { EntityType, type Image } from "@/types/entity";
 
 interface HistoryItemProps {
@@ -111,7 +110,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 }: HistoryItemProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const { playSong } = usePlayerActions();
-	const { removeFromHistory } = useHistory();
+	const removeFromHistory = useHistoryStore((state) => state.removeFromHistory);
 
 	const data = getDisplayData(item);
 

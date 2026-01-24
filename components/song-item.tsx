@@ -8,10 +8,9 @@ import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongActionMenu } from "@/components/common/song-action-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlayerActions } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import { getSongById } from "@/lib/api";
 import { logError } from "@/lib/utils/logger";
+import { usePlayerActions } from "@/stores/player-store";
 import type { Song } from "@/types/entity";
 
 interface SongItemProps {
@@ -31,8 +30,7 @@ export const SongItem = memo(function SongItem({
 	compact = false,
 }: SongItemProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	const { playSong } = usePlayerActions();
-	const { addSong } = useQueueActions();
+	const { playSong, addSong } = usePlayerActions();
 
 	const handlePlay = useCallback(
 		async (e: React.MouseEvent) => {

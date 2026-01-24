@@ -58,7 +58,6 @@ export interface UseAudioSourceProps {
 export interface UseAudioPlaybackProps {
 	currentSong: DetailedSong | null;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
-	isPlaying: boolean;
 }
 
 export interface UseMediaSessionProps {

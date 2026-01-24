@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import { motion } from "motion/react";
 import { memo } from "react";
-import { useFavorites } from "@/contexts/favorites-context";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 
@@ -18,7 +18,7 @@ export const FavoriteButton = memo(function FavoriteButton({
 	size = "default",
 	variant = "ghost",
 }: FavoriteButtonProps) {
-	const { isFavorite, toggleFavorite } = useFavorites();
+	const { isFavorite, toggleFavorite } = useFavoritesStore();
 	const isFav = isFavorite(song.id);
 
 	return (

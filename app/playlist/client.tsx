@@ -8,18 +8,20 @@ import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
 import { usePlaylistFromQuery } from "@/hooks/pages/use-playlist";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import { useHistoryStore } from "@/stores/history-store";
+import { useOfflineStore } from "@/stores/offline-store";
 import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, isOfflineMode } = useOffline();
-	const { addToHistory } = useHistory();
+	const getFilteredSongs = useOfflineStore((state) => state.getFilteredSongs);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+	const isOfflineMode = !isOnline;
+	const addToHistory = useHistoryStore((state) => state.addToHistory);
 
 	const { data: playlist } = usePlaylistFromQuery();
 

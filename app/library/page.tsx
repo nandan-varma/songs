@@ -7,10 +7,10 @@ import { PlaylistEditDialog } from "@/components/common/playlist-edit-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFavorites } from "@/contexts/favorites-context";
-import { useHistory } from "@/contexts/history-context";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
+import { useFavoritesStore } from "@/stores/favorites-store";
+import { useHistoryStore } from "@/stores/history-store";
+import { usePlayerActions } from "@/stores/player-store";
+import { usePlaylistsStore } from "@/stores/playlists-store";
 import type { DetailedSong } from "@/types/entity";
 
 function LibrarySongItem({
@@ -77,10 +77,12 @@ function LoadingCard({ title }: { title: string }) {
 }
 
 export default function LibraryPage() {
-	const { playlists, deletePlaylist } = useLocalPlaylists();
-	const { favorites } = useFavorites();
-	const { history, clearHistory } = useHistory();
-	const { addSongs, setCurrentIndex } = useQueueActions();
+	const playlists = usePlaylistsStore((state) => state.playlists);
+	const deletePlaylist = usePlaylistsStore((state) => state.deletePlaylist);
+	const favorites = useFavoritesStore((state) => state.favorites);
+	const history = useHistoryStore((state) => state.history);
+	const clearHistory = useHistoryStore((state) => state.clearHistory);
+	const { playQueue } = usePlayerActions();
 	const [isClient, setIsClient] = useState(false);
 	const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(
 		null,
@@ -109,16 +111,14 @@ export default function LibraryPage() {
 
 	const handlePlayRecentlyPlayed = (index: number) => {
 		if (index >= 0 && index < recentlyPlayedSongs.length) {
-			addSongs(recentlyPlayedSongs);
-			setCurrentIndex(index);
+			playQueue(recentlyPlayedSongs, index);
 		}
 	};
 
 	const handlePlayPlaylist = (playlistId: string) => {
 		const playlist = playlists.find((p) => p.id === playlistId);
 		if (playlist && playlist.songs.length > 0) {
-			addSongs(playlist.songs);
-			setCurrentIndex(0);
+			playQueue(playlist.songs, 0);
 		}
 	};
 
@@ -150,8 +150,8 @@ export default function LibraryPage() {
 											key={song.id}
 											song={song}
 											onClick={() => {
-												addSongs(favorites);
-												setCurrentIndex(
+												playQueue(
+													favorites,
 													favorites.findIndex((s) => s.id === song.id),
 												);
 											}}

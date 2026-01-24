@@ -10,12 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
 import { useArtistAlbums, useArtistSongs } from "@/hooks/data/queries";
 import { useArtistFromQuery } from "@/hooks/pages/use-artist";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
+import { useHistoryStore } from "@/stores/history-store";
+import { useOfflineStore } from "@/stores/offline-store";
 import {
 	type DetailedAlbum,
 	type DetailedSong,
@@ -25,8 +25,11 @@ import {
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
-	const { addToHistory } = useHistory();
+	const getFilteredSongs = useOfflineStore((state) => state.getFilteredSongs);
+	const shouldEnableQuery = useOfflineStore((state) => state.shouldEnableQuery);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+	const isOfflineMode = !isOnline;
+	const addToHistory = useHistoryStore((state) => state.addToHistory);
 
 	const { data: artist } = useArtistFromQuery();
 

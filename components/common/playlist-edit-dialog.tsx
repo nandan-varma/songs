@@ -3,8 +3,8 @@
 import { GripVertical, ListMusic, Minus, Play } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
+import { usePlayerActions } from "@/stores/player-store";
+import { usePlaylistsStore } from "@/stores/playlists-store";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
@@ -147,9 +147,14 @@ export function PlaylistEditDialog({
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: PlaylistEditDialogProps) {
-	const { playlists, removeSongFromPlaylist, reorderPlaylistSongs } =
-		useLocalPlaylists();
-	const { addSongs, setCurrentIndex } = useQueueActions();
+	const playlists = usePlaylistsStore((state) => state.playlists);
+	const removeSongFromPlaylist = usePlaylistsStore(
+		(state) => state.removeSongFromPlaylist,
+	);
+	const reorderPlaylistSongs = usePlaylistsStore(
+		(state) => state.reorderPlaylistSongs,
+	);
+	const { playQueue } = usePlayerActions();
 	const [internalOpen, setInternalOpen] = React.useState(false);
 
 	const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -194,8 +199,7 @@ export function PlaylistEditDialog({
 	};
 
 	const handlePlay = (index: number) => {
-		addSongs(songs);
-		setCurrentIndex(index);
+		playQueue(songs, index);
 	};
 
 	// Compute display order based on drag state

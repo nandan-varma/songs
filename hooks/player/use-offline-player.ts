@@ -1,20 +1,17 @@
 import { toast } from "sonner";
-import { useOffline } from "@/contexts/offline-context";
-import { usePlayerActions } from "@/contexts/player-context";
+import { useOfflineStore } from "@/stores/offline-store";
+import { usePlayerActions } from "@/stores/player-store";
 import type { DetailedSong } from "@/types/entity";
 
 /**
  * Offline-aware player actions that automatically filter songs based on offline mode
  */
 export function useOfflinePlayerActions() {
-	const { getFilteredSongs, isOfflineMode } = useOffline();
-	const {
-		playQueue,
-		addToQueue,
-		addMultipleToQueue,
-		playSong,
-		...otherActions
-	} = usePlayerActions();
+	const getFilteredSongs = useOfflineStore((state) => state.getFilteredSongs);
+	const isOnline = useOfflineStore((state) => state.isOnline);
+	const isOfflineMode = !isOnline;
+	const { playQueue, addSong, addSongs, playSong, ...otherActions } =
+		usePlayerActions();
 
 	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
 		const filtered = getFilteredSongs([song]);
@@ -55,7 +52,7 @@ export function useOfflinePlayerActions() {
 			return;
 		}
 
-		addToQueue(song);
+		addSong(song);
 	};
 
 	const addMultipleToQueueOfflineAware = (songs: DetailedSong[]) => {
@@ -72,7 +69,7 @@ export function useOfflinePlayerActions() {
 			);
 		}
 
-		addMultipleToQueue(filtered);
+		addSongs(filtered);
 	};
 
 	return {
@@ -83,7 +80,7 @@ export function useOfflinePlayerActions() {
 		addMultipleToQueue: addMultipleToQueueOfflineAware,
 		playSongUnfiltered: playSong,
 		playQueueUnfiltered: playQueue,
-		addToQueueUnfiltered: addToQueue,
-		addMultipleToQueueUnfiltered: addMultipleToQueue,
+		addToQueueUnfiltered: addSong,
+		addMultipleToQueueUnfiltered: addSongs,
 	};
 }

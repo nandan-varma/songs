@@ -1,4 +1,4 @@
-// Re-export from the new modular structure
+// Re-export from Dexie (new database layer)
 
-export type { CachedSong } from "./db/index";
-export { musicDB } from "./db/index";
+export type { CachedSong } from "./db/dexie";
+export { db as musicDB } from "./db/dexie";

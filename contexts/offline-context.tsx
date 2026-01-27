@@ -1,12 +1,8 @@
 "use client";
 
 import type React from "react";
-import { createContext, useCallback, useContext, useMemo } from "react";
-import {
-	useDownloadsActions,
-	useDownloadsState,
-} from "@/contexts/downloads-context";
-import { useNetworkDetection } from "@/hooks/network/use-network-detection";
+import { createContext, useContext } from "react";
+import { useOfflineStore } from "@/stores/offline-store";
 import type { DetailedSong, Song } from "@/types/entity";
 
 interface OfflineState {
@@ -29,64 +25,17 @@ const OfflineContext = createContext<
 >(undefined);
 
 export function OfflineProvider({ children }: { children: React.ReactNode }) {
-	const { isOnline } = useNetworkDetection();
-	const { isSongCached } = useDownloadsActions();
-	const { cachedSongs } = useDownloadsState();
+	const store = useOfflineStore();
 
-	// Offline mode is purely based on network status
-	const isOfflineMode = !isOnline;
-
-	const cachedSongsCount = useMemo(() => {
-		return cachedSongs.size;
-	}, [cachedSongs]);
-
-	// Toggle is disabled - offline mode is automatic based on network
-	const setOfflineMode = useCallback((_enabled: boolean) => {
-		// No-op: offline mode is now purely based on network status
-	}, []);
-
-	const getFilteredSongs = useCallback(
-		<T extends Song | DetailedSong>(songs: T[]): T[] => {
-			if (!isOfflineMode) return songs;
-			return songs.filter((song) => isSongCached(song.id));
-		},
-		[isOfflineMode, isSongCached],
-	);
-
-	const getCachedSongsOnly = useCallback((): DetailedSong[] => {
-		return Array.from(cachedSongs.values()).map((item) => item.song);
-	}, [cachedSongs]);
-
-	const isOnlineContentAvailable = useCallback(
-		<T extends Song | DetailedSong>(songs: T[]): boolean => {
-			if (!isOfflineMode) return true;
-			return songs.some((song) => isSongCached(song.id));
-		},
-		[isOfflineMode, isSongCached],
-	);
-
-	const shouldEnableQuery = useCallback(() => !isOfflineMode, [isOfflineMode]);
-
-	const value = useMemo(
-		() => ({
-			isOfflineMode,
-			cachedSongsCount,
-			setOfflineMode,
-			getFilteredSongs,
-			getCachedSongsOnly,
-			isOnlineContentAvailable,
-			shouldEnableQuery,
-		}),
-		[
-			isOfflineMode,
-			cachedSongsCount,
-			setOfflineMode,
-			getFilteredSongs,
-			getCachedSongsOnly,
-			isOnlineContentAvailable,
-			shouldEnableQuery,
-		],
-	);
+	const value = {
+		isOfflineMode: store.isOfflineMode,
+		cachedSongsCount: store.cachedSongsCount,
+		setOfflineMode: store.setOfflineMode,
+		getFilteredSongs: store.getFilteredSongs,
+		getCachedSongsOnly: store.getCachedSongsOnly,
+		isOnlineContentAvailable: store.isOnlineContentAvailable,
+		shouldEnableQuery: store.shouldEnableQuery,
+	};
 
 	return (
 		<OfflineContext.Provider value={value}>{children}</OfflineContext.Provider>

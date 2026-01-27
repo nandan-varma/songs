@@ -1,12 +1,8 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useMemo } from "react";
-import {
-	type CachedSong,
-	useCacheManager,
-} from "@/hooks/data/use-cache-manager";
-import { useDeviceStorage } from "@/hooks/storage/use-device-storage";
-import { useDownloadOperations } from "@/hooks/storage/use-download-operations";
+import { createContext, type ReactNode, useContext } from "react";
+import type { CachedSong } from "@/hooks/data/use-cache-manager";
+import { useDownloadsStore } from "@/stores/downloads-store";
 import type { DetailedSong } from "@/types/entity";
 
 export type { CachedSong } from "@/hooks/data/use-cache-manager";
@@ -32,40 +28,20 @@ const DownloadsActionsContext = createContext<DownloadsActions | undefined>(
 );
 
 export function DownloadsProvider({ children }: { children: ReactNode }) {
-	const cacheManager = useCacheManager();
-	const downloadOps = useDownloadOperations({
-		cachedSongs: cacheManager.cachedSongs,
-		addToCache: cacheManager.addToCache,
-		removeFromCache: cacheManager.removeFromCache,
-	});
-	const deviceStorage = useDeviceStorage({
-		cachedSongs: cacheManager.cachedSongs,
-	});
+	const store = useDownloadsStore();
 
-	const stateValue = useMemo(
-		() => ({
-			cachedSongs: cacheManager.cachedSongs,
-			isDownloading: downloadOps.isDownloading,
-		}),
-		[cacheManager.cachedSongs, downloadOps.isDownloading],
-	);
+	const stateValue = {
+		cachedSongs: store.cachedSongs,
+		isDownloading: store.isDownloading,
+	};
 
-	const actionsValue = useMemo(
-		() => ({
-			downloadSong: downloadOps.downloadSong,
-			removeSong: downloadOps.removeSong,
-			getSongBlob: cacheManager.getSongBlob,
-			isSongCached: cacheManager.isSongCached,
-			saveToDevice: deviceStorage.saveToDevice,
-		}),
-		[
-			downloadOps.downloadSong,
-			downloadOps.removeSong,
-			cacheManager.getSongBlob,
-			cacheManager.isSongCached,
-			deviceStorage.saveToDevice,
-		],
-	);
+	const actionsValue = {
+		downloadSong: store.downloadSong,
+		removeSong: store.removeSong,
+		getSongBlob: store.getSongBlob,
+		isSongCached: store.isSongCached,
+		saveToDevice: store.saveToDevice,
+	};
 
 	return (
 		<DownloadsStateContext.Provider value={stateValue}>

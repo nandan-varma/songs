@@ -1,15 +1,8 @@
 "use client";
 
 import type React from "react";
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useState,
-} from "react";
-import { toast } from "sonner";
-import { favoritesStorage } from "@/lib/storage";
+import { createContext, useContext, useEffect } from "react";
+import { useFavoritesStore } from "@/stores/favorites-store";
 import type { DetailedSong } from "@/types/entity";
 
 interface FavoritesContextType {
@@ -26,91 +19,20 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(
 );
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
-	const [favorites, setFavorites] = useState<DetailedSong[]>([]);
+	const store = useFavoritesStore();
 
+	// Load favorites on mount
 	useEffect(() => {
-		const loadFavorites = async () => {
-			try {
-				const items = await favoritesStorage.getAll();
-				setFavorites(items);
-			} catch {
-				setFavorites([]);
-			}
-		};
-
-		loadFavorites();
-	}, []);
-
-	const isFavorite = useCallback(
-		(songId: string) => {
-			return favorites.some((song) => song.id === songId);
-		},
-		[favorites],
-	);
-
-	const addFavorite = useCallback((song: DetailedSong) => {
-		const addToDB = async () => {
-			try {
-				await favoritesStorage.add(song);
-				setFavorites((prev) => {
-					if (prev.some((s) => s.id === song.id)) return prev;
-					return [...prev, song];
-				});
-				toast.success(`Added "${song.name}" to favorites`);
-			} catch {
-				toast.error("Failed to add to favorites");
-			}
-		};
-
-		addToDB();
-	}, []);
-
-	const removeFavorite = useCallback((songId: string) => {
-		const removeFromDB = async () => {
-			try {
-				await favoritesStorage.remove(songId);
-				setFavorites((prev) => prev.filter((song) => song.id !== songId));
-				toast.success("Removed from favorites");
-			} catch {
-				toast.error("Failed to remove from favorites");
-			}
-		};
-
-		removeFromDB();
-	}, []);
-
-	const toggleFavorite = useCallback(
-		(song: DetailedSong) => {
-			if (isFavorite(song.id)) {
-				removeFavorite(song.id);
-			} else {
-				addFavorite(song);
-			}
-		},
-		[isFavorite, addFavorite, removeFavorite],
-	);
-
-	const clearAll = useCallback(() => {
-		const clearDB = async () => {
-			try {
-				await favoritesStorage.clear();
-				setFavorites([]);
-				toast.success("Cleared all favorites");
-			} catch {
-				toast.error("Failed to clear favorites");
-			}
-		};
-
-		clearDB();
-	}, []);
+		store.loadFavorites();
+	}, [store.loadFavorites]);
 
 	const value: FavoritesContextType = {
-		favorites,
-		isFavorite,
-		toggleFavorite,
-		addFavorite,
-		removeFavorite,
-		clearAll,
+		favorites: store.favorites,
+		isFavorite: store.isFavorite,
+		toggleFavorite: store.toggleFavorite,
+		addFavorite: store.addFavorite,
+		removeFavorite: store.removeFavorite,
+		clearAll: store.clearAll,
 	};
 
 	return (

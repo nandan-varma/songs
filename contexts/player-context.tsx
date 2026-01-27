@@ -1,29 +1,9 @@
 "use client";
 
 import type React from "react";
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import {
-	useQueueActions,
-	useQueue as useQueueState,
-} from "@/contexts/queue-context";
-import { useAudioEventListeners } from "@/hooks/audio/use-audio-event-listeners";
-import { logAudioError } from "@/lib/utils/audio-error";
-import type { DetailedSong } from "@/types/entity";
-import {
-	DEFAULT_VOLUME,
-	type PlayerActions,
-	type PlayerState,
-	type QueueState,
-	RESTART_THRESHOLD_SECONDS,
-} from "@/types/player";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { usePlayerStore } from "@/stores/player-store";
+import type { PlayerActions, PlayerState, QueueState } from "@/types/player";
 
 const PlaybackContext = createContext<PlayerState | undefined>(undefined);
 const QueueContext = createContext<QueueState | undefined>(undefined);
@@ -32,262 +12,46 @@ const PlayerActionsContext = createContext<PlayerActions | undefined>(
 );
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
+	const store = usePlayerStore();
 	const audioRef = useRef<HTMLAudioElement>(null);
 
-	const [currentSong, setCurrentSong] = useState<DetailedSong | null>(null);
-	const [isPlaying, setIsPlaying] = useState(false);
-	const [volume, setVolumeState] = useState(DEFAULT_VOLUME);
-	const [currentTime, setCurrentTime] = useState(0);
-	const [duration, setDuration] = useState(0);
-
-	const { queue, currentIndex, isShuffleEnabled } = useQueueState();
-	const {
-		addSong,
-		addSongs,
-		removeSong,
-		clearQueue,
-		setCurrentIndex,
-		reorderQueue: reorderQueueAction,
-	} = useQueueActions();
-
-	/** Play next song - stored in ref to avoid recreating playNext callback */
-	const playNext = useCallback(() => {
-		if (queue.length === 0) return;
-
-		const nextIndex = (currentIndex + 1) % queue.length;
-		setCurrentIndex(nextIndex);
-		const nextSong = queue[nextIndex];
-		if (nextSong) {
-			setCurrentSong(nextSong);
-		}
-		setIsPlaying(true);
-	}, [queue, currentIndex, setCurrentIndex]);
-
-	/** Set up audio event listeners */
-	useAudioEventListeners(audioRef, {
-		onTimeUpdate: setCurrentTime,
-		onDurationChange: setDuration,
-		onEnded: playNext,
-		onPlay: () => setIsPlaying(true),
-		onPause: () => setIsPlaying(false),
-		onError: (error) => {
-			setIsPlaying(false);
-			setCurrentTime(0);
-			setDuration(0);
-			logAudioError(error, "PlayerContext");
-		},
-	});
-
-	/** Play a single song, optionally replacing the queue */
-	const playSong = useCallback(
-		(song: DetailedSong, replaceQueue = true) => {
-			setCurrentSong(song);
-			setIsPlaying(true);
-
-			if (replaceQueue) {
-				clearQueue();
-				addSong(song);
-				setCurrentIndex(0);
-			}
-		},
-		[clearQueue, addSong, setCurrentIndex],
-	);
-
-	/** Play a queue of songs starting at a specific index */
-	const playQueue = useCallback(
-		(songs: DetailedSong[], startIndex = 0) => {
-			if (songs.length === 0) return;
-
-			clearQueue();
-			addSongs(songs);
-			setCurrentIndex(startIndex);
-			const songToPlay = songs[startIndex];
-			if (songToPlay) {
-				setCurrentSong(songToPlay);
-			}
-			setIsPlaying(true);
-		},
-		[clearQueue, addSongs, setCurrentIndex],
-	);
-
-	/** Toggle between play and pause states */
-	const togglePlayPause = useCallback(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
-
-		setIsPlaying((prev) => {
-			const newState = !prev;
-			if (newState) {
-				audio.play().catch(() => {
-					setIsPlaying(false);
-				});
-			} else {
-				audio.pause();
-			}
-			return newState;
-		});
-	}, []);
-
-	/** Go to previous song, or restart current song if > 3 seconds in */
-	const playPrevious = useCallback(() => {
-		setCurrentTime((ct) => {
-			if (ct > RESTART_THRESHOLD_SECONDS) {
-				const audio = audioRef.current;
-				if (audio) {
-					audio.currentTime = 0;
-				}
-				return 0;
-			}
-
-			if (queue.length === 0) return ct;
-
-			const prevIndex =
-				currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
-			setCurrentIndex(prevIndex);
-			const prevSong = queue[prevIndex];
-			if (prevSong) {
-				setCurrentSong(prevSong);
-			}
-			setIsPlaying(true);
-
-			return ct;
-		});
-	}, [queue, currentIndex, setCurrentIndex]);
-
-	/** Seek to a specific time in the current song */
-	const seekTo = useCallback((time: number) => {
-		const audio = audioRef.current;
-		if (audio && !Number.isNaN(time) && Number.isFinite(time)) {
-			const clampedTime = Math.max(0, Math.min(audio.duration || 0, time));
-			try {
-				audio.currentTime = clampedTime;
-				setCurrentTime(clampedTime);
-			} catch (_error) {
-				// Silent error handling for seeking
-			}
-		}
-	}, []);
-
-	/** Set the volume level (0-1) */
-	const setVolume = useCallback((newVolume: number) => {
-		const clampedVolume = Math.max(0, Math.min(1, newVolume));
-		setVolumeState(clampedVolume);
-		const audio = audioRef.current;
-		if (audio) {
-			audio.volume = clampedVolume;
-		}
-	}, []);
-
-	/** Add a single song to the end of the queue */
-	const addToQueue = useCallback(
-		(song: DetailedSong) => {
-			addSong(song);
-		},
-		[addSong],
-	);
-
-	/** Add multiple songs to the end of the queue */
-	const addMultipleToQueue = useCallback(
-		(songs: DetailedSong[]) => {
-			addSongs(songs);
-		},
-		[addSongs],
-	);
-
-	/** Remove a song from the queue by index */
-	const removeFromQueue = useCallback(
-		(index: number) => {
-			removeSong(index);
-		},
-		[removeSong],
-	);
-
-	/** Reorder the queue by moving a song from one position to another */
-	const reorderQueue = useCallback(
-		(fromIndex: number, toIndex: number) => {
-			reorderQueueAction(fromIndex, toIndex);
-		},
-		[reorderQueueAction],
-	);
-
-	/** Clear the entire queue and stop playback */
-	const clearQueueAndStop = useCallback(() => {
-		clearQueue();
-		setCurrentSong(null);
-		setIsPlaying(false);
-	}, [clearQueue]);
-
-	// Sync currentSong with queue changes
+	// Setup audio listeners when audio element is available
 	useEffect(() => {
-		if (queue.length > 0 && currentIndex < queue.length) {
-			const song = queue[currentIndex];
-			if (song) {
-				setCurrentSong(song);
-			}
-		} else {
-			setCurrentSong(null);
+		if (audioRef.current) {
+			store.audioRef.current = audioRef.current;
+			store.setupAudioListeners();
 		}
-	}, [queue, currentIndex]);
+	}, [store]);
 
-	// Reset playback state when song changes to prevent stale values
-	useEffect(() => {
-		if (currentSong) {
-			setCurrentTime(0);
-			setDuration(0);
-		}
-	}, [currentSong]);
+	const playbackValue: PlayerState = {
+		currentSong: store.currentSong,
+		isPlaying: store.isPlaying,
+		volume: store.volume,
+		currentTime: store.currentTime,
+		duration: store.duration,
+		audioRef: store.audioRef,
+	};
 
-	const playbackValue = useMemo<PlayerState>(
-		() => ({
-			currentSong,
-			isPlaying,
-			volume,
-			currentTime,
-			duration,
-			audioRef,
-		}),
-		[currentSong, isPlaying, volume, currentTime, duration],
-	);
+	const queueValue: QueueState = {
+		queue: store.queue,
+		currentIndex: store.currentIndex,
+		isShuffleEnabled: store.isShuffleEnabled,
+	};
 
-	const queueValue = useMemo<QueueState>(
-		() => ({
-			queue,
-			currentIndex,
-			isShuffleEnabled,
-		}),
-		[queue, currentIndex, isShuffleEnabled],
-	);
-
-	const actionsValue = useMemo<PlayerActions>(
-		() => ({
-			playSong,
-			playQueue,
-			addToQueue,
-			addMultipleToQueue,
-			removeFromQueue,
-			reorderQueue,
-			clearQueue: clearQueueAndStop,
-			togglePlayPause,
-			playNext,
-			playPrevious,
-			seekTo,
-			setVolume,
-		}),
-		[
-			playSong,
-			playQueue,
-			addToQueue,
-			addMultipleToQueue,
-			removeFromQueue,
-			reorderQueue,
-			clearQueueAndStop,
-			togglePlayPause,
-			playNext,
-			playPrevious,
-			seekTo,
-			setVolume,
-		],
-	);
+	const actionsValue: PlayerActions = {
+		playSong: store.playSong,
+		playQueue: store.playQueue,
+		addToQueue: store.addToQueue,
+		addMultipleToQueue: store.addMultipleToQueue,
+		removeFromQueue: store.removeFromQueue,
+		reorderQueue: store.reorderQueue,
+		clearQueue: store.clearQueue,
+		togglePlayPause: store.togglePlayPause,
+		playNext: store.playNext,
+		playPrevious: store.playPrevious,
+		seekTo: store.seekTo,
+		setVolume: store.setVolume,
+	};
 
 	return (
 		<PlaybackContext.Provider value={playbackValue}>

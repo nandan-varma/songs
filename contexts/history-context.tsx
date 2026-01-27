@@ -1,13 +1,7 @@
 "use client";
 
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useState,
-} from "react";
-import { logError } from "@/lib/utils/logger";
+import { createContext, useContext } from "react";
+import { useHistoryStore } from "@/stores/history-store";
 import type {
 	DetailedAlbum,
 	DetailedArtist,
@@ -66,63 +60,14 @@ interface HistoryContextType {
 
 const HistoryContext = createContext<HistoryContextType | undefined>(undefined);
 
-const HISTORY_STORAGE_KEY = "music-app-history";
-const MAX_HISTORY_ITEMS = 10;
-
 export function HistoryProvider({ children }: { children: React.ReactNode }) {
-	const [history, setHistory] = useState<HistoryItem[]>([]);
-
-	// Load history from localStorage on mount
-	useEffect(() => {
-		try {
-			const stored = localStorage.getItem(HISTORY_STORAGE_KEY);
-			if (stored) {
-				const parsed = JSON.parse(stored) as HistoryItem[];
-				// Convert timestamp strings back to Date objects
-				const withDates = parsed.map((item) => ({
-					...item,
-					timestamp: new Date(item.timestamp),
-				}));
-				setHistory(withDates);
-			}
-		} catch (error) {
-			logError("HistoryContext:load", error);
-		}
-	}, []);
-
-	// Save history to localStorage whenever it changes
-	useEffect(() => {
-		try {
-			localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
-		} catch (error) {
-			logError("HistoryContext:save", error);
-		}
-	}, [history]);
-
-	const addToHistory = useCallback((item: HistoryItem) => {
-		setHistory((prev) => {
-			// Remove existing item with same id if present
-			const filtered = prev.filter((h) => h.id !== item.id);
-			// Add new item at the beginning
-			const newHistory = [item, ...filtered];
-			// Keep only the last MAX_HISTORY_ITEMS
-			return newHistory.slice(0, MAX_HISTORY_ITEMS);
-		});
-	}, []);
-
-	const clearHistory = useCallback(() => {
-		setHistory([]);
-	}, []);
-
-	const removeFromHistory = useCallback((id: string) => {
-		setHistory((prev) => prev.filter((item) => item.id !== id));
-	}, []);
+	const store = useHistoryStore();
 
 	const value: HistoryContextType = {
-		history,
-		addToHistory,
-		clearHistory,
-		removeFromHistory,
+		history: store.history,
+		addToHistory: store.addToHistory,
+		clearHistory: store.clearHistory,
+		removeFromHistory: store.removeFromHistory,
 	};
 
 	return (

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { memo } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
+import { DirectDownloadButton } from "@/components/direct-download-button";
 import { DownloadButton } from "@/components/download-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -154,6 +155,7 @@ export const SongHeader = memo(function SongHeader({
 										Add to Queue
 									</Button>
 								</motion.div>
+								<DirectDownloadButton song={song} size="lg" showLabel />
 								<DownloadButton song={song} size="lg" />
 							</div>
 						</motion.div>

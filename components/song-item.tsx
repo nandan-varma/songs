@@ -44,7 +44,7 @@ export const SongItem = memo(function SongItem({
 			try {
 				setIsLoading(true);
 				const response = await getSongById(song.id);
-				if (response.success && response.data && response.data[0]) {
+				if (response.success && response.data?.[0]) {
 					playSong(response.data[0]);
 				}
 			} catch (error) {
@@ -66,7 +66,7 @@ export const SongItem = memo(function SongItem({
 			try {
 				setIsLoading(true);
 				const response = await getSongById(song.id);
-				if (response.success && response.data && response.data[0]) {
+				if (response.success && response.data?.[0]) {
 					addSong(response.data[0]);
 				}
 			} catch (error) {

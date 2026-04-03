@@ -49,17 +49,15 @@ export function Client() {
 	});
 
 	const songsData = songsQuery.data as
-		| { pages: Array<{ total: number; songs: DetailedSong[] }> }
+		| { data: { total: number; songs: DetailedSong[] } }
 		| undefined;
 	const albumsData = albumsQuery.data as
-		| { pages: Array<{ total: number; albums: DetailedAlbum[] }> }
+		| { data: { total: number; albums: DetailedAlbum[] } }
 		| undefined;
 
-	const allSongs: DetailedSong[] =
-		songsData?.pages.flatMap((page) => page.songs) ?? [];
+	const allSongs: DetailedSong[] = songsData?.data?.songs ?? [];
 	const filteredSongs = allSongs;
-	const allAlbums: DetailedAlbum[] =
-		albumsData?.pages.flatMap((page) => page.albums) ?? [];
+	const allAlbums: DetailedAlbum[] = albumsData?.data?.albums ?? [];
 
 	if (!id) {
 		return (

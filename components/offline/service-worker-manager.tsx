@@ -1,10 +1,11 @@
 "use client";
 
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useServiceWorker } from "@/hooks/network/use-service-worker";
+import { formatBuildInfo, getBuildInfo } from "@/lib/deployment";
 
 export function ServiceWorkerManager() {
 	const {
@@ -13,20 +14,35 @@ export function ServiceWorkerManager() {
 		isOnline,
 		registrationError,
 		retryRegistration,
+		deploymentDetected,
 	} = useServiceWorker();
+	const [buildInfo, setBuildInfo] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (deploymentDetected) {
+			// Fetch and format build info for display
+			getBuildInfo()
+				.then((info) => {
+					setBuildInfo(formatBuildInfo(info));
+				})
+				.catch(() => {
+					setBuildInfo("New version available");
+				});
+		}
+	}, [deploymentDetected]);
 
 	useEffect(() => {
 		if (updateAvailable) {
 			toast.info("Update Available", {
-				description: "A new version of the app is available.",
+				description: buildInfo || "A new version of the app is available.",
 				action: {
-					label: "Update",
+					label: "Update Now",
 					onClick: updateServiceWorker,
 				},
 				duration: 10000,
 			});
 		}
-	}, [updateAvailable, updateServiceWorker]);
+	}, [updateAvailable, buildInfo, updateServiceWorker]);
 
 	useEffect(() => {
 		if (registrationError && !isOnline) {

@@ -1,7 +1,7 @@
-const CACHE_VERSION = "v1";
-const STATIC_CACHE = `static-${CACHE_VERSION}`;
-const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
-const IMAGE_CACHE = `images-${CACHE_VERSION}`;
+let CACHE_VERSION = "v1";
+const STATIC_CACHE = () => `static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = () => `dynamic-${CACHE_VERSION}`;
+const IMAGE_CACHE = () => `images-${CACHE_VERSION}`;
 
 // Cache limits
 const MAX_CACHE_SIZE = 500 * 1024 * 1024; // 500MB total
@@ -9,6 +9,67 @@ const MAX_ITEMS_PER_CACHE = 100; // Max items per cache type
 
 // Static assets to cache immediately
 const STATIC_ASSETS = ["/manifest.json"];
+
+// Track current build ID
+let currentBuildId = null;
+let lastBuildCheckTime = 0;
+const BUILD_CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds
+
+/**
+ * Fetch and update cache version based on build info
+ */
+async function updateCacheVersionIfNeeded() {
+	const now = Date.now();
+	// Only check periodically to avoid excessive fetches
+	if (now - lastBuildCheckTime < BUILD_CHECK_INTERVAL) {
+		return;
+	}
+
+	lastBuildCheckTime = now;
+
+	try {
+		const response = await fetch("/build-info.json", {
+			cache: "no-store",
+		});
+
+		if (response.ok) {
+			const buildInfo = await response.json();
+			const newBuildId = buildInfo.id;
+
+			// New deployment detected
+			if (currentBuildId && currentBuildId !== newBuildId) {
+				console.log("[Service Worker] New deployment detected!", {
+					old: currentBuildId,
+					new: newBuildId,
+				});
+				await clearAllCaches();
+				// Update cache version
+				CACHE_VERSION = `v${buildInfo.timestamp}`;
+				// Notify all clients
+				self.clients.matchAll().then((clients) => {
+					clients.forEach((client) => {
+						client.postMessage({
+							type: "DEPLOYMENT_DETECTED",
+							buildInfo,
+						});
+					});
+				});
+			}
+
+			currentBuildId = newBuildId;
+		}
+	} catch (error) {
+		console.warn("[Service Worker] Failed to check build info:", error);
+	}
+}
+
+/**
+ * Clear all caches
+ */
+async function clearAllCaches() {
+	const cacheNames = await caches.keys();
+	return Promise.all(cacheNames.map((name) => caches.delete(name)));
+}
 
 // Helper: Get cache size
 async function getCacheSize(cacheName) {
@@ -47,7 +108,9 @@ async function _manageCacheSize(cacheName) {
 self.addEventListener("install", (event) => {
 	console.log("[Service Worker] Installing...");
 	event.waitUntil(
-		caches.open(STATIC_CACHE).then((cache) => {
+		(async () => {
+			await updateCacheVersionIfNeeded();
+			const cache = await caches.open(STATIC_CACHE());
 			console.log("[Service Worker] Caching static assets");
 			// Cache assets individually to avoid failure on any single asset
 			return Promise.allSettled(
@@ -70,7 +133,7 @@ self.addEventListener("install", (event) => {
 			).then(() => {
 				console.log("[Service Worker] Static assets caching complete");
 			});
-		}),
+		})(),
 	);
 	self.skipWaiting();
 });
@@ -79,21 +142,21 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
 	console.log("[Service Worker] Activating...");
 	event.waitUntil(
-		caches.keys().then((cacheNames) => {
+		(async () => {
+			await updateCacheVersionIfNeeded();
+			const cacheNames = await caches.keys();
+			const validCaches = [STATIC_CACHE(), DYNAMIC_CACHE(), IMAGE_CACHE()];
+
 			return Promise.all(
 				cacheNames.map((cacheName) => {
-					if (
-						cacheName !== STATIC_CACHE &&
-						cacheName !== DYNAMIC_CACHE &&
-						cacheName !== IMAGE_CACHE
-					) {
+					if (!validCaches.includes(cacheName)) {
 						console.log("[Service Worker] Deleting old cache:", cacheName);
 						return caches.delete(cacheName);
 					}
 					return Promise.resolve();
 				}),
 			);
-		}),
+		})(),
 	);
 	return self.clients.claim();
 });
@@ -102,6 +165,12 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
 	const { request } = event;
 	const url = new URL(request.url);
+
+	// Check for new deployment periodically
+	if (Math.random() < 0.01) {
+		// Check 1% of requests
+		updateCacheVersionIfNeeded().catch(() => {});
+	}
 
 	// Skip non-GET requests
 	if (request.method !== "GET") {
@@ -125,9 +194,9 @@ self.addEventListener("fetch", (event) => {
 						// Only cache successful responses
 						if (networkResponse && networkResponse.status === 200) {
 							const responseClone = networkResponse.clone();
-							caches.open(IMAGE_CACHE).then((cache) => {
+							caches.open(IMAGE_CACHE()).then((cache) => {
 								cache.put(request, responseClone);
-								evictOldest(IMAGE_CACHE, MAX_ITEMS_PER_CACHE);
+								evictOldest(IMAGE_CACHE(), MAX_ITEMS_PER_CACHE);
 							});
 						}
 						return networkResponse;
@@ -151,9 +220,9 @@ self.addEventListener("fetch", (event) => {
 				.then((response) => {
 					// Cache the page
 					const responseClone = response.clone();
-					caches.open(DYNAMIC_CACHE).then((cache) => {
+					caches.open(DYNAMIC_CACHE()).then((cache) => {
 						cache.put(request, responseClone);
-						evictOldest(DYNAMIC_CACHE, MAX_ITEMS_PER_CACHE);
+						evictOldest(DYNAMIC_CACHE(), MAX_ITEMS_PER_CACHE);
 					});
 					return response;
 				})
@@ -189,16 +258,16 @@ self.addEventListener("fetch", (event) => {
 						request.destination === "font"
 					) {
 						const responseClone = networkResponse.clone();
-						caches.open(STATIC_CACHE).then((cache) => {
+						caches.open(STATIC_CACHE()).then((cache) => {
 							cache.put(request, responseClone);
-							evictOldest(STATIC_CACHE, MAX_ITEMS_PER_CACHE);
+							evictOldest(STATIC_CACHE(), MAX_ITEMS_PER_CACHE);
 						});
 					} else {
 						// Cache other resources in dynamic cache
 						const responseClone = networkResponse.clone();
-						caches.open(DYNAMIC_CACHE).then((cache) => {
+						caches.open(DYNAMIC_CACHE()).then((cache) => {
 							cache.put(request, responseClone);
-							evictOldest(DYNAMIC_CACHE, MAX_ITEMS_PER_CACHE);
+							evictOldest(DYNAMIC_CACHE(), MAX_ITEMS_PER_CACHE);
 						});
 					}
 					return networkResponse;
@@ -224,12 +293,10 @@ self.addEventListener("message", (event) => {
 	}
 
 	if (event.data && event.data.type === "CLEAR_CACHE") {
-		event.waitUntil(
-			caches.keys().then((cacheNames) => {
-				return Promise.all(
-					cacheNames.map((cacheName) => caches.delete(cacheName)),
-				);
-			}),
-		);
+		event.waitUntil(clearAllCaches());
+	}
+
+	if (event.data && event.data.type === "CHECK_UPDATE") {
+		event.waitUntil(updateCacheVersionIfNeeded());
 	}
 });

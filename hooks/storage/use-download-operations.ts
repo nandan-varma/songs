@@ -23,7 +23,10 @@ export function useDownloadOperations({
 
 	const downloadSong = useCallback(
 		async (song: DetailedSong) => {
-			if (isDownloading || cachedSongs.has(song.id)) return;
+			// Check if already downloading or cached using current state
+			// Note: we intentionally don't use isDownloading from closure
+			// to avoid including state in dependencies
+			if (cachedSongs.has(song.id)) return;
 
 			setIsDownloading(true);
 
@@ -78,7 +81,7 @@ export function useDownloadOperations({
 				setIsDownloading(false);
 			}
 		},
-		[isDownloading, cachedSongs, addToCache],
+		[cachedSongs, addToCache],
 	);
 
 	const removeSong = useCallback(

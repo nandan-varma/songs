@@ -15,16 +15,13 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DevMenu } from "@/components/dev/dev-menu";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useDownloads } from "@/contexts/downloads-context";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { usePWAInstall } from "@/hooks/ui/use-pwa-install";
 import { authClient } from "@/lib/auth-client";
 
 export function Navigation() {
-	const { isDownloading } = useDownloads();
-	const { isOfflineMode, cachedSongsCount } = useOffline();
+	const isOfflineMode = useOffline();
 	const { isInstallable, promptInstall } = usePWAInstall();
 	const router = useRouter();
 	const { data: session, isPending } = authClient.useSession();
@@ -57,11 +54,6 @@ export function Navigation() {
 							<span className="hidden sm:inline text-sm font-medium whitespace-nowrap">
 								{isOfflineMode ? "Offline" : "Online"}
 							</span>
-							{isOfflineMode && cachedSongsCount > 0 && (
-								<Badge variant="secondary" className="text-xs flex-shrink-0">
-									{cachedSongsCount}
-								</Badge>
-							)}
 						</div>
 
 						{/* Divider */}
@@ -81,9 +73,6 @@ export function Navigation() {
 									<span className="hidden sm:inline ml-2 whitespace-nowrap">
 										Downloads
 									</span>
-									{isDownloading && (
-										<div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-primary rounded animate-pulse" />
-									)}
 								</Button>
 							</Link>
 

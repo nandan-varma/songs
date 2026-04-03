@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { usePlaylistFromQuery } from "@/hooks/pages/use-playlist";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
@@ -18,12 +18,12 @@ import { EntityType } from "@/types/entity";
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, isOfflineMode } = useOffline();
+	const isOfflineMode = useOffline();
 	const { addToHistory } = useHistory();
 
 	const { data: playlist } = usePlaylistFromQuery();
 
-	const filteredSongs = playlist?.songs ? getFilteredSongs(playlist.songs) : [];
+	const filteredSongs = playlist?.songs ?? [];
 
 	// Add to history when playlist loads
 	useEffect(() => {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { checkForNewDeployment, getBuildInfo } from "@/lib/deployment";
+import { logError } from "@/lib/utils/logger";
 
 export function useServiceWorker() {
 	const [registration, setRegistration] =
@@ -80,7 +81,7 @@ export function useServiceWorker() {
 								}
 							}
 						} catch (err) {
-							console.error("Update check error:", err);
+							logError("useServiceWorker:updateCheck", err);
 						}
 					},
 					60 * 60 * 1000,
@@ -89,7 +90,7 @@ export function useServiceWorker() {
 				const errorMessage =
 					error instanceof Error ? error.message : "Unknown error";
 				setRegistrationError(errorMessage);
-				console.error("Service Worker registration failed:", error);
+				logError("useServiceWorker:register", error);
 			}
 		};
 

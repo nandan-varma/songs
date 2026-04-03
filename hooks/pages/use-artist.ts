@@ -1,15 +1,13 @@
 import { useQueryState } from "nuqs";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { useArtist } from "../data/queries";
 
 export function useArtistFromQuery() {
 	const [id] = useQueryState("id");
-	const { shouldEnableQuery } = useOffline();
+	const isOfflineMode = useOffline();
 
 	return useArtist(id || "", {
-		queryOptions: {
-			enabled: !!id && shouldEnableQuery(),
-			suspense: true,
-		},
+		enabled: !!id && !isOfflineMode,
+		suspense: true,
 	});
 }

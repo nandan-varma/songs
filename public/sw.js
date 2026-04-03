@@ -1,235 +1,140 @@
-const CACHE_VERSION = "v1";
-const STATIC_CACHE = `static-${CACHE_VERSION}`;
-const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
-const IMAGE_CACHE = `images-${CACHE_VERSION}`;
+// Lightweight Service Worker for Music PWA
+// Handles offline caching with simplified cache-first and network-first strategies
 
-// Cache limits
-const MAX_CACHE_SIZE = 500 * 1024 * 1024; // 500MB total
-const MAX_ITEMS_PER_CACHE = 100; // Max items per cache type
+const CACHE_NAME = "music-pwa-v1";
+const STATIC_ASSETS = ["/", "/offline.html"];
 
-// Static assets to cache immediately
-const STATIC_ASSETS = ["/manifest.json"];
-
-// Helper: Get cache size
-async function getCacheSize(cacheName) {
-	const cache = await caches.open(cacheName);
-	const keys = await cache.keys();
-	let totalSize = 0;
-	for (const request of keys) {
-		const response = await cache.match(request);
-		if (response) {
-			const blob = await response.clone().blob();
-			totalSize += blob.size;
-		}
-	}
-	return totalSize;
-}
-
-// Helper: Evict oldest items from a cache
-async function evictOldest(cacheName, maxItems) {
-	const cache = await caches.open(cacheName);
-	const keys = await cache.keys();
-	if (keys.length <= maxItems) return;
-
-	const itemsToDelete = keys.slice(0, keys.length - maxItems);
-	await Promise.all(itemsToDelete.map((request) => cache.delete(request)));
-}
-
-// Helper: Evict by size when over limit
-async function _manageCacheSize(cacheName) {
-	const size = await getCacheSize(cacheName);
-	if (size > MAX_CACHE_SIZE) {
-		await evictOldest(cacheName, Math.floor(MAX_ITEMS_PER_CACHE / 2));
-	}
-}
-
-// Install event - cache static assets
+/**
+ * Install event - cache static assets
+ */
 self.addEventListener("install", (event) => {
-	console.log("[Service Worker] Installing...");
 	event.waitUntil(
-		caches.open(STATIC_CACHE).then((cache) => {
-			console.log("[Service Worker] Caching static assets");
-			// Cache assets individually to avoid failure on any single asset
-			return Promise.allSettled(
-				STATIC_ASSETS.map((url) =>
-					fetch(url)
-						.then((response) => {
-							if (response.ok) {
-								return cache.put(url, response);
-							}
-							console.warn(
-								`[Service Worker] Failed to cache ${url}: ${response.status}`,
-							);
-							return Promise.resolve();
-						})
-						.catch((err) => {
-							console.warn(`[Service Worker] Failed to fetch ${url}:`, err);
-							return Promise.resolve();
-						}),
-				),
-			).then(() => {
-				console.log("[Service Worker] Static assets caching complete");
+		caches.open(CACHE_NAME).then((cache) => {
+			return cache.addAll(STATIC_ASSETS).catch(() => {
+				// Fail silently if assets not available yet
 			});
 		}),
 	);
 	self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+/**
+ * Activate event - clean up old caches
+ */
 self.addEventListener("activate", (event) => {
-	console.log("[Service Worker] Activating...");
 	event.waitUntil(
 		caches.keys().then((cacheNames) => {
 			return Promise.all(
-				cacheNames.map((cacheName) => {
-					if (
-						cacheName !== STATIC_CACHE &&
-						cacheName !== DYNAMIC_CACHE &&
-						cacheName !== IMAGE_CACHE
-					) {
-						console.log("[Service Worker] Deleting old cache:", cacheName);
-						return caches.delete(cacheName);
-					}
-					return Promise.resolve();
-				}),
+				cacheNames
+					.filter((name) => name !== CACHE_NAME)
+					.map((name) => caches.delete(name)),
 			);
 		}),
 	);
-	return self.clients.claim();
+	self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+/**
+ * Fetch event - implement caching strategies
+ * - Network-first: API requests (with fallback to cache)
+ * - Cache-first: Static assets (JS, CSS, images)
+ * - Network-only: WebSocket, streaming, audio files
+ */
 self.addEventListener("fetch", (event) => {
 	const { request } = event;
 	const url = new URL(request.url);
 
-	// Skip non-GET requests
+	// Skip chrome extensions and non-http(s)
+	if (!url.protocol.startsWith("http")) {
+		return;
+	}
+
+	// Skip same-site requests with cache control headers
+	if (url.origin !== location.origin) {
+		// External resources - network first
+		event.respondWith(networkFirst(request));
+		return;
+	}
+
+	// Determine strategy based on request type
 	if (request.method !== "GET") {
+		// POST, PUT, DELETE - network only
+		event.respondWith(fetch(request));
 		return;
 	}
 
-	// Skip API requests (let them fail naturally when offline)
-	if (url.pathname.startsWith("/api/") || url.hostname.includes("saavn")) {
-		return;
+	if (isStaticAsset(url)) {
+		// Static assets - cache first
+		event.respondWith(cacheFirst(request));
+	} else if (isApiRequest(url)) {
+		// API requests - network first
+		event.respondWith(networkFirst(request));
+	} else {
+		// Default - network first
+		event.respondWith(networkFirst(request));
+	}
+});
+
+/**
+ * Cache-first strategy: return from cache, fallback to network
+ */
+async function cacheFirst(request) {
+	const cache = await caches.open(CACHE_NAME);
+	const cached = await cache.match(request);
+
+	if (cached) {
+		return cached;
 	}
 
-	// Handle images separately
-	if (request.destination === "image") {
-		event.respondWith(
-			caches.match(request).then((response) => {
-				if (response) {
-					return response;
-				}
-				return fetch(request)
-					.then((networkResponse) => {
-						// Only cache successful responses
-						if (networkResponse && networkResponse.status === 200) {
-							const responseClone = networkResponse.clone();
-							caches.open(IMAGE_CACHE).then((cache) => {
-								cache.put(request, responseClone);
-								evictOldest(IMAGE_CACHE, MAX_ITEMS_PER_CACHE);
-							});
-						}
-						return networkResponse;
-					})
-					.catch(() => {
-						// Return a placeholder image if offline
-						return new Response(
-							'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="#ddd"/></svg>',
-							{ headers: { "Content-Type": "image/svg+xml" } },
-						);
-					});
-			}),
-		);
-		return;
+	try {
+		const response = await fetch(request);
+		if (response.ok && request.method === "GET") {
+			cache.put(request, response.clone());
+		}
+		return response;
+	} catch {
+		return new Response("Offline - resource not available", {
+			status: 503,
+			statusText: "Service Unavailable",
+		});
 	}
+}
 
-	// Network first, fallback to cache for navigation requests
-	if (request.mode === "navigate") {
-		event.respondWith(
-			fetch(request)
-				.then((response) => {
-					// Cache the page
-					const responseClone = response.clone();
-					caches.open(DYNAMIC_CACHE).then((cache) => {
-						cache.put(request, responseClone);
-						evictOldest(DYNAMIC_CACHE, MAX_ITEMS_PER_CACHE);
-					});
-					return response;
-				})
-				.catch(() => {
-					// Try to serve from cache
-					return caches.match(request).then((response) => {
-						if (response) {
-							return response;
-						}
-						// Serve offline page
-						return caches.match("/offline").then((offlineResponse) => {
-							return offlineResponse || new Response("Offline");
-						});
-					});
-				}),
-		);
-		return;
+/**
+ * Network-first strategy: try network, fallback to cache
+ */
+async function networkFirst(request) {
+	try {
+		const response = await fetch(request);
+		if (response.ok && request.method === "GET") {
+			const cache = await caches.open(CACHE_NAME);
+			cache.put(request, response.clone());
+		}
+		return response;
+	} catch {
+		const cached = await caches.match(request);
+		if (cached) {
+			return cached;
+		}
+		return new Response("Offline - request failed", {
+			status: 503,
+			statusText: "Service Unavailable",
+		});
 	}
+}
 
-	// Cache first, fallback to network for static assets
-	event.respondWith(
-		caches.match(request).then((response) => {
-			if (response) {
-				return response;
-			}
-
-			return fetch(request)
-				.then((networkResponse) => {
-					// Cache JS, CSS, fonts
-					if (
-						request.destination === "script" ||
-						request.destination === "style" ||
-						request.destination === "font"
-					) {
-						const responseClone = networkResponse.clone();
-						caches.open(STATIC_CACHE).then((cache) => {
-							cache.put(request, responseClone);
-							evictOldest(STATIC_CACHE, MAX_ITEMS_PER_CACHE);
-						});
-					} else {
-						// Cache other resources in dynamic cache
-						const responseClone = networkResponse.clone();
-						caches.open(DYNAMIC_CACHE).then((cache) => {
-							cache.put(request, responseClone);
-							evictOldest(DYNAMIC_CACHE, MAX_ITEMS_PER_CACHE);
-						});
-					}
-					return networkResponse;
-				})
-				.catch(() => {
-					// Return a basic offline response
-					if (request.destination === "document") {
-						return caches.match("/offline");
-					}
-					return new Response("Network error", {
-						status: 408,
-						headers: { "Content-Type": "text/plain" },
-					});
-				});
-		}),
+/**
+ * Check if URL is a static asset (JS, CSS, images, fonts)
+ */
+function isStaticAsset(url) {
+	return /\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|ico)(\?|$)/.test(
+		url.pathname,
 	);
-});
+}
 
-// Handle messages from clients
-self.addEventListener("message", (event) => {
-	if (event.data && event.data.type === "SKIP_WAITING") {
-		self.skipWaiting();
-	}
-
-	if (event.data && event.data.type === "CLEAR_CACHE") {
-		event.waitUntil(
-			caches.keys().then((cacheNames) => {
-				return Promise.all(
-					cacheNames.map((cacheName) => caches.delete(cacheName)),
-				);
-			}),
-		);
-	}
-});
+/**
+ * Check if URL is an API request
+ */
+function isApiRequest(url) {
+	return url.pathname.startsWith("/api/");
+}

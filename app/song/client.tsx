@@ -7,7 +7,7 @@ import { SongHeader } from "@/components/song/song-header";
 import { SongSuggestions } from "@/components/song/song-suggestions";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { useSongSuggestions } from "@/hooks/data/queries";
 import { useSongFromQuery } from "@/hooks/pages/use-song";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
@@ -17,16 +17,16 @@ import { EntityType } from "@/types/entity";
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playSong, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, shouldEnableQuery, isOfflineMode } = useOffline();
+	const isOfflineMode = useOffline();
 	const { addToHistory } = useHistory();
 
 	const { data: songData } = useSongFromQuery();
 	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
-		enabled: !!id && shouldEnableQuery(),
+		enabled: !!id && !isOfflineMode,
 	});
 
 	const song = songData?.[0];
-	const filteredSuggestions = getFilteredSongs(suggestions);
+	const filteredSuggestions = suggestions;
 
 	// Add to history when song loads
 	useEffect(() => {

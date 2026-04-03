@@ -97,45 +97,59 @@ export function BreadcrumbNav() {
 			transition={{ duration: 0.3 }}
 		>
 			<div className="container mx-auto px-4 py-3">
-				<div className="flex items-center gap-4">
-					<motion.div whileHover={{ x: -3 }} whileTap={{ scale: 0.95 }}>
+				<div className="flex items-center gap-3 min-h-[40px]">
+					{/* Back Button - Fixed Width */}
+					<motion.div
+						whileHover={{ x: -3 }}
+						whileTap={{ scale: 0.95 }}
+						className="flex-shrink-0"
+					>
 						<Button
 							variant="ghost"
 							size="icon"
 							onClick={() => router.back()}
-							className="flex-shrink-0"
 							aria-label="Go back"
+							className="h-9 w-9"
 						>
 							<ChevronLeft className="h-5 w-5" />
 						</Button>
 					</motion.div>
-					<Breadcrumb>
+
+					{/* Divider */}
+					<div className="w-px h-6 bg-border flex-shrink-0" />
+
+					{/* Breadcrumbs */}
+					<Breadcrumb className="flex-1 min-w-0">
 						<BreadcrumbList>
 							<BreadcrumbItem>
 								<BreadcrumbLink asChild>
 									<Link href="/" className="flex items-center gap-1.5">
-										<Home className="h-3.5 w-3.5" />
-										<span>Home</span>
+										<Home className="h-3.5 w-3.5 flex-shrink-0" />
+										<span className="truncate">Home</span>
 									</Link>
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							{breadcrumbs.map((crumb: BreadcrumbSegment) => (
-								<div key={crumb.href} className="flex items-center">
-									<BreadcrumbSeparator />
+								<div key={crumb.href} className="flex items-center gap-1.5">
+									<BreadcrumbSeparator className="flex-shrink-0" />
 									<BreadcrumbItem>
 										{crumb.isCurrentPage ? (
-											<BreadcrumbPage className="flex items-center gap-1.5">
-												{crumb.icon}
-												{crumb.label}
+											<BreadcrumbPage className="flex items-center gap-1.5 truncate">
+												{crumb.icon && (
+													<span className="flex-shrink-0">{crumb.icon}</span>
+												)}
+												<span className="truncate">{crumb.label}</span>
 											</BreadcrumbPage>
 										) : (
 											<BreadcrumbLink asChild>
 												<Link
 													href={crumb.href as Route}
-													className="flex items-center gap-1.5"
+													className="flex items-center gap-1.5 truncate"
 												>
-													{crumb.icon}
-													{crumb.label}
+													{crumb.icon && (
+														<span className="flex-shrink-0">{crumb.icon}</span>
+													)}
+													<span className="truncate">{crumb.label}</span>
 												</Link>
 											</BreadcrumbLink>
 										)}

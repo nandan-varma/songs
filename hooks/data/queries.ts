@@ -32,7 +32,9 @@ import type {
  */
 export function useSong(
 	id: string,
-	options?: UseQueryOptions<DetailedSong[]> & { enabled?: boolean },
+	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
+		enabled?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: CACHE_KEYS.SONGS(id),
@@ -51,7 +53,9 @@ export function useSong(
  */
 export function useAlbum(
 	id: string,
-	options?: UseQueryOptions<DetailedAlbum> & { enabled?: boolean },
+	options?: Omit<UseQueryOptions<DetailedAlbum>, "queryKey" | "queryFn"> & {
+		enabled?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: CACHE_KEYS.ALBUM(id),
@@ -70,7 +74,9 @@ export function useAlbum(
  */
 export function useArtist(
 	id: string,
-	options?: UseQueryOptions<DetailedArtist> & { enabled?: boolean },
+	options?: Omit<UseQueryOptions<DetailedArtist>, "queryKey" | "queryFn"> & {
+		enabled?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: CACHE_KEYS.ARTIST(id),
@@ -89,7 +95,9 @@ export function useArtist(
  */
 export function usePlaylist(
 	id: string,
-	options?: UseQueryOptions<DetailedPlaylist> & { enabled?: boolean },
+	options?: Omit<UseQueryOptions<DetailedPlaylist>, "queryKey" | "queryFn"> & {
+		enabled?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: CACHE_KEYS.PLAYLIST(id),
@@ -108,7 +116,9 @@ export function usePlaylist(
  */
 export function useGlobalSearch(
 	query: string,
-	options?: UseQueryOptions<SearchResponse> & { enabled?: boolean },
+	options?: Omit<UseQueryOptions<SearchResponse>, "queryKey" | "queryFn"> & {
+		enabled?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: CACHE_KEYS.SEARCH(query),
@@ -125,7 +135,10 @@ export function useGlobalSearch(
 export function useSearchSongs(
 	query: string,
 	limit = 10,
-	options?: UseQueryOptions<{ total: number; results: DetailedSong[] }> & {
+	options?: Omit<
+		UseQueryOptions<{ total: number; results: DetailedSong[] }>,
+		"queryKey" | "queryFn"
+	> & {
 		enabled?: boolean;
 	},
 ) {
@@ -147,7 +160,10 @@ export function useSearchSongs(
 export function useSearchAlbums(
 	query: string,
 	limit = 10,
-	options?: UseQueryOptions<{ total: number; results: AlbumSearchResult[] }> & {
+	options?: Omit<
+		UseQueryOptions<{ total: number; results: AlbumSearchResult[] }>,
+		"queryKey" | "queryFn"
+	> & {
 		enabled?: boolean;
 	},
 ) {
@@ -169,10 +185,10 @@ export function useSearchAlbums(
 export function useSearchArtists(
 	query: string,
 	limit = 10,
-	options?: UseQueryOptions<{
-		total: number;
-		results: ArtistSearchResult[];
-	}> & {
+	options?: Omit<
+		UseQueryOptions<{ total: number; results: ArtistSearchResult[] }>,
+		"queryKey" | "queryFn"
+	> & {
 		enabled?: boolean;
 	},
 ) {
@@ -194,10 +210,10 @@ export function useSearchArtists(
 export function useSearchPlaylists(
 	query: string,
 	limit = 10,
-	options?: UseQueryOptions<{
-		total: number;
-		results: PlaylistSearchResult[];
-	}> & {
+	options?: Omit<
+		UseQueryOptions<{ total: number; results: PlaylistSearchResult[] }>,
+		"queryKey" | "queryFn"
+	> & {
 		enabled?: boolean;
 	},
 ) {
@@ -219,7 +235,9 @@ export function useSearchPlaylists(
 export function useSongSuggestions(
 	id: string,
 	limit = 10,
-	options?: UseQueryOptions<DetailedSong[]> & { enabled?: boolean },
+	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
+		enabled?: boolean;
+	},
 ) {
 	return useQuery({
 		queryKey: ["suggestions", id, limit],
@@ -240,7 +258,10 @@ export function useArtistSongs(
 	id: string,
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
-	options?: UseQueryOptions<{ total: number; songs: DetailedSong[] }> & {
+	options?: Omit<
+		UseQueryOptions<{ total: number; songs: DetailedSong[] }>,
+		"queryKey" | "queryFn"
+	> & {
 		enabled?: boolean;
 	},
 ) {
@@ -263,7 +284,10 @@ export function useArtistAlbums(
 	id: string,
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
-	options?: UseQueryOptions<{ total: number; albums: DetailedAlbum[] }> & {
+	options?: Omit<
+		UseQueryOptions<{ total: number; albums: DetailedAlbum[] }>,
+		"queryKey" | "queryFn"
+	> & {
 		enabled?: boolean;
 	},
 ) {

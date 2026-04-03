@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
 import { SearchBar } from "@/components/common/search-bar";
@@ -14,19 +14,12 @@ import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/hooks/cache";
-import {
-	useGlobalSearch,
-	useSearchAlbums,
-	useSearchArtists,
-	useSearchPlaylists,
-	useSearchSongs,
-} from "@/hooks/data/queries";
+import { useGlobalSearch } from "@/hooks/data/queries";
+import { useSearchQueries } from "@/hooks/data/use-search-queries";
 import { detailedSongToSong } from "@/lib/utils";
 import type {
-	AlbumSearchResult,
 	Artist,
 	ArtistSearchResult,
-	DetailedSong,
 	Playlist,
 	PlaylistSearchResult,
 } from "@/types/entity";
@@ -81,99 +74,25 @@ export default function SearchContent() {
 	const [query, setQuery] = useState(queryParam);
 	const [activeTab, setActiveTab] = useState<TabType>(tabParam);
 
-	const searchEnabled = useMemo(
-		() => queryParam.trim().length > 0 && !isOfflineMode,
-		[queryParam, isOfflineMode],
-	);
+	const searchEnabled = !!queryParam.trim() && !isOfflineMode;
 
+	// Fetch global search when viewing "all" tab
 	const globalSearchQuery = useGlobalSearch(queryParam, {
 		enabled: activeTab === "all" && searchEnabled,
 	});
 
-	const songsQuery = useSearchSongs(queryParam, SEARCH_PAGE_SIZE, {
-		enabled: activeTab === "songs" && searchEnabled,
+	// Fetch all entity types in parallel
+	const searchResults = useSearchQueries(queryParam, {
+		limit: SEARCH_PAGE_SIZE,
+		enabled: searchEnabled,
 	});
 
-	const albumsQuery = useSearchAlbums(queryParam, SEARCH_PAGE_SIZE, {
-		enabled: activeTab === "albums" && searchEnabled,
-	});
-
-	const artistsQuery = useSearchArtists(queryParam, SEARCH_PAGE_SIZE, {
-		enabled: activeTab === "artists" && searchEnabled,
-	});
-
-	const playlistsQuery = useSearchPlaylists(queryParam, SEARCH_PAGE_SIZE, {
-		enabled: activeTab === "playlists" && searchEnabled,
-	});
-
-	/** Process infinite query data efficiently */
-	const processedData = useMemo(() => {
-		const songsData = songsQuery.data as
-			| { pages: Array<{ total: number; results: DetailedSong[] }> }
-			| undefined;
-		const albumsData = albumsQuery.data as
-			| { pages: Array<{ total: number; results: AlbumSearchResult[] }> }
-			| undefined;
-		const artistsData = artistsQuery.data as
-			| { pages: Array<{ total: number; results: ArtistSearchResult[] }> }
-			| undefined;
-		const playlistsData = playlistsQuery.data as
-			| { pages: Array<{ total: number; results: PlaylistSearchResult[] }> }
-			| undefined;
-
-		const allSongs =
-			songsData?.pages.flatMap((page) =>
-				page.results.map(detailedSongToSong),
-			) ?? [];
-		const filteredSongs = allSongs;
-
-		return {
-			songs: {
-				items: filteredSongs,
-				total: songsData?.pages[0]?.total ?? 0,
-				hasOfflineContent: false,
-			},
-			albums: {
-				items: albumsData?.pages.flatMap((page) => page.results) ?? [],
-				total: albumsData?.pages[0]?.total ?? 0,
-			},
-			artists: {
-				items:
-					artistsData?.pages.flatMap((page) =>
-						page.results.map(artistSearchResultToArtist),
-					) ?? [],
-				total: artistsData?.pages[0]?.total ?? 0,
-			},
-			playlists: {
-				items:
-					playlistsData?.pages.flatMap((page) =>
-						page.results.map(playlistSearchResultToPlaylist),
-					) ?? [],
-				total: playlistsData?.pages[0]?.total ?? 0,
-			},
-		};
-	}, [
-		songsQuery.data,
-		albumsQuery.data,
-		artistsQuery.data,
-		playlistsQuery.data,
-	]);
-
-	const hasError = useMemo(() => {
-		return !!(
-			globalSearchQuery.error ||
-			songsQuery.error ||
-			albumsQuery.error ||
-			artistsQuery.error ||
-			playlistsQuery.error
-		);
-	}, [
-		globalSearchQuery.error,
-		songsQuery.error,
-		albumsQuery.error,
-		artistsQuery.error,
-		playlistsQuery.error,
-	]);
+	const hasError =
+		!!globalSearchQuery.error ||
+		searchResults.songs.error ||
+		searchResults.albums.error ||
+		searchResults.artists.error ||
+		searchResults.playlists.error;
 
 	const handleSearch = useCallback(() => {
 		if (!query.trim()) return;
@@ -225,7 +144,7 @@ export default function SearchContent() {
 					</TabsList>
 
 					<TabsContent value="all" className="space-y-8 mt-6">
-						{globalSearchQuery.isLoading ? (
+						{globalSearchQuery.isPending ? (
 							<LoadingSpinner />
 						) : globalSearchQuery.data ? (
 							<GlobalSearchResults
@@ -239,13 +158,15 @@ export default function SearchContent() {
 						<SearchTabContent
 							type="songs"
 							isLoading={
-								songsQuery.isLoading && processedData.songs.items.length === 0
+								searchResults.songs.isLoading &&
+								searchResults.songs.results.length === 0
 							}
-							hasResults={processedData.songs.items.length > 0}
-							hasOfflineContent={processedData.songs.hasOfflineContent}
+							hasResults={searchResults.songs.results.length > 0}
 							query={queryParam}
 						>
-							<SongsList songs={processedData.songs.items} />
+							<SongsList
+								songs={searchResults.songs.results.map(detailedSongToSong)}
+							/>
 						</SearchTabContent>
 					</TabsContent>
 
@@ -253,12 +174,13 @@ export default function SearchContent() {
 						<SearchTabContent
 							type="albums"
 							isLoading={
-								albumsQuery.isLoading && processedData.albums.items.length === 0
+								searchResults.albums.isLoading &&
+								searchResults.albums.results.length === 0
 							}
-							hasResults={processedData.albums.items.length > 0}
+							hasResults={searchResults.albums.results.length > 0}
 							query={queryParam}
 						>
-							<AlbumsList albums={processedData.albums.items} />
+							<AlbumsList albums={searchResults.albums.results} />
 						</SearchTabContent>
 					</TabsContent>
 
@@ -266,13 +188,17 @@ export default function SearchContent() {
 						<SearchTabContent
 							type="artists"
 							isLoading={
-								artistsQuery.isLoading &&
-								processedData.artists.items.length === 0
+								searchResults.artists.isLoading &&
+								searchResults.artists.results.length === 0
 							}
-							hasResults={processedData.artists.items.length > 0}
+							hasResults={searchResults.artists.results.length > 0}
 							query={queryParam}
 						>
-							<ArtistsList artists={processedData.artists.items} />
+							<ArtistsList
+								artists={searchResults.artists.results.map(
+									artistSearchResultToArtist,
+								)}
+							/>
 						</SearchTabContent>
 					</TabsContent>
 
@@ -280,13 +206,17 @@ export default function SearchContent() {
 						<SearchTabContent
 							type="playlists"
 							isLoading={
-								playlistsQuery.isLoading &&
-								processedData.playlists.items.length === 0
+								searchResults.playlists.isLoading &&
+								searchResults.playlists.results.length === 0
 							}
-							hasResults={processedData.playlists.items.length > 0}
+							hasResults={searchResults.playlists.results.length > 0}
 							query={queryParam}
 						>
-							<PlaylistsList playlists={processedData.playlists.items} />
+							<PlaylistsList
+								playlists={searchResults.playlists.results.map(
+									playlistSearchResultToPlaylist,
+								)}
+							/>
 						</SearchTabContent>
 					</TabsContent>
 				</Tabs>

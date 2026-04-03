@@ -67,6 +67,8 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 
 	const shouldEnableQuery = useCallback(() => !isOfflineMode, [isOfflineMode]);
 
+	// Stabilized context value: only recreate when core state changes
+	// Not including all callbacks in deps to prevent cascade recreation
 	const value = useMemo(
 		() => ({
 			isOfflineMode,

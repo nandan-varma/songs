@@ -50,6 +50,9 @@ export function DownloadsProvider({ children }: { children: ReactNode }) {
 		[cacheManager.cachedSongs, downloadOps.isDownloading],
 	);
 
+	// Note: We rely on the stabilized callbacks from their respective hooks
+	// Bug fix: downloadOps.downloadSong no longer includes isDownloading in deps
+	// This ensures actionsValue is only recreated when actions actually change
 	const actionsValue = useMemo(
 		() => ({
 			downloadSong: downloadOps.downloadSong,

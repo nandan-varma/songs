@@ -79,3 +79,38 @@ export function detailedSongToSong(detailedSong: DetailedSong): Song {
 		language: detailedSong.language,
 	};
 }
+
+/**
+ * Convert a basic Song to DetailedSong with minimal info
+ * Used as fallback when detailed song data is not yet loaded
+ */
+export function songToDetailedSong(song: Song): DetailedSong {
+	return {
+		id: song.id,
+		name: song.title,
+		type: song.type || "song",
+		year: null,
+		releaseDate: null,
+		duration: null,
+		label: null,
+		explicitContent: false,
+		playCount: null,
+		language: song.language || "",
+		hasLyrics: false,
+		lyricsId: null,
+		url: song.url || "",
+		copyright: null,
+		album: {
+			id: null,
+			name: song.album || "",
+			url: null,
+		},
+		artists: {
+			primary: [],
+			featured: [],
+			all: [],
+		},
+		image: song.image || [],
+		downloadUrl: [],
+	};
+}

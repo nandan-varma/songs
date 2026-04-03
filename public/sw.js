@@ -161,10 +161,20 @@ self.addEventListener("activate", (event) => {
 	return self.clients.claim();
 });
 
+// Check if URL scheme is cacheable (http/https only)
+function isCacheableScheme(url) {
+	return url.protocol === "http:" || url.protocol === "https:";
+}
+
 // Fetch event - serve from cache, fallback to network
 self.addEventListener("fetch", (event) => {
 	const { request } = event;
 	const url = new URL(request.url);
+
+	// Skip non-cacheable schemes (chrome-extension, file, etc)
+	if (!isCacheableScheme(url)) {
+		return;
+	}
 
 	// Check for new deployment periodically
 	if (Math.random() < 0.01) {

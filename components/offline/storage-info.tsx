@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cacheManager } from "@/lib/cache";
+import { logError } from "@/lib/utils/logger";
 
 export function StorageInfo() {
 	const [storageUsed, setStorageUsed] = useState(0);
@@ -30,7 +31,7 @@ export function StorageInfo() {
 			// In a real app, you'd query the cache manager for actual counts
 			setSongCount(0);
 		} catch (error) {
-			console.error("StorageInfo:load", error);
+			logError("StorageInfo:load", error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -71,7 +72,7 @@ export function StorageInfo() {
 			loadStorageInfo();
 			window.location.reload();
 		} catch (error) {
-			console.error("StorageInfo:clear", error);
+			logError("StorageInfo:clear", error);
 			toast.error("Failed to clear cache");
 		}
 	};

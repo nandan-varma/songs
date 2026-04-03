@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { HistoryItem } from "@/contexts/history-context";
 import { useHistory } from "@/contexts/history-context";
 import { usePlayerActions } from "@/contexts/player-context";
+import { logError } from "@/lib/utils/logger";
 import { EntityType, type Image } from "@/types/entity";
 
 interface HistoryItemProps {
@@ -126,7 +127,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 			try {
 				playSong(item.data);
 			} catch (error) {
-				console.error("Error playing song:", error);
+				logError("HistoryList:playSong", error);
 			} finally {
 				setIsLoading(false);
 			}

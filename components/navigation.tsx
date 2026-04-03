@@ -14,7 +14,6 @@ import {
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { memo } from "react";
 import { DevMenu } from "@/components/dev/dev-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ import { useOffline } from "@/contexts/offline-context";
 import { usePWAInstall } from "@/hooks/ui/use-pwa-install";
 import { authClient } from "@/lib/auth-client";
 
-export const Navigation = memo(function Navigation() {
+export function Navigation() {
 	const { isDownloading } = useDownloads();
 	const { isOfflineMode, cachedSongsCount } = useOffline();
 	const { isInstallable, promptInstall } = usePWAInstall();
@@ -180,4 +179,4 @@ export const Navigation = memo(function Navigation() {
 			</div>
 		</nav>
 	);
-});
+}

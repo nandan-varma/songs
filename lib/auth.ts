@@ -7,19 +7,19 @@ const betterAuthSecret = process.env.BETTER_AUTH_SECRET;
 const baseURL = process.env.BETTER_AUTH_URL;
 
 if (!betterAuthSecret) {
-  throw new Error("BETTER_AUTH_SECRET is required");
+	throw new Error("BETTER_AUTH_SECRET is required");
 }
 
 export const auth = betterAuth({
-  emailAndPassword: {
-    enabled: true,
-  },
-  secret: betterAuthSecret,
-  baseURL:
-    baseURL ||
-    (typeof window === "undefined" ? undefined : window.location.origin),
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema,
-  }),
+	emailAndPassword: {
+		enabled: true,
+	},
+	secret: betterAuthSecret,
+	baseURL:
+		baseURL ||
+		(typeof window === "undefined" ? undefined : window.location.origin),
+	database: drizzleAdapter(db, {
+		provider: "pg",
+		schema,
+	}),
 });

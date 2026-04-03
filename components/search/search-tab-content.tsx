@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, type ReactNode } from "react";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { EmptyState, LoadingSpinner, OfflineEmptyState } from "./search-states";
 
 interface SearchTabContentProps {
@@ -21,7 +21,7 @@ export const SearchTabContent = memo(function SearchTabContent({
 	children,
 	hasOfflineContent = true,
 }: SearchTabContentProps) {
-	const { isOfflineMode } = useOffline();
+	const isOfflineMode = useOffline();
 
 	if (isLoading) {
 		return <LoadingSpinner />;

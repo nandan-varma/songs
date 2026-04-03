@@ -5,10 +5,10 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import SearchContent from "@/components/search-content";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 
 export default function Home() {
-	const { isOfflineMode } = useOffline();
+	const isOfflineMode = useOffline();
 
 	return (
 		<div className="min-h-screen bg-background">

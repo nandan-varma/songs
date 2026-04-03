@@ -4,10 +4,14 @@ import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import { StorageInfo } from "@/components/offline/storage-info";
 import { Button } from "@/components/ui/button";
-import { useDownloads } from "@/contexts/downloads-context";
 
 function DownloadsPageContent() {
-	const { cachedSongs, saveToDevice } = useDownloads();
+	// TODO: Get cached songs from new cache system
+	const cachedSongsCount = 0;
+
+	const handleSaveToDevice = () => {
+		// TODO: Implement save to device functionality
+	};
 
 	return (
 		<div className="container mx-auto px-4 py-8">
@@ -15,13 +19,13 @@ function DownloadsPageContent() {
 				<div>
 					<h1 className="text-3xl font-bold">Offline Music</h1>
 					<p className="text-muted-foreground mt-1">
-						{cachedSongs.size} cached songs
+						{cachedSongsCount} cached songs
 					</p>
 				</div>
 
 				<div className="flex items-center gap-2">
-					{cachedSongs.size > 0 && (
-						<Button variant="default" size="sm" onClick={saveToDevice}>
+					{cachedSongsCount > 0 && (
+						<Button variant="default" size="sm" onClick={handleSaveToDevice}>
 							Save to Device
 						</Button>
 					)}

@@ -6,7 +6,7 @@ import { AlbumHeader } from "@/components/album/album-header";
 import { SongsList } from "@/components/songs-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { useAlbumFromQuery } from "@/hooks/pages/use-album";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
@@ -15,12 +15,12 @@ import { EntityType } from "@/types/entity";
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const { getFilteredSongs, isOfflineMode } = useOffline();
+	const isOfflineMode = useOffline();
 	const { addToHistory } = useHistory();
 
 	const { data: album, error } = useAlbumFromQuery();
 
-	const filteredSongs = album?.songs ? getFilteredSongs(album.songs) : [];
+	const filteredSongs = album?.songs ?? [];
 
 	// Add to history when album loads
 	useEffect(() => {

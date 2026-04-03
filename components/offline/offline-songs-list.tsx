@@ -6,24 +6,22 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { CachedSong } from "@/contexts/downloads-context";
-import { useDownloads } from "@/contexts/downloads-context";
-import { useOffline } from "@/contexts/offline-context";
 import { usePlayerActions } from "@/contexts/player-context";
 import { useQueueActions } from "@/contexts/queue-context";
-import { musicDB } from "@/lib/db";
+import { useOffline } from "@/hooks/cache";
+import type { DetailedSong } from "@/types/entity";
 
 interface SongItemProps {
-	item: CachedSong;
+	song: DetailedSong;
 	imageUrl: string | undefined;
 	isOfflineMode: boolean;
-	onPlay: (song: CachedSong["song"]) => void;
-	onAddToQueue: (song: CachedSong["song"]) => void;
+	onPlay: (song: DetailedSong) => void;
+	onAddToQueue: (song: DetailedSong) => void;
 	onRemove: (songId: string) => void;
 }
 
 const SongItem = memo(function SongItem({
-	item,
+	song,
 	imageUrl,
 	isOfflineMode,
 	onPlay,
@@ -31,36 +29,34 @@ const SongItem = memo(function SongItem({
 	onRemove,
 }: SongItemProps) {
 	const formatDuration = useMemo(() => {
-		const seconds = item.song.duration;
+		const seconds = song.duration;
 		if (!seconds) return "0:00";
 		const minutes = Math.floor(seconds / 60);
 		const remainingSeconds = Math.floor(seconds % 60);
 		return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-	}, [item.song.duration]);
+	}, [song.duration]);
 
-	const handlePlay = useCallback(() => onPlay(item.song), [onPlay, item.song]);
+	const handlePlay = useCallback(() => onPlay(song), [onPlay, song]);
 	const handleAddToQueue = useCallback(
-		() => onAddToQueue(item.song),
-		[onAddToQueue, item.song],
+		() => onAddToQueue(song),
+		[onAddToQueue, song],
 	);
 	const handleRemove = useCallback(
-		() => onRemove(item.song.id),
-		[onRemove, item.song.id],
+		() => onRemove(song.id),
+		[onRemove, song.id],
 	);
 
 	const src = useMemo(() => {
 		return (
 			imageUrl ||
-			(isOfflineMode ? "/placeholder.png" : item.song.image[0]?.url) ||
+			(isOfflineMode ? "/placeholder.png" : song.image[0]?.url) ||
 			"/placeholder.png"
 		);
-	}, [imageUrl, isOfflineMode, item.song.image]);
+	}, [imageUrl, isOfflineMode, song.image]);
 
 	const artistsText = useMemo(() => {
-		return item.song.artists.primary
-			.map((a: { name: string }) => a.name)
-			.join(", ");
-	}, [item.song.artists.primary]);
+		return song.artists.primary.map((a: { name: string }) => a.name).join(", ");
+	}, [song.artists.primary]);
 
 	return (
 		<motion.div
@@ -73,7 +69,7 @@ const SongItem = memo(function SongItem({
 						<div className="relative">
 							<Image
 								src={src}
-								alt={item.song.name}
+								alt={song.name}
 								width={48}
 								height={48}
 								className="rounded md:w-14 md:h-14"
@@ -82,14 +78,14 @@ const SongItem = memo(function SongItem({
 
 						<div className="flex-1 min-w-0">
 							<h4 className="font-medium text-sm md:text-base truncate">
-								{item.song.name}
+								{song.name}
 							</h4>
 							<p className="text-xs md:text-sm text-muted-foreground truncate">
 								{artistsText}
 							</p>
-							{item.song.album && (
+							{song.album && (
 								<p className="text-xs text-muted-foreground truncate hidden sm:block">
-									{item.song.album.name}
+									{song.album.name}
 								</p>
 							)}
 						</div>
@@ -134,41 +130,21 @@ const SongItem = memo(function SongItem({
 });
 
 export const OfflineSongsList = memo(function OfflineSongsList() {
-	const { cachedSongs, removeSong } = useDownloads();
-	const { isOfflineMode } = useOffline();
+	// TODO: Load cached songs from new cache system
+	const cachedSongsArray: DetailedSong[] = [];
+	const isOfflineMode = useOffline();
 	const { playSong } = usePlayerActions();
 	const { addSong } = useQueueActions();
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
-
-	const cachedSongsArray = useMemo(
-		() => Array.from(cachedSongs.values()),
-		[cachedSongs],
-	);
 
 	// Load cached images from IndexedDB
 	useEffect(() => {
 		const loadImages = async () => {
 			const urls = new Map<string, string>();
 
-			for (const item of cachedSongsArray) {
-				const imageKey = `${item.song.id}-500x500`;
-				const blob = await musicDB.getImageBlob(imageKey);
-
-				if (blob) {
-					const url = URL.createObjectURL(blob);
-					urls.set(item.song.id, url);
-					createdUrlsRef.current.add(url);
-				} else {
-					const mediumKey = `${item.song.id}-150x150`;
-					const mediumBlob = await musicDB.getImageBlob(mediumKey);
-					if (mediumBlob) {
-						const url = URL.createObjectURL(mediumBlob);
-						urls.set(item.song.id, url);
-						createdUrlsRef.current.add(url);
-					}
-				}
-			}
+			// TODO: Load images from cache manager when needed
+			// For now, images are served from the API in image URLs
 
 			setImageUrls(urls);
 		};
@@ -184,20 +160,19 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 			}
 			createdUrlsRef.current.clear();
 		};
-	}, [cachedSongsArray]);
+	}, [cachedSongsArray.length]);
 
 	const handlePlay = useCallback(
-		(song: CachedSong["song"]) => playSong(song),
+		(song: DetailedSong) => playSong(song),
 		[playSong],
 	);
 	const handleAddToQueue = useCallback(
-		(song: CachedSong["song"]) => addSong(song),
+		(song: DetailedSong) => addSong(song),
 		[addSong],
 	);
-	const handleRemove = useCallback(
-		(songId: string) => removeSong(songId),
-		[removeSong],
-	);
+	const handleRemove = useCallback((_songId: string) => {
+		// TODO: Remove song from cache
+	}, []);
 
 	if (cachedSongsArray.length === 0) {
 		return (
@@ -226,17 +201,17 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 				transition={{ staggerChildren: 0.05 }}
 			>
 				{/* Cached Songs */}
-				{cachedSongsArray.map((item) => (
+				{cachedSongsArray.map((song) => (
 					<motion.div
-						key={`cached-${item.song.id}`}
+						key={`cached-${song.id}`}
 						variants={{
 							hidden: { opacity: 0, y: 10 },
 							show: { opacity: 1, y: 0 },
 						}}
 					>
 						<SongItem
-							item={item}
-							imageUrl={imageUrls.get(item.song.id)}
+							song={song}
+							imageUrl={imageUrls.get(song.id)}
 							isOfflineMode={isOfflineMode}
 							onPlay={handlePlay}
 							onAddToQueue={handleAddToQueue}

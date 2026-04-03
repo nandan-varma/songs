@@ -9,7 +9,6 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
-import { favoritesStorage } from "@/lib/storage";
 import type { DetailedSong } from "@/types/entity";
 
 interface FavoritesContextType {
@@ -31,8 +30,8 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		const loadFavorites = async () => {
 			try {
-				const items = await favoritesStorage.getAll();
-				setFavorites(items);
+				// TODO: Load favorites from new cache system
+				setFavorites([]);
 			} catch {
 				setFavorites([]);
 			}
@@ -51,7 +50,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const addFavorite = useCallback((song: DetailedSong) => {
 		const addToDB = async () => {
 			try {
-				await favoritesStorage.add(song);
+				// TODO: Add to favorites in new cache system
 				setFavorites((prev) => {
 					if (prev.some((s) => s.id === song.id)) return prev;
 					return [...prev, song];
@@ -68,7 +67,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const removeFavorite = useCallback((songId: string) => {
 		const removeFromDB = async () => {
 			try {
-				await favoritesStorage.remove(songId);
+				// TODO: Remove from favorites in new cache system
 				setFavorites((prev) => prev.filter((song) => song.id !== songId));
 				toast.success("Removed from favorites");
 			} catch {
@@ -93,7 +92,7 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const clearAll = useCallback(() => {
 		const clearDB = async () => {
 			try {
-				await favoritesStorage.clear();
+				// TODO: Clear favorites in new cache system
 				setFavorites([]);
 				toast.success("Cleared all favorites");
 			} catch {

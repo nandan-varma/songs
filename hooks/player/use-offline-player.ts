@@ -1,13 +1,13 @@
 import { toast } from "sonner";
-import { useOffline } from "@/contexts/offline-context";
 import { usePlayerActions } from "@/contexts/player-context";
+import { useOffline } from "@/hooks/cache";
 import type { DetailedSong } from "@/types/entity";
 
 /**
  * Offline-aware player actions that automatically filter songs based on offline mode
  */
 export function useOfflinePlayerActions() {
-	const { getFilteredSongs, isOfflineMode } = useOffline();
+	const isOfflineMode = useOffline();
 	const {
 		playQueue,
 		addToQueue,
@@ -17,7 +17,7 @@ export function useOfflinePlayerActions() {
 	} = usePlayerActions();
 
 	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
-		const filtered = getFilteredSongs([song]);
+		const filtered = [song];
 
 		if (filtered.length === 0 && isOfflineMode) {
 			toast.error("Song not available offline");
@@ -28,7 +28,7 @@ export function useOfflinePlayerActions() {
 	};
 
 	const playQueueOfflineAware = (songs: DetailedSong[], startIndex = 0) => {
-		const filtered = getFilteredSongs(songs);
+		const filtered = songs;
 
 		if (filtered.length === 0) {
 			if (isOfflineMode) {
@@ -48,7 +48,7 @@ export function useOfflinePlayerActions() {
 	};
 
 	const addToQueueOfflineAware = (song: DetailedSong) => {
-		const filtered = getFilteredSongs([song]);
+		const filtered = [song];
 
 		if (filtered.length === 0 && isOfflineMode) {
 			toast.error("Song not available offline");
@@ -59,7 +59,7 @@ export function useOfflinePlayerActions() {
 	};
 
 	const addMultipleToQueueOfflineAware = (songs: DetailedSong[]) => {
-		const filtered = getFilteredSongs(songs);
+		const filtered = songs;
 
 		if (filtered.length === 0 && isOfflineMode) {
 			toast.error("No songs available offline");

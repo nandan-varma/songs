@@ -1,13 +1,13 @@
 import { useQueryState } from "nuqs";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import { usePlaylist } from "../data/queries";
 
 export function usePlaylistFromQuery() {
 	const [id] = useQueryState("id");
-	const { shouldEnableQuery } = useOffline();
+	const isOfflineMode = useOffline();
 
 	return usePlaylist(id || "", {
-		enabled: !!id && shouldEnableQuery(),
+		enabled: !!id && !isOfflineMode,
 		suspense: true,
 	});
 }

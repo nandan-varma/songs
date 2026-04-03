@@ -13,7 +13,7 @@ import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/contexts/offline-context";
+import { useOffline } from "@/hooks/cache";
 import {
 	useGlobalSearch,
 	useSearchAlbums,
@@ -73,8 +73,7 @@ const playlistSearchResultToPlaylist = (
 export default function SearchContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const { getFilteredSongs, isOnlineContentAvailable, shouldEnableQuery } =
-		useOffline();
+	const isOfflineMode = useOffline();
 	const { history } = useHistory();
 	const queryParam = searchParams.get("q") || "";
 	const tabParam = (searchParams.get("tab") as TabType) || "all";
@@ -83,8 +82,8 @@ export default function SearchContent() {
 	const [activeTab, setActiveTab] = useState<TabType>(tabParam);
 
 	const searchEnabled = useMemo(
-		() => queryParam.trim().length > 0 && shouldEnableQuery(),
-		[queryParam, shouldEnableQuery],
+		() => queryParam.trim().length > 0 && !isOfflineMode,
+		[queryParam, isOfflineMode],
 	);
 
 	const globalSearchQuery = useGlobalSearch(queryParam, {
@@ -126,13 +125,13 @@ export default function SearchContent() {
 			songsData?.pages.flatMap((page) =>
 				page.results.map(detailedSongToSong),
 			) ?? [];
-		const filteredSongs = getFilteredSongs(allSongs);
+		const filteredSongs = allSongs;
 
 		return {
 			songs: {
 				items: filteredSongs,
 				total: songsData?.pages[0]?.total ?? 0,
-				hasOfflineContent: isOnlineContentAvailable(allSongs),
+				hasOfflineContent: false,
 			},
 			albums: {
 				items: albumsData?.pages.flatMap((page) => page.results) ?? [],
@@ -158,8 +157,6 @@ export default function SearchContent() {
 		albumsQuery.data,
 		artistsQuery.data,
 		playlistsQuery.data,
-		getFilteredSongs,
-		isOnlineContentAvailable,
 	]);
 
 	const hasError = useMemo(() => {

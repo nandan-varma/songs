@@ -98,10 +98,8 @@ function AuthPage() {
 	};
 
 	return (
-		<div className="flex min-h-screen items-center justify-center px-4">
-			<div className="w-full max-w-md space-y-6">
-				<h1 className="text-center text-2xl font-semibold">Welcome</h1>
-
+		<div className="flex items-center justify-center pt-8">
+			<div className="w-full max-w-md">
 				<Tabs defaultValue="login" className="w-full">
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="login">Login</TabsTrigger>

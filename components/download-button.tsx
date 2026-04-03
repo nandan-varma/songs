@@ -4,7 +4,7 @@ import { Check, Download } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
-import { useDownloadsActions } from "@/contexts/downloads-context";
+import { useDownloadSong } from "@/hooks/cache";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "./ui/button";
 
@@ -23,9 +23,9 @@ export const DownloadButton = memo(function DownloadButton({
 	className = "",
 	showLabel = false,
 }: DownloadButtonProps) {
-	const { downloadSong, isSongCached } = useDownloadsActions();
+	const { downloadSong, isDownloading } = useDownloadSong();
 
-	const isDownloaded = isSongCached(song.id);
+	const isDownloaded = false; // TODO: Check cache status
 
 	const handleDownload = useCallback(
 		async (e: React.MouseEvent) => {
@@ -37,10 +37,10 @@ export const DownloadButton = memo(function DownloadButton({
 				return;
 			}
 
-			await downloadSong(song);
-			toast.success(`Downloaded: ${song.name}`);
+			downloadSong(song);
+			toast.success(`Downloading: ${song.name}`);
 		},
-		[song, downloadSong, isDownloaded],
+		[song, downloadSong],
 	);
 
 	const getIcon = () => {
@@ -71,7 +71,7 @@ export const DownloadButton = memo(function DownloadButton({
 				size={size}
 				variant={variant}
 				onClick={handleDownload}
-				disabled={isDownloaded}
+				disabled={isDownloaded || isDownloading}
 				aria-label={getAriaLabel()}
 				className={getButtonClassName()}
 			>

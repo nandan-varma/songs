@@ -26,7 +26,9 @@ interface DesktopLayoutProps {
 
 /**
  * Desktop-optimized player layout
- * Single responsibility: Desktop UI composition
+ * - Horizontal arrangement for wide screens
+ * - Large touch targets for comfort
+ * - Single responsibility: Desktop UI composition
  */
 export const DesktopLayout = memo(function DesktopLayout({
 	currentSong,
@@ -45,11 +47,15 @@ export const DesktopLayout = memo(function DesktopLayout({
 	onReorderQueue,
 }: DesktopLayoutProps) {
 	return (
-		<div className="hidden md:flex items-center gap-6">
-			<SongInfo currentSong={currentSong} />
+		<div className="hidden md:flex items-center gap-8 px-4">
+			{/* Left: Song Info */}
+			<div className="min-w-0 w-1/4">
+				<SongInfo currentSong={currentSong} />
+			</div>
 
-			<div className="flex flex-col items-center gap-3 flex-1 max-w-2xl">
-				<div className="flex items-center gap-4">
+			{/* Center: Controls & Progress */}
+			<div className="flex flex-col items-center gap-4 flex-1 max-w-3xl">
+				<div className="flex items-center gap-6">
 					<PlaybackMenu />
 					<PlaybackControls
 						isPlaying={isPlaying}
@@ -60,14 +66,17 @@ export const DesktopLayout = memo(function DesktopLayout({
 					/>
 				</div>
 
-				<ProgressBar
-					currentTime={currentTime}
-					duration={duration}
-					onSeekTo={onSeekTo}
-				/>
+				<div className="w-full">
+					<ProgressBar
+						currentTime={currentTime}
+						duration={duration}
+						onSeekTo={onSeekTo}
+					/>
+				</div>
 			</div>
 
-			<div className="flex items-center gap-3 w-72 justify-end">
+			{/* Right: Volume & Queue */}
+			<div className="flex items-center gap-4 w-1/4 justify-end">
 				<VolumeControl volume={volume} onSetVolume={onSetVolume} />
 				<QueueButton
 					queue={queue}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Trash2 } from "lucide-react";
+import { Play } from "lucide-react";
 import { motion } from "motion/react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useHistoryDisplay } from "@/hooks/ui/use-history-display";
 import { useAppStore } from "@/hooks/use-store";
 import { logError } from "@/lib/utils/logger";
-import { type DetailedSong, EntityType } from "@/types/entity";
+import type { DetailedSong } from "@/types/entity";
 
 interface HistoryItemProps {
 	item: DetailedSong;

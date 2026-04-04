@@ -45,7 +45,7 @@ export function PlaylistEditDialog({
 		handleDragEnd,
 	} = useDragReorder({
 		items: songs,
-		onReorder: (fromIndex, toIndex) => {
+		onReorder: (_fromIndex, _toIndex) => {
 			// TODO: Implement reordering in the store if needed
 			if (playlist) {
 				// reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
@@ -61,7 +61,7 @@ export function PlaylistEditDialog({
 		}
 	};
 
-	const handlePlay = (index: number) => {
+	const handlePlay = (_index: number) => {
 		// TODO: Implement play from playlist dialog if needed
 	};
 

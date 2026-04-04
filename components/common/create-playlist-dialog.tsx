@@ -29,7 +29,7 @@ export function CreatePlaylistDialog({
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: CreatePlaylistDialogProps) {
-	const { createPlaylist, addSongToPlaylist } = usePlaylists();
+	const { createPlaylist } = usePlaylists();
 	const [playlistName, setPlaylistName] = React.useState("");
 	const [isCreating, setIsCreating] = React.useState(false);
 	const [internalOpen, setInternalOpen] = React.useState(false);

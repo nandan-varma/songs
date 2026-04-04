@@ -81,29 +81,29 @@ export const SongItem = memo(function SongItem({
 			? `${song.primaryArtists.split(", ").slice(0, 2).join(", ")}...`
 			: song.primaryArtists;
 
-	// Image sizes: mobile (48px), tablet (56px), desktop (64px)
+	// Image sizes with proper mobile touch targets - mobile (48px), tablet (56px), desktop (64px)
 	const imageSize = compact
-		? "h-10 w-10 sm:h-12 sm:w-12"
+		? "h-10 w-10 sm:h-12 sm:w-12 md:h-12 md:w-12"
 		: "h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16";
 
-	// Button sizes
+	// Touch-friendly button sizes - minimum 40px on all screens
 	const buttonSize = compact
-		? "h-7 w-7 sm:h-8 sm:w-8"
-		: "h-8 w-8 sm:h-9 sm:w-9";
+		? "h-9 w-9 sm:h-10 sm:w-10 md:h-10 md:w-10"
+		: "h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12";
 	const iconSize = compact
-		? "h-3 w-3 sm:h-3.5 sm:w-3.5"
-		: "h-3.5 w-3.5 sm:h-4 sm:w-4";
+		? "h-4 w-4 sm:h-4 sm:w-4 md:h-4 md:w-4"
+		: "h-5 w-5 sm:h-5 sm:w-5 md:h-6 md:w-6";
 
 	return (
-		<Card className="overflow-hidden hover:bg-accent/50 transition-colors">
+		<Card className="overflow-hidden hover:bg-accent/50 transition-all duration-200 hover:shadow-md">
 			<CardContent
-				className={`p-2 sm:p-3 ${compact ? "md:p-2" : "md:p-4"} overflow-x-hidden`}
+				className={`p-3 sm:p-4 ${compact ? "md:p-3" : "md:p-4"} overflow-x-hidden`}
 			>
-				<div className="flex items-start gap-2 sm:gap-3 max-w-full">
+				<div className="flex items-start gap-3 sm:gap-4 md:gap-4 max-w-full min-h-14">
 					{/* Album Art */}
 					<Link
 						href={`/song?id=${song.id}`}
-						className={`relative ${imageSize} shrink-0 overflow-hidden rounded`}
+						className={`relative ${imageSize} shrink-0 overflow-hidden rounded-lg transition-transform duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
 					>
 						<ProgressiveImage
 							images={song.image}
@@ -114,26 +114,32 @@ export const SongItem = memo(function SongItem({
 					</Link>
 
 					{/* Song Info */}
-					<div className="flex-1 min-w-0 py-0.5">
+					<div className="flex-1 min-w-0 py-1">
 						<Link href={`/song?id=${song.id}`} className="block group">
 							<h3
-								className={`font-medium truncate group-hover:text-primary transition-colors ${
-									compact ? "text-xs sm:text-sm" : "text-sm sm:text-base"
+								className={`font-medium truncate group-hover:text-primary transition-colors duration-200 ${
+									compact
+										? "text-xs sm:text-sm md:text-sm"
+										: "text-sm sm:text-base md:text-base"
 								} leading-tight`}
 							>
 								{song.title}
 							</h3>
 						</Link>
 						<p
-							className={`text-muted-foreground truncate mt-0.5 ${
-								compact ? "text-[10px] sm:text-xs" : "text-xs"
+							className={`text-muted-foreground truncate mt-1 ${
+								compact
+									? "text-xs sm:text-xs md:text-xs"
+									: "text-xs sm:text-sm md:text-sm"
 							}`}
 						>
 							{displayArtists}
 						</p>
 						<p
-							className={`text-muted-foreground/80 truncate mt-0.5 ${
-								compact ? "text-[10px] sm:text-xs" : "text-xs"
+							className={`text-muted-foreground/70 truncate mt-0.5 ${
+								compact
+									? "text-[10px] sm:text-xs md:text-xs"
+									: "text-xs sm:text-xs md:text-xs"
 							}`}
 						>
 							{song.album}
@@ -141,16 +147,16 @@ export const SongItem = memo(function SongItem({
 					</div>
 
 					{/* Action Buttons */}
-					<div className="flex gap-0.5 sm:gap-1 shrink-0 items-start pt-0.5">
-						{/* Play Button - Always visible */}
-						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+					<div className="flex gap-2 sm:gap-2 md:gap-3 shrink-0 items-center pt-0">
+						{/* Play Button - Always visible with better touch target */}
+						<motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }}>
 							<Button
 								size="icon"
 								variant="ghost"
 								onClick={handlePlay}
 								disabled={isLoading}
 								aria-label="Play song"
-								className={buttonSize}
+								className={`${buttonSize} hover:bg-primary/20 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary`}
 							>
 								{isLoading ? (
 									<Loader2 className={`${iconSize} animate-spin`} />
@@ -160,10 +166,10 @@ export const SongItem = memo(function SongItem({
 							</Button>
 						</motion.div>
 
-						{/* Add to Queue - Hidden on mobile */}
+						{/* Add to Queue - Hidden on mobile, visible on tablet+ */}
 						<motion.div
-							whileHover={{ scale: 1.05 }}
-							whileTap={{ scale: 0.95 }}
+							whileHover={{ scale: 1.08 }}
+							whileTap={{ scale: 0.92 }}
 							className="hidden sm:block"
 						>
 							<Button
@@ -172,7 +178,7 @@ export const SongItem = memo(function SongItem({
 								onClick={handleAddToQueue}
 								disabled={isLoading}
 								aria-label="Add to queue"
-								className={buttonSize}
+								className={`${buttonSize} hover:bg-primary/20 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary`}
 							>
 								<Plus className={iconSize} />
 							</Button>

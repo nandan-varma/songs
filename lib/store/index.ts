@@ -57,7 +57,7 @@ export const useAppStore = create<AppStore>()(
 
 		// ============ PLAYER ACTIONS ============
 		playSong: (song: DetailedSong, replaceQueue = true) => {
-			set((state) => {
+			set((_state) => {
 				if (replaceQueue) {
 					return {
 						currentSong: song,
@@ -234,9 +234,11 @@ export const useAppStore = create<AppStore>()(
 					const shuffled = [...state.queue];
 					for (let i = shuffled.length - 1; i > 0; i--) {
 						const j = Math.floor(Math.random() * (i + 1));
-						const item = shuffled[i]!;
-						shuffled[i] = shuffled[j]!;
-						shuffled[j] = item;
+						const temp = shuffled[i];
+						if (temp !== undefined && shuffled[j] !== undefined) {
+							shuffled[i] = shuffled[j];
+							shuffled[j] = temp;
+						}
 					}
 					const firstSong = shuffled[0];
 					return {
@@ -353,7 +355,7 @@ export const useAppStore = create<AppStore>()(
 		},
 
 		// ============ PLAYLIST ACTIONS ============
-		createPlaylist: (name: string, description = "") => {
+		createPlaylist: (name: string, _description = "") => {
 			set((state) => {
 				const newPlaylist: LocalPlaylist = {
 					id: `playlist_${Date.now()}`,
@@ -368,7 +370,7 @@ export const useAppStore = create<AppStore>()(
 			});
 		},
 
-		updatePlaylist: (playlistId: string, name: string, description = "") => {
+		updatePlaylist: (playlistId: string, name: string, _description = "") => {
 			set((state) => ({
 				playlists: state.playlists.map((pl) =>
 					pl.id === playlistId ? { ...pl, name, updatedAt: Date.now() } : pl,

@@ -4,7 +4,7 @@
  */
 
 import { type LucideIcon, Music } from "lucide-react";
-import { type DetailedSong, EntityType, type Image } from "@/types/entity";
+import type { DetailedSong, Image } from "@/types/entity";
 
 export interface DisplayData {
 	title: string;

@@ -9,6 +9,8 @@ import {
 	useState,
 } from "react";
 import { toast } from "sonner";
+import { cacheManager } from "@/lib/cache";
+import { CACHE_KEYS } from "@/lib/cache/constants";
 import type { DetailedSong } from "@/types/entity";
 
 interface FavoritesContextType {
@@ -30,8 +32,11 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		const loadFavorites = async () => {
 			try {
-				// TODO: Load favorites from new cache system
-				setFavorites([]);
+				const cached = await cacheManager.get<DetailedSong[]>(
+					CACHE_KEYS.FAVORITES,
+					"METADATA",
+				);
+				setFavorites(cached || []);
 			} catch {
 				setFavorites([]);
 			}
@@ -50,10 +55,17 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const addFavorite = useCallback((song: DetailedSong) => {
 		const addToDB = async () => {
 			try {
-				// TODO: Add to favorites in new cache system
 				setFavorites((prev) => {
 					if (prev.some((s) => s.id === song.id)) return prev;
-					return [...prev, song];
+					const updated = [...prev, song];
+					// Update cache
+					cacheManager.set(
+						CACHE_KEYS.FAVORITES,
+						updated,
+						undefined,
+						"METADATA",
+					);
+					return updated;
 				});
 				toast.success(`Added "${song.name}" to favorites`);
 			} catch {
@@ -67,8 +79,17 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const removeFavorite = useCallback((songId: string) => {
 		const removeFromDB = async () => {
 			try {
-				// TODO: Remove from favorites in new cache system
-				setFavorites((prev) => prev.filter((song) => song.id !== songId));
+				setFavorites((prev) => {
+					const updated = prev.filter((song) => song.id !== songId);
+					// Update cache
+					cacheManager.set(
+						CACHE_KEYS.FAVORITES,
+						updated,
+						undefined,
+						"METADATA",
+					);
+					return updated;
+				});
 				toast.success("Removed from favorites");
 			} catch {
 				toast.error("Failed to remove from favorites");
@@ -92,8 +113,9 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
 	const clearAll = useCallback(() => {
 		const clearDB = async () => {
 			try {
-				// TODO: Clear favorites in new cache system
 				setFavorites([]);
+				// Clear from cache
+				cacheManager.set(CACHE_KEYS.FAVORITES, [], undefined, "METADATA");
 				toast.success("Cleared all favorites");
 			} catch {
 				toast.error("Failed to clear favorites");

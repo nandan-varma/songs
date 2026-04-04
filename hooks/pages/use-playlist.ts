@@ -8,6 +8,5 @@ export function usePlaylistFromQuery() {
 
 	return usePlaylist(id || "", {
 		enabled: !!id && !isOfflineMode,
-		suspense: true,
 	});
 }

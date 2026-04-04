@@ -6,13 +6,6 @@
 
 import { useCallback, useState } from "react";
 
-interface UseControlledStateOptions<T> {
-	/** Initial state value for uncontrolled mode */
-	defaultValue: T;
-	/** Change handler callback */
-	onChange?: (value: T) => void;
-}
-
 interface UseControlledStateProps<T> {
 	/** Controlled value (makes component controlled) */
 	value?: T;

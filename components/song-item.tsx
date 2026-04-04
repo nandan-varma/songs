@@ -109,6 +109,7 @@ export const SongItem = memo(function SongItem({
 							images={song.image}
 							alt={song.title}
 							className="object-cover transition-transform hover:scale-105"
+							sizes="48px"
 						/>
 					</Link>
 

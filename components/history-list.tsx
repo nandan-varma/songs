@@ -79,6 +79,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 								images={data.images}
 								alt={data.title}
 								className="object-cover transition-transform hover:scale-105"
+								sizes="48px"
 							/>
 						) : (
 							<div className="w-full h-full bg-muted flex items-center justify-center">

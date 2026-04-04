@@ -11,7 +11,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOffline } from "@/hooks/cache";
-import { useArtistAlbums, useArtistSongs } from "@/hooks/data/queries";
 import { useArtistFromQuery } from "@/hooks/pages/use-artist";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
@@ -28,23 +27,13 @@ export function Client() {
 
 	const { data: artist, isPending: isArtistPending } = useArtistFromQuery();
 
-	const songsQuery = useArtistSongs(id || "", "popularity", "desc", {
-		enabled: !!id && !isOfflineMode,
-	});
-	const albumsQuery = useArtistAlbums(id || "", "popularity", "desc", {
-		enabled: !!id && !isOfflineMode,
-	});
-
-	const songsData = songsQuery.data as
-		| { data: { total: number; songs: DetailedSong[] } }
-		| undefined;
-	const albumsData = albumsQuery.data as
-		| { data: { total: number; albums: DetailedAlbum[] } }
-		| undefined;
-
-	const allSongs: DetailedSong[] = songsData?.data?.songs ?? [];
+	// Use data from artist object instead of making separate API calls
+	// Filter out null values and ensure we always have arrays
+	const allSongs: DetailedSong[] =
+		artist?.topSongs && artist.topSongs.length > 0 ? artist.topSongs : [];
 	const filteredSongs = allSongs;
-	const allAlbums: DetailedAlbum[] = albumsData?.data?.albums ?? [];
+	const allAlbums: DetailedAlbum[] =
+		artist?.topAlbums && artist.topAlbums.length > 0 ? artist.topAlbums : [];
 
 	if (!id) {
 		return (
@@ -228,6 +217,7 @@ export function Client() {
 								entityType={EntityType.ARTIST}
 								rounded="full"
 								priority
+								sizes="(max-width: 768px) 100vw, 256px"
 							/>
 						</div>
 
@@ -333,10 +323,6 @@ export function Client() {
 							</div>
 							<SongsList songs={filteredSongs.map(detailedSongToSong)} />
 						</>
-					) : !songsData ? (
-						<div className="flex justify-center py-12">
-							<div className="text-muted-foreground">Loading songs...</div>
-						</div>
 					) : (
 						<p className="text-center text-muted-foreground py-8">
 							No songs available
@@ -362,6 +348,7 @@ export function Client() {
 														alt={album.name}
 														entityType={EntityType.ALBUM}
 														rounded="default"
+														sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 													/>
 												</div>
 												<div className="space-y-1">
@@ -377,10 +364,6 @@ export function Client() {
 									</CardContent>
 								</Card>
 							))}
-						</div>
-					) : !albumsData ? (
-						<div className="flex justify-center py-12">
-							<div className="text-muted-foreground">Loading albums...</div>
 						</div>
 					) : (
 						<p className="text-center text-muted-foreground py-8">
@@ -438,6 +421,7 @@ export function Client() {
 													alt={similarArtist.name}
 													entityType={EntityType.ARTIST}
 													rounded="full"
+													sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 												/>
 											</div>
 											<div className="text-center">

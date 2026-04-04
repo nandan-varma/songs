@@ -106,6 +106,7 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 						alt={song.name}
 						entityType={EntityType.SONG}
 						rounded="default"
+						sizes="40px"
 					/>
 				)}
 			</div>

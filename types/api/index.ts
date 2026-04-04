@@ -43,14 +43,11 @@ export interface PaginatedResponse<T> {
 }
 
 export interface SearchResponse {
-	success: boolean;
-	data: {
-		albums: SearchResultSection<Album>;
-		songs: SearchResultSection<Song>;
-		artists: SearchResultSection<Artist>;
-		playlists: SearchResultSection<Playlist>;
-		topQuery: SearchResultSection<Song | Artist>;
-	};
+	albums: SearchResultSection<Album>;
+	songs: SearchResultSection<Song>;
+	artists: SearchResultSection<Artist>;
+	playlists: SearchResultSection<Playlist>;
+	topQuery: SearchResultSection<Song | Artist>;
 }
 
 export interface ApiResponse<T> {
@@ -58,15 +55,15 @@ export interface ApiResponse<T> {
 	data: T;
 }
 
-export type AlbumResponse = ApiResponse<DetailedAlbum>;
-export type ArtistResponse = ApiResponse<DetailedArtist>;
-export type PlaylistResponse = ApiResponse<DetailedPlaylist>;
-export type SongsResponse = ApiResponse<DetailedSong[]>;
-export type PaginatedSongsResponse = ApiResponse<{
+export type AlbumResponse = DetailedAlbum;
+export type ArtistResponse = DetailedArtist;
+export type PlaylistResponse = DetailedPlaylist;
+export type SongsResponse = DetailedSong[];
+export type PaginatedSongsResponse = {
 	total: number;
 	songs: DetailedSong[];
-}>;
-export type SearchSongsResponse = ApiResponse<{
+};
+export type SearchSongsResponse = {
 	total: number;
 	results: DetailedSong[];
-}>;
+};

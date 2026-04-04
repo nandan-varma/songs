@@ -16,12 +16,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DevMenu } from "@/components/dev/dev-menu";
 import { Button } from "@/components/ui/button";
-import { useOffline } from "@/hooks/cache";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { usePWAInstall } from "@/hooks/ui/use-pwa-install";
 import { authClient } from "@/lib/auth-client";
 
 export function Navigation() {
-	const isOfflineMode = useOffline();
+	const isOffline = useIsOffline();
 	const { isInstallable, promptInstall } = usePWAInstall();
 	const router = useRouter();
 	const { data: session, isPending } = authClient.useSession();
@@ -50,7 +50,7 @@ export function Navigation() {
 					<div className="flex items-center gap-2">
 						{/* Status Indicators Section */}
 						<div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-card flex-shrink-0">
-							{isOfflineMode ? (
+							{isOffline ? (
 								<WifiOff
 									className="h-4 w-4 text-orange-500 flex-shrink-0"
 									aria-hidden="true"
@@ -62,7 +62,7 @@ export function Navigation() {
 								/>
 							)}
 							<span className="hidden sm:inline text-sm font-medium whitespace-nowrap">
-								{isOfflineMode ? "Offline" : "Online"}
+								{isOffline ? "Offline" : "Online"}
 							</span>
 						</div>
 

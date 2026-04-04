@@ -35,7 +35,7 @@ export function useSleepTimer() {
 				const remaining = Math.ceil((endTimeRef.current - Date.now()) / 1000);
 				if (remaining <= 0) {
 					stopTimer();
-					useAppStore.getState().togglePlayPause();
+					useAppStore.getState().setIsPlaying(false);
 				} else {
 					setTimeRemaining(remaining);
 				}

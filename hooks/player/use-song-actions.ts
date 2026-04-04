@@ -36,10 +36,7 @@ export function useSongActions(options?: UseSongActionsOptions) {
 
 	const handlePlayNext = useCallback(
 		(song: DetailedSong) => {
-			// TODO: Implement play next by inserting at queueIndex + 1
-			// For now, just add to queue
-			const { addSongToQueue } = useAppStore.getState();
-			addSongToQueue(song);
+			useAppStore.getState().insertSongNext(song);
 			options?.onSongAdded?.();
 		},
 		[options],

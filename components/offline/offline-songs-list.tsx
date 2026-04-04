@@ -3,10 +3,11 @@
 import { Music, Play, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useCachedSongs, useDownloadSong, useOffline } from "@/hooks/cache";
+import { useCachedSongs, useDownloadSong } from "@/hooks/cache";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useAppStore } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
@@ -129,35 +130,9 @@ const SongItem = memo(function SongItem({
 });
 
 export const OfflineSongsList = memo(function OfflineSongsList() {
-	const { cachedSongs, isLoading, count } = useCachedSongs();
+	const { cachedSongs, isLoading } = useCachedSongs();
 	const { removeSong } = useDownloadSong();
-	const isOfflineMode = useOffline();
-	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
-	const createdUrlsRef = useRef<Set<string>>(new Set());
-
-	// Load cached images from IndexedDB
-	useEffect(() => {
-		const loadImages = async () => {
-			const urls = new Map<string, string>();
-
-			// TODO: Load images from cache manager when needed
-			// For now, images are served from the API in image URLs
-
-			setImageUrls(urls);
-		};
-
-		if (cachedSongs.length > 0) {
-			loadImages();
-		}
-
-		return () => {
-			// Cleanup all created URLs
-			for (const url of createdUrlsRef.current) {
-				URL.revokeObjectURL(url);
-			}
-			createdUrlsRef.current.clear();
-		};
-	}, [cachedSongs.length]);
+	const isOffline = useIsOffline();
 
 	const handlePlay = useCallback((song: DetailedSong) => {
 		const { playSong, addToPlaybackHistory } = useAppStore.getState();
@@ -233,8 +208,8 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 					>
 						<SongItem
 							song={song}
-							imageUrl={imageUrls.get(song.id)}
-							isOfflineMode={isOfflineMode}
+							imageUrl={undefined}
+							isOfflineMode={isOffline}
 							onPlay={handlePlay}
 							onAddToQueue={handleAddToQueue}
 							onRemove={handleRemove}

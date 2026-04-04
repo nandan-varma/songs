@@ -1,13 +1,8 @@
-import { type RefObject, useEffect, useRef } from "react";
-import type { DetailedSong } from "@/types/entity";
-import { PREFERRED_AUDIO_QUALITY } from "@/types/player";
-
-interface UseAudioSourceProps {
-	currentSong: DetailedSong | null;
-	audioRef: RefObject<HTMLAudioElement | null>;
-	isOfflineMode: boolean;
-	getSongBlob: (songId: string) => Promise<Blob | null>;
-}
+import { useEffect, useRef } from "react";
+import {
+	PREFERRED_AUDIO_QUALITY,
+	type UseAudioSourceProps,
+} from "@/types/player";
 
 /**
  * Manages audio source loading with caching support
@@ -16,7 +11,7 @@ interface UseAudioSourceProps {
 export function useAudioSource({
 	currentSong,
 	audioRef,
-	isOfflineMode,
+	isOffline,
 	getSongBlob,
 }: UseAudioSourceProps) {
 	const previousSongIdRef = useRef<string | null>(null);
@@ -50,7 +45,7 @@ export function useAudioSource({
 				audio.src = newBlobUrl;
 				blobUrlRef.current = newBlobUrl;
 			} else {
-				if (isOfflineMode) return;
+				if (isOffline) return;
 
 				const downloadUrl =
 					currentSong.downloadUrl?.find(
@@ -65,8 +60,8 @@ export function useAudioSource({
 			audio.load();
 		};
 
-		loadSource();
-	}, [currentSong, audioRef, isOfflineMode, getSongBlob]);
+		void loadSource();
+	}, [currentSong, audioRef, isOffline, getSongBlob]);
 
 	useEffect(() => {
 		return () => {

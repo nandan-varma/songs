@@ -7,18 +7,25 @@ import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlaylistFromQuery } from "@/hooks/pages/use-playlist";
+import { Skeleton } from "@/components/ui/skeleton";
+import { usePlaylist } from "@/hooks/data/queries";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
-import { useUIState } from "@/hooks/use-store";
 import { detailedSongToSong } from "@/lib/utils";
 import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const { isOfflineMode } = useUIState();
+	const isOffline = useIsOffline();
 
-	const { data: playlist } = usePlaylistFromQuery();
+	const {
+		data: playlist,
+		error,
+		isPending,
+	} = usePlaylist(id || "", {
+		enabled: !!id && !isOffline,
+	});
 
 	const filteredSongs = playlist?.songs ?? [];
 
@@ -30,7 +37,7 @@ export function Client() {
 		);
 	}
 
-	if (isOfflineMode) {
+	if (isOffline) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card className="text-center py-12">
@@ -45,10 +52,39 @@ export function Client() {
 		);
 	}
 
-	if (!playlist) {
+	if (isPending) {
+		return (
+			<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
+				<Card>
+					<CardContent className="p-6">
+						<div className="flex flex-col md:flex-row gap-6">
+							<Skeleton className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-lg" />
+							<div className="flex-1 space-y-4">
+								<div className="space-y-2">
+									<Skeleton className="h-6 w-20" />
+									<Skeleton className="h-10 w-3/4" />
+								</div>
+								<div className="flex gap-4">
+									<Skeleton className="h-4 w-12" />
+									<Skeleton className="h-4 w-16" />
+									<Skeleton className="h-4 w-20" />
+								</div>
+								<Skeleton className="h-4 w-full" />
+								<Skeleton className="h-4 w-2/3" />
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
+
+	if (error || !playlist) {
 		return (
 			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Playlist not found</p>
+				<p className="text-center text-destructive">
+					{error instanceof Error ? error.message : "Playlist not found"}
+				</p>
 			</div>
 		);
 	}

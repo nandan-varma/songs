@@ -14,7 +14,7 @@ import {
 	usePlaybackSpeed,
 } from "@/hooks/playback/use-playback-speed";
 import { useSleepTimer } from "@/hooks/playback/use-sleep-timer";
-import { useIsShuffleEnabled } from "@/hooks/use-store";
+import { useIsShuffleEnabled, useRepeatMode } from "@/hooks/use-store";
 import { useAppStore } from "@/lib/store";
 import { Button } from "../ui/button";
 import {
@@ -31,9 +31,9 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
-type RepeatMode = "off" | "all" | "track";
+type RepeatMode = "off" | "all" | "one";
 
-const REPEAT_MODES: RepeatMode[] = ["off", "all", "track"];
+const REPEAT_MODES: RepeatMode[] = ["off", "all", "one"];
 
 function formatTime(seconds: number | null): string {
 	if (seconds === null) return "--:--";
@@ -44,8 +44,8 @@ function formatTime(seconds: number | null): string {
 
 export function PlaybackMenu() {
 	const isShuffleEnabled = useIsShuffleEnabled();
-	const [repeatMode, setLocalRepeatMode] = React.useState<RepeatMode>("off");
-	const { speed, cycleSpeed } = usePlaybackSpeed();
+	const repeatMode = useRepeatMode();
+	const { speed } = usePlaybackSpeed();
 	const { isActive, timeRemaining, presets, startTimer, cancelTimer } =
 		useSleepTimer();
 
@@ -54,9 +54,7 @@ export function PlaybackMenu() {
 	}, []);
 
 	const handleRepeatChange = (mode: RepeatMode) => {
-		setLocalRepeatMode(mode);
-		// Convert RepeatMode string to the store's RepeatMode type
-		useAppStore.getState().setRepeatMode(mode as "off" | "one" | "all");
+		useAppStore.getState().setRepeatMode(mode);
 	};
 
 	return (
@@ -80,7 +78,7 @@ export function PlaybackMenu() {
 
 				<DropdownMenuSub>
 					<DropdownMenuSubTrigger>
-						{repeatMode === "track" ? (
+						{repeatMode === "one" ? (
 							<Repeat1 className="mr-2 h-4 w-4" />
 						) : (
 							<Repeat className="mr-2 h-4 w-4" />
@@ -94,7 +92,7 @@ export function PlaybackMenu() {
 						>
 							{REPEAT_MODES.map((mode) => (
 								<DropdownMenuRadioItem key={mode} value={mode}>
-									{mode === "track"
+									{mode === "one"
 										? "One"
 										: mode.charAt(0).toUpperCase() + mode.slice(1)}
 								</DropdownMenuRadioItem>
@@ -113,7 +111,9 @@ export function PlaybackMenu() {
 					<DropdownMenuSubContent>
 						<DropdownMenuRadioGroup
 							value={String(speed)}
-							onValueChange={() => cycleSpeed()}
+							onValueChange={(value) => {
+								useAppStore.getState().setPlaybackSpeed(Number(value));
+							}}
 						>
 							{PLAYBACK_SPEEDS.map((s) => (
 								<DropdownMenuRadioItem key={s} value={String(s)}>

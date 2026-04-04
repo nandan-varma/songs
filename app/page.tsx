@@ -5,14 +5,14 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import SearchContent from "@/components/search-content";
-import { useOffline } from "@/hooks/cache";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 
 export default function Home() {
-	const isOfflineMode = useOffline();
+	const isOffline = useIsOffline();
 
 	return (
 		<div className="min-h-screen bg-background">
-			{isOfflineMode ? (
+			{isOffline ? (
 				<ErrorBoundary context="OfflineSongsList">
 					<OfflineSongsList />
 				</ErrorBoundary>

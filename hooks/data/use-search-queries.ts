@@ -11,7 +11,6 @@ import {
 	searchPlaylists,
 	searchSongs,
 } from "@/lib/api";
-import { unwrapApiResponse } from "@/lib/api/unwrap-response";
 import { CACHE_TIMES } from "@/lib/cache";
 import type {
 	AlbumSearchResult,
@@ -79,37 +78,25 @@ export function useSearchQueries(
 		queries: [
 			{
 				queryKey: ["search-songs", query, limit],
-				queryFn: async () => {
-					const response = await searchSongs(query, 0, limit);
-					return unwrapApiResponse(response);
-				},
+				queryFn: () => searchSongs(query, 0, limit),
 				enabled,
 				staleTime: CACHE_TIMES.SEARCH,
 			},
 			{
 				queryKey: ["search-albums", query, limit],
-				queryFn: async () => {
-					const response = await searchAlbums(query, 0, limit);
-					return unwrapApiResponse(response);
-				},
+				queryFn: () => searchAlbums(query, 0, limit),
 				enabled,
 				staleTime: CACHE_TIMES.SEARCH,
 			},
 			{
 				queryKey: ["search-artists", query, limit],
-				queryFn: async () => {
-					const response = await searchArtists(query, 0, limit);
-					return unwrapApiResponse(response);
-				},
+				queryFn: () => searchArtists(query, 0, limit),
 				enabled,
 				staleTime: CACHE_TIMES.SEARCH,
 			},
 			{
 				queryKey: ["search-playlists", query, limit],
-				queryFn: async () => {
-					const response = await searchPlaylists(query, 0, limit);
-					return unwrapApiResponse(response);
-				},
+				queryFn: () => searchPlaylists(query, 0, limit),
 				enabled,
 				staleTime: CACHE_TIMES.SEARCH,
 			},

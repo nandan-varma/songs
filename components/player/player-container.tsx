@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 interface PlayerContainerProps {
-	isOfflineMode: boolean;
+	isOffline: boolean;
 	audioElement: ReactNode;
 	children: ReactNode;
 }
@@ -15,7 +15,7 @@ interface PlayerContainerProps {
  * Single responsibility: Layout wrapper
  */
 export const PlayerContainer = memo(function PlayerContainer({
-	isOfflineMode,
+	isOffline,
 	audioElement,
 	children,
 }: PlayerContainerProps) {
@@ -24,14 +24,14 @@ export const PlayerContainer = memo(function PlayerContainer({
 			<Card className="bg-background/95 backdrop-blur-xl supports-backdrop-filter:bg-background/90 border shadow-2xl">
 				{audioElement}
 
-				{isOfflineMode && (
+				{isOffline && (
 					<div className="absolute -top-2 right-4 z-10">
 						<Badge
 							variant="secondary"
 							className="flex items-center gap-1 bg-orange-500/90 text-white border-orange-600"
 						>
 							<WifiOff className="h-3 w-3" />
-							Offline Mode
+							Offline
 						</Badge>
 					</div>
 				)}

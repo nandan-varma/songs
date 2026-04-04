@@ -40,13 +40,14 @@ export const SongItem = memo(function SongItem({
 
 			try {
 				setIsLoading(true);
-				const response = await getSongById(song.id);
-				if (response.success && response.data?.[0]) {
-					const detailedSong = response.data[0];
-					const state = useAppStore.getState();
-					state.playSong(detailedSong);
-					state.addToPlaybackHistory(detailedSong);
+				const [detailedSong] = await getSongById(song.id);
+				if (!detailedSong) {
+					return;
 				}
+
+				const state = useAppStore.getState();
+				state.playSong(detailedSong);
+				state.addToPlaybackHistory(detailedSong);
 			} catch (error) {
 				logError("SongItem:play", error);
 			} finally {
@@ -65,10 +66,12 @@ export const SongItem = memo(function SongItem({
 
 			try {
 				setIsLoading(true);
-				const response = await getSongById(song.id);
-				if (response.success && response.data?.[0]) {
-					useAppStore.getState().addSongToQueue(response.data[0]);
+				const [detailedSong] = await getSongById(song.id);
+				if (!detailedSong) {
+					return;
 				}
+
+				useAppStore.getState().addSongToQueue(detailedSong);
 			} catch (error) {
 				logError("SongItem:addToQueue", error);
 			} finally {

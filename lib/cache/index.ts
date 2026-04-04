@@ -5,4 +5,3 @@ export {
 	type CacheTime,
 	STORAGE_CONFIG,
 } from "./constants";
-export { cacheManager } from "./manager";

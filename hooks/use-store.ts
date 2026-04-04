@@ -1,259 +1,132 @@
 "use client";
 
-/**
- * Store Hooks - Domain-Based Organization
- *
- * CRITICAL: Use these patterns to avoid infinite loops:
- * ✅ Use individual property hooks in render: const song = useCurrentSong()
- * ✅ Access actions in callbacks: const { playSong } = useAppStore.getState()
- * ❌ NEVER destructure actions in render
- * ❌ NEVER use object-returning hooks in dependency arrays
- */
-
+import { useShallow } from "zustand/react/shallow";
 import { useAppStore } from "@/lib/store";
 import * as selectors from "@/lib/store/selectors";
+import type { DetailedSong, EntityVisit } from "@/types/entity";
 
-// ============ RE-EXPORT MAIN STORE ============
 export { useAppStore };
 
-// ============ PLAYER HOOKS ============
-
-/**
- * Individual player property hooks - safe for dependency arrays
- */
 export const useCurrentSong = () => useAppStore(selectors.selectCurrentSong);
 export const useIsPlaying = () => useAppStore(selectors.selectIsPlaying);
 export const useCurrentTime = () => useAppStore(selectors.selectCurrentTime);
 export const useDuration = () => useAppStore(selectors.selectDuration);
 export const useVolume = () => useAppStore(selectors.selectVolume);
-export const usePlaybackSpeed = () =>
+export const usePlaybackSpeedValue = () =>
 	useAppStore(selectors.selectPlaybackSpeed);
 export const useIsMuted = () => useAppStore(selectors.selectIsMuted);
-
-/**
- * Player state hook - composed from individual selectors
- * Use when you need multiple player properties
- */
 export function usePlayer() {
-	const currentSong = useCurrentSong();
-	const isPlaying = useIsPlaying();
-	const currentTime = useCurrentTime();
-	const duration = useDuration();
-	const volume = useVolume();
-	const playbackSpeed = usePlaybackSpeed();
-
-	return {
-		currentSong,
-		isPlaying,
-		currentTime,
-		duration,
-		volume,
-		playbackSpeed,
-	};
+	return useAppStore(
+		useShallow((state) => ({
+			currentSong: state.currentSong,
+			isPlaying: state.isPlaying,
+			currentTime: state.currentTime,
+			duration: state.duration,
+			volume: state.volume,
+			playbackSpeed: state.playbackSpeed,
+			isMuted: state.isMuted,
+		})),
+	);
 }
 
-// ============ QUEUE HOOKS ============
-
-/**
- * Individual queue property hooks - safe for dependency arrays
- */
-export const useQueue_List = () => useAppStore(selectors.selectQueue);
+export const useQueueSongs = () => useAppStore(selectors.selectQueue);
 export const useQueueIndex = () => useAppStore(selectors.selectQueueIndex);
 export const useIsShuffleEnabled = () =>
 	useAppStore(selectors.selectIsShuffleEnabled);
 export const useRepeatMode = () => useAppStore(selectors.selectRepeatMode);
 export const useQueueLength = () => useAppStore(selectors.selectQueueLength);
-
-/**
- * Queue state hook - composed from individual selectors
- * Use when you need multiple queue properties
- */
 export function useQueue() {
-	const queue = useQueue_List();
-	const queueIndex = useQueueIndex();
-	const isShuffleEnabled = useIsShuffleEnabled();
-	const repeatMode = useRepeatMode();
-
-	return {
-		queue,
-		queueIndex,
-		isShuffleEnabled,
-		repeatMode,
-	};
+	return useAppStore(
+		useShallow((state) => ({
+			queue: state.queue,
+			queueIndex: state.queueIndex,
+			isShuffleEnabled: state.isShuffleEnabled,
+			repeatMode: state.repeatMode,
+		})),
+	);
 }
 
-// ============ FAVORITES HOOKS ============
-
-/**
- * Favorites state hook - returns multiple pieces of favorited state
- */
 export function useFavorites() {
-	const favoriteIds = useAppStore((state) => state.favoriteIds);
-	const isFavorite = (songId: string) =>
-		useAppStore.getState().isFavorite(songId);
-	const toggleFavorite = (songId: string) =>
-		useAppStore.getState().toggleFavorite(songId);
-	const addFavorite = (songId: string) =>
-		useAppStore.getState().addFavorite(songId);
-	const removeFavorite = (songId: string) =>
-		useAppStore.getState().removeFavorite(songId);
-
 	return {
-		favoriteIds,
-		isFavorite,
-		toggleFavorite,
-		addFavorite,
-		removeFavorite,
+		favoriteIds: useAppStore(selectors.selectFavoriteIds),
+		isFavorite: (songId: string) => useAppStore.getState().isFavorite(songId),
+		toggleFavorite: (songId: string) =>
+			useAppStore.getState().toggleFavorite(songId),
+		addFavorite: (songId: string) => useAppStore.getState().addFavorite(songId),
+		removeFavorite: (songId: string) =>
+			useAppStore.getState().removeFavorite(songId),
 	};
 }
 
-/**
- * Check if a specific song is favorited
- */
 export function useIsFavorite(songId: string) {
-	return useAppStore((state) => state.isFavorite(songId));
+	return useAppStore(selectors.selectIsFavorite(songId));
 }
 
-// ============ HISTORY HOOKS ============
-
-/**
- * History state hook
- */
 export function useHistory() {
-	const searchHistory = useAppStore(selectors.selectSearchHistory);
-	const playbackHistory = useAppStore(selectors.selectPlaybackHistory);
-
-	const addToSearchHistory = (query: string) =>
-		useAppStore.getState().addToSearchHistory(query);
-	const clearSearchHistory = () => useAppStore.getState().clearSearchHistory();
-	const addToPlaybackHistory = (song: import("@/types/entity").DetailedSong) =>
-		useAppStore.getState().addToPlaybackHistory(song);
-	const clearPlaybackHistory = () =>
-		useAppStore.getState().clearPlaybackHistory();
-
 	return {
-		searchHistory,
-		playbackHistory,
-		addToSearchHistory,
-		clearSearchHistory,
-		addToPlaybackHistory,
-		clearPlaybackHistory,
+		searchHistory: useAppStore(selectors.selectSearchHistory),
+		playbackHistory: useAppStore(selectors.selectPlaybackHistory),
+		visitHistory: useAppStore(selectors.selectVisitHistory),
+		addToSearchHistory: (query: string) =>
+			useAppStore.getState().addToSearchHistory(query),
+		clearSearchHistory: () => useAppStore.getState().clearSearchHistory(),
+		addToPlaybackHistory: (song: DetailedSong) =>
+			useAppStore.getState().addToPlaybackHistory(song),
+		clearPlaybackHistory: () => useAppStore.getState().clearPlaybackHistory(),
+		addToVisitHistory: (visit: EntityVisit) =>
+			useAppStore.getState().addToVisitHistory(visit),
+		clearVisitHistory: () => useAppStore.getState().clearVisitHistory(),
 	};
 }
 
-// ============ PLAYLISTS HOOKS ============
-
-/**
- * Playlists state hook
- */
 export function usePlaylists() {
-	const playlists = useAppStore(selectors.selectPlaylists);
-	const selectedPlaylistId = useAppStore(selectors.selectSelectedPlaylistId);
-
-	const createPlaylist = (name: string, description?: string) =>
-		useAppStore.getState().createPlaylist(name, description);
-	const updatePlaylist = (id: string, name: string, description?: string) =>
-		useAppStore.getState().updatePlaylist(id, name, description);
-	const deletePlaylist = (id: string) =>
-		useAppStore.getState().deletePlaylist(id);
-	const addSongToPlaylist = (
-		id: string,
-		song: import("@/types/entity").DetailedSong,
-	) => useAppStore.getState().addSongToPlaylist(id, song);
-	const removeSongFromPlaylist = (id: string, songId: string) =>
-		useAppStore.getState().removeSongFromPlaylist(id, songId);
-	const setSelectedPlaylist = (id: string | null) =>
-		useAppStore.getState().setSelectedPlaylist(id);
-
 	return {
-		playlists,
-		selectedPlaylistId,
-		createPlaylist,
-		updatePlaylist,
-		deletePlaylist,
-		addSongToPlaylist,
-		removeSongFromPlaylist,
-		setSelectedPlaylist,
+		playlists: useAppStore(selectors.selectPlaylists),
+		createPlaylist: (name: string) =>
+			useAppStore.getState().createPlaylist(name),
+		updatePlaylist: (id: string, name: string) =>
+			useAppStore.getState().updatePlaylist(id, name),
+		deletePlaylist: (id: string) => useAppStore.getState().deletePlaylist(id),
+		addSongToPlaylist: (id: string, song: DetailedSong) =>
+			useAppStore.getState().addSongToPlaylist(id, song),
+		removeSongFromPlaylist: (id: string, songId: string) =>
+			useAppStore.getState().removeSongFromPlaylist(id, songId),
+		reorderPlaylistSongs: (id: string, fromIndex: number, toIndex: number) =>
+			useAppStore.getState().reorderPlaylistSongs(id, fromIndex, toIndex),
 	};
 }
 
-// ============ UI HOOKS ============
-
-/**
- * UI state hook
- */
 export function useUIState() {
-	const isMobile = useAppStore(selectors.selectIsMobile);
-	const isDarkMode = useAppStore(selectors.selectIsDarkMode);
-	const isQueueOpen = useAppStore(selectors.selectIsQueueOpen);
-	const isOfflineMode = useAppStore(selectors.selectIsOfflineMode);
-	const sleepTimerMinutes = useAppStore(selectors.selectSleepTimerMinutes);
-
-	return {
-		isMobile,
-		isDarkMode,
-		isQueueOpen,
-		isOfflineMode,
-		sleepTimerMinutes,
-	};
+	return useAppStore(
+		useShallow((state) => ({
+			isQueueOpen: state.isQueueOpen,
+			sleepTimerMinutes: state.sleepTimerMinutes,
+		})),
+	);
 }
 
-/**
- * UI actions hook - wrapped with useCallback to provide stable references
- */
 export function useUIActions() {
-	const setIsMobile = (mobile: boolean) =>
-		useAppStore.getState().setIsMobile(mobile);
-	const setIsDarkMode = (dark: boolean) =>
-		useAppStore.getState().setIsDarkMode(dark);
-	const setIsQueueOpen = (open: boolean) =>
-		useAppStore.getState().setIsQueueOpen(open);
-	const setIsOfflineMode = (offline: boolean) =>
-		useAppStore.getState().setIsOfflineMode(offline);
-	const setSleepTimer = (minutes: number | null) =>
-		useAppStore.getState().setSleepTimer(minutes);
-
 	return {
-		setIsMobile,
-		setIsDarkMode,
-		setIsQueueOpen,
-		setIsOfflineMode,
-		setSleepTimer,
+		setIsQueueOpen: (open: boolean) =>
+			useAppStore.getState().setIsQueueOpen(open),
+		setSleepTimer: (minutes: number | null) =>
+			useAppStore.getState().setSleepTimer(minutes),
 	};
 }
 
-// ============ OFFLINE HOOKS ============
-
-/**
- * Offline state hook
- */
-export function useOffline() {
-	const downloadedSongIds = useAppStore(selectors.selectDownloadedSongIds);
-
-	const addDownloadedSong = (songId: string) =>
-		useAppStore.getState().addDownloadedSong(songId);
-	const removeDownloadedSong = (songId: string) =>
-		useAppStore.getState().removeDownloadedSong(songId);
-	const isDownloaded = (songId: string) =>
-		useAppStore.getState().isDownloaded(songId);
-
+export function useDownloads() {
 	return {
-		downloadedSongIds,
-		addDownloadedSong,
-		removeDownloadedSong,
-		isDownloaded,
+		downloadedSongIds: useAppStore(selectors.selectDownloadedSongIds),
+		addDownloadedSong: (songId: string) =>
+			useAppStore.getState().addDownloadedSong(songId),
+		removeDownloadedSong: (songId: string) =>
+			useAppStore.getState().removeDownloadedSong(songId),
+		clearDownloadedSongs: () => useAppStore.getState().clearDownloadedSongs(),
+		isDownloaded: (songId: string) =>
+			useAppStore.getState().isDownloaded(songId),
 	};
 }
 
-/**
- * Check if a specific song is downloaded
- */
 export function useIsDownloaded(songId: string) {
-	return useAppStore((state) => state.isDownloaded(songId));
+	return useAppStore(selectors.selectIsDownloaded(songId));
 }
-
-/**
- * Offline mode state hook
- */
-export const useIsOfflineMode = () =>
-	useAppStore(selectors.selectIsOfflineMode);

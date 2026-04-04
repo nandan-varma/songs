@@ -25,6 +25,7 @@ export const useAppStore = create<AppStore>()(
 			name: APP_STORE_STORAGE_KEY,
 			storage: createJSONStorage(() => localStorage),
 			version: 1,
+			skipHydration: true,
 			partialize: (state): PersistedAppStoreState => ({
 				favoriteIds: Array.from(state.favoriteIds),
 				searchHistory: state.searchHistory,

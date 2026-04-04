@@ -13,6 +13,7 @@ import {
 	searchSongsQueryOptions,
 	songQueryOptions,
 	songSuggestionsQueryOptions,
+	songsQueryOptions,
 } from "@/lib/queries/music";
 import type {
 	AlbumSearchResult,
@@ -55,6 +56,21 @@ export function useSong(
 			DetailedSong[]
 		>,
 		!!id && options?.enabled !== false,
+		options,
+	);
+}
+
+export function useSongs(
+	ids: string[],
+	options?: QueryHookOptions<DetailedSong[]>,
+) {
+	return useConfiguredQuery(
+		songsQueryOptions(ids) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		ids.length > 0 && options?.enabled !== false,
 		options,
 	);
 }

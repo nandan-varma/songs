@@ -1,4 +1,4 @@
-import { Download, Library } from "lucide-react";
+import { Download, Heart, Library } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ function NavigationLink({
 }: {
 	href: Route;
 	label: string;
-	icon: typeof Download;
+	icon: typeof Download | typeof Heart | typeof Library;
 }) {
 	return (
 		<Link href={href} aria-label={`Go to ${label.toLowerCase()} page`}>
@@ -31,6 +31,7 @@ export function NavigationLinks() {
 	return (
 		<div className="flex items-center gap-1">
 			<NavigationLink href="/downloads" label="Downloads" icon={Download} />
+			<NavigationLink href="/favorites" label="Favorites" icon={Heart} />
 			<NavigationLink href="/library" label="Library" icon={Library} />
 		</div>
 	);

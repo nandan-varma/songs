@@ -20,10 +20,9 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
 	const navItems = [
 		{ path: VALID_ROUTES[0], icon: Home, label: "Home" },
-		{ path: VALID_ROUTES[1], icon: Search, label: "Search" },
-		{ path: VALID_ROUTES[2], icon: Library, label: "Library" },
-		{ path: VALID_ROUTES[3], icon: Download, label: "Downloads" },
-		{ path: VALID_ROUTES[4], icon: Heart, label: "Favorites" },
+		{ path: VALID_ROUTES[1], icon: Library, label: "Library" },
+		{ path: VALID_ROUTES[2], icon: Download, label: "Downloads" },
+		{ path: VALID_ROUTES[3], icon: Heart, label: "Favorites" },
 	] as const;
 
 	const isActive = useCallback(

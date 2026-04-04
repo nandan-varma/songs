@@ -17,6 +17,7 @@ interface ProgressiveImageProps {
 	height?: number;
 	rounded?: "none" | "default" | "full";
 	objectFit?: "cover" | "contain";
+	sizes?: string;
 }
 
 const FALLBACK_URL = "https://placehold.co/500x500.webp?text=Image+Not+Found";
@@ -33,6 +34,7 @@ export function ProgressiveImage({
 	height,
 	rounded = "default",
 	objectFit = "cover",
+	sizes,
 }: ProgressiveImageProps) {
 	const [src, setSrc] = useState<string>(() => getSmallestImage(images));
 
@@ -112,6 +114,7 @@ export function ProgressiveImage({
 				width={fill ? undefined : width || 500}
 				height={fill ? undefined : height || 500}
 				{...(fill ? { fill: true } : {})}
+				{...(fill && sizes ? { sizes } : {})}
 				className={imageClassName}
 				onError={handleError}
 				priority={priority}

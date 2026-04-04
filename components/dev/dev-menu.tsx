@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -66,6 +67,9 @@ export function DevMenu() {
 						<Database className="h-5 w-5" />
 						Developer Tools
 					</DialogTitle>
+					<DialogDescription>
+						Clear storage and manage cache/service workers
+					</DialogDescription>
 				</DialogHeader>
 				<ScrollArea className="flex-1 overflow-auto">
 					<div className="space-y-4 p-1">

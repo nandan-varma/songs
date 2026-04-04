@@ -1,160 +1,182 @@
-# Agent Guidelines for Songs Codebase
+# AGENTS.md
 
-## Build & Development Commands
+This file is the working guide for coding agents operating in `/Users/nandan/dev/songs`.
+It is based on the current repository state, scripts, and conventions in this codebase.
 
-### Core Commands
-```bash
-npm run dev              # Start dev server (http://localhost:3000)
-npm run build            # Production build with TypeScript check
-npm run start            # Start production server
-npm run lint             # Lint with Biome (checks all rules)
-npm run format           # Format code with Biome (tab-indented)
-npm run analyze          # Analyze bundle size with webpack
-npm run analyze:turbopack # Analyze with Turbopack
-```
+## Repository Overview
 
-### Important Notes
-- **No test runner configured** - This is a frontend app, add tests only if requested
-- **Build must pass** - Always verify `npm run build` succeeds before committing
-- **TypeScript strict mode** - Strict type checking enforced (`noUncheckedIndexedAccess: true`, `noImplicitOverride: true`)
-- **Biome is the linter/formatter** - Not ESLint/Prettier, use `npm run lint` and `npm run format`
+- Framework: `Next.js 16` App Router
+- Language: `TypeScript` with strict mode
+- Package manager: `pnpm` lockfile is present; use `pnpm install` for dependency changes
+- Runtime commands: repo scripts are written for `npm run ...`
+- Formatting and linting: `Biome`
+- State: `Zustand`
+- Server state: `@tanstack/react-query`
+- URL state: `nuqs`
+- Validation: `zod`
+- Offline downloads: `idb-keyval`
 
-## Code Style Guidelines
+## Rule Files
 
-### Imports & Path Aliases
-- Use `@/*` path alias for all imports (maps to project root)
-- Import order: React/Next → External packages → Internal (lib → components/hooks → types)
-- Use named imports except for default exports (Next.js components, pages)
-- Organize imports with Biome's `organizeImports` (automatic with format)
+- No `.cursor/rules/` directory was found.
+- No `.cursorrules` file was found.
+- No `.github/copilot-instructions.md` file was found.
+- Treat this file as the repository-specific agent guide.
 
-### Formatting
-- **Tabs** for indentation (configured in Biome)
-- **Double quotes** for strings
-- **Line length**: ~100 characters (Biome default)
-- **Semicolons**: Required
-- Run `npm run lint` to check, `npm run format` to auto-fix
+## Install And Setup
 
-### TypeScript & Types
-- **Strict mode enabled** - No `any` types unless marked with `// @ts-expect-error` or `as unknown`
-- Type files: Store types in `types/*.ts` or co-located in same directory
-- Use `type` keyword for type imports: `import type { Song } from "@/types/entity"`
-- Export interfaces from files: `export interface ComponentProps { ... }`
-- Props interfaces end with `Props`: `SongItemProps`, `ButtonProps`, etc.
+- Install dependencies: `pnpm install`
+- Start dev server: `npm run dev`
+- Production build: `npm run build`
+- Start production server: `npm run start`
+- Bundle analysis: `npm run analyze`
+- Turbopack analysis: `npm run analyze:turbopack`
 
-### Naming Conventions
-- **Components**: PascalCase (`SongItem`, `ProgressiveImage`)
-- **Hooks**: camelCase starting with `use` (`useAppStore`, `useAudioPlayback`)
-- **Functions**: camelCase (`playSong`, `handleClick`)
-- **Constants**: SCREAMING_SNAKE_CASE (`DEFAULT_VOLUME`, `MAX_HISTORY_SIZE`)
-- **Files**: 
-  - Components: PascalCase (`SongItem.tsx`)
-  - Hooks/Utils: camelCase (`use-audio-playback.ts`)
-  - Pages: lowercase with hyphens (`song.tsx`, `album.tsx`)
+## Lint, Format, Typecheck
 
-### Error Handling
-- Use try-catch for async operations
-- Log errors with utility: `logError("context", error)`
-- For errors, return `{ success: false, error: message }` pattern
-- Show user feedback with `toast` from Sonner or error UI component
-- Never silently fail; always communicate errors to UI or logs
+- Lint entire repo: `npm run lint`
+- Format entire repo: `npx biome format --write .`
+- Check one file with Biome: `npx biome check path/to/file.tsx`
+- Format one file: `npx biome format --write path/to/file.tsx`
+- There is no dedicated `typecheck` script.
+- Use `npm run build` as the authoritative full-project typecheck + build verification.
 
-### State Management
-- **Zustand store** (`useAppStore`) for global state
-- Use **granular selectors** for components: `const currentSong = useCurrentSong()`
-- Access **actions via getState()** in callbacks: `useAppStore.getState().playSong(song)`
-- **Never destructure store** in render: Use individual hooks for each property
-- Domain-based hooks: `usePlayer()`, `useQueue()`, `useFavorites()`, `usePlaylists()`
+## Test Commands
 
-### React Component Patterns
-- Use **"use client"** directive for client-side components (default)
-- Use **memo()** for expensive components: `export const SongItem = memo(function SongItem(props) {...})`
-- Use **useCallback()** for event handlers to prevent re-renders
-- Use **lazy loading** with React.lazy() for large components
-- Props should be interfaces ending in `Props`
-- Prefer **controlled components** over uncontrolled ones
+- There is currently no test runner configured.
+- No `*.test.*` or `*.spec.*` files exist in the repo at the time of writing.
+- There is no supported "single test" command yet because there are no tests.
+- If you need targeted verification today, use:
+  - single-file lint: `npx biome check path/to/file.tsx`
+  - full verification: `npm run build`
+- If you introduce a test framework later, add package scripts and update this file.
 
-### Next.js Specifics
-- **Image optimization**: Always include `sizes` prop when using `fill`
-  ```tsx
-  <Image src="..." fill sizes="(max-width: 640px) 100vw, 50vw" />
-  ```
-- **Loading states**: Use `loading.tsx` for skeleton UI during data fetch
-- **Path aliases**: All imports use `@/*` (don't use relative paths)
-- **Server vs Client**: Use `"use client"` for interactive components
-- **Dynamic routes**: Follow `/[param]/page.tsx` pattern
+## Verification Expectations
 
-### API & Data Fetching
-- Use **React Query** for async data (`useQuery`, `useMutation`)
-- Cache keys in `lib/cache.ts`: `CACHE_KEYS.SONGS(id)`
-- Wrap API responses: `{ success: true, data: [...] }` pattern
-- Handle errors gracefully with loading states (skeleton UI first)
-- Support offline mode with `useOffline()` hook
+- For small isolated edits: run targeted `biome check` on touched files.
+- For cross-cutting or architectural edits: run `npm run lint` and `npm run build`.
+- If dependencies change: run `pnpm install` to sync the lockfile.
+- Do not claim tests passed; there are no automated tests configured.
 
-### Performance
-- Memoize expensive components with `memo()`
-- Use `useCallback()` for stable function references
-- Lazy load images with `ProgressiveImage` component
-- Optimize bundle with Turbopack analysis
-- Split code with dynamic imports for large features
+## General Code Style
 
-### Accessibility (a11y)
-- Biome warns on missing ARIA labels, keyboard handlers, semantic HTML
-- Use semantic HTML: `<button>`, `<nav>`, `<main>`, not just `<div>`
-- Include `aria-label` or `aria-describedby` for icon-only buttons
-- Ensure clickable elements have keyboard support
+- Use `TypeScript` everywhere possible.
+- Follow Biome formatting; do not hand-format against it.
+- Indentation uses tabs.
+- Strings use double quotes.
+- Keep files ASCII unless a file already uses Unicode and it is justified.
+- Prefer concise code over clever abstractions.
+- Prefer the smallest correct change.
 
-### Styling
-- **TailwindCSS** for styling (v4.2.2)
-- Use **shadcn/ui** components from `components/ui/`
-- Theme support via `next-themes`
-- Responsive design: mobile-first with `md:`, `lg:` breakpoints
-- Dark mode: Automatic with next-themes context
+## Imports
 
-## Key Architectural Patterns
+- Import order in practice is:
+  - framework / third-party packages
+  - internal `@/...` imports
+  - local relative imports
+- Prefer the `@/*` path alias over long relative paths.
+- Prefer `import type` for type-only imports.
+- Remove unused imports immediately; Biome flags them.
+- Do not add wildcard barrel layers unless there is a real reuse need.
 
-### File Structure
-```
-app/               # Next.js app routes (pages, layouts)
-components/        # React components
-  ui/             # shadcn/ui components (don't modify)
-  common/         # Shared components
-hooks/            # Custom React hooks
-lib/              # Utilities, store, API
-  store/          # Zustand state management
-  api/            # API client functions
-types/            # TypeScript type definitions
-```
+## Modules And File Layout
 
-### State Management Strategy
-- **Zustand store** for persistent app state
-- **React Query** for server state & async data
-- **Local useState** for UI-only state (modals, form inputs)
-- **Context** only for theme/locale (avoid excessive nesting)
+- Keep domain code separated by purpose:
+  - `app/` for routes and route-local components
+  - `components/` for reusable UI and feature components
+  - `hooks/` for reusable React hooks
+  - `lib/` for non-React domain logic and infrastructure
+  - `types/` for shared type definitions
+- For large route files, split into route-local `_components/`.
+- Reuse shared shells before copying route state logic.
+- Keep generated `components/ui/*` wrappers minimal; avoid unnecessary edits there.
 
-## Common Issues & Solutions
+## React And Next.js Conventions
 
-### Infinite Loops in Zustand
-- ✅ **Correct**: `useAppStore.getState().action()` in callbacks
-- ❌ **Wrong**: Destructuring store in render: `const { action } = useAppStore()`
+- Add `"use client";` only when a file truly needs client-side hooks or browser APIs.
+- Prefer server-compatible modules by default.
+- Route files may use default exports; elsewhere prefer named exports.
+- Keep page components thin and move repeated logic into shared components or hooks.
+- Current entity pages intentionally still use query params like `/song?id=...`.
+- Do not migrate to dynamic route segments unless explicitly requested.
 
-### Image Warnings
-- Always add `sizes` prop to `<Image fill>`
-- Format: `sizes="(max-width: 640px) 100vw, 50vw"`
+## State Management
 
-### TypeScript Errors
-- Use `type` for type imports
-- Enable strict checks with `as unknown` only when necessary
-- Check `tsconfig.json` for path aliases
+- The public Zustand interface lives in `hooks/use-store.ts`.
+- Store implementation is split under `lib/store/`.
+- When changing store behavior, preserve the public API unless there is a clear reason to change it.
+- Prefer adding behavior inside the appropriate slice:
+  - playback / queue
+  - library history / favorites
+  - playlists
+  - downloads / UI
+- Keep persisted state compatible with `PersistedAppStoreState` unless intentionally changing storage shape.
 
-### Build Failures
-- Run `npm run lint` to catch Biome issues
-- Run `npm run format` to auto-fix formatting
-- Verify all imports use `@/` alias
-- Check for circular dependencies in lib/store
+## React Query Conventions
 
-## Resources
-- [Zustand Docs](https://github.com/pmndrs/zustand)
-- [React Query Docs](https://tanstack.com/query/latest)
-- [TailwindCSS v4](https://tailwindcss.com)
-- [shadcn/ui](https://ui.shadcn.com)
-- [Biome Docs](https://biomejs.dev)
+- API functions live in `lib/api/` and return domain data, not wrapped envelopes.
+- Reusable query option builders live in `lib/queries/music.ts`.
+- UI-facing hooks live in `hooks/data/`.
+- Prefer `queryOptions(...)` builders for new fetch patterns instead of ad hoc `useQuery` duplication.
+- Use route-level shells and loading components instead of repeating pending/error UI branches.
+
+## Types
+
+- `tsconfig.json` is strict and includes `noUncheckedIndexedAccess`.
+- Avoid `any`; prefer `unknown` and narrow explicitly.
+- Prefer explicit return types on exported functions when the intent is non-trivial.
+- Keep shared entity and API types in `types/`.
+- Use `interface` for object-shaped props and exported contracts when it reads clearly.
+- Use discriminated unions or literal unions for finite modes like repeat/status values.
+
+## Naming Conventions
+
+- Components: `PascalCase`
+- Hooks: `useSomething`
+- Utility functions: `camelCase`
+- Types / interfaces: `PascalCase`
+- Props interfaces: `SomethingProps`
+- Constants: `UPPER_SNAKE_CASE` only for true constants; otherwise use descriptive `camelCase` locals.
+- Use clear domain names like `artist`, `playlist`, `downloadedSongIds` instead of vague abbreviations.
+
+## Error Handling
+
+- Throw errors for programmer/config/validation failures that should stop execution.
+- Catch errors around I/O, fetches, storage, and browser APIs.
+- In catches, log with `logError("Context", error)` from `lib/utils/logger`.
+- Show user-facing feedback with `sonner` toasts when a user action fails.
+- Use `ErrorBoundary` for UI fallbacks, not as a replacement for local error handling.
+- Include a short, stable context string in logs, e.g. `"Providers:syncDownloads"`.
+
+## Config And Environment
+
+- Public runtime config lives in `lib/config/public.ts`.
+- Server-only config lives in `lib/config/server.ts`.
+- Validate new environment variables with `zod` there instead of reading `process.env` all over the app.
+- Do not reintroduce silent config fallbacks in feature code.
+- Build info generation now lives in `scripts/build-info.mjs` and `scripts/generate-build-info.mjs`.
+- Do not add side effects back into `next.config.ts`.
+
+## Styling And UI
+
+- Styling is Tailwind-first.
+- Preserve the existing visual language unless the task explicitly asks for redesign.
+- Prefer composition over adding one-off variant props everywhere.
+- Accessibility rules in Biome are enabled and should be respected.
+- Avoid array index keys except for static skeleton placeholders, and annotate the Biome ignore when necessary.
+
+## Editing Guidance For Agents
+
+- Read surrounding code before changing patterns.
+- Do not introduce backward-compatibility layers unless asked.
+- Do not add new dependencies unless they clearly replace custom complexity.
+- If you touch package dependencies, update `package.json` and the lockfile together.
+- If a file becomes large or mixes concerns, split it instead of adding more helpers into the same file.
+- Keep comments sparse and useful; explain why, not the obvious what.
+
+## Final Check Before Hand-off
+
+- Ensure imports are clean.
+- Ensure Biome passes.
+- Ensure `npm run build` passes for non-trivial changes.
+- Mention clearly if verification was limited because no automated tests exist.

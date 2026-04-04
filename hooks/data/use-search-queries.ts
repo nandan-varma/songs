@@ -6,12 +6,11 @@
 
 import { useQueries } from "@tanstack/react-query";
 import {
-	searchAlbums,
-	searchArtists,
-	searchPlaylists,
-	searchSongs,
-} from "@/lib/api";
-import { CACHE_TIMES } from "@/lib/cache";
+	searchAlbumsQueryOptions,
+	searchArtistsQueryOptions,
+	searchPlaylistsQueryOptions,
+	searchSongsQueryOptions,
+} from "@/lib/queries/music";
 import type {
 	AlbumSearchResult,
 	ArtistSearchResult,
@@ -77,28 +76,20 @@ export function useSearchQueries(
 	const results = useQueries({
 		queries: [
 			{
-				queryKey: ["search-songs", query, limit],
-				queryFn: () => searchSongs(query, 0, limit),
+				...searchSongsQueryOptions(query, limit),
 				enabled,
-				staleTime: CACHE_TIMES.SEARCH,
 			},
 			{
-				queryKey: ["search-albums", query, limit],
-				queryFn: () => searchAlbums(query, 0, limit),
+				...searchAlbumsQueryOptions(query, limit),
 				enabled,
-				staleTime: CACHE_TIMES.SEARCH,
 			},
 			{
-				queryKey: ["search-artists", query, limit],
-				queryFn: () => searchArtists(query, 0, limit),
+				...searchArtistsQueryOptions(query, limit),
 				enabled,
-				staleTime: CACHE_TIMES.SEARCH,
 			},
 			{
-				queryKey: ["search-playlists", query, limit],
-				queryFn: () => searchPlaylists(query, 0, limit),
+				...searchPlaylistsQueryOptions(query, limit),
 				enabled,
-				staleTime: CACHE_TIMES.SEARCH,
 			},
 		],
 	});

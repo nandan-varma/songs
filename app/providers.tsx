@@ -1,16 +1,25 @@
 "use client";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type * as React from "react";
-import { useEffect } from "react";
-import { getQueryClient } from "@/app/get-query-client";
+import { useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { getDownloadedSongIds } from "@/lib/downloads/storage";
 import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 
+function createQueryClient() {
+	return new QueryClient({
+		defaultOptions: {
+			queries: {
+				staleTime: 60 * 1000,
+			},
+		},
+	});
+}
+
 export default function Providers({ children }: { children: React.ReactNode }) {
-	const queryClient = getQueryClient();
+	const [queryClient] = useState(createQueryClient);
 
 	useEffect(() => {
 		void getDownloadedSongIds()

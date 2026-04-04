@@ -2,16 +2,16 @@
 
 import { useQueryState } from "nuqs";
 import { useEffect } from "react";
+import { QueryParamDetailShell } from "@/components/entity/query-param-detail-shell";
 import { SongHeader } from "@/components/song/song-header";
 import { SongSuggestions } from "@/components/song/song-suggestions";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useSong, useSongSuggestions } from "@/hooks/data/queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { useAppStore } from "@/lib/store";
 import { detailedSongToSong } from "@/lib/utils";
 import { EntityType } from "@/types/entity";
+import { SongPageLoading } from "./loading";
 
 export function Client() {
 	const [id] = useQueryState("id");
@@ -19,7 +19,11 @@ export function Client() {
 	const isOffline = useIsOffline();
 	const addToVisitHistory = useAppStore((state) => state.addToVisitHistory);
 
-	const { data: songData, isPending } = useSong(id || "", {
+	const {
+		data: songData,
+		error,
+		isPending,
+	} = useSong(id || "", {
 		enabled: !!id && !isOffline,
 	});
 	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
@@ -42,91 +46,29 @@ export function Client() {
 		}
 	}, [song, isOffline, addToVisitHistory]);
 
-	if (!id) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Song ID is required</p>
-			</div>
-		);
-	}
-
-	if (isOffline) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<Card className="text-center py-12">
-					<CardContent>
-						<p className="text-muted-foreground">
-							Song details are not available in offline mode. Please disable
-							offline mode to view this song.
-						</p>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
-
-	// Show loading state while fetching
-	if (isPending) {
-		return (
-			<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
-				<Card>
-					<CardContent className="p-6">
-						<div className="flex flex-col md:flex-row gap-6">
-							{/* Album Art Skeleton */}
-							<Skeleton className="w-full md:w-64 aspect-square rounded-lg flex-shrink-0" />
-
-							{/* Song Details Skeleton */}
-							<div className="flex-1 space-y-4">
-								<div className="space-y-2">
-									<Skeleton className="h-6 w-16" />
-									<Skeleton className="h-10 w-3/4" />
-								</div>
-
-								<div className="space-y-2">
-									<Skeleton className="h-4 w-1/2" />
-									<Skeleton className="h-4 w-3/5" />
-									<div className="flex gap-4">
-										<Skeleton className="h-4 w-12" />
-										<Skeleton className="h-4 w-16" />
-										<Skeleton className="h-4 w-14" />
-									</div>
-									<Skeleton className="h-6 w-24" />
-								</div>
-
-								{/* Action Buttons Skeleton */}
-								<div className="flex gap-2">
-									<Skeleton className="h-11 w-20" />
-									<Skeleton className="h-11 w-32" />
-									<Skeleton className="h-11 w-28" />
-									<Skeleton className="h-11 w-24" />
-								</div>
-							</div>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
-		);
-	}
-
-	if (!song) {
-		return (
-			<div className="container mx-auto px-4 py-8">
-				<p className="text-center text-destructive">Song not found</p>
-			</div>
-		);
-	}
-
 	return (
-		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
-			<SongHeader
-				song={song}
-				onPlay={() => playSong(song)}
-				onAddToQueue={() => addToQueue(song)}
-			/>
+		<QueryParamDetailShell
+			id={id}
+			entityLabel="song"
+			isOffline={isOffline}
+			isPending={isPending}
+			error={error}
+			hasData={!!song}
+			loadingFallback={<SongPageLoading />}
+		>
+			{song && (
+				<div className="container mx-auto space-y-8 px-4 py-8 pb-32">
+					<SongHeader
+						song={song}
+						onPlay={() => playSong(song)}
+						onAddToQueue={() => addToQueue(song)}
+					/>
 
-			<SongSuggestions
-				suggestions={filteredSuggestions.map(detailedSongToSong)}
-			/>
-		</div>
+					<SongSuggestions
+						suggestions={filteredSuggestions.map(detailedSongToSong)}
+					/>
+				</div>
+			)}
+		</QueryParamDetailShell>
 	);
 }

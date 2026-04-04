@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Loading() {
+export function PlaylistPageLoading() {
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
 			{/* Playlist Header */}
@@ -57,4 +57,8 @@ export default function Loading() {
 			</div>
 		</div>
 	);
+}
+
+export default function Loading() {
+	return <PlaylistPageLoading />;
 }

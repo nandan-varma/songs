@@ -27,13 +27,17 @@ export function Navigation() {
 	const { data: session, isPending } = authClient.useSession();
 
 	return (
-		<nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky top-0 z-40">
+		<nav
+			className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky top-0 z-40"
+			aria-label="Main navigation"
+		>
 			<div className="container mx-auto px-4">
 				<div className="flex h-16 items-center justify-between gap-4">
 					{/* Left: Logo */}
 					<Link
 						href="/"
-						className="flex items-center gap-2 font-semibold text-lg flex-shrink-0"
+						className="flex items-center gap-2 font-semibold text-lg flex-shrink-0 hover:opacity-80 transition-opacity duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background rounded"
+						aria-label="Music App Home"
 					>
 						<Music className="h-6 w-6" />
 						<span className="hidden sm:inline">Music App</span>
@@ -47,9 +51,15 @@ export function Navigation() {
 						{/* Status Indicators Section */}
 						<div className="flex items-center gap-2 px-3 py-1.5 rounded-md border bg-card flex-shrink-0">
 							{isOfflineMode ? (
-								<WifiOff className="h-4 w-4 text-orange-500 flex-shrink-0" />
+								<WifiOff
+									className="h-4 w-4 text-orange-500 flex-shrink-0"
+									aria-hidden="true"
+								/>
 							) : (
-								<Wifi className="h-4 w-4 text-green-500 flex-shrink-0" />
+								<Wifi
+									className="h-4 w-4 text-green-500 flex-shrink-0"
+									aria-hidden="true"
+								/>
 							)}
 							<span className="hidden sm:inline text-sm font-medium whitespace-nowrap">
 								{isOfflineMode ? "Offline" : "Online"}
@@ -57,19 +67,22 @@ export function Navigation() {
 						</div>
 
 						{/* Divider */}
-						<div className="hidden sm:block w-px h-6 bg-border" />
+						<div
+							className="hidden sm:block w-px h-6 bg-border"
+							aria-hidden="true"
+						/>
 
 						{/* Primary Actions Section */}
 						<div className="flex items-center gap-1">
 							{/* Downloads */}
-							<Link href="/downloads" aria-label="Go to downloads">
+							<Link href="/downloads" aria-label="Go to downloads page">
 								<Button
 									variant="ghost"
 									size="sm"
-									className="relative flex-shrink-0"
+									className="relative flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
 									aria-label="Downloads"
 								>
-									<Download className="h-4 w-4" />
+									<Download className="h-4 w-4" aria-hidden="true" />
 									<span className="hidden sm:inline ml-2 whitespace-nowrap">
 										Downloads
 									</span>
@@ -77,14 +90,14 @@ export function Navigation() {
 							</Link>
 
 							{/* Library */}
-							<Link href="/library" aria-label="Go to library">
+							<Link href="/library" aria-label="Go to library page">
 								<Button
 									variant="ghost"
 									size="sm"
-									className="flex-shrink-0"
+									className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
 									aria-label="Library"
 								>
-									<Library className="h-4 w-4" />
+									<Library className="h-4 w-4" aria-hidden="true" />
 									<span className="hidden sm:inline ml-2 whitespace-nowrap">
 										Library
 									</span>
@@ -93,7 +106,10 @@ export function Navigation() {
 						</div>
 
 						{/* Divider */}
-						<div className="hidden sm:block w-px h-6 bg-border" />
+						<div
+							className="hidden sm:block w-px h-6 bg-border"
+							aria-hidden="true"
+						/>
 
 						{/* Secondary Actions Section */}
 						<div className="flex items-center gap-1">
@@ -107,10 +123,10 @@ export function Navigation() {
 										variant="outline"
 										size="sm"
 										onClick={promptInstall}
-										className="flex-shrink-0"
+										className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
 										aria-label="Install app"
 									>
-										<Smartphone className="h-4 w-4" />
+										<Smartphone className="h-4 w-4" aria-hidden="true" />
 										<span className="hidden sm:inline ml-2 whitespace-nowrap">
 											Install
 										</span>
@@ -125,9 +141,13 @@ export function Navigation() {
 										variant="ghost"
 										size="sm"
 										aria-label="Loading..."
-										className="w-full"
+										className="w-full focus:outline-none focus:ring-2 focus:ring-primary"
+										disabled
 									>
-										<Loader className="h-4 w-4 animate-spin" />
+										<Loader
+											className="h-4 w-4 animate-spin"
+											aria-hidden="true"
+										/>
 									</Button>
 								) : session ? (
 									<Button
@@ -135,9 +155,9 @@ export function Navigation() {
 										size="sm"
 										onClick={() => authClient.signOut()}
 										aria-label="Logout"
-										className="w-full"
+										className="w-full focus:outline-none focus:ring-2 focus:ring-primary"
 									>
-										<LogOut className="h-4 w-4" />
+										<LogOut className="h-4 w-4" aria-hidden="true" />
 										<span className="hidden sm:inline ml-2 whitespace-nowrap">
 											Logout
 										</span>
@@ -150,9 +170,9 @@ export function Navigation() {
 											router.push("/auth");
 										}}
 										aria-label="Login"
-										className="w-full"
+										className="w-full focus:outline-none focus:ring-2 focus:ring-primary"
 									>
-										<LogIn className="h-4 w-4" />
+										<LogIn className="h-4 w-4" aria-hidden="true" />
 										<span className="hidden sm:inline ml-2 whitespace-nowrap">
 											Login
 										</span>

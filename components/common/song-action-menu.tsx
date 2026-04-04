@@ -38,7 +38,7 @@ export function SongActionMenu({
 	const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
 	// Fetch detailed song when menu opens
-	const { data: detailedSongArray, isPending } = useDetailedSong(
+	const { data: detailedSongArray } = useDetailedSong(
 		isMenuOpen ? song.id : null,
 	);
 

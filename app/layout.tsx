@@ -4,6 +4,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { AudioPlayer } from "@/components/audio-player";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ErrorBoundary } from "@/components/common/error-boundary";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { Navigation } from "@/components/navigation";
 import { ServiceWorkerManager } from "@/components/offline/service-worker-manager";
 import { KeyboardShortcutsManager } from "@/components/ui/keyboard-shortcuts-manager";
@@ -109,6 +110,7 @@ export default function RootLayout({
 						<main id="main-content" className="pb-32 md:pb-36">
 							{children}
 						</main>
+						<MobileBottomNav />
 						<KeyboardShortcutsManager />
 						<ErrorBoundary context="AudioPlayer">
 							<AudioPlayer />

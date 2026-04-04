@@ -2,7 +2,7 @@
 
 import { ListMusic } from "lucide-react";
 import * as React from "react";
-import { useDragReorder } from "@/hooks/ui/use-drag-reorder";
+import { useDragManager } from "@/hooks/ui/use-queue-drag";
 import { usePlaylists } from "@/hooks/use-store";
 import {
 	Dialog,
@@ -43,9 +43,9 @@ export function PlaylistEditDialog({
 		handleDragStart,
 		handleDragEnter,
 		handleDragEnd,
-	} = useDragReorder({
+	} = useDragManager({
 		items: songs,
-		onReorder: (_fromIndex, _toIndex) => {
+		onReorder: (_fromIndex: number, _toIndex: number) => {
 			// TODO: Implement reordering in the store if needed
 			if (playlist) {
 				// reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
@@ -93,22 +93,26 @@ export function PlaylistEditDialog({
 						</div>
 					) : (
 						<div className="p-4 space-y-2">
-							{displaySongs.map((song, _visualIndex) => {
-								const originalIndex = songs.findIndex((s) => s.id === song.id);
-								return (
-									<PlaylistSongItem
-										key={song.id}
-										song={song}
-										index={originalIndex}
-										isDragging={isDragging(originalIndex)}
-										onRemove={() => handleRemove(originalIndex)}
-										onPlay={() => handlePlay(originalIndex)}
-										onDragStart={handleDragStart}
-										onDragEnter={handleDragEnter}
-										onDragEnd={handleDragEnd}
-									/>
-								);
-							})}
+							{displaySongs.map(
+								(song: (typeof songs)[number], _visualIndex: number) => {
+									const originalIndex = songs.findIndex(
+										(s) => s.id === song.id,
+									);
+									return (
+										<PlaylistSongItem
+											key={song.id}
+											song={song}
+											index={originalIndex}
+											isDragging={isDragging(originalIndex)}
+											onRemove={() => handleRemove(originalIndex)}
+											onPlay={() => handlePlay(originalIndex)}
+											onDragStart={handleDragStart}
+											onDragEnter={handleDragEnter}
+											onDragEnd={handleDragEnd}
+										/>
+									);
+								},
+							)}
 						</div>
 					)}
 				</div>

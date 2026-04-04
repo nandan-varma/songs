@@ -3,14 +3,12 @@
  * Provides helpers for creating type-safe query hooks with defaults
  */
 
-import type { UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
 import type { ApiError } from "@/lib/api/types";
 
 /**
  * Options for creating a query hook
  */
-export interface CreateQueryOptions<T, E = ApiError> {
+export interface CreateQueryOptions<_T, E = ApiError> {
 	/** Query stale time (ms) - how long until query becomes stale */
 	staleTime?: number;
 	/** Cache time (ms) - how long to keep unused queries cached */
@@ -51,8 +49,8 @@ export const QUERY_DEFAULTS = {
  */
 export function createQueryKey(
 	namespace: string,
-	params?: Record<string, any>,
-): readonly string[] | readonly [string, Record<string, any>] {
+	params?: Record<string, unknown>,
+): readonly string[] | readonly [string, Record<string, unknown>] {
 	return params ? [namespace, params] : [namespace];
 }
 

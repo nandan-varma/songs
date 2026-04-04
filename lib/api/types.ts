@@ -197,70 +197,65 @@ export function getErrorCodeFromStatus(status: number): ApiErrorCode {
 }
 
 /**
- * Response wrapper factory
+ * Response handler functions
  * Ensures consistent API response handling
  */
-export class ResponseHandler {
-	static async handleJsonResponse<T>(response: Response): Promise<T> {
-		if (!response.ok) {
-			const errorCode = getErrorCodeFromStatus(response.status);
-			throw new ApiError(
-				`HTTP ${response.status}: ${response.statusText}`,
-				errorCode,
-				response.status,
-			);
-		}
+export async function handleJsonResponse<T>(response: Response): Promise<T> {
+	if (!response.ok) {
+		const errorCode = getErrorCodeFromStatus(response.status);
+		throw new ApiError(
+			`HTTP ${response.status}: ${response.statusText}`,
+			errorCode,
+			response.status,
+		);
+	}
 
+	try {
+		return (await response.json()) as T;
+	} catch {
+		throw new ApiError(
+			"Failed to parse response JSON",
+			ApiErrorCode.SERVER_ERROR,
+		);
+	}
+}
+
+export function createTimeoutPromise<T>(ms: number): Promise<T> {
+	return new Promise((_, reject) => {
+		setTimeout(() => {
+			reject(
+				new ApiError(`Request timeout after ${ms}ms`, ApiErrorCode.TIMEOUT),
+			);
+		}, ms);
+	});
+}
+
+export async function handleWithTimeout<T>(
+	promise: Promise<T>,
+	timeoutMs?: number,
+): Promise<T> {
+	if (!timeoutMs) return promise;
+
+	return Promise.race([promise, createTimeoutPromise<T>(timeoutMs)]);
+}
+
+export async function retry<T>(
+	fn: () => Promise<T>,
+	maxAttempts = 3,
+	delayMs = 1000,
+): Promise<T> {
+	let lastError: unknown;
+
+	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 		try {
-			return (await response.json()) as T;
-		} catch {
-			throw new ApiError(
-				"Failed to parse response JSON",
-				ApiErrorCode.SERVER_ERROR,
-			);
-		}
-	}
-
-	static createTimeoutPromise<T>(ms: number): Promise<T> {
-		return new Promise((_, reject) => {
-			setTimeout(() => {
-				reject(
-					new ApiError(`Request timeout after ${ms}ms`, ApiErrorCode.TIMEOUT),
-				);
-			}, ms);
-		});
-	}
-
-	static async handleWithTimeout<T>(
-		promise: Promise<T>,
-		timeoutMs?: number,
-	): Promise<T> {
-		if (!timeoutMs) return promise;
-
-		return Promise.race([
-			promise,
-			ResponseHandler.createTimeoutPromise<T>(timeoutMs),
-		]);
-	}
-
-	static async retry<T>(
-		fn: () => Promise<T>,
-		maxAttempts = 3,
-		delayMs = 1000,
-	): Promise<T> {
-		let lastError: unknown;
-
-		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-			try {
-				return await fn();
-			} catch (error) {
-				lastError = error;
-				if (attempt < maxAttempts) {
-					await new Promise((resolve) => setTimeout(resolve, delayMs));
-				}
+			return await fn();
+		} catch (error) {
+			lastError = error;
+			if (attempt < maxAttempts) {
+				await new Promise((resolve) => setTimeout(resolve, delayMs));
 			}
 		}
-
-		throw lastError;
 	}
+
+	throw lastError;
 }

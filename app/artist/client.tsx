@@ -277,7 +277,7 @@ export function Client() {
 					<TabsContent value="bio" className="space-y-4">
 						<Card>
 							<CardContent className="p-6 space-y-4">
-								{artist.bio.map((section: any, index: number) => (
+								{artist.bio?.map((section, index) => (
 									<div key={section.title || `section-${index}`}>
 										{section.title && (
 											<h3 className="text-lg font-semibold mb-2">
@@ -300,7 +300,7 @@ export function Client() {
 				<div className="space-y-4">
 					<h2 className="text-2xl font-semibold">Similar Artists</h2>
 					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{artist.similarArtists.slice(0, 8).map((similarArtist: any) => (
+						{artist.similarArtists?.slice(0, 8).map((similarArtist) => (
 							<Card
 								key={similarArtist.id}
 								className="overflow-hidden hover:bg-accent/50 transition-colors"

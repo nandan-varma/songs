@@ -8,6 +8,5 @@ export function useArtistFromQuery() {
 
 	return useArtist(id || "", {
 		enabled: !!id && !isOfflineMode,
-		suspense: true,
 	});
 }

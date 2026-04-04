@@ -86,7 +86,7 @@ class CacheManager {
 	async set<T>(
 		key: CacheKey,
 		value: T,
-		ttl: CacheTime = 1000 * 60 * 10,
+		_ttl: CacheTime = 1000 * 60 * 10,
 		store: keyof typeof STORAGE_CONFIG.STORES = "METADATA",
 	): Promise<void> {
 		const keyStr = this.stringifyKey(key);
@@ -103,7 +103,7 @@ class CacheManager {
 		if (store === "METADATA" && typeof value === "object") {
 			try {
 				localStorage.setItem(keyStr, JSON.stringify(value));
-			} catch (e) {
+			} catch (_e) {
 				// Storage full, silently fail
 			}
 		}
@@ -119,10 +119,11 @@ class CacheManager {
 		queryClient
 			.getQueryCache()
 			.getAll()
-			.forEach((query) => {
-				const key = String(query.queryKey[0]);
+			.forEach((query: unknown) => {
+				const queryObj = query as { queryKey: unknown[] };
+				const key = String(queryObj.queryKey[0]);
 				if (patternRegex.test(key)) {
-					queryClient.invalidateQueries({ queryKey: [key] as any });
+					queryClient.invalidateQueries({ queryKey: [key] });
 				}
 			});
 	}
@@ -164,15 +165,17 @@ class CacheManager {
 
 		return new Promise((resolve) => {
 			try {
-				const tx = this.db!.transaction(
+				const tx = this.db?.transaction(
 					STORAGE_CONFIG.STORES[store],
 					"readonly",
 				);
-				const objectStore = tx.objectStore(STORAGE_CONFIG.STORES[store]);
-				const request = objectStore.get(key);
+				const objectStore = tx?.objectStore(STORAGE_CONFIG.STORES[store]);
+				const request = objectStore?.get(key);
 
-				request.onsuccess = () => resolve(request.result || null);
-				request.onerror = () => resolve(null);
+				if (request) {
+					request.onsuccess = () => resolve(request.result || null);
+					request.onerror = () => resolve(null);
+				}
 			} catch {
 				resolve(null);
 			}
@@ -191,15 +194,17 @@ class CacheManager {
 
 		return new Promise((resolve) => {
 			try {
-				const tx = this.db!.transaction(
+				const tx = this.db?.transaction(
 					STORAGE_CONFIG.STORES[store],
 					"readwrite",
 				);
-				const objectStore = tx.objectStore(STORAGE_CONFIG.STORES[store]);
-				objectStore.put(value, key);
+				const objectStore = tx?.objectStore(STORAGE_CONFIG.STORES[store]);
+				objectStore?.put(value, key);
 
-				tx.oncomplete = () => resolve();
-				tx.onerror = () => resolve();
+				if (tx) {
+					tx.oncomplete = () => resolve();
+					tx.onerror = () => resolve();
+				}
 			} catch {
 				resolve();
 			}
@@ -216,15 +221,17 @@ class CacheManager {
 
 		return new Promise((resolve) => {
 			try {
-				const tx = this.db!.transaction(
+				const tx = this.db?.transaction(
 					STORAGE_CONFIG.STORES[store],
 					"readwrite",
 				);
-				const objectStore = tx.objectStore(STORAGE_CONFIG.STORES[store]);
-				objectStore.clear();
+				const objectStore = tx?.objectStore(STORAGE_CONFIG.STORES[store]);
+				objectStore?.clear();
 
-				tx.oncomplete = () => resolve();
-				tx.onerror = () => resolve();
+				if (tx) {
+					tx.oncomplete = () => resolve();
+					tx.onerror = () => resolve();
+				}
 			} catch {
 				resolve();
 			}

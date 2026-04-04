@@ -65,7 +65,6 @@ export const SongsList = memo(function SongsList({
 				className={`space-y-2 ${compact ? "sm:space-y-1.5" : "sm:space-y-2"} overflow-x-hidden ${className}`}
 			>
 				{Array.from({ length: loadingCount }).map((_, i) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: Skeleton items are temporary and safe to key by index
 					<SongItemSkeleton key={`skeleton-loading-${i}`} compact={compact} />
 				))}
 			</div>

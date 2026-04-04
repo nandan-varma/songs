@@ -49,7 +49,6 @@ export default function Loading() {
 				<div className="space-y-4">
 					{Array.from({ length: 10 }).map((_, i) => (
 						<div
-							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 							key={`suggestion-skeleton-${i}`}
 							className="flex items-center gap-4 p-4 rounded-lg border"
 						>

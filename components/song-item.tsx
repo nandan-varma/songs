@@ -42,7 +42,10 @@ export const SongItem = memo(function SongItem({
 				setIsLoading(true);
 				const response = await getSongById(song.id);
 				if (response.success && response.data?.[0]) {
-					useAppStore.getState().playSong(response.data[0]);
+					const detailedSong = response.data[0];
+					const state = useAppStore.getState();
+					state.playSong(detailedSong);
+					state.addToPlaybackHistory(detailedSong);
 				}
 			} catch (error) {
 				logError("SongItem:play", error);

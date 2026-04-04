@@ -85,7 +85,6 @@ export function Client() {
 				<div className="space-y-4">
 					{Array.from({ length: 10 }).map((_, i) => (
 						<div
-							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 							key={`track-skeleton-${i}`}
 							className="flex items-center gap-4 p-4 rounded-lg border"
 						>

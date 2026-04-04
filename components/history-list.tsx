@@ -9,7 +9,7 @@ import { ProgressiveImage } from "@/components/common/progressive-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistoryDisplay } from "@/hooks/ui/use-history-display";
-import { usePlayerActions } from "@/hooks/use-store";
+import { useAppStore } from "@/hooks/use-store";
 import { logError } from "@/lib/utils/logger";
 import { type DetailedSong, EntityType } from "@/types/entity";
 
@@ -27,7 +27,6 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 	compact = false,
 }: HistoryItemProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	const { playSong } = usePlayerActions();
 
 	const data = useHistoryDisplay(song);
 
@@ -40,6 +39,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 
 			setIsLoading(true);
 			try {
+				const { playSong } = useAppStore.getState();
 				playSong(song);
 			} catch (error) {
 				logError("HistoryList:playSong", error);
@@ -47,7 +47,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 				setIsLoading(false);
 			}
 		},
-		[data, song, playSong],
+		[data, song],
 	);
 
 	if (!data) return null;

@@ -7,7 +7,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useOffline } from "@/hooks/cache";
-import { usePlayerActions, useQueueActions } from "@/hooks/use-store";
+import { useAppStore } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 interface SongItemProps {
@@ -132,8 +132,6 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 	// TODO: Load cached songs from new cache system
 	const cachedSongsArray: DetailedSong[] = [];
 	const isOfflineMode = useOffline();
-	const { playSong } = usePlayerActions();
-	const { addSongToQueue } = useQueueActions();
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
 
@@ -161,14 +159,14 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 		};
 	}, [cachedSongsArray.length]);
 
-	const handlePlay = useCallback(
-		(song: DetailedSong) => playSong(song),
-		[playSong],
-	);
-	const handleAddToQueue = useCallback(
-		(song: DetailedSong) => addSongToQueue(song),
-		[addSongToQueue],
-	);
+	const handlePlay = useCallback((song: DetailedSong) => {
+		const { playSong } = useAppStore.getState();
+		playSong(song);
+	}, []);
+	const handleAddToQueue = useCallback((song: DetailedSong) => {
+		const { addSongToQueue } = useAppStore.getState();
+		addSongToQueue(song);
+	}, []);
 	const handleRemove = useCallback((_songId: string) => {
 		// TODO: Remove song from cache
 	}, []);

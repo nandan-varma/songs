@@ -1,0 +1,20 @@
+npm warn Unknown project config "resolution-mode". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> songs@0.5.0 dev
+> next dev
+
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.0.13:3000
+- Environments: .env.local
+✓ Ready in 234ms
+- Experiments (use with caution):
+  · optimizePackageImports
+  ✓ scrollRestoration
+
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ GET /?q=sahana&tab=all 200 in 384ms (next.js: 143ms, application-code: 241ms)
+[2m2026-04-04T01:10:27.379Z[0m [33mWARN[0m [1m[Better Auth]:[0m [better-auth] Base URL could not be determined. Please set a valid base URL using the baseURL config option or the BETTER_AUTH_URL environment variable. Without this, callbacks and redirects may not work correctly.
+[2m2026-04-04T01:10:28.255Z[0m [33mWARN[0m [1m[Better Auth]:[0m [better-auth] Base URL could not be determined. Please set a valid base URL using the baseURL config option or the BETTER_AUTH_URL environment variable. Without this, callbacks and redirects may not work correctly.
+ GET /api/auth/get-session 200 in 1174ms (next.js: 1155ms, application-code: 19ms)
+[?25h

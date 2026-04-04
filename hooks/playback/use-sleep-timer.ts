@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePlayerActions } from "@/hooks/use-store";
+import { useAppStore } from "@/lib/store";
 
 const SLEEP_TIMER_PRESETS = [5, 10, 15, 30, 45, 60, 90] as const;
 
@@ -10,7 +10,6 @@ export function useSleepTimer() {
 	const [isActive, setIsActive] = useState(false);
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
 	const endTimeRef = useRef<number | null>(null);
-	const { togglePlayPause } = usePlayerActions();
 
 	const stopTimer = useCallback(() => {
 		if (timerRef.current) {
@@ -36,7 +35,7 @@ export function useSleepTimer() {
 				const remaining = Math.ceil((endTimeRef.current - Date.now()) / 1000);
 				if (remaining <= 0) {
 					stopTimer();
-					togglePlayPause();
+					useAppStore.getState().togglePlayPause();
 				} else {
 					setTimeRemaining(remaining);
 				}
@@ -45,7 +44,7 @@ export function useSleepTimer() {
 			updateTime();
 			timerRef.current = setInterval(updateTime, 1000);
 		},
-		[togglePlayPause, stopTimer],
+		[stopTimer],
 	);
 
 	const cancelTimer = useCallback(() => {

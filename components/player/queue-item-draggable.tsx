@@ -58,7 +58,10 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 	};
 
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: div required for draggable functionality
+		// ARIA: Using a div with role="button" instead of semantic <button> is intentional.
+		// Draggable elements require custom event handling (onDragStart, onDragEnter, etc.)
+		// that cannot be reliably attached to semantic buttons. This pattern maintains
+		// full keyboard accessibility (tabIndex={0}, onKeyDown) while supporting drag-drop.
 		<div
 			role="button"
 			tabIndex={0}

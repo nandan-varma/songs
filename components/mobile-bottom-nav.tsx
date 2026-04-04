@@ -4,6 +4,7 @@ import { Download, Heart, Home, Library, Search } from "lucide-react";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { memo, useCallback } from "react";
+import { isValidRoute, VALID_ROUTES } from "@/lib/constants";
 
 /**
  * Mobile Bottom Navigation
@@ -18,12 +19,12 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 	const pathname = usePathname();
 
 	const navItems = [
-		{ path: "/", icon: Home, label: "Home" },
-		{ path: "/search", icon: Search, label: "Search" },
-		{ path: "/library", icon: Library, label: "Library" },
-		{ path: "/downloads", icon: Download, label: "Downloads" },
-		{ path: "/favorites", icon: Heart, label: "Favorites" },
-	];
+		{ path: VALID_ROUTES[0], icon: Home, label: "Home" },
+		{ path: VALID_ROUTES[1], icon: Search, label: "Search" },
+		{ path: VALID_ROUTES[2], icon: Library, label: "Library" },
+		{ path: VALID_ROUTES[3], icon: Download, label: "Downloads" },
+		{ path: VALID_ROUTES[4], icon: Heart, label: "Favorites" },
+	] as const;
 
 	const isActive = useCallback(
 		(path: string): boolean => {
@@ -37,8 +38,9 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 
 	const handleNavigation = useCallback(
 		(path: string) => {
-			// @ts-expect-error - Typed routes limitation
-			router.push(path);
+			if (isValidRoute(path)) {
+				router.push(path as never);
+			}
 		},
 		[router],
 	);

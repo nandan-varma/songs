@@ -50,6 +50,7 @@ export function AlbumHeader({
 									entityType={EntityType.ALBUM}
 									rounded="default"
 									priority
+									sizes="(max-width: 768px) 100vw, 256px"
 								/>
 							) : (
 								<div className="flex h-full w-full items-center justify-center bg-muted rounded-lg">

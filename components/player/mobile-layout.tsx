@@ -55,6 +55,7 @@ export const MobileLayout = memo(function MobileLayout({
 							rounded="default"
 							priority
 							className="h-full w-full object-cover rounded"
+							sizes="(max-width: 640px) 100vw, 400px"
 						/>
 					</div>
 				) : (

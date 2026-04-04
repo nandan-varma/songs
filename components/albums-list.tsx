@@ -68,6 +68,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 													}
 													entityType={EntityType.ALBUM}
 													rounded="default"
+													sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 												/>
 											) : (
 												<div className="flex h-full w-full items-center justify-center bg-muted rounded">

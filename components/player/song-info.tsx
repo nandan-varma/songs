@@ -45,6 +45,7 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 						entityType={EntityType.SONG}
 						rounded="default"
 						priority
+						sizes="(max-width: 1024px) 100px, 120px"
 					/>
 				</div>
 			)}

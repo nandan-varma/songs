@@ -67,6 +67,7 @@ export function Client() {
 								entityType={EntityType.PLAYLIST}
 								rounded="default"
 								priority
+								sizes="(max-width: 768px) 100vw, 256px"
 							/>
 						</div>
 

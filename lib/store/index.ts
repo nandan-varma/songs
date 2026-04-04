@@ -44,6 +44,13 @@ const INITIAL_STATE: AppStoreState = {
 	sleepTimerMinutes: null,
 };
 
+/**
+ * Main application store combining all domains
+ * Uses Zustand with subscribeWithSelector middleware
+ *
+ * IMPORTANT: Always use individual property selectors in components, never destructure actions
+ * Access actions via useAppStore.getState() in callbacks to avoid infinite loops
+ */
 export const useAppStore = create<AppStore>()(
 	subscribeWithSelector((set, get) => ({
 		...INITIAL_STATE,

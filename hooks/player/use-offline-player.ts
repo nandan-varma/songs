@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useOffline } from "@/hooks/cache";
-import { usePlayerActions, useQueueActions } from "@/hooks/use-store";
+import { useAppStore } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 /**
@@ -8,9 +8,6 @@ import type { DetailedSong } from "@/types/entity";
  */
 export function useOfflinePlayerActions() {
 	const isOfflineMode = useOffline();
-	const { playSong, playQueue, ...otherPlayerActions } = usePlayerActions();
-	const { addSongToQueue, addSongsToQueue, ...otherQueueActions } =
-		useQueueActions();
 
 	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
 		const filtered = [song];
@@ -20,6 +17,7 @@ export function useOfflinePlayerActions() {
 			return;
 		}
 
+		const { playSong } = useAppStore.getState();
 		playSong(song, replaceQueue);
 	};
 
@@ -40,6 +38,7 @@ export function useOfflinePlayerActions() {
 		}
 
 		const validStartIndex = Math.min(startIndex, filtered.length - 1);
+		const { playQueue } = useAppStore.getState();
 		playQueue(filtered, validStartIndex);
 	};
 
@@ -51,6 +50,7 @@ export function useOfflinePlayerActions() {
 			return;
 		}
 
+		const { addSongToQueue } = useAppStore.getState();
 		addSongToQueue(song);
 	};
 
@@ -68,19 +68,14 @@ export function useOfflinePlayerActions() {
 			);
 		}
 
+		const { addSongsToQueue } = useAppStore.getState();
 		addSongsToQueue(filtered);
 	};
 
 	return {
-		...otherPlayerActions,
-		...otherQueueActions,
 		playSong: playSongOfflineAware,
 		playQueue: playQueueOfflineAware,
 		addToQueue: addToQueueOfflineAware,
 		addMultipleToQueue: addMultipleToQueueOfflineAware,
-		playSongUnfiltered: playSong,
-		playQueueUnfiltered: playQueue,
-		addToQueueUnfiltered: addSongToQueue,
-		addMultipleToQueueUnfiltered: addSongsToQueue,
 	};
 }

@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from "react";
-import { useFavorites, usePlaylists, useQueueActions } from "@/hooks/use-store";
+import { useAppStore, useFavorites, usePlaylists } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 export interface UseSongActionsOptions {
@@ -24,7 +24,6 @@ export interface UseSongActionsOptions {
  */
 export function useSongActions(options?: UseSongActionsOptions) {
 	const { toggleFavorite, isFavorite } = useFavorites();
-	const { addSongToQueue } = useQueueActions();
 	const { playlists, addSongToPlaylist } = usePlaylists();
 
 	const handlePlay = useCallback(
@@ -39,18 +38,20 @@ export function useSongActions(options?: UseSongActionsOptions) {
 		(song: DetailedSong) => {
 			// TODO: Implement play next by inserting at queueIndex + 1
 			// For now, just add to queue
+			const { addSongToQueue } = useAppStore.getState();
 			addSongToQueue(song);
 			options?.onSongAdded?.();
 		},
-		[addSongToQueue, options],
+		[options],
 	);
 
 	const handleAddToQueue = useCallback(
 		(song: DetailedSong) => {
+			const { addSongToQueue } = useAppStore.getState();
 			addSongToQueue(song);
 			options?.onSongAdded?.();
 		},
-		[addSongToQueue, options],
+		[options],
 	);
 
 	const handleToggleFavorite = useCallback(

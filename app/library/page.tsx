@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+	useAppStore,
 	useFavorites,
 	useHistory,
 	usePlaylists,
-	useQueueActions,
 } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
@@ -82,7 +82,6 @@ export default function LibraryPage() {
 	const { playlists, deletePlaylist } = usePlaylists();
 	const { favoriteIds } = useFavorites();
 	const { playbackHistory, clearPlaybackHistory } = useHistory();
-	const { addSongsToQueue, setQueueIndex } = useQueueActions();
 	const [isClient, setIsClient] = useState(false);
 	const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(
 		null,
@@ -109,6 +108,7 @@ export default function LibraryPage() {
 
 	const handlePlayRecentlyPlayed = (index: number) => {
 		if (index >= 0 && index < recentlyPlayedSongs.length) {
+			const { addSongsToQueue, setQueueIndex } = useAppStore.getState();
 			addSongsToQueue(recentlyPlayedSongs);
 			setQueueIndex(index);
 		}
@@ -117,6 +117,7 @@ export default function LibraryPage() {
 	const handlePlayPlaylist = (playlistId: string) => {
 		const playlist = playlists.find((p) => p.id === playlistId);
 		if (playlist && playlist.songs.length > 0) {
+			const { addSongsToQueue, setQueueIndex } = useAppStore.getState();
 			addSongsToQueue(playlist.songs);
 			setQueueIndex(0);
 		}

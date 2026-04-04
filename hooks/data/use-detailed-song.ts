@@ -7,7 +7,6 @@
 import type { UseQueryOptions } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { getSongById } from "@/lib/api";
-import { unwrapApiResponse } from "@/lib/api/unwrap-response";
 import { CACHE_KEYS, CACHE_TIMES } from "@/lib/cache";
 import type { DetailedSong } from "@/types/api";
 
@@ -37,8 +36,7 @@ export function useDetailedSong(
 		queryKey: CACHE_KEYS.SONGS(songId || ""),
 		queryFn: async () => {
 			if (!songId) throw new Error("Song ID required");
-			const response = await getSongById(songId);
-			return unwrapApiResponse(response);
+			return getSongById(songId);
 		},
 		enabled: !!songId && options?.enabled !== false,
 		staleTime: CACHE_TIMES.SONG,

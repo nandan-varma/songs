@@ -1,40 +1,46 @@
 import { toast } from "sonner";
-import { useOffline } from "@/hooks/cache";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useAppStore } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
-/**
- * Offline-aware player actions that automatically filter songs based on offline mode
- */
 export function useOfflinePlayerActions() {
-	const isOfflineMode = useOffline();
+	const isOffline = useIsOffline();
+	const downloadedSongIds = useAppStore((state) => state.downloadedSongIds);
+
+	const filterOfflineSongs = (songs: DetailedSong[]) => {
+		if (!isOffline) {
+			return songs;
+		}
+
+		return songs.filter((song) => downloadedSongIds.has(song.id));
+	};
 
 	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
-		const filtered = [song];
+		const filtered = filterOfflineSongs([song]);
 
-		if (filtered.length === 0 && isOfflineMode) {
+		if (filtered.length === 0) {
 			toast.error("Song not available offline");
 			return;
 		}
 
 		const { playSong, addToPlaybackHistory } = useAppStore.getState();
-		playSong(song, replaceQueue);
-		addToPlaybackHistory(song);
+		playSong(filtered[0] as DetailedSong, replaceQueue);
+		addToPlaybackHistory(filtered[0] as DetailedSong);
 	};
 
 	const playQueueOfflineAware = (songs: DetailedSong[], startIndex = 0) => {
-		const filtered = songs;
+		const filtered = filterOfflineSongs(songs);
 
 		if (filtered.length === 0) {
-			if (isOfflineMode) {
+			if (isOffline) {
 				toast.error("No cached songs available for offline playback");
 			}
 			return;
 		}
 
-		if (filtered.length < songs.length && isOfflineMode) {
+		if (filtered.length < songs.length && isOffline) {
 			toast.info(
-				`Playing ${filtered.length} of ${songs.length} songs (offline mode)`,
+				`Playing ${filtered.length} of ${songs.length} downloaded songs`,
 			);
 		}
 
@@ -44,28 +50,28 @@ export function useOfflinePlayerActions() {
 	};
 
 	const addToQueueOfflineAware = (song: DetailedSong) => {
-		const filtered = [song];
+		const filtered = filterOfflineSongs([song]);
 
-		if (filtered.length === 0 && isOfflineMode) {
+		if (filtered.length === 0) {
 			toast.error("Song not available offline");
 			return;
 		}
 
 		const { addSongToQueue } = useAppStore.getState();
-		addSongToQueue(song);
+		addSongToQueue(filtered[0] as DetailedSong);
 	};
 
 	const addMultipleToQueueOfflineAware = (songs: DetailedSong[]) => {
-		const filtered = songs;
+		const filtered = filterOfflineSongs(songs);
 
-		if (filtered.length === 0 && isOfflineMode) {
+		if (filtered.length === 0) {
 			toast.error("No songs available offline");
 			return;
 		}
 
-		if (filtered.length < songs.length && isOfflineMode) {
+		if (filtered.length < songs.length && isOffline) {
 			toast.info(
-				`Added ${filtered.length} of ${songs.length} songs (offline mode)`,
+				`Added ${filtered.length} of ${songs.length} downloaded songs`,
 			);
 		}
 

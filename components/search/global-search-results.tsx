@@ -19,7 +19,7 @@ export const GlobalSearchResults = memo(function GlobalSearchResults({
 	results,
 	query,
 }: GlobalSearchResultsProps) {
-	const { songs, albums, artists, playlists } = results.data;
+	const { songs, albums, artists, playlists } = results;
 
 	const hasAnySongs = songs.results.length > 0;
 	const hasAnyAlbums = albums.results.length > 0;

@@ -108,18 +108,14 @@ export default function LibraryPage() {
 
 	const handlePlayRecentlyPlayed = (index: number) => {
 		if (index >= 0 && index < recentlyPlayedSongs.length) {
-			const { addSongsToQueue, setQueueIndex } = useAppStore.getState();
-			addSongsToQueue(recentlyPlayedSongs);
-			setQueueIndex(index);
+			useAppStore.getState().playQueue(recentlyPlayedSongs, index);
 		}
 	};
 
 	const handlePlayPlaylist = (playlistId: string) => {
 		const playlist = playlists.find((p) => p.id === playlistId);
 		if (playlist && playlist.songs.length > 0) {
-			const { addSongsToQueue, setQueueIndex } = useAppStore.getState();
-			addSongsToQueue(playlist.songs);
-			setQueueIndex(0);
+			useAppStore.getState().playQueue(playlist.songs, 0);
 		}
 	};
 

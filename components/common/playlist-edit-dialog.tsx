@@ -4,6 +4,7 @@ import { ListMusic } from "lucide-react";
 import * as React from "react";
 import { useDragManager } from "@/hooks/ui/use-queue-drag";
 import { usePlaylists } from "@/hooks/use-store";
+import { useAppStore } from "@/lib/store";
 import {
 	Dialog,
 	DialogContent,
@@ -28,7 +29,8 @@ export function PlaylistEditDialog({
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: PlaylistEditDialogProps) {
-	const { playlists, removeSongFromPlaylist } = usePlaylists();
+	const { playlists, removeSongFromPlaylist, reorderPlaylistSongs } =
+		usePlaylists();
 	const [internalOpen, setInternalOpen] = React.useState(false);
 
 	const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -45,11 +47,12 @@ export function PlaylistEditDialog({
 		handleDragEnd,
 	} = useDragManager({
 		items: songs,
-		onReorder: (_fromIndex: number, _toIndex: number) => {
-			// TODO: Implement reordering in the store if needed
-			if (playlist) {
-				// reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
+		onReorder: (fromIndex: number, toIndex: number) => {
+			if (!playlist) {
+				return;
 			}
+
+			reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
 		},
 	});
 
@@ -61,8 +64,12 @@ export function PlaylistEditDialog({
 		}
 	};
 
-	const handlePlay = (_index: number) => {
-		// TODO: Implement play from playlist dialog if needed
+	const handlePlay = (index: number) => {
+		if (!playlist || songs.length === 0) {
+			return;
+		}
+
+		useAppStore.getState().playQueue(songs, index);
 	};
 
 	if (!playlist) {

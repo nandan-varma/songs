@@ -5,17 +5,23 @@ import { AlbumHeader } from "@/components/album/album-header";
 import { SongsList } from "@/components/songs-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOffline } from "@/hooks/cache";
-import { useAlbumFromQuery } from "@/hooks/pages/use-album";
+import { useAlbum } from "@/hooks/data/queries";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const isOfflineMode = useOffline();
+	const isOffline = useIsOffline();
 
-	const { data: album, error, isPending } = useAlbumFromQuery();
+	const {
+		data: album,
+		error,
+		isPending,
+	} = useAlbum(id || "", {
+		enabled: !!id && !isOffline,
+	});
 
 	const filteredSongs = album?.songs ?? [];
 
@@ -27,7 +33,7 @@ export function Client() {
 		);
 	}
 
-	if (isOfflineMode) {
+	if (isOffline) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card className="text-center py-12">

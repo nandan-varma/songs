@@ -6,9 +6,8 @@ import { SongHeader } from "@/components/song/song-header";
 import { SongSuggestions } from "@/components/song/song-suggestions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOffline } from "@/hooks/cache";
-import { useSongSuggestions } from "@/hooks/data/queries";
-import { useSongFromQuery } from "@/hooks/pages/use-song";
+import { useSong, useSongSuggestions } from "@/hooks/data/queries";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { useAppStore } from "@/lib/store";
 import { detailedSongToSong } from "@/lib/utils";
@@ -17,12 +16,14 @@ import { EntityType } from "@/types/entity";
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playSong, addToQueue } = useOfflinePlayerActions();
-	const isOfflineMode = useOffline();
+	const isOffline = useIsOffline();
 	const addToVisitHistory = useAppStore((state) => state.addToVisitHistory);
 
-	const { data: songData, isPending } = useSongFromQuery();
+	const { data: songData, isPending } = useSong(id || "", {
+		enabled: !!id && !isOffline,
+	});
 	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
-		enabled: !!id && !isOfflineMode,
+		enabled: !!id && !isOffline,
 	});
 
 	const song = songData?.[0];
@@ -30,7 +31,7 @@ export function Client() {
 
 	// Track visit to song
 	useEffect(() => {
-		if (song && !isOfflineMode) {
+		if (song && !isOffline) {
 			addToVisitHistory({
 				entityId: song.id,
 				entityType: EntityType.SONG,
@@ -39,7 +40,7 @@ export function Client() {
 				timestamp: Date.now(),
 			});
 		}
-	}, [song?.id, isOfflineMode, addToVisitHistory, song]);
+	}, [song, isOffline, addToVisitHistory]);
 
 	if (!id) {
 		return (
@@ -49,7 +50,7 @@ export function Client() {
 		);
 	}
 
-	if (isOfflineMode) {
+	if (isOffline) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card className="text-center py-12">

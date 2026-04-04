@@ -90,7 +90,7 @@ export function clearStorage(): number {
 
 		for (let i = 0; i < localStorage.length; i++) {
 			const key = localStorage.key(i);
-			if (key && key.startsWith(prefix)) {
+			if (key?.startsWith(prefix)) {
 				keys.push(key);
 			}
 		}

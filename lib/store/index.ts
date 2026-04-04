@@ -1,15 +1,19 @@
 "use client";
 
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
-import { logError } from "@/lib/utils/logger";
-import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
-import type { DetailedSong, EntityVisit, LocalPlaylist } from "@/types/entity";
+import { createJSONStorage, persist } from "zustand/middleware";
+import type { DetailedSong, LocalPlaylist } from "@/types/entity";
 import { DEFAULT_VOLUME, RESTART_THRESHOLD_SECONDS } from "@/types/player";
-import type { AppStore, AppStoreState, RepeatMode } from "./types";
+import type {
+	AppStore,
+	AppStoreActions,
+	AppStoreState,
+	PersistedAppStoreState,
+} from "./types";
 
-const INITIAL_STATE: AppStoreState = {
-	// Player
+export const APP_STORE_STORAGE_KEY = "songs:app-store";
+
+export const INITIAL_STATE: AppStoreState = {
 	currentSong: null,
 	isPlaying: false,
 	currentTime: 0,
@@ -17,528 +21,572 @@ const INITIAL_STATE: AppStoreState = {
 	volume: DEFAULT_VOLUME,
 	playbackSpeed: 1,
 	isMuted: false,
-
-	// Queue
 	queue: [],
 	queueIndex: 0,
 	isShuffleEnabled: false,
 	repeatMode: "off",
-
-	// Favorites
 	favoriteIds: new Set(),
-
-	// History
 	searchHistory: [],
 	playbackHistory: [],
 	visitHistory: [],
 	maxHistorySize: 100,
-
-	// Playlists
 	playlists: [],
-	selectedPlaylistId: null,
-
-	// UI
-	isMobile: false,
-	isDarkMode: false,
 	isQueueOpen: false,
-	isOfflineMode: false,
-
-	// Offline
 	downloadedSongIds: new Set(),
 	sleepTimerMinutes: null,
 };
 
-/**
- * Main application store combining all domains
- * Uses Zustand with subscribeWithSelector middleware
- *
- * IMPORTANT: Always use individual property selectors in components, never destructure actions
- * Access actions via useAppStore.getState() in callbacks to avoid infinite loops
- */
-export const useAppStore = create<AppStore>()(
-	subscribeWithSelector((set, get) => ({
-		...INITIAL_STATE,
+function clampVolume(volume: number) {
+	return Math.max(0, Math.min(1, volume));
+}
 
-		// ============ PLAYER ACTIONS ============
-		playSong: (song: DetailedSong, replaceQueue = true) => {
-			set((_state) => {
-				if (replaceQueue) {
-					return {
-						currentSong: song,
-						isPlaying: true,
-						queue: [song],
-						queueIndex: 0,
-						currentTime: 0,
-					};
-				}
-				return {
-					currentSong: song,
-					isPlaying: true,
-				};
-			});
+function clampPlaybackSpeed(speed: number) {
+	return Math.max(0.25, Math.min(2, speed));
+}
+
+function createPlaylistId() {
+	return `playlist_${crypto.randomUUID()}`;
+}
+
+function dedupeStrings(items: string[], nextItem: string, maxSize: number) {
+	return [nextItem, ...items.filter((item) => item !== nextItem)].slice(
+		0,
+		maxSize,
+	);
+}
+
+function dedupeById<T extends { id: string }>(
+	items: T[],
+	nextItem: T,
+	maxSize: number,
+) {
+	return [nextItem, ...items.filter((item) => item.id !== nextItem.id)].slice(
+		0,
+		maxSize,
+	);
+}
+
+function dedupeByEntity<T extends { entityId: string }>(
+	items: T[],
+	nextItem: T,
+	maxSize: number,
+) {
+	return [
+		nextItem,
+		...items.filter((item) => item.entityId !== nextItem.entityId),
+	].slice(0, maxSize);
+}
+
+function moveItem<T>(items: T[], fromIndex: number, toIndex: number) {
+	const nextItems = [...items];
+	const [movedItem] = nextItems.splice(fromIndex, 1);
+	if (movedItem === undefined) {
+		return items;
+	}
+	nextItems.splice(toIndex, 0, movedItem);
+	return nextItems;
+}
+
+function shuffleQueue(queue: DetailedSong[], currentIndex: number) {
+	if (queue.length <= 1) {
+		return { queue, queueIndex: currentIndex };
+	}
+
+	const currentSong = queue[currentIndex] ?? queue[0] ?? null;
+	const remainingSongs = queue.filter((_, index) => index !== currentIndex);
+
+	for (let index = remainingSongs.length - 1; index > 0; index -= 1) {
+		const swapIndex = Math.floor(Math.random() * (index + 1));
+		const temp = remainingSongs[index];
+		remainingSongs[index] = remainingSongs[swapIndex] as DetailedSong;
+		remainingSongs[swapIndex] = temp as DetailedSong;
+	}
+
+	if (!currentSong) {
+		return { queue: remainingSongs, queueIndex: 0 };
+	}
+
+	return {
+		queue: [currentSong, ...remainingSongs],
+		queueIndex: 0,
+	};
+}
+
+function createActions(
+	set: (
+		partial: Partial<AppStore> | ((state: AppStore) => Partial<AppStore>),
+	) => void,
+	get: () => AppStore,
+): AppStoreActions {
+	return {
+		playSong: (song, replaceQueue = true) => {
+			set((state) => ({
+				currentSong: song,
+				isPlaying: true,
+				currentTime: 0,
+				...(replaceQueue
+					? {
+							queue: [song],
+							queueIndex: 0,
+							isShuffleEnabled: false,
+						}
+					: state.queue.some((item) => item.id === song.id)
+						? {
+								queueIndex: state.queue.findIndex(
+									(item) => item.id === song.id,
+								),
+							}
+						: {}),
+			}));
 		},
+		playQueue: (songs, startIndex = 0) => {
+			const safeStartIndex = Math.max(
+				0,
+				Math.min(startIndex, songs.length - 1),
+			);
+			const currentSong = songs[safeStartIndex];
+			if (!currentSong) {
+				return;
+			}
 
-		playQueue: (songs: DetailedSong[], startIndex = 0) => {
-			if (songs.length === 0) return;
-			const song = songs[startIndex];
-			if (!song) return;
 			set({
 				queue: songs,
-				queueIndex: startIndex,
-				currentSong: song,
+				queueIndex: safeStartIndex,
+				currentSong,
 				isPlaying: true,
 				currentTime: 0,
 			});
 		},
-
 		togglePlayPause: () => {
-			set((state) => ({
-				isPlaying: !state.isPlaying,
-			}));
+			set((state) => ({ isPlaying: !state.isPlaying }));
 		},
-
 		playNext: () => {
 			set((state) => {
-				if (state.queue.length === 0) return state;
-
-				let nextIndex = state.queueIndex + 1;
-
-				if (state.repeatMode === "all" && nextIndex >= state.queue.length) {
-					nextIndex = 0;
+				if (state.queue.length === 0) {
+					return { isPlaying: false, currentSong: null, currentTime: 0 };
 				}
 
-				if (nextIndex >= state.queue.length) {
-					return {
-						isPlaying: false,
-						currentTime: 0,
-					};
+				if (state.repeatMode === "one" && state.currentSong) {
+					return { currentTime: 0, isPlaying: true };
 				}
 
-				const song = state.queue[nextIndex];
-				if (!song) return state;
+				const nextIndex = state.queueIndex + 1;
+				const wrappedIndex =
+					state.repeatMode === "all" && nextIndex >= state.queue.length
+						? 0
+						: nextIndex;
+				const nextSong = state.queue[wrappedIndex];
+
+				if (!nextSong) {
+					return { isPlaying: false, currentTime: 0 };
+				}
 
 				return {
-					queueIndex: nextIndex,
-					currentSong: song,
+					queueIndex: wrappedIndex,
+					currentSong: nextSong,
 					isPlaying: true,
 					currentTime: 0,
 				};
 			});
 		},
-
 		playPrevious: () => {
 			set((state) => {
-				const currentTime = state.currentTime;
-
-				// If more than 3 seconds into song, restart it
-				if (currentTime > RESTART_THRESHOLD_SECONDS) {
-					return {
-						currentTime: 0,
-					};
+				if (state.currentTime > RESTART_THRESHOLD_SECONDS) {
+					return { currentTime: 0 };
 				}
 
-				if (state.queue.length === 0) return state;
+				if (state.queue.length === 0) {
+					return { currentTime: 0 };
+				}
 
-				const prevIndex =
+				const previousIndex =
 					state.queueIndex === 0
 						? state.queue.length - 1
 						: state.queueIndex - 1;
-
-				const song = state.queue[prevIndex];
-				if (!song) return state;
+				const previousSong = state.queue[previousIndex];
+				if (!previousSong) {
+					return { currentTime: 0 };
+				}
 
 				return {
-					queueIndex: prevIndex,
-					currentSong: song,
+					queueIndex: previousIndex,
+					currentSong: previousSong,
 					isPlaying: true,
 					currentTime: 0,
 				};
 			});
 		},
-
-		setSongTime: (time: number) => {
-			set({ currentTime: time });
+		setSongTime: (time) => {
+			set({ currentTime: Math.max(0, time) });
 		},
-
-		setSongDuration: (duration: number) => {
-			set({ duration });
+		setSongDuration: (duration) => {
+			set({ duration: Number.isFinite(duration) ? duration : 0 });
 		},
-
-		setVolume: (volume: number) => {
-			set({ volume: Math.max(0, Math.min(1, volume)) });
+		setVolume: (volume) => {
+			set({ volume: clampVolume(volume) });
 		},
-
-		setPlaybackSpeed: (speed: number) => {
-			set({ playbackSpeed: Math.max(0.25, Math.min(2, speed)) });
+		setPlaybackSpeed: (speed) => {
+			set({ playbackSpeed: clampPlaybackSpeed(speed) });
 		},
-
-		setCurrentSong: (song: DetailedSong | null) => {
+		setCurrentSong: (song) => {
 			set({ currentSong: song });
 		},
-
-		setIsPlaying: (playing: boolean) => {
+		setIsPlaying: (playing) => {
 			set({ isPlaying: playing });
 		},
-
-		setIsMuted: (muted: boolean) => {
+		setIsMuted: (muted) => {
 			set({ isMuted: muted });
 		},
-
 		toggleMute: () => {
 			set((state) => ({ isMuted: !state.isMuted }));
 		},
-
-		// ============ QUEUE ACTIONS ============
-		addSongToQueue: (song: DetailedSong) => {
-			set((state) => ({
-				queue: [...state.queue, song],
-			}));
+		addSongToQueue: (song) => {
+			set((state) => ({ queue: [...state.queue, song] }));
 		},
-
-		addSongsToQueue: (songs: DetailedSong[]) => {
-			set((state) => ({
-				queue: [...state.queue, ...songs],
-			}));
+		addSongsToQueue: (songs) => {
+			if (songs.length === 0) {
+				return;
+			}
+			set((state) => ({ queue: [...state.queue, ...songs] }));
 		},
-
-		removeSongFromQueue: (index: number) => {
+		insertSongNext: (song) => {
 			set((state) => {
-				const newQueue = state.queue.filter((_, i) => i !== index);
-				let newIndex = state.queueIndex;
+				if (state.queue.length === 0 || state.currentSong === null) {
+					return { queue: [song], queueIndex: 0, currentSong: song };
+				}
 
+				const insertIndex = Math.min(state.queueIndex + 1, state.queue.length);
+				const queue = [...state.queue];
+				queue.splice(insertIndex, 0, song);
+				return { queue };
+			});
+		},
+		removeSongFromQueue: (index) => {
+			set((state) => {
+				if (index < 0 || index >= state.queue.length) {
+					return {};
+				}
+
+				const queue = state.queue.filter(
+					(_, queueIndex) => queueIndex !== index,
+				);
+				if (queue.length === 0) {
+					return {
+						queue,
+						queueIndex: 0,
+						currentSong: null,
+						currentTime: 0,
+						isPlaying: false,
+					};
+				}
+
+				let queueIndex = state.queueIndex;
 				if (index < state.queueIndex) {
-					newIndex = Math.max(0, newIndex - 1);
-				} else if (index === state.queueIndex && newIndex >= newQueue.length) {
-					newIndex = Math.max(0, newQueue.length - 1);
+					queueIndex -= 1;
+				} else if (index === state.queueIndex) {
+					queueIndex = Math.min(state.queueIndex, queue.length - 1);
 				}
 
 				return {
-					queue: newQueue,
-					queueIndex: newIndex,
-					currentSong: newQueue[newIndex] || null,
+					queue,
+					queueIndex,
+					currentSong: queue[queueIndex] ?? null,
 				};
 			});
 		},
-
 		clearQueue: () => {
 			set({
 				queue: [],
 				queueIndex: 0,
 				currentSong: null,
-				isPlaying: false,
 				currentTime: 0,
+				isPlaying: false,
 			});
 		},
-
-		setQueueIndex: (index: number) => {
-			set((state) => ({
-				queueIndex: Math.max(0, Math.min(index, state.queue.length - 1)),
-				currentSong: state.queue[index] || null,
-			}));
-		},
-
-		toggleShuffle: () => {
+		setQueueIndex: (index) => {
 			set((state) => {
-				const newShuffleState = !state.isShuffleEnabled;
-
-				if (newShuffleState) {
-					// Fisher-Yates shuffle
-					const shuffled = [...state.queue];
-					for (let i = shuffled.length - 1; i > 0; i--) {
-						const j = Math.floor(Math.random() * (i + 1));
-						const temp = shuffled[i];
-						if (temp !== undefined && shuffled[j] !== undefined) {
-							shuffled[i] = shuffled[j];
-							shuffled[j] = temp;
-						}
-					}
-					const firstSong = shuffled[0];
-					return {
-						isShuffleEnabled: newShuffleState,
-						queue: shuffled,
-						queueIndex: 0,
-						currentSong: firstSong || null,
-					};
-				}
-
+				const queueIndex = Math.max(0, Math.min(index, state.queue.length - 1));
 				return {
-					isShuffleEnabled: newShuffleState,
+					queueIndex,
+					currentSong: state.queue[queueIndex] ?? null,
+					currentTime: 0,
 				};
 			});
 		},
+		toggleShuffle: () => {
+			set((state) => {
+				const isShuffleEnabled = !state.isShuffleEnabled;
+				if (!isShuffleEnabled) {
+					return { isShuffleEnabled };
+				}
 
-		setRepeatMode: (mode: RepeatMode) => {
+				const shuffled = shuffleQueue(state.queue, state.queueIndex);
+				return {
+					isShuffleEnabled,
+					queue: shuffled.queue,
+					queueIndex: shuffled.queueIndex,
+					currentSong: shuffled.queue[shuffled.queueIndex] ?? state.currentSong,
+				};
+			});
+		},
+		setRepeatMode: (mode) => {
 			set({ repeatMode: mode });
 		},
-
-		reorderQueue: (fromIndex: number, toIndex: number) => {
+		reorderQueue: (fromIndex, toIndex) => {
 			set((state) => {
-				const newQueue = [...state.queue];
-				const movedItem = newQueue[fromIndex];
-				if (!movedItem) return state;
+				if (
+					fromIndex < 0 ||
+					toIndex < 0 ||
+					fromIndex >= state.queue.length ||
+					toIndex >= state.queue.length
+				) {
+					return {};
+				}
 
-				newQueue.splice(fromIndex, 1);
-				newQueue.splice(toIndex, 0, movedItem);
+				const queue = moveItem(state.queue, fromIndex, toIndex);
+				let queueIndex = state.queueIndex;
 
-				let newIndex = state.queueIndex;
 				if (fromIndex === state.queueIndex) {
-					newIndex = toIndex;
+					queueIndex = toIndex;
 				} else if (
 					fromIndex < state.queueIndex &&
 					toIndex >= state.queueIndex
 				) {
-					newIndex = state.queueIndex - 1;
-				} else if (fromIndex > state.queueIndex && toIndex < state.queueIndex) {
-					newIndex = state.queueIndex + 1;
+					queueIndex -= 1;
+				} else if (
+					fromIndex > state.queueIndex &&
+					toIndex <= state.queueIndex
+				) {
+					queueIndex += 1;
 				}
 
 				return {
-					queue: newQueue,
-					queueIndex: newIndex,
+					queue,
+					queueIndex,
+					currentSong: queue[queueIndex] ?? null,
 				};
 			});
 		},
-
-		// ============ FAVORITES ACTIONS ============
-		toggleFavorite: (songId: string) => {
+		toggleFavorite: (songId) => {
 			set((state) => {
-				const newFavorites = new Set(state.favoriteIds);
-				if (newFavorites.has(songId)) {
-					newFavorites.delete(songId);
+				const favoriteIds = new Set(state.favoriteIds);
+				if (favoriteIds.has(songId)) {
+					favoriteIds.delete(songId);
 				} else {
-					newFavorites.add(songId);
+					favoriteIds.add(songId);
 				}
-				return { favoriteIds: newFavorites };
+				return { favoriteIds };
 			});
 		},
-
-		isFavorite: (songId: string) => {
-			return get().favoriteIds.has(songId);
+		isFavorite: (songId) => get().favoriteIds.has(songId),
+		addFavorite: (songId) => {
+			set((state) => ({ favoriteIds: new Set(state.favoriteIds).add(songId) }));
 		},
-
-		addFavorite: (songId: string) => {
+		removeFavorite: (songId) => {
 			set((state) => {
-				const newFavorites = new Set(state.favoriteIds);
-				newFavorites.add(songId);
-				return { favoriteIds: newFavorites };
+				const favoriteIds = new Set(state.favoriteIds);
+				favoriteIds.delete(songId);
+				return { favoriteIds };
 			});
 		},
+		addToSearchHistory: (query) => {
+			const trimmedQuery = query.trim();
+			if (!trimmedQuery) {
+				return;
+			}
 
-		removeFavorite: (songId: string) => {
-			set((state) => {
-				const newFavorites = new Set(state.favoriteIds);
-				newFavorites.delete(songId);
-				return { favoriteIds: newFavorites };
-			});
+			set((state) => ({
+				searchHistory: dedupeStrings(
+					state.searchHistory,
+					trimmedQuery,
+					state.maxHistorySize,
+				),
+			}));
 		},
-
-		// ============ HISTORY ACTIONS ============
-		addToSearchHistory: (query: string) => {
-			set((state) => {
-				let newHistory = [
-					query,
-					...state.searchHistory.filter((q) => q !== query),
-				];
-				if (newHistory.length > state.maxHistorySize) {
-					newHistory = newHistory.slice(0, state.maxHistorySize);
-				}
-				return { searchHistory: newHistory };
-			});
-		},
-
 		clearSearchHistory: () => {
 			set({ searchHistory: [] });
 		},
-
-		addToPlaybackHistory: (song: DetailedSong) => {
-			set((state) => {
-				const newHistory = [song, ...state.playbackHistory];
-				if (newHistory.length > state.maxHistorySize) {
-					return {
-						playbackHistory: newHistory.slice(0, state.maxHistorySize),
-					};
-				}
-				return { playbackHistory: newHistory };
-			});
+		addToPlaybackHistory: (song) => {
+			set((state) => ({
+				playbackHistory: dedupeById(
+					state.playbackHistory,
+					song,
+					state.maxHistorySize,
+				),
+			}));
 		},
-
 		clearPlaybackHistory: () => {
 			set({ playbackHistory: [] });
 		},
-
-		addToVisitHistory: (visit: EntityVisit) => {
-			set((state) => {
-				const newHistory = [visit, ...state.visitHistory];
-				if (newHistory.length > state.maxHistorySize) {
-					return {
-						visitHistory: newHistory.slice(0, state.maxHistorySize),
-					};
-				}
-				return { visitHistory: newHistory };
-			});
+		addToVisitHistory: (visit) => {
+			set((state) => ({
+				visitHistory: dedupeByEntity(
+					state.visitHistory,
+					visit,
+					state.maxHistorySize,
+				),
+			}));
 		},
-
 		clearVisitHistory: () => {
 			set({ visitHistory: [] });
 		},
+		createPlaylist: (name) => {
+			const playlistName = name.trim();
+			if (!playlistName) {
+				throw new Error("Playlist name is required");
+			}
 
-		// ============ PLAYLIST ACTIONS ============
-		createPlaylist: (name: string, _description = "") => {
-			set((state) => {
-				const newPlaylist: LocalPlaylist = {
-					id: `playlist_${Date.now()}`,
-					name,
-					songs: [],
-					createdAt: Date.now(),
-					updatedAt: Date.now(),
-				};
-				return {
-					playlists: [...state.playlists, newPlaylist],
-				};
-			});
+			const playlistId = createPlaylistId();
+			const now = Date.now();
+			const playlist: LocalPlaylist = {
+				id: playlistId,
+				name: playlistName,
+				songs: [],
+				createdAt: now,
+				updatedAt: now,
+			};
+
+			set((state) => ({ playlists: [...state.playlists, playlist] }));
+			return playlistId;
 		},
+		updatePlaylist: (playlistId, name) => {
+			const playlistName = name.trim();
+			if (!playlistName) {
+				throw new Error("Playlist name is required");
+			}
 
-		updatePlaylist: (playlistId: string, name: string, _description = "") => {
 			set((state) => ({
-				playlists: state.playlists.map((pl) =>
-					pl.id === playlistId ? { ...pl, name, updatedAt: Date.now() } : pl,
+				playlists: state.playlists.map((playlist) =>
+					playlist.id === playlistId
+						? { ...playlist, name: playlistName, updatedAt: Date.now() }
+						: playlist,
 				),
 			}));
 		},
-
-		deletePlaylist: (playlistId: string) => {
+		deletePlaylist: (playlistId) => {
 			set((state) => ({
-				playlists: state.playlists.filter((pl) => pl.id !== playlistId),
-				selectedPlaylistId:
-					state.selectedPlaylistId === playlistId
-						? null
-						: state.selectedPlaylistId,
+				playlists: state.playlists.filter(
+					(playlist) => playlist.id !== playlistId,
+				),
 			}));
 		},
-
-		addSongToPlaylist: (playlistId: string, song: DetailedSong) => {
+		addSongToPlaylist: (playlistId, song) => {
 			set((state) => ({
-				playlists: state.playlists.map((pl) =>
-					pl.id === playlistId
+				playlists: state.playlists.map((playlist) => {
+					if (playlist.id !== playlistId) {
+						return playlist;
+					}
+
+					const songs = playlist.songs.some((item) => item.id === song.id)
+						? playlist.songs
+						: [...playlist.songs, song];
+
+					return { ...playlist, songs, updatedAt: Date.now() };
+				}),
+			}));
+		},
+		removeSongFromPlaylist: (playlistId, songId) => {
+			set((state) => ({
+				playlists: state.playlists.map((playlist) =>
+					playlist.id === playlistId
 						? {
-								...pl,
-								songs: [...pl.songs, song],
+								...playlist,
+								songs: playlist.songs.filter((song) => song.id !== songId),
 								updatedAt: Date.now(),
 							}
-						: pl,
+						: playlist,
 				),
 			}));
 		},
-
-		removeSongFromPlaylist: (playlistId: string, songId: string) => {
+		reorderPlaylistSongs: (playlistId, fromIndex, toIndex) => {
 			set((state) => ({
-				playlists: state.playlists.map((pl) =>
-					pl.id === playlistId
-						? {
-								...pl,
-								songs: pl.songs.filter((s) => s.id !== songId),
-								updatedAt: Date.now(),
-							}
-						: pl,
-				),
+				playlists: state.playlists.map((playlist) => {
+					if (playlist.id !== playlistId) {
+						return playlist;
+					}
+
+					if (
+						fromIndex < 0 ||
+						toIndex < 0 ||
+						fromIndex >= playlist.songs.length ||
+						toIndex >= playlist.songs.length
+					) {
+						return playlist;
+					}
+
+					return {
+						...playlist,
+						songs: moveItem(playlist.songs, fromIndex, toIndex),
+						updatedAt: Date.now(),
+					};
+				}),
 			}));
 		},
-
-		setSelectedPlaylist: (playlistId: string | null) => {
-			set({ selectedPlaylistId: playlistId });
-		},
-
-		// ============ UI ACTIONS ============
-		setIsMobile: (mobile: boolean) => {
-			set({ isMobile: mobile });
-		},
-
-		setIsDarkMode: (dark: boolean) => {
-			set({ isDarkMode: dark });
-		},
-
-		setIsQueueOpen: (open: boolean) => {
+		setIsQueueOpen: (open) => {
 			set({ isQueueOpen: open });
 		},
-
-		setIsOfflineMode: (offline: boolean) => {
-			set({ isOfflineMode: offline });
-		},
-
-		setSleepTimer: (minutes: number | null) => {
+		setSleepTimer: (minutes) => {
 			set({ sleepTimerMinutes: minutes });
 		},
-
-		// ============ OFFLINE ACTIONS ============
-		addDownloadedSong: (songId: string) => {
+		addDownloadedSong: (songId) => {
+			set((state) => ({
+				downloadedSongIds: new Set(state.downloadedSongIds).add(songId),
+			}));
+		},
+		removeDownloadedSong: (songId) => {
 			set((state) => {
-				const newDownloaded = new Set(state.downloadedSongIds);
-				newDownloaded.add(songId);
-				return { downloadedSongIds: newDownloaded };
+				const downloadedSongIds = new Set(state.downloadedSongIds);
+				downloadedSongIds.delete(songId);
+				return { downloadedSongIds };
 			});
 		},
-
-		removeDownloadedSong: (songId: string) => {
-			set((state) => {
-				const newDownloaded = new Set(state.downloadedSongIds);
-				newDownloaded.delete(songId);
-				return { downloadedSongIds: newDownloaded };
-			});
+		syncDownloadedSongs: (songIds) => {
+			set({ downloadedSongIds: new Set(songIds) });
 		},
-
-		isDownloaded: (songId: string) => {
-			return get().downloadedSongIds.has(songId);
+		clearDownloadedSongs: () => {
+			set({ downloadedSongIds: new Set() });
 		},
-
-		// ============ RESET ============
+		isDownloaded: (songId) => get().downloadedSongIds.has(songId),
 		resetStore: () => {
-			set(INITIAL_STATE);
+			set({ ...INITIAL_STATE });
 		},
-	})),
-);
-
-// ============ PERSISTENCE ============
-// Store playback history and favorites in localStorage
-if (typeof window !== "undefined") {
-	// Load persisted data on startup
-	const persistedData = getStorageItem<Record<string, unknown>>(
-		"store-persist",
-		{},
-	);
-	if (persistedData && Object.keys(persistedData).length > 0) {
-		useAppStore.setState({
-			playbackHistory:
-				(persistedData.playbackHistory as typeof INITIAL_STATE.playbackHistory) ||
-				[],
-			searchHistory:
-				(persistedData.searchHistory as typeof INITIAL_STATE.searchHistory) ||
-				[],
-			favoriteIds: new Set((persistedData.favoriteIds as string[]) || []),
-			playlists:
-				(persistedData.playlists as typeof INITIAL_STATE.playlists) || [],
-			volume: (persistedData.volume as number) ?? INITIAL_STATE.volume,
-			isDarkMode:
-				(persistedData.isDarkMode as boolean) ?? INITIAL_STATE.isDarkMode,
-			downloadedSongIds: new Set(
-				(persistedData.downloadedSongIds as string[]) || [],
-			),
-		});
-	}
-
-	// Subscribe to changes and persist relevant state
-	useAppStore.subscribe((state) => {
-		const toPersist = {
-			playbackHistory: state.playbackHistory,
-			searchHistory: state.searchHistory,
-			favoriteIds: Array.from(state.favoriteIds),
-			playlists: state.playlists,
-			volume: state.volume,
-			isDarkMode: state.isDarkMode,
-			downloadedSongIds: Array.from(state.downloadedSongIds),
-		};
-		const success = setStorageItem("store-persist", toPersist);
-		if (!success) {
-			logError("StorePersistence", new Error("Failed to persist store data"));
-		}
-	});
+	};
 }
+
+export const useAppStore = create<AppStore>()(
+	persist(
+		(set, get) => ({
+			...INITIAL_STATE,
+			...createActions(set as never, get),
+		}),
+		{
+			name: APP_STORE_STORAGE_KEY,
+			storage: createJSONStorage(() => localStorage),
+			version: 1,
+			partialize: (state): PersistedAppStoreState => ({
+				favoriteIds: Array.from(state.favoriteIds),
+				searchHistory: state.searchHistory,
+				playbackHistory: state.playbackHistory,
+				visitHistory: state.visitHistory,
+				playlists: state.playlists,
+				volume: state.volume,
+				playbackSpeed: state.playbackSpeed,
+				downloadedSongIds: Array.from(state.downloadedSongIds),
+				sleepTimerMinutes: state.sleepTimerMinutes,
+			}),
+			merge: (persistedState, currentState) => {
+				if (!persistedState || typeof persistedState !== "object") {
+					return currentState;
+				}
+
+				const persisted = persistedState as PersistedAppStoreState;
+				return {
+					...currentState,
+					...persisted,
+					favoriteIds: new Set(persisted.favoriteIds ?? []),
+					downloadedSongIds: new Set(persisted.downloadedSongIds ?? []),
+				};
+			},
+		},
+	),
+);

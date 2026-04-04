@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryState } from "nuqs";
 import { useCallback, useEffect, useState } from "react";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
@@ -12,9 +12,9 @@ import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
 import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOffline } from "@/hooks/cache";
 import { useGlobalSearch } from "@/hooks/data/queries";
 import { useSearchQueries } from "@/hooks/data/use-search-queries";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useHistory } from "@/hooks/use-store";
 import { detailedSongToSong } from "@/lib/utils";
 import type {
@@ -64,25 +64,24 @@ const playlistSearchResultToPlaylist = (
 });
 
 export default function SearchContent() {
-	const router = useRouter();
-	const searchParams = useSearchParams();
-	const isOfflineMode = useOffline();
+	const [queryParam, setQueryParam] = useQueryState("q");
+	const [tabParam, setTabParam] = useQueryState("tab");
+	const isOffline = useIsOffline();
 	const { playbackHistory } = useHistory();
-	const queryParam = searchParams.get("q") || "";
-	const tabParam = (searchParams.get("tab") as TabType) || "all";
 
-	const [query, setQuery] = useState(queryParam);
-	const [activeTab, setActiveTab] = useState<TabType>(tabParam);
+	const query = queryParam ?? "";
+	const activeTab = (tabParam as TabType | null) ?? "all";
+	const [draftQuery, setDraftQuery] = useState(query);
 
-	const searchEnabled = !!queryParam.trim() && !isOfflineMode;
+	const searchEnabled = !!query.trim() && !isOffline;
 
 	// Fetch global search when viewing "all" tab
-	const globalSearchQuery = useGlobalSearch(queryParam, {
+	const globalSearchQuery = useGlobalSearch(query, {
 		enabled: activeTab === "all" && searchEnabled,
 	});
 
 	// Fetch all entity types in parallel
-	const searchResults = useSearchQueries(queryParam, {
+	const searchResults = useSearchQueries(query, {
 		limit: SEARCH_PAGE_SIZE,
 		enabled: searchEnabled,
 	});
@@ -95,41 +94,39 @@ export default function SearchContent() {
 		searchResults.playlists.error;
 
 	const handleSearch = useCallback(() => {
-		if (!query.trim()) return;
-		router.push(`/?q=${encodeURIComponent(query)}&tab=${activeTab}`);
-	}, [query, activeTab, router]);
+		const nextQuery = draftQuery.trim();
+		void setQueryParam(nextQuery ? nextQuery : null);
+		if (!tabParam) {
+			void setTabParam(activeTab);
+		}
+	}, [activeTab, draftQuery, setQueryParam, setTabParam, tabParam]);
 
 	const handleTabChange = useCallback(
 		(tab: string) => {
-			const newTab = tab as TabType;
-			setActiveTab(newTab);
-			if (queryParam) {
-				router.push(`/?q=${encodeURIComponent(queryParam)}&tab=${newTab}`);
-			}
+			void setTabParam(tab as TabType);
 		},
-		[queryParam, router],
+		[setTabParam],
 	);
 
-	/** Update local state when URL params change */
 	useEffect(() => {
-		setActiveTab(tabParam);
-	}, [tabParam]);
-
-	useEffect(() => {
-		setQuery(queryParam);
-	}, [queryParam]);
+		setDraftQuery(query);
+	}, [query]);
 
 	return (
 		<div className="container mx-auto px-4 py-8 space-y-8">
 			<div className="flex justify-center">
-				<SearchBar value={query} onChange={setQuery} onSearch={handleSearch} />
+				<SearchBar
+					value={draftQuery}
+					onChange={setDraftQuery}
+					onSearch={handleSearch}
+				/>
 			</div>
 
-			{!queryParam && <HistoryList items={playbackHistory} />}
+			{!query && <HistoryList items={playbackHistory} />}
 
 			{hasError && <ErrorState />}
 
-			{queryParam && !hasError && (
+			{query && !hasError && (
 				<Tabs
 					value={activeTab}
 					onValueChange={handleTabChange}
@@ -149,7 +146,7 @@ export default function SearchContent() {
 						) : globalSearchQuery.data ? (
 							<GlobalSearchResults
 								results={globalSearchQuery.data}
-								query={queryParam}
+								query={query}
 							/>
 						) : null}
 					</TabsContent>
@@ -162,7 +159,7 @@ export default function SearchContent() {
 								searchResults.songs.results.length === 0
 							}
 							hasResults={searchResults.songs.results.length > 0}
-							query={queryParam}
+							query={query}
 						>
 							<SongsList
 								songs={searchResults.songs.results.map(detailedSongToSong)}
@@ -178,7 +175,7 @@ export default function SearchContent() {
 								searchResults.albums.results.length === 0
 							}
 							hasResults={searchResults.albums.results.length > 0}
-							query={queryParam}
+							query={query}
 						>
 							<AlbumsList albums={searchResults.albums.results} />
 						</SearchTabContent>
@@ -192,7 +189,7 @@ export default function SearchContent() {
 								searchResults.artists.results.length === 0
 							}
 							hasResults={searchResults.artists.results.length > 0}
-							query={queryParam}
+							query={query}
 						>
 							<ArtistsList
 								artists={searchResults.artists.results.map(
@@ -210,7 +207,7 @@ export default function SearchContent() {
 								searchResults.playlists.results.length === 0
 							}
 							hasResults={searchResults.playlists.results.length > 0}
-							query={queryParam}
+							query={query}
 						>
 							<PlaylistsList
 								playlists={searchResults.playlists.results.map(

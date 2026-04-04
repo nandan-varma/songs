@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOffline } from "@/hooks/cache";
-import { useArtistFromQuery } from "@/hooks/pages/use-artist";
+import { useArtist } from "@/hooks/data/queries";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
 import {
@@ -23,9 +23,11 @@ import {
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue } = useOfflinePlayerActions();
-	const isOfflineMode = useOffline();
+	const isOffline = useIsOffline();
 
-	const { data: artist, isPending: isArtistPending } = useArtistFromQuery();
+	const { data: artist, isPending: isArtistPending } = useArtist(id || "", {
+		enabled: !!id && !isOffline,
+	});
 
 	// Use data from artist object instead of making separate API calls
 	// Filter out null values and ensure we always have arrays
@@ -43,7 +45,7 @@ export function Client() {
 		);
 	}
 
-	if (isOfflineMode) {
+	if (isOffline) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card className="text-center py-12">

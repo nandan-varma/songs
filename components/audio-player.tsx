@@ -3,19 +3,23 @@
 import { useCallback, useRef } from "react";
 import { useAudioPlayback } from "@/hooks/audio/use-audio-playback";
 import { useAudioSeeking } from "@/hooks/audio/use-audio-seeking";
+import { useAudioSettings } from "@/hooks/audio/use-audio-settings";
 import { useAudioSource } from "@/hooks/audio/use-audio-source";
 import { useMediaSession } from "@/hooks/audio/use-media-session";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflineSkip } from "@/hooks/player/use-offline-skip";
 import {
 	useCurrentSong,
 	useCurrentTime,
 	useDuration,
-	useIsOfflineMode,
+	useIsMuted,
 	useIsPlaying,
-	useQueue_List,
+	usePlaybackSpeedValue,
 	useQueueIndex,
+	useQueueSongs,
 	useVolume,
 } from "@/hooks/use-store";
+import { getDownloadedSongBlob } from "@/lib/downloads/storage";
 import { useAppStore } from "@/lib/store";
 import { DesktopLayout } from "./player/desktop-layout";
 import { MobileLayout } from "./player/mobile-layout";
@@ -28,15 +32,16 @@ export function AudioPlayer() {
 	const currentSong = useCurrentSong();
 	const isPlaying = useIsPlaying();
 	const volume = useVolume();
+	const playbackSpeed = usePlaybackSpeedValue();
+	const isMuted = useIsMuted();
 	const currentTime = useCurrentTime();
 	const duration = useDuration();
-	const queue = useQueue_List();
+	const queue = useQueueSongs();
 	const queueIndex = useQueueIndex();
+	const downloadedSongIds = useAppStore((state) => state.downloadedSongIds);
 
-	// Create stable audio ref that persists across renders
 	const audioRef = useRef<HTMLAudioElement>(null);
 
-	// Access store actions directly without creating new objects
 	const togglePlayPause = useCallback(() => {
 		useAppStore.getState().togglePlayPause();
 	}, []);
@@ -65,34 +70,21 @@ export function AudioPlayer() {
 		useAppStore.getState().reorderQueue(from, to);
 	}, []);
 
-	const isOfflineMode = useIsOfflineMode();
+	const isOffline = useIsOffline();
 
-	// Wrapper to convert async isSongCached to sync for useOfflineSkip
-	const isSongCachedSync = useCallback((_songId: string): boolean => {
-		return false;
-	}, []);
-
-	// Create a mock getSongBlob function for useAudioSource
-	const getSongBlob = useCallback(
-		async (_songId: string): Promise<Blob | null> => {
-			return null;
-		},
-		[],
-	);
-
-	// Audio management hooks - each with single responsibility
 	useOfflineSkip({
 		currentSong,
-		isOfflineMode,
-		isSongCached: isSongCachedSync,
+		isOffline,
+		isSongCached: (songId) => downloadedSongIds.has(songId),
 		playNext,
 	});
 	useAudioSource({
 		currentSong,
 		audioRef,
-		isOfflineMode,
-		getSongBlob,
+		isOffline,
+		getSongBlob: getDownloadedSongBlob,
 	});
+	useAudioSettings({ audioRef, volume, playbackSpeed, isMuted });
 	useAudioPlayback({ currentSong, audioRef, isPlaying });
 	useAudioSeeking({ audioRef, currentSong });
 	useMediaSession({
@@ -127,7 +119,7 @@ export function AudioPlayer() {
 
 	return (
 		<PlayerContainer
-			isOfflineMode={isOfflineMode}
+			isOffline={isOffline}
 			audioElement={
 				<audio ref={audioRef}>
 					<track kind="captions" />

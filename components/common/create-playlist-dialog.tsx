@@ -43,9 +43,7 @@ export function CreatePlaylistDialog({
 
 		setIsCreating(true);
 		try {
-			await createPlaylist(playlistName.trim());
-			// Note: The new store doesn't return the ID from createPlaylist,
-			// so we'll need to find the created playlist after creation
+			createPlaylist(playlistName.trim());
 			setPlaylistName("");
 			setIsOpen(false);
 		} catch (error) {

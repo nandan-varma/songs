@@ -7,12 +7,12 @@ import type { UseOfflineSkipProps } from "@/types/player";
  */
 export function useOfflineSkip({
 	currentSong,
-	isOfflineMode,
+	isOffline,
 	isSongCached,
 	playNext,
 }: UseOfflineSkipProps) {
 	useEffect(() => {
-		if (!currentSong || !isOfflineMode) return;
+		if (!currentSong || !isOffline) return;
 
 		if (!isSongCached(currentSong.id)) {
 			toast.error(
@@ -20,5 +20,5 @@ export function useOfflineSkip({
 			);
 			playNext();
 		}
-	}, [currentSong, isOfflineMode, isSongCached, playNext]);
+	}, [currentSong, isOffline, isSongCached, playNext]);
 }

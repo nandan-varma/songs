@@ -17,8 +17,9 @@ export function useOfflinePlayerActions() {
 			return;
 		}
 
-		const { playSong } = useAppStore.getState();
+		const { playSong, addToPlaybackHistory } = useAppStore.getState();
 		playSong(song, replaceQueue);
+		addToPlaybackHistory(song);
 	};
 
 	const playQueueOfflineAware = (songs: DetailedSong[], startIndex = 0) => {

@@ -160,8 +160,9 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 	}, [cachedSongsArray.length]);
 
 	const handlePlay = useCallback((song: DetailedSong) => {
-		const { playSong } = useAppStore.getState();
+		const { playSong, addToPlaybackHistory } = useAppStore.getState();
 		playSong(song);
+		addToPlaybackHistory(song);
 	}, []);
 	const handleAddToQueue = useCallback((song: DetailedSong) => {
 		const { addSongToQueue } = useAppStore.getState();

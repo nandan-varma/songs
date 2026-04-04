@@ -39,8 +39,9 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 
 			setIsLoading(true);
 			try {
-				const { playSong } = useAppStore.getState();
+				const { playSong, addToPlaybackHistory } = useAppStore.getState();
 				playSong(song);
+				addToPlaybackHistory(song);
 			} catch (error) {
 				logError("HistoryList:playSong", error);
 			} finally {

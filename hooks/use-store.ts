@@ -89,22 +89,14 @@ export function useQueue() {
  */
 export function useFavorites() {
 	const favoriteIds = useAppStore((state) => state.favoriteIds);
-	const isFavorite = useCallback(
-		(songId: string) => useAppStore.getState().isFavorite(songId),
-		[],
-	);
-	const toggleFavorite = useCallback(
-		(songId: string) => useAppStore.getState().toggleFavorite(songId),
-		[],
-	);
-	const addFavorite = useCallback(
-		(songId: string) => useAppStore.getState().addFavorite(songId),
-		[],
-	);
-	const removeFavorite = useCallback(
-		(songId: string) => useAppStore.getState().removeFavorite(songId),
-		[],
-	);
+	const isFavorite = (songId: string) =>
+		useAppStore.getState().isFavorite(songId);
+	const toggleFavorite = (songId: string) =>
+		useAppStore.getState().toggleFavorite(songId);
+	const addFavorite = (songId: string) =>
+		useAppStore.getState().addFavorite(songId);
+	const removeFavorite = (songId: string) =>
+		useAppStore.getState().removeFavorite(songId);
 
 	return {
 		favoriteIds,
@@ -131,23 +123,13 @@ export function useHistory() {
 	const searchHistory = useAppStore(selectors.selectSearchHistory);
 	const playbackHistory = useAppStore(selectors.selectPlaybackHistory);
 
-	const addToSearchHistory = useCallback(
-		(query: string) => useAppStore.getState().addToSearchHistory(query),
-		[],
-	);
-	const clearSearchHistory = useCallback(
-		() => useAppStore.getState().clearSearchHistory(),
-		[],
-	);
-	const addToPlaybackHistory = useCallback(
-		(song: import("@/types/entity").DetailedSong) =>
-			useAppStore.getState().addToPlaybackHistory(song),
-		[],
-	);
-	const clearPlaybackHistory = useCallback(
-		() => useAppStore.getState().clearPlaybackHistory(),
-		[],
-	);
+	const addToSearchHistory = (query: string) =>
+		useAppStore.getState().addToSearchHistory(query);
+	const clearSearchHistory = () => useAppStore.getState().clearSearchHistory();
+	const addToPlaybackHistory = (song: import("@/types/entity").DetailedSong) =>
+		useAppStore.getState().addToPlaybackHistory(song);
+	const clearPlaybackHistory = () =>
+		useAppStore.getState().clearPlaybackHistory();
 
 	return {
 		searchHistory,
@@ -168,34 +150,20 @@ export function usePlaylists() {
 	const playlists = useAppStore(selectors.selectPlaylists);
 	const selectedPlaylistId = useAppStore(selectors.selectSelectedPlaylistId);
 
-	const createPlaylist = useCallback(
-		(name: string, description?: string) =>
-			useAppStore.getState().createPlaylist(name, description),
-		[],
-	);
-	const updatePlaylist = useCallback(
-		(id: string, name: string, description?: string) =>
-			useAppStore.getState().updatePlaylist(id, name, description),
-		[],
-	);
-	const deletePlaylist = useCallback(
-		(id: string) => useAppStore.getState().deletePlaylist(id),
-		[],
-	);
-	const addSongToPlaylist = useCallback(
-		(id: string, song: import("@/types/entity").DetailedSong) =>
-			useAppStore.getState().addSongToPlaylist(id, song),
-		[],
-	);
-	const removeSongFromPlaylist = useCallback(
-		(id: string, songId: string) =>
-			useAppStore.getState().removeSongFromPlaylist(id, songId),
-		[],
-	);
-	const setSelectedPlaylist = useCallback(
-		(id: string | null) => useAppStore.getState().setSelectedPlaylist(id),
-		[],
-	);
+	const createPlaylist = (name: string, description?: string) =>
+		useAppStore.getState().createPlaylist(name, description);
+	const updatePlaylist = (id: string, name: string, description?: string) =>
+		useAppStore.getState().updatePlaylist(id, name, description);
+	const deletePlaylist = (id: string) =>
+		useAppStore.getState().deletePlaylist(id);
+	const addSongToPlaylist = (
+		id: string,
+		song: import("@/types/entity").DetailedSong,
+	) => useAppStore.getState().addSongToPlaylist(id, song);
+	const removeSongFromPlaylist = (id: string, songId: string) =>
+		useAppStore.getState().removeSongFromPlaylist(id, songId);
+	const setSelectedPlaylist = (id: string | null) =>
+		useAppStore.getState().setSelectedPlaylist(id);
 
 	return {
 		playlists,
@@ -234,26 +202,16 @@ export function useUIState() {
  * UI actions hook - wrapped with useCallback to provide stable references
  */
 export function useUIActions() {
-	const setIsMobile = useCallback(
-		(mobile: boolean) => useAppStore.getState().setIsMobile(mobile),
-		[],
-	);
-	const setIsDarkMode = useCallback(
-		(dark: boolean) => useAppStore.getState().setIsDarkMode(dark),
-		[],
-	);
-	const setIsQueueOpen = useCallback(
-		(open: boolean) => useAppStore.getState().setIsQueueOpen(open),
-		[],
-	);
-	const setIsOfflineMode = useCallback(
-		(offline: boolean) => useAppStore.getState().setIsOfflineMode(offline),
-		[],
-	);
-	const setSleepTimer = useCallback(
-		(minutes: number | null) => useAppStore.getState().setSleepTimer(minutes),
-		[],
-	);
+	const setIsMobile = (mobile: boolean) =>
+		useAppStore.getState().setIsMobile(mobile);
+	const setIsDarkMode = (dark: boolean) =>
+		useAppStore.getState().setIsDarkMode(dark);
+	const setIsQueueOpen = (open: boolean) =>
+		useAppStore.getState().setIsQueueOpen(open);
+	const setIsOfflineMode = (offline: boolean) =>
+		useAppStore.getState().setIsOfflineMode(offline);
+	const setSleepTimer = (minutes: number | null) =>
+		useAppStore.getState().setSleepTimer(minutes);
 
 	return {
 		setIsMobile,

@@ -107,7 +107,6 @@ export function Client() {
 						<div className="space-y-4">
 							{Array.from({ length: 10 }).map((_, i) => (
 								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 									key={`song-skeleton-${i}`}
 									className="flex items-center gap-4 p-4 rounded-lg border"
 								>
@@ -126,7 +125,6 @@ export function Client() {
 					<TabsContent value="albums" className="space-y-4">
 						<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 							{Array.from({ length: 8 }).map((_, i) => (
-								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 								<Card key={`album-skeleton-${i}`}>
 									<CardContent className="p-4">
 										<Skeleton className="aspect-square w-full rounded" />
@@ -145,7 +143,6 @@ export function Client() {
 						<div className="space-y-4">
 							{Array.from({ length: 5 }).map((_, i) => (
 								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 									key={`single-skeleton-${i}`}
 									className="flex items-center gap-4 p-4 rounded-lg border"
 								>
@@ -179,7 +176,6 @@ export function Client() {
 					<Skeleton className="h-8 w-48" />
 					<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						{Array.from({ length: 8 }).map((_, i) => (
-							// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 							<Card key={`artist-skeleton-${i}`}>
 								<CardContent className="p-4">
 									<Skeleton className="aspect-square w-full rounded-full" />

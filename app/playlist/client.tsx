@@ -2,40 +2,25 @@
 
 import { Play, Plus } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { useEffect } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useHistory } from "@/contexts/history-context";
-import { useOffline } from "@/hooks/cache";
 import { usePlaylistFromQuery } from "@/hooks/pages/use-playlist";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
+import { useUIState } from "@/hooks/use-store";
 import { detailedSongToSong } from "@/lib/utils";
 import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue, addToQueue } = useOfflinePlayerActions();
-	const isOfflineMode = useOffline();
-	const { addToHistory } = useHistory();
+	const { isOfflineMode } = useUIState();
 
 	const { data: playlist } = usePlaylistFromQuery();
 
 	const filteredSongs = playlist?.songs ?? [];
-
-	// Add to history when playlist loads
-	useEffect(() => {
-		if (playlist) {
-			addToHistory({
-				id: playlist.id,
-				type: EntityType.PLAYLIST,
-				data: playlist,
-				timestamp: new Date(),
-			});
-		}
-	}, [playlist, addToHistory]);
 
 	if (!id) {
 		return (

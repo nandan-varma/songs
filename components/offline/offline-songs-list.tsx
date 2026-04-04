@@ -6,9 +6,8 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlayerActions } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import { useOffline } from "@/hooks/cache";
+import { usePlayerActions, useQueueActions } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 interface SongItemProps {
@@ -134,7 +133,7 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 	const cachedSongsArray: DetailedSong[] = [];
 	const isOfflineMode = useOffline();
 	const { playSong } = usePlayerActions();
-	const { addSong } = useQueueActions();
+	const { addSongToQueue } = useQueueActions();
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
 
@@ -167,8 +166,8 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 		[playSong],
 	);
 	const handleAddToQueue = useCallback(
-		(song: DetailedSong) => addSong(song),
-		[addSong],
+		(song: DetailedSong) => addSongToQueue(song),
+		[addSongToQueue],
 	);
 	const handleRemove = useCallback((_songId: string) => {
 		// TODO: Remove song from cache

@@ -3,7 +3,7 @@
 import { Heart } from "lucide-react";
 import { motion } from "motion/react";
 import { memo } from "react";
-import { useFavorites } from "@/contexts/favorites-context";
+import { useFavorites, useIsFavorite } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 
@@ -18,8 +18,8 @@ export const FavoriteButton = memo(function FavoriteButton({
 	size = "default",
 	variant = "ghost",
 }: FavoriteButtonProps) {
-	const { isFavorite, toggleFavorite } = useFavorites();
-	const isFav = isFavorite(song.id);
+	const isFav = useIsFavorite(song.id);
+	const { toggleFavorite } = useFavorites();
 
 	return (
 		<motion.div
@@ -37,7 +37,7 @@ export const FavoriteButton = memo(function FavoriteButton({
 				}
 				onClick={(e) => {
 					e.stopPropagation();
-					toggleFavorite(song);
+					toggleFavorite(song.id);
 				}}
 				aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
 			>

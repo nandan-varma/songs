@@ -3,14 +3,12 @@
 import { ExternalLink, Play } from "lucide-react";
 import Link from "next/link";
 import { useQueryState } from "nuqs";
-import { useEffect } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/hooks/cache";
 import { useArtistAlbums, useArtistSongs } from "@/hooks/data/queries";
 import { useArtistFromQuery } from "@/hooks/pages/use-artist";
@@ -26,20 +24,8 @@ export function Client() {
 	const [id] = useQueryState("id");
 	const { playQueue } = useOfflinePlayerActions();
 	const isOfflineMode = useOffline();
-	const { addToHistory } = useHistory();
 
 	const { data: artist } = useArtistFromQuery();
-
-	useEffect(() => {
-		if (artist) {
-			addToHistory({
-				id: artist.id,
-				type: EntityType.ARTIST,
-				data: artist,
-				timestamp: new Date(),
-			});
-		}
-	}, [artist, addToHistory]);
 
 	const songsQuery = useArtistSongs(id || "", "popularity", "desc", {
 		enabled: !!id && !isOfflineMode,

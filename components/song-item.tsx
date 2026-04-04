@@ -8,8 +8,7 @@ import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongActionMenu } from "@/components/common/song-action-menu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlayerActions } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
+import { usePlayerActions, useQueueActions } from "@/hooks/use-store";
 import { getSongById } from "@/lib/api";
 import { logError } from "@/lib/utils/logger";
 import type { Song } from "@/types/entity";
@@ -32,7 +31,7 @@ export const SongItem = memo(function SongItem({
 }: SongItemProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const { playSong } = usePlayerActions();
-	const { addSong } = useQueueActions();
+	const { addSongToQueue } = useQueueActions();
 
 	const handlePlay = useCallback(
 		async (e: React.MouseEvent) => {
@@ -67,7 +66,7 @@ export const SongItem = memo(function SongItem({
 				setIsLoading(true);
 				const response = await getSongById(song.id);
 				if (response.success && response.data?.[0]) {
-					addSong(response.data[0]);
+					addSongToQueue(response.data[0]);
 				}
 			} catch (error) {
 				logError("SongItem:addToQueue", error);
@@ -75,7 +74,7 @@ export const SongItem = memo(function SongItem({
 				setIsLoading(false);
 			}
 		},
-		[song.id, addSong, isLoading],
+		[song.id, addSongToQueue, isLoading],
 	);
 
 	// Truncate artists to first 2 on mobile

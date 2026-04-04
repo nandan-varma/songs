@@ -1,6 +1,6 @@
 import { toast } from "sonner";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useOffline } from "@/hooks/cache";
+import { usePlayerActions, useQueueActions } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 /**
@@ -8,13 +8,9 @@ import type { DetailedSong } from "@/types/entity";
  */
 export function useOfflinePlayerActions() {
 	const isOfflineMode = useOffline();
-	const {
-		playQueue,
-		addToQueue,
-		addMultipleToQueue,
-		playSong,
-		...otherActions
-	} = usePlayerActions();
+	const { playSong, playQueue, ...otherPlayerActions } = usePlayerActions();
+	const { addSongToQueue, addSongsToQueue, ...otherQueueActions } =
+		useQueueActions();
 
 	const playSongOfflineAware = (song: DetailedSong, replaceQueue = true) => {
 		const filtered = [song];
@@ -55,7 +51,7 @@ export function useOfflinePlayerActions() {
 			return;
 		}
 
-		addToQueue(song);
+		addSongToQueue(song);
 	};
 
 	const addMultipleToQueueOfflineAware = (songs: DetailedSong[]) => {
@@ -72,18 +68,19 @@ export function useOfflinePlayerActions() {
 			);
 		}
 
-		addMultipleToQueue(filtered);
+		addSongsToQueue(filtered);
 	};
 
 	return {
-		...otherActions,
+		...otherPlayerActions,
+		...otherQueueActions,
 		playSong: playSongOfflineAware,
 		playQueue: playQueueOfflineAware,
 		addToQueue: addToQueueOfflineAware,
 		addMultipleToQueue: addMultipleToQueueOfflineAware,
 		playSongUnfiltered: playSong,
 		playQueueUnfiltered: playQueue,
-		addToQueueUnfiltered: addToQueue,
-		addMultipleToQueueUnfiltered: addMultipleToQueue,
+		addToQueueUnfiltered: addSongToQueue,
+		addMultipleToQueueUnfiltered: addSongsToQueue,
 	};
 }

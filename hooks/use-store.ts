@@ -10,7 +10,6 @@
  * ❌ NEVER use object-returning hooks in dependency arrays
  */
 
-import { useCallback } from "react";
 import { useAppStore } from "@/lib/store";
 import * as selectors from "@/lib/store/selectors";
 
@@ -29,6 +28,7 @@ export const useDuration = () => useAppStore(selectors.selectDuration);
 export const useVolume = () => useAppStore(selectors.selectVolume);
 export const usePlaybackSpeed = () =>
 	useAppStore(selectors.selectPlaybackSpeed);
+export const useIsMuted = () => useAppStore(selectors.selectIsMuted);
 
 /**
  * Player state hook - composed from individual selectors
@@ -230,18 +230,12 @@ export function useUIActions() {
 export function useOffline() {
 	const downloadedSongIds = useAppStore(selectors.selectDownloadedSongIds);
 
-	const addDownloadedSong = useCallback(
-		(songId: string) => useAppStore.getState().addDownloadedSong(songId),
-		[],
-	);
-	const removeDownloadedSong = useCallback(
-		(songId: string) => useAppStore.getState().removeDownloadedSong(songId),
-		[],
-	);
-	const isDownloaded = useCallback(
-		(songId: string) => useAppStore.getState().isDownloaded(songId),
-		[],
-	);
+	const addDownloadedSong = (songId: string) =>
+		useAppStore.getState().addDownloadedSong(songId);
+	const removeDownloadedSong = (songId: string) =>
+		useAppStore.getState().removeDownloadedSong(songId);
+	const isDownloaded = (songId: string) =>
+		useAppStore.getState().isDownloaded(songId);
 
 	return {
 		downloadedSongIds,

@@ -14,6 +14,7 @@ const INITIAL_STATE: AppStoreState = {
 	duration: 0,
 	volume: DEFAULT_VOLUME,
 	playbackSpeed: 1,
+	isMuted: false,
 
 	// Queue
 	queue: [],
@@ -174,6 +175,14 @@ export const useAppStore = create<AppStore>()(
 
 		setIsPlaying: (playing: boolean) => {
 			set({ isPlaying: playing });
+		},
+
+		setIsMuted: (muted: boolean) => {
+			set({ isMuted: muted });
+		},
+
+		toggleMute: () => {
+			set((state) => ({ isMuted: !state.isMuted }));
 		},
 
 		// ============ QUEUE ACTIONS ============
@@ -468,3 +477,44 @@ export const useAppStore = create<AppStore>()(
 		},
 	})),
 );
+
+// ============ PERSISTENCE ============
+// Store playback history and favorites in localStorage
+if (typeof window !== "undefined") {
+	// Load persisted data on startup
+	try {
+		const persisted = localStorage.getItem("app-store-persist");
+		if (persisted) {
+			const data = JSON.parse(persisted);
+			useAppStore.setState({
+				playbackHistory: data.playbackHistory || [],
+				searchHistory: data.searchHistory || [],
+				favoriteIds: new Set(data.favoriteIds || []),
+				playlists: data.playlists || [],
+				volume: data.volume ?? INITIAL_STATE.volume,
+				isDarkMode: data.isDarkMode ?? INITIAL_STATE.isDarkMode,
+				downloadedSongIds: new Set(data.downloadedSongIds || []),
+			});
+		}
+	} catch (error) {
+		console.error("Failed to load persisted store data:", error);
+	}
+
+	// Subscribe to changes and persist relevant state
+	useAppStore.subscribe((state) => {
+		try {
+			const toPersist = {
+				playbackHistory: state.playbackHistory,
+				searchHistory: state.searchHistory,
+				favoriteIds: Array.from(state.favoriteIds),
+				playlists: state.playlists,
+				volume: state.volume,
+				isDarkMode: state.isDarkMode,
+				downloadedSongIds: Array.from(state.downloadedSongIds),
+			};
+			localStorage.setItem("app-store-persist", JSON.stringify(toPersist));
+		} catch (error) {
+			console.error("Failed to persist store data:", error);
+		}
+	});
+}

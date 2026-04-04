@@ -13,6 +13,7 @@ export const selectDuration = (state: AppStoreState) => state.duration;
 export const selectVolume = (state: AppStoreState) => state.volume;
 export const selectPlaybackSpeed = (state: AppStoreState) =>
 	state.playbackSpeed;
+export const selectIsMuted = (state: AppStoreState) => state.isMuted;
 
 export const selectPlayerState = (state: AppStoreState) => ({
 	currentSong: state.currentSong,
@@ -21,6 +22,7 @@ export const selectPlayerState = (state: AppStoreState) => ({
 	duration: state.duration,
 	volume: state.volume,
 	playbackSpeed: state.playbackSpeed,
+	isMuted: state.isMuted,
 });
 
 // ============ QUEUE SELECTORS ============

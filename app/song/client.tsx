@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryState } from "nuqs";
+import { useEffect } from "react";
 import { SongHeader } from "@/components/song/song-header";
 import { SongSuggestions } from "@/components/song/song-suggestions";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,12 +10,15 @@ import { useOffline } from "@/hooks/cache";
 import { useSongSuggestions } from "@/hooks/data/queries";
 import { useSongFromQuery } from "@/hooks/pages/use-song";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
+import { useAppStore } from "@/lib/store";
 import { detailedSongToSong } from "@/lib/utils";
+import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playSong, addToQueue } = useOfflinePlayerActions();
 	const isOfflineMode = useOffline();
+	const addToVisitHistory = useAppStore((state) => state.addToVisitHistory);
 
 	const { data: songData, isPending } = useSongFromQuery();
 	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
@@ -23,6 +27,19 @@ export function Client() {
 
 	const song = songData?.[0];
 	const filteredSuggestions = suggestions;
+
+	// Track visit to song
+	useEffect(() => {
+		if (song && !isOfflineMode) {
+			addToVisitHistory({
+				entityId: song.id,
+				entityType: EntityType.SONG,
+				entityName: song.name,
+				image: song.image,
+				timestamp: Date.now(),
+			});
+		}
+	}, [song?.id, isOfflineMode, addToVisitHistory, song]);
 
 	if (!id) {
 		return (

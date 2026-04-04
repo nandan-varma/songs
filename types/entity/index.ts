@@ -258,3 +258,15 @@ export interface DetailedPlaylist {
 	songs: DetailedSong[];
 	artists: ArtistMini[];
 }
+
+/**
+ * Represents a visit to an entity (song, album, artist, or playlist)
+ * Used for tracking user navigation history
+ */
+export interface EntityVisit {
+	entityId: string;
+	entityType: EntityType;
+	entityName: string;
+	image: Image[];
+	timestamp: number;
+}

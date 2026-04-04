@@ -22,7 +22,7 @@ interface HistoryItemProps {
  * Individual history item component
  * Note: History now only tracks songs (simplified from old HistoryItem type)
  */
-const HistoryItemComponent = memo(function HistoryItemComponent({
+export const HistoryItemComponent = memo(function HistoryItemComponent({
 	item: song,
 	compact = false,
 }: HistoryItemProps) {

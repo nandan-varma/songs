@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { logError } from "@/lib/utils/logger";
+import { getStorageItem, setStorageItem } from "@/lib/utils/storage";
 import type { DetailedSong, EntityVisit, LocalPlaylist } from "@/types/entity";
 import { DEFAULT_VOLUME, RESTART_THRESHOLD_SECONDS } from "@/types/player";
 import type { AppStore, AppStoreState, RepeatMode } from "./types";
@@ -499,41 +501,44 @@ export const useAppStore = create<AppStore>()(
 // Store playback history and favorites in localStorage
 if (typeof window !== "undefined") {
 	// Load persisted data on startup
-	try {
-		const persisted = localStorage.getItem("app-store-persist");
-		if (persisted) {
-			const data = JSON.parse(persisted);
-			useAppStore.setState({
-				playbackHistory: data.playbackHistory || [],
-				searchHistory: data.searchHistory || [],
-				visitHistory: data.visitHistory || [],
-				favoriteIds: new Set(data.favoriteIds || []),
-				playlists: data.playlists || [],
-				volume: data.volume ?? INITIAL_STATE.volume,
-				isDarkMode: data.isDarkMode ?? INITIAL_STATE.isDarkMode,
-				downloadedSongIds: new Set(data.downloadedSongIds || []),
-			});
-		}
-	} catch (error) {
-		console.error("Failed to load persisted store data:", error);
+	const persistedData = getStorageItem<Record<string, unknown>>(
+		"store-persist",
+		{},
+	);
+	if (persistedData && Object.keys(persistedData).length > 0) {
+		useAppStore.setState({
+			playbackHistory:
+				(persistedData.playbackHistory as typeof INITIAL_STATE.playbackHistory) ||
+				[],
+			searchHistory:
+				(persistedData.searchHistory as typeof INITIAL_STATE.searchHistory) ||
+				[],
+			favoriteIds: new Set((persistedData.favoriteIds as string[]) || []),
+			playlists:
+				(persistedData.playlists as typeof INITIAL_STATE.playlists) || [],
+			volume: (persistedData.volume as number) ?? INITIAL_STATE.volume,
+			isDarkMode:
+				(persistedData.isDarkMode as boolean) ?? INITIAL_STATE.isDarkMode,
+			downloadedSongIds: new Set(
+				(persistedData.downloadedSongIds as string[]) || [],
+			),
+		});
 	}
 
 	// Subscribe to changes and persist relevant state
 	useAppStore.subscribe((state) => {
-		try {
-			const toPersist = {
-				playbackHistory: state.playbackHistory,
-				searchHistory: state.searchHistory,
-				visitHistory: state.visitHistory,
-				favoriteIds: Array.from(state.favoriteIds),
-				playlists: state.playlists,
-				volume: state.volume,
-				isDarkMode: state.isDarkMode,
-				downloadedSongIds: Array.from(state.downloadedSongIds),
-			};
-			localStorage.setItem("app-store-persist", JSON.stringify(toPersist));
-		} catch (error) {
-			console.error("Failed to persist store data:", error);
+		const toPersist = {
+			playbackHistory: state.playbackHistory,
+			searchHistory: state.searchHistory,
+			favoriteIds: Array.from(state.favoriteIds),
+			playlists: state.playlists,
+			volume: state.volume,
+			isDarkMode: state.isDarkMode,
+			downloadedSongIds: Array.from(state.downloadedSongIds),
+		};
+		const success = setStorageItem("store-persist", toPersist);
+		if (!success) {
+			logError("StorePersistence", new Error("Failed to persist store data"));
 		}
 	});
 }

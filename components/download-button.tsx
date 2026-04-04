@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import { useDownloadSong } from "@/hooks/cache";
+import { useIsDownloaded } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "./ui/button";
 
@@ -24,8 +25,7 @@ export const DownloadButton = memo(function DownloadButton({
 	showLabel = false,
 }: DownloadButtonProps) {
 	const { downloadSong, isDownloading } = useDownloadSong();
-
-	const isDownloaded = false; // TODO: Check cache status
+	const isDownloaded = useIsDownloaded(song.id);
 
 	const handleDownload = useCallback(
 		async (e: React.MouseEvent) => {
@@ -40,7 +40,7 @@ export const DownloadButton = memo(function DownloadButton({
 			downloadSong(song);
 			toast.success(`Downloading: ${song.name}`);
 		},
-		[song, downloadSong],
+		[song, downloadSong, isDownloaded],
 	);
 
 	const getIcon = () => {

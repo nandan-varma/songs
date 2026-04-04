@@ -28,28 +28,40 @@ export const MEDIA_ERROR_MESSAGES: Record<number, string> = {
 
 /**
  * Log audio error with context information
- * @param error - MediaError from audio element
+ * @param error - MediaError or Error from audio operations
  * @param context - Where the error occurred
  */
-export function logAudioError(error: MediaError | null, context: string): void {
+export function logAudioError(
+	error: MediaError | Error | null,
+	context: string,
+): void {
 	if (!error) return;
 
-	const errorInfo = {
-		code: error.code,
-		message: error.message,
-		MEDIA_ERR_ABORTED: error.MEDIA_ERR_ABORTED,
-		MEDIA_ERR_NETWORK: error.MEDIA_ERR_NETWORK,
-		DECODE: error.MEDIA_ERR_DECODE,
-		SRC_NOT_SUPPORTED: error.MEDIA_ERR_SRC_NOT_SUPPORTED,
-		context,
-		timestamp: new Date().toISOString(),
+	const isMediaError = (e: unknown): e is MediaError => {
+		return typeof e === "object" && e !== null && "code" in e;
 	};
+
+	const errorInfo = isMediaError(error)
+		? {
+				code: error.code,
+				message: error.message,
+				MEDIA_ERR_ABORTED: error.MEDIA_ERR_ABORTED,
+				MEDIA_ERR_NETWORK: error.MEDIA_ERR_NETWORK,
+				DECODE: error.MEDIA_ERR_DECODE,
+				SRC_NOT_SUPPORTED: error.MEDIA_ERR_SRC_NOT_SUPPORTED,
+				context,
+				timestamp: new Date().toISOString(),
+			}
+		: {
+				message: error.message,
+				context,
+				timestamp: new Date().toISOString(),
+			};
 
 	if (IS_DEV) {
 		logError(`AudioError:${context}`, errorInfo);
 	} else {
 		logError(`AudioError:${context}`, {
-			code: error.code,
 			message: error.message,
 		});
 	}
@@ -57,34 +69,55 @@ export function logAudioError(error: MediaError | null, context: string): void {
 
 /**
  * Get human-readable error message
- * @param error - MediaError from audio element
+ * @param error - MediaError or Error from audio operations
  * @returns Human-readable error message
  */
-export function getAudioErrorMessage(error: MediaError | null): string {
+export function getAudioErrorMessage(error: MediaError | Error | null): string {
 	if (!error) {
 		return "Unknown audio error";
 	}
-	return MEDIA_ERROR_MESSAGES[error.code] || error.message || "Unknown error";
+
+	const isMediaError = (e: unknown): e is MediaError => {
+		return typeof e === "object" && e !== null && "code" in e;
+	};
+
+	if (isMediaError(error)) {
+		return MEDIA_ERROR_MESSAGES[error.code] || error.message || "Unknown error";
+	}
+
+	return error.message || "Unknown error";
 }
 
 /**
  * Check if error is recoverable (can retry playback)
- * @param error - MediaError from audio element
+ * @param error - MediaError or Error from audio operations
  * @returns True if playback can be retried
  */
-export function isAudioErrorRecoverable(error: MediaError | null): boolean {
+export function isAudioErrorRecoverable(
+	error: MediaError | Error | null,
+): boolean {
 	if (!error) return true;
-	return error.code === MediaErrorCode.MEDIA_ERR_NETWORK;
+
+	const isMediaError = (e: unknown): e is MediaError => {
+		return typeof e === "object" && e !== null && "code" in e;
+	};
+
+	if (isMediaError(error)) {
+		return error.code === MediaErrorCode.MEDIA_ERR_NETWORK;
+	}
+
+	// Regular errors are typically recoverable
+	return true;
 }
 
 /**
  * Handle audio error with appropriate recovery action
- * @param error - MediaError from audio element
+ * @param error - MediaError or Error from audio operations
  * @param onRetry - Callback to retry playback
  * @param onFail - Callback when error is not recoverable
  */
 export function handleAudioError(
-	error: MediaError | null,
+	error: MediaError | Error | null,
 	onRetry: () => void,
 	onFail: () => void,
 ): void {
@@ -131,7 +164,9 @@ export function safeAudioOperation<T>(
 	try {
 		return operation();
 	} catch (error) {
-		logAudioError(error as MediaError, context);
+		const audioError =
+			error instanceof Error ? error : new Error(String(error));
+		logAudioError(audioError, context);
 		return undefined;
 	}
 }

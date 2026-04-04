@@ -4,10 +4,10 @@ import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import { StorageInfo } from "@/components/offline/storage-info";
 import { Button } from "@/components/ui/button";
+import { useCachedSongs } from "@/hooks/cache";
 
 function DownloadsPageContent() {
-	// TODO: Get cached songs from new cache system
-	const cachedSongsCount = 0;
+	const { count: cachedSongsCount } = useCachedSongs();
 
 	const handleSaveToDevice = () => {
 		// TODO: Implement save to device functionality
@@ -19,7 +19,8 @@ function DownloadsPageContent() {
 				<div>
 					<h1 className="text-3xl font-bold">Offline Music</h1>
 					<p className="text-muted-foreground mt-1">
-						{cachedSongsCount} cached songs
+						{cachedSongsCount} cached{" "}
+						{cachedSongsCount === 1 ? "song" : "songs"}
 					</p>
 				</div>
 

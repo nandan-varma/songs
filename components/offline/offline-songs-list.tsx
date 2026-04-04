@@ -6,7 +6,7 @@ import Image from "next/image";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useOffline } from "@/hooks/cache";
+import { useCachedSongs, useDownloadSong, useOffline } from "@/hooks/cache";
 import { useAppStore } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
@@ -129,8 +129,8 @@ const SongItem = memo(function SongItem({
 });
 
 export const OfflineSongsList = memo(function OfflineSongsList() {
-	// TODO: Load cached songs from new cache system
-	const cachedSongsArray: DetailedSong[] = [];
+	const { cachedSongs, isLoading, count } = useCachedSongs();
+	const { removeSong } = useDownloadSong();
 	const isOfflineMode = useOffline();
 	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
 	const createdUrlsRef = useRef<Set<string>>(new Set());
@@ -146,7 +146,7 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 			setImageUrls(urls);
 		};
 
-		if (cachedSongsArray.length > 0) {
+		if (cachedSongs.length > 0) {
 			loadImages();
 		}
 
@@ -157,22 +157,46 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 			}
 			createdUrlsRef.current.clear();
 		};
-	}, [cachedSongsArray.length]);
+	}, [cachedSongs.length]);
 
 	const handlePlay = useCallback((song: DetailedSong) => {
 		const { playSong, addToPlaybackHistory } = useAppStore.getState();
 		playSong(song);
 		addToPlaybackHistory(song);
 	}, []);
+
 	const handleAddToQueue = useCallback((song: DetailedSong) => {
 		const { addSongToQueue } = useAppStore.getState();
 		addSongToQueue(song);
 	}, []);
-	const handleRemove = useCallback((_songId: string) => {
-		// TODO: Remove song from cache
-	}, []);
 
-	if (cachedSongsArray.length === 0) {
+	const handleRemove = useCallback(
+		(songId: string) => {
+			removeSong(songId);
+		},
+		[removeSong],
+	);
+
+	if (isLoading) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<Card className="text-center py-12">
+					<CardContent>
+						<div className="flex justify-center">
+							<div className="animate-spin">
+								<Music className="h-6 w-6 text-muted-foreground" />
+							</div>
+						</div>
+						<p className="text-muted-foreground mt-4">
+							Loading cached songs...
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
+
+	if (cachedSongs.length === 0) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card className="text-center py-12">
@@ -199,7 +223,7 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 				transition={{ staggerChildren: 0.05 }}
 			>
 				{/* Cached Songs */}
-				{cachedSongsArray.map((song) => (
+				{cachedSongs.map((song: DetailedSong) => (
 					<motion.div
 						key={`cached-${song.id}`}
 						variants={{

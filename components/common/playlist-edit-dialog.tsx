@@ -4,7 +4,13 @@ import { ListMusic } from "lucide-react";
 import * as React from "react";
 import { useDragReorder } from "@/hooks/ui/use-drag-reorder";
 import { usePlaylists } from "@/hooks/use-store";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/dialog";
 import { PlaylistSongItem } from "./playlist-song-item";
 
 interface PlaylistEditDialogProps {
@@ -76,6 +82,9 @@ export function PlaylistEditDialog({
 						<ListMusic className="h-5 w-5" />
 						{playlist.name}
 					</DialogTitle>
+					<DialogDescription>
+						Drag to reorder, click remove to delete
+					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto">
 					{songs.length === 0 ? (

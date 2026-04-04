@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, ListPlus, Loader2, MoreHorizontal, Play } from "lucide-react";
+import { Heart, ListPlus, MoreHorizontal, Play } from "lucide-react";
 import * as React from "react";
 import { useDetailedSong } from "@/hooks/data/use-detailed-song";
 import { useSongActions } from "@/hooks/player/use-song-actions";
@@ -68,11 +68,7 @@ export function SongActionMenu({
 		<DropdownMenu open={isMenuOpen} onOpenChange={handleOpen}>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" size="icon" className="h-8 w-8">
-					{isPending ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
-					) : (
-						<MoreHorizontal className="h-4 w-4" />
-					)}
+					<MoreHorizontal className="h-4 w-4" />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-48">

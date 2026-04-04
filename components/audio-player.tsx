@@ -2,6 +2,7 @@
 
 import { useCallback, useRef } from "react";
 import { useAudioPlayback } from "@/hooks/audio/use-audio-playback";
+import { useAudioSeeking } from "@/hooks/audio/use-audio-seeking";
 import { useAudioSource } from "@/hooks/audio/use-audio-source";
 import { useMediaSession } from "@/hooks/audio/use-media-session";
 import { useOfflineSkip } from "@/hooks/player/use-offline-skip";
@@ -93,6 +94,7 @@ export function AudioPlayer() {
 		getSongBlob,
 	});
 	useAudioPlayback({ currentSong, audioRef, isPlaying });
+	useAudioSeeking({ audioRef, currentSong });
 	useMediaSession({
 		currentSong,
 		audioRef,

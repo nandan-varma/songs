@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { cacheManager } from "@/lib/cache";
 import { CACHE_KEYS } from "@/lib/cache/constants";
@@ -19,16 +19,6 @@ export function useDownloadSong() {
 		);
 		return cached !== null;
 	}, []);
-
-	// Query to check if a song is cached
-	const { data: isCached = false } = useQuery({
-		queryKey: CACHE_KEYS.DOWNLOADS("status"),
-		queryFn: async () => {
-			// This is just a placeholder - actual usage will be in components
-			return false;
-		},
-		staleTime: 1000 * 60 * 60, // 1 hour
-	});
 
 	// Mutation to download a song
 	const downloadMutation = useMutation({

@@ -8,6 +8,5 @@ export function useSongFromQuery() {
 
 	return useSong(id || "", {
 		enabled: !!id && !isOfflineMode,
-		suspense: true,
 	});
 }

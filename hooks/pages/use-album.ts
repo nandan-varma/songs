@@ -8,6 +8,5 @@ export function useAlbumFromQuery() {
 
 	return useAlbum(id || "", {
 		enabled: !!id && !isOfflineMode,
-		suspense: true,
 	});
 }

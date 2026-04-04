@@ -3,6 +3,7 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { logError } from "@/lib/utils/logger";
 
 export default function ErrorPage({
 	error,
@@ -12,7 +13,7 @@ export default function ErrorPage({
 	reset: () => void;
 }) {
 	useEffect(() => {
-		console.error("Page error:", error);
+		logError("ErrorPage", error);
 	}, [error]);
 
 	return (

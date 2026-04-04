@@ -15,6 +15,7 @@ export interface AppStoreState {
 	duration: number;
 	volume: number;
 	playbackSpeed: number;
+	isMuted: boolean;
 
 	// ============ QUEUE STATE ============
 	queue: DetailedSong[];
@@ -58,6 +59,8 @@ export interface AppStoreActions {
 	setPlaybackSpeed: (speed: number) => void;
 	setCurrentSong: (song: DetailedSong | null) => void;
 	setIsPlaying: (playing: boolean) => void;
+	setIsMuted: (muted: boolean) => void;
+	toggleMute: () => void;
 
 	// Queue actions
 	addSongToQueue: (song: DetailedSong) => void;

@@ -2,7 +2,8 @@
 
 import { Volume2, VolumeX } from "lucide-react";
 import { motion } from "motion/react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback } from "react";
+import { useAppStore } from "@/lib/store";
 import { percentToVolume, volumeToPercent } from "@/lib/utils/time";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
@@ -22,19 +23,20 @@ export const VolumeControl = memo(function VolumeControl({
 	volume,
 	onSetVolume,
 }: VolumeControlProps) {
-	const [isMuted, setIsMuted] = useState(false);
-	const [previousVolume, setPreviousVolume] = useState(volume);
+	const isMuted = useAppStore((state) => state.isMuted);
 
 	const toggleMute = useCallback(() => {
-		if (isMuted) {
-			onSetVolume(previousVolume);
-			setIsMuted(false);
+		const store = useAppStore.getState();
+		if (store.isMuted) {
+			// Unmute - restore to last non-zero volume or default
+			onSetVolume(Math.max(0.3, volume === 0 ? 0.5 : volume));
+			store.setIsMuted(false);
 		} else {
-			setPreviousVolume(volume);
+			// Mute
 			onSetVolume(0);
-			setIsMuted(true);
+			store.setIsMuted(true);
 		}
-	}, [isMuted, volume, previousVolume, onSetVolume]);
+	}, [volume, onSetVolume]);
 
 	const handleVolumeChange = useCallback(
 		([value]: number[]) => {
@@ -42,8 +44,9 @@ export const VolumeControl = memo(function VolumeControl({
 				const newVolume = percentToVolume(value);
 				onSetVolume(newVolume);
 
+				// Unmute if volume is increased above 0
 				if (value > 0 && isMuted) {
-					setIsMuted(false);
+					useAppStore.getState().setIsMuted(false);
 				}
 			}
 		},

@@ -14,7 +14,8 @@ import {
 	usePlaybackSpeed,
 } from "@/hooks/playback/use-playback-speed";
 import { useSleepTimer } from "@/hooks/playback/use-sleep-timer";
-import { useQueue, useQueueActions } from "@/hooks/use-store";
+import { useIsShuffleEnabled } from "@/hooks/use-store";
+import { useAppStore } from "@/lib/store";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -42,17 +43,20 @@ function formatTime(seconds: number | null): string {
 }
 
 export function PlaybackMenu() {
-	const { isShuffleEnabled } = useQueue();
-	const { toggleShuffle, setRepeatMode } = useQueueActions();
+	const isShuffleEnabled = useIsShuffleEnabled();
+	const [repeatMode, setLocalRepeatMode] = React.useState<RepeatMode>("off");
 	const { speed, cycleSpeed } = usePlaybackSpeed();
 	const { isActive, timeRemaining, presets, startTimer, cancelTimer } =
 		useSleepTimer();
-	const [repeatMode, setLocalRepeatMode] = React.useState<RepeatMode>("off");
+
+	const handleShuffleToggle = React.useCallback(() => {
+		useAppStore.getState().toggleShuffle();
+	}, []);
 
 	const handleRepeatChange = (mode: RepeatMode) => {
 		setLocalRepeatMode(mode);
 		// Convert RepeatMode string to the store's RepeatMode type
-		setRepeatMode(mode as "off" | "one" | "all");
+		useAppStore.getState().setRepeatMode(mode as "off" | "one" | "all");
 	};
 
 	return (
@@ -68,7 +72,7 @@ export function PlaybackMenu() {
 
 				<DropdownMenuCheckboxItem
 					checked={isShuffleEnabled}
-					onCheckedChange={() => toggleShuffle()}
+					onCheckedChange={() => handleShuffleToggle()}
 				>
 					<Shuffle className="mr-2 h-4 w-4" />
 					Shuffle

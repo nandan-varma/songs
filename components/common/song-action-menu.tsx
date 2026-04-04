@@ -104,7 +104,7 @@ export function SongActionMenu({
 
 				<DropdownMenuSeparator />
 
-				<DropdownMenuItem onClick={() => handleToggleFavorite(detailedSong)}>
+				<DropdownMenuItem onClick={() => handleToggleFavorite(detailedSong.id)}>
 					<Heart
 						className={`mr-2 h-4 w-4 ${
 							isFav ? "fill-red-500 text-red-500" : ""

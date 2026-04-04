@@ -1,17 +1,15 @@
 import { useEffect, useRef } from "react";
-import { usePlayer } from "@/contexts/player-context";
+import { usePlayer, usePlayerActions } from "@/hooks/use-store";
 
 export function useKeyboardShortcuts() {
+	const { currentTime, duration, volume } = usePlayer();
 	const {
 		togglePlayPause,
 		playNext,
 		playPrevious,
-		seekTo,
+		setSongTime: seekTo,
 		setVolume,
-		currentTime,
-		duration,
-		volume,
-	} = usePlayer();
+	} = usePlayerActions();
 
 	const volumeRef = useRef(volume);
 	const currentTimeRef = useRef(currentTime);

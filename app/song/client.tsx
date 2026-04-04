@@ -1,24 +1,19 @@
 "use client";
 
 import { useQueryState } from "nuqs";
-import { useEffect } from "react";
-
 import { SongHeader } from "@/components/song/song-header";
 import { SongSuggestions } from "@/components/song/song-suggestions";
 import { Card, CardContent } from "@/components/ui/card";
-import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/hooks/cache";
 import { useSongSuggestions } from "@/hooks/data/queries";
 import { useSongFromQuery } from "@/hooks/pages/use-song";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
 import { detailedSongToSong } from "@/lib/utils";
-import { EntityType } from "@/types/entity";
 
 export function Client() {
 	const [id] = useQueryState("id");
 	const { playSong, addToQueue } = useOfflinePlayerActions();
 	const isOfflineMode = useOffline();
-	const { addToHistory } = useHistory();
 
 	const { data: songData } = useSongFromQuery();
 	const { data: suggestions = [] } = useSongSuggestions(id || "", 10, {
@@ -27,18 +22,6 @@ export function Client() {
 
 	const song = songData?.[0];
 	const filteredSuggestions = suggestions;
-
-	// Add to history when song loads
-	useEffect(() => {
-		if (song) {
-			addToHistory({
-				id: song.id,
-				type: EntityType.SONG,
-				data: song,
-				timestamp: new Date(),
-			});
-		}
-	}, [song, addToHistory]);
 
 	if (!id) {
 		return (

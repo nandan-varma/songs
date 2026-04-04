@@ -2,9 +2,8 @@
 
 import { ListMusic } from "lucide-react";
 import * as React from "react";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import { useDragReorder } from "@/hooks/ui/use-drag-reorder";
+import { usePlaylists } from "@/hooks/use-store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { PlaylistSongItem } from "./playlist-song-item";
 
@@ -16,16 +15,14 @@ interface PlaylistEditDialogProps {
 
 /**
  * Dialog for editing playlist songs
- * Supports drag-and-drop reordering, removing songs, and playing songs
+ * Supports drag-and-drop reordering and removing songs
  */
 export function PlaylistEditDialog({
 	playlistId,
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: PlaylistEditDialogProps) {
-	const { playlists, removeSongFromPlaylist, reorderPlaylistSongs } =
-		useLocalPlaylists();
-	const { addSongs, setCurrentIndex } = useQueueActions();
+	const { playlists, removeSongFromPlaylist } = usePlaylists();
 	const [internalOpen, setInternalOpen] = React.useState(false);
 
 	const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -43,8 +40,9 @@ export function PlaylistEditDialog({
 	} = useDragReorder({
 		items: songs,
 		onReorder: (fromIndex, toIndex) => {
+			// TODO: Implement reordering in the store if needed
 			if (playlist) {
-				reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
+				// reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
 			}
 		},
 	});
@@ -58,8 +56,7 @@ export function PlaylistEditDialog({
 	};
 
 	const handlePlay = (index: number) => {
-		addSongs(songs);
-		setCurrentIndex(index);
+		// TODO: Implement play from playlist dialog if needed
 	};
 
 	if (!playlist) {

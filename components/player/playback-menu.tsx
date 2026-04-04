@@ -9,13 +9,12 @@ import {
 	Zap,
 } from "lucide-react";
 import * as React from "react";
-import { useQueue } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
 import {
 	PLAYBACK_SPEEDS,
 	usePlaybackSpeed,
 } from "@/hooks/playback/use-playback-speed";
 import { useSleepTimer } from "@/hooks/playback/use-sleep-timer";
+import { useQueue, useQueueActions } from "@/hooks/use-store";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -44,11 +43,17 @@ function formatTime(seconds: number | null): string {
 
 export function PlaybackMenu() {
 	const { isShuffleEnabled } = useQueue();
-	const { toggleShuffle } = useQueueActions();
+	const { toggleShuffle, setRepeatMode } = useQueueActions();
 	const { speed, cycleSpeed } = usePlaybackSpeed();
 	const { isActive, timeRemaining, presets, startTimer, cancelTimer } =
 		useSleepTimer();
-	const [repeatMode, setRepeatMode] = React.useState<RepeatMode>("off");
+	const [repeatMode, setLocalRepeatMode] = React.useState<RepeatMode>("off");
+
+	const handleRepeatChange = (mode: RepeatMode) => {
+		setLocalRepeatMode(mode);
+		// Convert RepeatMode string to the store's RepeatMode type
+		setRepeatMode(mode as "off" | "one" | "all");
+	};
 
 	return (
 		<DropdownMenu>
@@ -81,7 +86,7 @@ export function PlaybackMenu() {
 					<DropdownMenuSubContent>
 						<DropdownMenuRadioGroup
 							value={repeatMode}
-							onValueChange={(v) => setRepeatMode(v as RepeatMode)}
+							onValueChange={(v) => handleRepeatChange(v as RepeatMode)}
 						>
 							{REPEAT_MODES.map((mode) => (
 								<DropdownMenuRadioItem key={mode} value={mode}>

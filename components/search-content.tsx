@@ -12,10 +12,10 @@ import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
 import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useHistory } from "@/contexts/history-context";
 import { useOffline } from "@/hooks/cache";
 import { useGlobalSearch } from "@/hooks/data/queries";
 import { useSearchQueries } from "@/hooks/data/use-search-queries";
+import { useHistory } from "@/hooks/use-store";
 import { detailedSongToSong } from "@/lib/utils";
 import type {
 	Artist,
@@ -67,7 +67,7 @@ export default function SearchContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const isOfflineMode = useOffline();
-	const { history } = useHistory();
+	const { playbackHistory } = useHistory();
 	const queryParam = searchParams.get("q") || "";
 	const tabParam = (searchParams.get("tab") as TabType) || "all";
 
@@ -125,7 +125,7 @@ export default function SearchContent() {
 				<SearchBar value={query} onChange={setQuery} onSearch={handleSearch} />
 			</div>
 
-			{!queryParam && <HistoryList items={history} />}
+			{!queryParam && <HistoryList items={playbackHistory} />}
 
 			{hasError && <ErrorState />}
 

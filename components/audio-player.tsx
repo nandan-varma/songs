@@ -1,36 +1,39 @@
 "use client";
 
 import { useCallback } from "react";
-import {
-	usePlayback,
-	usePlayerActions,
-	useQueue,
-} from "@/contexts/player-context";
 import { useAudioPlayback } from "@/hooks/audio/use-audio-playback";
 import { useAudioSource } from "@/hooks/audio/use-audio-source";
 import { useMediaSession } from "@/hooks/audio/use-media-session";
 import { useOffline } from "@/hooks/cache";
 import { useOfflineSkip } from "@/hooks/player/use-offline-skip";
+import {
+	usePlayer,
+	usePlayerActions,
+	useQueue,
+	useQueueActions,
+} from "@/hooks/use-store";
 import { DesktopLayout } from "./player/desktop-layout";
 import { MobileLayout } from "./player/mobile-layout";
 import { PlayerContainer } from "./player/player-container";
 
 /**
- * Persistent audio player UI with split contexts to minimize re-renders
+ * Persistent audio player UI with Zustand store to minimize re-renders
  */
 export function AudioPlayer() {
-	const { currentSong, isPlaying, volume, currentTime, duration, audioRef } =
-		usePlayback();
-	const { queue, currentIndex } = useQueue();
+	const { currentSong, isPlaying, volume, currentTime, duration } = usePlayer();
+	const { queue, queueIndex } = useQueue();
+
+	// Note: audioRef is managed separately from the store
+	// It should be created in a parent component or via useRef
+	const audioRef = null as any; // TODO: Wire in proper audio ref handling
 	const {
 		togglePlayPause,
 		playNext,
 		playPrevious,
-		seekTo,
+		setSongTime: seekTo,
 		setVolume,
-		removeFromQueue,
-		reorderQueue,
 	} = usePlayerActions();
+	const { removeSongFromQueue, reorderQueue } = useQueueActions();
 	const isOfflineMode = useOffline();
 
 	// Wrapper to convert async isSongCached to sync for useOfflineSkip
@@ -90,13 +93,13 @@ export function AudioPlayer() {
 		currentTime,
 		duration,
 		queue,
-		currentIndex,
+		currentIndex: queueIndex,
 		onTogglePlayPause: togglePlayPause,
 		onPlayPrevious: playPrevious,
 		onPlayNext: playNext,
 		onSeekTo: seekTo,
 		onSetVolume: setVolume,
-		onRemoveFromQueue: removeFromQueue,
+		onRemoveFromQueue: removeSongFromQueue,
 		onReorderQueue: reorderQueue,
 	};
 

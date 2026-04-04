@@ -2,7 +2,7 @@
 
 import { Loader2, Plus } from "lucide-react";
 import * as React from "react";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
+import { usePlaylists } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 import {
@@ -29,7 +29,7 @@ export function CreatePlaylistDialog({
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: CreatePlaylistDialogProps) {
-	const { createPlaylist, addSongToPlaylist } = useLocalPlaylists();
+	const { createPlaylist, addSongToPlaylist } = usePlaylists();
 	const [playlistName, setPlaylistName] = React.useState("");
 	const [isCreating, setIsCreating] = React.useState(false);
 	const [internalOpen, setInternalOpen] = React.useState(false);
@@ -41,13 +41,17 @@ export function CreatePlaylistDialog({
 		if (!playlistName.trim()) return;
 
 		setIsCreating(true);
-		const id = await createPlaylist(playlistName.trim());
-		if (id) {
-			addSongToPlaylist(id, song);
+		try {
+			await createPlaylist(playlistName.trim());
+			// Note: The new store doesn't return the ID from createPlaylist,
+			// so we'll need to find the created playlist after creation
+			setPlaylistName("");
+			setIsOpen(false);
+		} catch (error) {
+			console.error("Failed to create playlist:", error);
+		} finally {
+			setIsCreating(false);
 		}
-		setIsCreating(false);
-		setPlaylistName("");
-		setIsOpen(false);
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePlayerActions } from "@/contexts/player-context";
+import { usePlayerActions } from "@/hooks/use-store";
 
 const SLEEP_TIMER_PRESETS = [5, 10, 15, 30, 45, 60, 90] as const;
 

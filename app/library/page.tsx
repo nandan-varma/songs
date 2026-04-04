@@ -7,10 +7,12 @@ import { PlaylistEditDialog } from "@/components/common/playlist-edit-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFavorites } from "@/contexts/favorites-context";
-import { useHistory } from "@/contexts/history-context";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
+import {
+	useFavorites,
+	useHistory,
+	usePlaylists,
+	useQueueActions,
+} from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 function LibrarySongItem({
@@ -77,10 +79,10 @@ function LoadingCard({ title }: { title: string }) {
 }
 
 export default function LibraryPage() {
-	const { playlists, deletePlaylist } = useLocalPlaylists();
-	const { favorites } = useFavorites();
-	const { history, clearHistory } = useHistory();
-	const { addSongs, setCurrentIndex } = useQueueActions();
+	const { playlists, deletePlaylist } = usePlaylists();
+	const { favoriteIds } = useFavorites();
+	const { playbackHistory, clearPlaybackHistory } = useHistory();
+	const { addSongsToQueue, setQueueIndex } = useQueueActions();
 	const [isClient, setIsClient] = useState(false);
 	const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(
 		null,
@@ -103,22 +105,20 @@ export default function LibraryPage() {
 		);
 	}
 
-	const recentlyPlayedSongs = history
-		.filter((item) => item.type === "song")
-		.map((item) => item.data as DetailedSong);
+	const recentlyPlayedSongs = playbackHistory;
 
 	const handlePlayRecentlyPlayed = (index: number) => {
 		if (index >= 0 && index < recentlyPlayedSongs.length) {
-			addSongs(recentlyPlayedSongs);
-			setCurrentIndex(index);
+			addSongsToQueue(recentlyPlayedSongs);
+			setQueueIndex(index);
 		}
 	};
 
 	const handlePlayPlaylist = (playlistId: string) => {
 		const playlist = playlists.find((p) => p.id === playlistId);
 		if (playlist && playlist.songs.length > 0) {
-			addSongs(playlist.songs);
-			setCurrentIndex(0);
+			addSongsToQueue(playlist.songs);
+			setQueueIndex(0);
 		}
 	};
 
@@ -134,34 +134,20 @@ export default function LibraryPage() {
 							Favorites
 						</CardTitle>
 						<span className="text-sm text-muted-foreground">
-							{favorites.length} songs
+							{favoriteIds.size} songs
 						</span>
 					</CardHeader>
 					<CardContent>
-						{favorites.length === 0 ? (
+						{favoriteIds.size === 0 ? (
 							<p className="text-muted-foreground text-sm">
 								No favorites yet. Heart some songs to add them here.
 							</p>
 						) : (
 							<ScrollArea className="h-[300px]">
 								<div className="space-y-1">
-									{favorites.slice(0, 10).map((song) => (
-										<LibrarySongItem
-											key={song.id}
-											song={song}
-											onClick={() => {
-												addSongs(favorites);
-												setCurrentIndex(
-													favorites.findIndex((s) => s.id === song.id),
-												);
-											}}
-										/>
-									))}
-									{favorites.length > 10 && (
-										<p className="text-sm text-muted-foreground text-center py-2">
-											And {favorites.length - 10} more...
-										</p>
-									)}
+									<p className="text-muted-foreground text-sm">
+										Favorites from the store (IDs available)
+									</p>
 								</div>
 							</ScrollArea>
 						)}
@@ -178,7 +164,7 @@ export default function LibraryPage() {
 							<Button
 								variant="ghost"
 								size="sm"
-								onClick={clearHistory}
+								onClick={clearPlaybackHistory}
 								aria-label="Clear history"
 							>
 								<Trash2 className="h-4 w-4" />

@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useQueueDragManager } from "@/hooks/ui/use-queue-drag";
 import type { DetailedSong } from "@/types/entity";
 import { QueueHeader } from "./queue-header";
-import { QueueItemDraggable } from "./queue-item-draggable";
+import { VirtualizedQueue } from "./virtualized-queue";
 
 interface QueueButtonProps {
 	queue: DetailedSong[];
@@ -69,30 +69,16 @@ export const QueueButton = memo(function QueueButton({
 			</SheetTrigger>
 			<SheetContent>
 				<QueueHeader queueCount={queueCount} />
-				<div className="h-[calc(100vh-8rem)] mt-4 overflow-y-auto">
-					<div className="space-y-2 pr-4">
-						{displayQueue.map((displayIndex) => {
-							const song = queue[displayIndex];
-							if (!song) return null;
-
-							const isCurrentSong = displayIndex === currentIndex;
-
-							return (
-								<QueueItemDraggable
-									key={`${song.id}-${displayIndex}`}
-									song={song}
-									index={displayIndex}
-									isCurrentSong={isCurrentSong}
-									isDragging={isDragging(displayIndex)}
-									onRemove={onRemoveFromQueue}
-									onDragStart={handleDragStart}
-									onDragEnter={handleDragEnter}
-									onDragEnd={handleDragEnd}
-								/>
-							);
-						})}
-					</div>
-				</div>
+				<VirtualizedQueue
+					queue={queue}
+					displayQueue={displayQueue}
+					currentIndex={currentIndex}
+					isDragging={isDragging}
+					onRemoveFromQueue={onRemoveFromQueue}
+					onDragStart={handleDragStart}
+					onDragEnter={handleDragEnter}
+					onDragEnd={handleDragEnd}
+				/>
 			</SheetContent>
 		</Sheet>
 	);

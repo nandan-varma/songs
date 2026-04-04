@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import type { DetailedSong, LocalPlaylist } from "@/types/entity";
+import type { DetailedSong, EntityVisit, LocalPlaylist } from "@/types/entity";
 import { DEFAULT_VOLUME, RESTART_THRESHOLD_SECONDS } from "@/types/player";
 import type { AppStore, AppStoreState, RepeatMode } from "./types";
 
@@ -28,6 +28,7 @@ const INITIAL_STATE: AppStoreState = {
 	// History
 	searchHistory: [],
 	playbackHistory: [],
+	visitHistory: [],
 	maxHistorySize: 100,
 
 	// Playlists
@@ -363,6 +364,22 @@ export const useAppStore = create<AppStore>()(
 			set({ playbackHistory: [] });
 		},
 
+		addToVisitHistory: (visit: EntityVisit) => {
+			set((state) => {
+				const newHistory = [visit, ...state.visitHistory];
+				if (newHistory.length > state.maxHistorySize) {
+					return {
+						visitHistory: newHistory.slice(0, state.maxHistorySize),
+					};
+				}
+				return { visitHistory: newHistory };
+			});
+		},
+
+		clearVisitHistory: () => {
+			set({ visitHistory: [] });
+		},
+
 		// ============ PLAYLIST ACTIONS ============
 		createPlaylist: (name: string, _description = "") => {
 			set((state) => {
@@ -489,6 +506,7 @@ if (typeof window !== "undefined") {
 			useAppStore.setState({
 				playbackHistory: data.playbackHistory || [],
 				searchHistory: data.searchHistory || [],
+				visitHistory: data.visitHistory || [],
 				favoriteIds: new Set(data.favoriteIds || []),
 				playlists: data.playlists || [],
 				volume: data.volume ?? INITIAL_STATE.volume,
@@ -506,6 +524,7 @@ if (typeof window !== "undefined") {
 			const toPersist = {
 				playbackHistory: state.playbackHistory,
 				searchHistory: state.searchHistory,
+				visitHistory: state.visitHistory,
 				favoriteIds: Array.from(state.favoriteIds),
 				playlists: state.playlists,
 				volume: state.volume,

@@ -1,4 +1,4 @@
-import type { DetailedSong, LocalPlaylist } from "@/types/entity";
+import type { DetailedSong, EntityVisit, LocalPlaylist } from "@/types/entity";
 
 /**
  * Application-wide state types
@@ -29,6 +29,7 @@ export interface AppStoreState {
 	// ============ HISTORY STATE ============
 	searchHistory: string[];
 	playbackHistory: DetailedSong[];
+	visitHistory: EntityVisit[];
 	maxHistorySize: number;
 
 	// ============ PLAYLISTS STATE ============
@@ -83,6 +84,8 @@ export interface AppStoreActions {
 	clearSearchHistory: () => void;
 	addToPlaybackHistory: (song: DetailedSong) => void;
 	clearPlaybackHistory: () => void;
+	addToVisitHistory: (visit: EntityVisit) => void;
+	clearVisitHistory: () => void;
 
 	// Playlist actions
 	createPlaylist: (name: string, description?: string) => void;

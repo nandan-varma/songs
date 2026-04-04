@@ -1,3 +1,4 @@
+import { publicConfig } from "@/lib/config/public";
 import type {
 	AlbumSearchResult,
 	ApiResponse,
@@ -11,8 +12,7 @@ import type {
 	SearchResponse,
 } from "@/types/api";
 
-const API_BASE_URL =
-	process.env.NEXT_PUBLIC_API_URL ?? "https://saavn-api.nandanvarma.com/api";
+const API_BASE_URL = publicConfig.NEXT_PUBLIC_API_URL;
 
 const ENTITY_ID_REGEX = /^[a-zA-Z0-9-]{5,50}$/;
 

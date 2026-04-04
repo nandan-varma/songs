@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Loading() {
+export function SongPageLoading() {
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
 			{/* Song Header */}
@@ -67,4 +67,8 @@ export default function Loading() {
 			</div>
 		</div>
 	);
+}
+
+export default function Loading() {
+	return <SongPageLoading />;
 }

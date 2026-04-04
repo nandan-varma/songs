@@ -1,20 +1,19 @@
 import type { UseQueryOptions } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import {
-	getAlbumById,
-	getArtistAlbums,
-	getArtistById,
-	getArtistSongs,
-	getPlaylistById,
-	getSongById,
-	getSongSuggestions,
-	searchAlbums,
-	searchArtists,
-	searchMusic,
-	searchPlaylists,
-	searchSongs,
-} from "@/lib/api";
-import { CACHE_KEYS, CACHE_TIMES } from "@/lib/cache";
+	albumQueryOptions,
+	artistAlbumsQueryOptions,
+	artistQueryOptions,
+	artistSongsQueryOptions,
+	globalSearchQueryOptions,
+	playlistQueryOptions,
+	searchAlbumsQueryOptions,
+	searchArtistsQueryOptions,
+	searchPlaylistsQueryOptions,
+	searchSongsQueryOptions,
+	songQueryOptions,
+	songSuggestionsQueryOptions,
+} from "@/lib/queries/music";
 import type {
 	AlbumSearchResult,
 	ArtistSearchResult,
@@ -26,32 +25,35 @@ import type {
 	SearchResponse,
 } from "@/types/api";
 
-function useEntityQuery<T>(
-	queryKey: readonly unknown[],
-	queryFn: () => Promise<T>,
-	staleTime: number,
+type QueryHookOptions<T> = Omit<
+	UseQueryOptions<T, Error, T>,
+	"queryKey" | "queryFn"
+> & {
+	enabled?: boolean;
+};
+
+function useConfiguredQuery<T>(
+	baseOptions: UseQueryOptions<T, Error, T>,
 	enabled: boolean,
-	options?: Omit<UseQueryOptions<T>, "queryKey" | "queryFn">,
+	options?: QueryHookOptions<T>,
 ) {
 	return useQuery({
-		queryKey,
-		queryFn,
-		staleTime,
+		...baseOptions,
+		...(options as QueryHookOptions<T> | undefined),
 		enabled,
-		...options,
 	});
 }
 
 export function useSong(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedSong[]>,
 ) {
-	return useEntityQuery(
-		CACHE_KEYS.SONGS(id),
-		() => getSongById(id),
-		CACHE_TIMES.SONG,
+	return useConfiguredQuery(
+		songQueryOptions(id) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -59,14 +61,14 @@ export function useSong(
 
 export function useAlbum(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedAlbum>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedAlbum>,
 ) {
-	return useEntityQuery(
-		CACHE_KEYS.ALBUM(id),
-		() => getAlbumById(id),
-		CACHE_TIMES.ALBUM,
+	return useConfiguredQuery(
+		albumQueryOptions(id) as UseQueryOptions<
+			DetailedAlbum,
+			Error,
+			DetailedAlbum
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -74,14 +76,14 @@ export function useAlbum(
 
 export function useArtist(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedArtist>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedArtist>,
 ) {
-	return useEntityQuery(
-		CACHE_KEYS.ARTIST(id),
-		() => getArtistById(id),
-		CACHE_TIMES.ARTIST,
+	return useConfiguredQuery(
+		artistQueryOptions(id) as UseQueryOptions<
+			DetailedArtist,
+			Error,
+			DetailedArtist
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -89,14 +91,14 @@ export function useArtist(
 
 export function usePlaylist(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedPlaylist>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedPlaylist>,
 ) {
-	return useEntityQuery(
-		CACHE_KEYS.PLAYLIST(id),
-		() => getPlaylistById(id),
-		CACHE_TIMES.ALBUM,
+	return useConfiguredQuery(
+		playlistQueryOptions(id) as UseQueryOptions<
+			DetailedPlaylist,
+			Error,
+			DetailedPlaylist
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -104,14 +106,14 @@ export function usePlaylist(
 
 export function useGlobalSearch(
 	query: string,
-	options?: Omit<UseQueryOptions<SearchResponse>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<SearchResponse>,
 ) {
-	return useEntityQuery(
-		CACHE_KEYS.SEARCH(query),
-		() => searchMusic(query),
-		CACHE_TIMES.SEARCH,
+	return useConfiguredQuery(
+		globalSearchQueryOptions(query) as UseQueryOptions<
+			SearchResponse,
+			Error,
+			SearchResponse
+		>,
 		!!query && options?.enabled !== false,
 		options,
 	);
@@ -123,17 +125,14 @@ export function useGlobalSearch(
 export function useSearchSongs(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: DetailedSong[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; results: DetailedSong[] }>,
 ) {
-	return useEntityQuery(
-		["search-songs", query, limit],
-		() => searchSongs(query, 0, limit),
-		CACHE_TIMES.SEARCH,
+	return useConfiguredQuery(
+		searchSongsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: DetailedSong[] },
+			Error,
+			{ total: number; results: DetailedSong[] }
+		>,
 		!!query && options?.enabled !== false,
 		options,
 	);
@@ -145,17 +144,14 @@ export function useSearchSongs(
 export function useSearchAlbums(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: AlbumSearchResult[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; results: AlbumSearchResult[] }>,
 ) {
-	return useEntityQuery(
-		["search-albums", query, limit],
-		() => searchAlbums(query, 0, limit),
-		CACHE_TIMES.SEARCH,
+	return useConfiguredQuery(
+		searchAlbumsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: AlbumSearchResult[] },
+			Error,
+			{ total: number; results: AlbumSearchResult[] }
+		>,
 		!!query && options?.enabled !== false,
 		options,
 	);
@@ -167,17 +163,14 @@ export function useSearchAlbums(
 export function useSearchArtists(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: ArtistSearchResult[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; results: ArtistSearchResult[] }>,
 ) {
-	return useEntityQuery(
-		["search-artists", query, limit],
-		() => searchArtists(query, 0, limit),
-		CACHE_TIMES.SEARCH,
+	return useConfiguredQuery(
+		searchArtistsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: ArtistSearchResult[] },
+			Error,
+			{ total: number; results: ArtistSearchResult[] }
+		>,
 		!!query && options?.enabled !== false,
 		options,
 	);
@@ -189,17 +182,17 @@ export function useSearchArtists(
 export function useSearchPlaylists(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: PlaylistSearchResult[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{
+		total: number;
+		results: PlaylistSearchResult[];
+	}>,
 ) {
-	return useEntityQuery(
-		["search-playlists", query, limit],
-		() => searchPlaylists(query, 0, limit),
-		CACHE_TIMES.SEARCH,
+	return useConfiguredQuery(
+		searchPlaylistsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: PlaylistSearchResult[] },
+			Error,
+			{ total: number; results: PlaylistSearchResult[] }
+		>,
 		!!query && options?.enabled !== false,
 		options,
 	);
@@ -211,14 +204,14 @@ export function useSearchPlaylists(
 export function useSongSuggestions(
 	id: string,
 	limit = 10,
-	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedSong[]>,
 ) {
-	return useEntityQuery(
-		["suggestions", id, limit],
-		() => getSongSuggestions(id, limit),
-		CACHE_TIMES.SONG,
+	return useConfiguredQuery(
+		songSuggestionsQueryOptions(id, limit) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -231,17 +224,14 @@ export function useArtistSongs(
 	id: string,
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
-	options?: Omit<
-		UseQueryOptions<{ total: number; songs: DetailedSong[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; songs: DetailedSong[] }>,
 ) {
-	return useEntityQuery(
-		["artist-songs", id, sortBy, sortOrder],
-		() => getArtistSongs(id, 0, sortBy, sortOrder),
-		CACHE_TIMES.ARTIST,
+	return useConfiguredQuery(
+		artistSongsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
+			{ total: number; songs: DetailedSong[] },
+			Error,
+			{ total: number; songs: DetailedSong[] }
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -254,17 +244,14 @@ export function useArtistAlbums(
 	id: string,
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
-	options?: Omit<
-		UseQueryOptions<{ total: number; albums: DetailedAlbum[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; albums: DetailedAlbum[] }>,
 ) {
-	return useEntityQuery(
-		["artist-albums", id, sortBy, sortOrder],
-		() => getArtistAlbums(id, 0, sortBy, sortOrder),
-		CACHE_TIMES.ARTIST,
+	return useConfiguredQuery(
+		artistAlbumsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
+			{ total: number; albums: DetailedAlbum[] },
+			Error,
+			{ total: number; albums: DetailedAlbum[] }
+		>,
 		!!id && options?.enabled !== false,
 		options,
 	);

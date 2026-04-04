@@ -22,6 +22,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 	const [queryClient] = useState(createQueryClient);
 
 	useEffect(() => {
+		useAppStore.persist.rehydrate();
+
 		void getDownloadedSongIds()
 			.then((songIds) => {
 				useAppStore.getState().syncDownloadedSongs(songIds);

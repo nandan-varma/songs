@@ -44,10 +44,10 @@ export function PlaylistsSection({
 									<button
 										type="button"
 										onClick={() => onPlayPlaylist(playlist.id)}
-										className="flex-1 text-left"
+										className="flex-1 min-w-0 text-left pr-2"
 									>
-										<p className="font-medium">{playlist.name}</p>
-										<p className="text-sm text-muted-foreground">
+										<p className="font-medium truncate">{playlist.name}</p>
+										<p className="text-sm text-muted-foreground truncate">
 											{playlist.songs.length} songs
 										</p>
 									</button>

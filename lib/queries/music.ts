@@ -7,6 +7,7 @@ import {
 	getPlaylistById,
 	getSongById,
 	getSongSuggestions,
+	getSongsByIds,
 	searchAlbums,
 	searchArtists,
 	searchMusic,
@@ -19,6 +20,14 @@ export function songQueryOptions(id: string) {
 	return queryOptions({
 		queryKey: CACHE_KEYS.SONGS(id),
 		queryFn: () => getSongById(id),
+		staleTime: CACHE_TIMES.SONG,
+	});
+}
+
+export function songsQueryOptions(ids: string[]) {
+	return queryOptions({
+		queryKey: ["songs", ...ids],
+		queryFn: () => getSongsByIds(ids),
 		staleTime: CACHE_TIMES.SONG,
 	});
 }

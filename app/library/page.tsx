@@ -2,21 +2,14 @@
 
 import { useState } from "react";
 import { PlaylistEditDialog } from "@/components/common/playlist-edit-dialog";
-import {
-	useAppStore,
-	useFavorites,
-	useHistory,
-	usePlaylists,
-} from "@/hooks/use-store";
+import { useAppStore, useHistory, usePlaylists } from "@/hooks/use-store";
 import { useStoreHydrated } from "@/hooks/use-store-hydrated";
-import { FavoritesSection } from "./_components/FavoritesSection";
 import { LibraryLoadingGrid } from "./_components/LibraryLoadingGrid";
 import { PlaylistsSection } from "./_components/PlaylistsSection";
 import { RecentlyPlayedSection } from "./_components/RecentlyPlayedSection";
 
 export default function LibraryPage() {
 	const { playlists, deletePlaylist } = usePlaylists();
-	const { favoriteIds } = useFavorites();
 	const { playbackHistory, clearPlaybackHistory } = useHistory();
 	const isHydrated = useStoreHydrated();
 	const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(
@@ -43,11 +36,10 @@ export default function LibraryPage() {
 	};
 
 	return (
-		<div className="container mx-auto py-6">
+		<div className="container mx-auto py-6 px-4 sm:px-6 max-w-7xl">
 			<h1 className="text-3xl font-bold mb-6">Library</h1>
 
-			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<FavoritesSection favoritesCount={favoriteIds.size} />
+			<div className="grid gap-6 md:grid-cols-2 p-2">
 				<RecentlyPlayedSection
 					songs={recentlyPlayedSongs}
 					onPlaySong={handlePlayRecentlyPlayed}

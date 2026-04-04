@@ -28,10 +28,9 @@ function LoadingCard({ title }: { title: string }) {
 
 export function LibraryLoadingGrid() {
 	return (
-		<div className="container mx-auto py-6">
+		<div className="container mx-auto py-6 px-4 sm:px-6 max-w-7xl">
 			<h1 className="mb-6 text-3xl font-bold">Library</h1>
-			<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<LoadingCard title="Favorites" />
+			<div className="grid gap-6 md:grid-cols-2 p-2">
 				<LoadingCard title="Recently Played" />
 				<LoadingCard title="Playlists" />
 			</div>

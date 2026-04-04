@@ -1,7 +1,8 @@
+"use client";
+
 import { memo } from "react";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
-import { PlaybackMenu } from "./playback-menu";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
 import { SongInfo } from "./song-info";
@@ -47,16 +48,15 @@ export const DesktopLayout = memo(function DesktopLayout({
 	onReorderQueue,
 }: DesktopLayoutProps) {
 	return (
-		<div className="hidden md:flex items-center gap-8 px-4">
+		<div className="hidden md:flex items-center justify-between w-full">
 			{/* Left: Song Info */}
-			<div className="min-w-0 w-1/4">
+			<div className="flex w-[30%] min-w-[180px] justify-start">
 				<SongInfo currentSong={currentSong} />
 			</div>
 
 			{/* Center: Controls & Progress */}
-			<div className="flex flex-col items-center gap-4 flex-1 max-w-3xl">
-				<div className="flex items-center gap-6">
-					<PlaybackMenu />
+			<div className="flex flex-col items-center justify-center max-w-[40%] flex-1">
+				<div className="flex items-center gap-6 mb-2">
 					<PlaybackControls
 						isPlaying={isPlaying}
 						queueLength={queue.length}
@@ -66,7 +66,7 @@ export const DesktopLayout = memo(function DesktopLayout({
 					/>
 				</div>
 
-				<div className="w-full">
+				<div className="w-full max-w-[600px]">
 					<ProgressBar
 						currentTime={currentTime}
 						duration={duration}
@@ -76,14 +76,16 @@ export const DesktopLayout = memo(function DesktopLayout({
 			</div>
 
 			{/* Right: Volume & Queue */}
-			<div className="flex items-center gap-4 w-1/4 justify-end">
-				<VolumeControl volume={volume} onSetVolume={onSetVolume} />
+			<div className="flex w-[30%] min-w-[180px] items-center justify-end gap-3 pr-2">
 				<QueueButton
 					queue={queue}
 					currentIndex={currentIndex}
 					onRemoveFromQueue={onRemoveFromQueue}
 					onReorderQueue={onReorderQueue}
 				/>
+				<div className="w-[120px]">
+					<VolumeControl volume={volume} onSetVolume={onSetVolume} />
+				</div>
 			</div>
 		</div>
 	);

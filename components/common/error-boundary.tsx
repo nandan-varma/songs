@@ -236,10 +236,14 @@ export class ErrorBoundary extends React.Component<
 	}
 }
 
-// Hook version for functional components
+/**
+ * Hook version for functional components
+ * Logs caught errors and can be extended for error reporting
+ * @param error - The error to handle
+ */
 export function useErrorHandler() {
 	return (error: Error) => {
-		console.error("Error caught by hook:", error);
+		logError("UseErrorHandler", error);
 		// In a real app, you might send to error reporting service
 	};
 }

@@ -3,6 +3,7 @@
 import { Loader2, Plus } from "lucide-react";
 import * as React from "react";
 import { usePlaylists } from "@/hooks/use-store";
+import { logError } from "@/lib/utils/logger";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 import {
@@ -48,7 +49,7 @@ export function CreatePlaylistDialog({
 			setPlaylistName("");
 			setIsOpen(false);
 		} catch (error) {
-			console.error("Failed to create playlist:", error);
+			logError("CreatePlaylist", error);
 		} finally {
 			setIsCreating(false);
 		}

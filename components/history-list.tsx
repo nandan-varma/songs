@@ -1,14 +1,6 @@
 "use client";
 
-import {
-	Album,
-	ListMusic,
-	type LucideIcon,
-	Mic2,
-	Music,
-	Play,
-	Trash2,
-} from "lucide-react";
+import { Play, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -19,86 +11,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { HistoryItem } from "@/contexts/history-context";
 import { useHistory } from "@/contexts/history-context";
 import { usePlayerActions } from "@/contexts/player-context";
-import { EntityType, type Image } from "@/types/entity";
+import { useHistoryDisplay } from "@/hooks/ui/use-history-display";
+import { logError } from "@/lib/utils/logger";
+import { EntityType } from "@/types/entity";
 
 interface HistoryItemProps {
 	item: HistoryItem;
 	compact?: boolean;
-}
-
-interface DisplayData {
-	title: string;
-	subtitle: string;
-	secondaryInfo: string | null;
-	images: Image[];
-	href: string;
-	icon: LucideIcon;
-	canPlay: boolean;
-}
-
-function getDisplayData(item: HistoryItem): DisplayData | null {
-	switch (item.type) {
-		case EntityType.SONG: {
-			const song = item.data;
-			const artists =
-				song.artists.primary
-					.map((a) => a.name)
-					.slice(0, 2)
-					.join(", ") + (song.artists.primary.length > 2 ? "..." : "");
-			return {
-				title: song.name,
-				subtitle: artists,
-				secondaryInfo: song.album?.name || null,
-				images: song.image,
-				href: `/song?id=${song.id}`,
-				icon: Music,
-				canPlay: true,
-			};
-		}
-		case EntityType.ALBUM: {
-			const album = item.data;
-			const artists =
-				album.artists?.primary
-					.map((a) => a.name)
-					.slice(0, 2)
-					.join(", ") + (album.artists.primary.length > 2 ? "..." : "");
-			return {
-				title: album.name,
-				subtitle: artists || album.description,
-				secondaryInfo: album.year ? `${album.year}` : null,
-				images: album.image,
-				href: `/album?id=${album.id}`,
-				icon: Album,
-				canPlay: false,
-			};
-		}
-		case EntityType.ARTIST: {
-			const artist = item.data;
-			return {
-				title: artist.name,
-				subtitle: artist.type || "Artist",
-				secondaryInfo: null,
-				images: artist.image,
-				href: `/artist?id=${artist.id}`,
-				icon: Mic2,
-				canPlay: false,
-			};
-		}
-		case EntityType.PLAYLIST: {
-			const playlist = item.data;
-			return {
-				title: playlist.name,
-				subtitle: `${playlist.songCount || 0} songs`,
-				secondaryInfo: null,
-				images: playlist.image,
-				href: `/playlist?id=${playlist.id}`,
-				icon: ListMusic,
-				canPlay: false,
-			};
-		}
-		default:
-			return null;
-	}
 }
 
 /**
@@ -113,7 +32,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 	const { playSong } = usePlayerActions();
 	const { removeFromHistory } = useHistory();
 
-	const data = getDisplayData(item);
+	const data = useHistoryDisplay(item);
 
 	const handlePlay = useCallback(
 		async (e: React.MouseEvent) => {
@@ -126,7 +45,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 			try {
 				playSong(item.data);
 			} catch (error) {
-				console.error("Error playing song:", error);
+				logError("HistoryList:playSong", error);
 			} finally {
 				setIsLoading(false);
 			}
@@ -291,3 +210,5 @@ export const HistoryList = memo(function HistoryList({
 		</div>
 	);
 });
+
+HistoryList.displayName = "HistoryList";

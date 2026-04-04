@@ -2,6 +2,8 @@
  * Error handling utilities for audio player
  */
 
+import { logError } from "./logger";
+
 const IS_DEV = process.env.NODE_ENV === "development";
 
 /**
@@ -44,9 +46,12 @@ export function logAudioError(error: MediaError | null, context: string): void {
 	};
 
 	if (IS_DEV) {
-		console.error(`[Audio Error] ${context}:`, errorInfo);
+		logError(`AudioError:${context}`, errorInfo);
 	} else {
-		console.error(`[Audio Error] ${context}:`, error.code, error.message);
+		logError(`AudioError:${context}`, {
+			code: error.code,
+			message: error.message,
+		});
 	}
 }
 
@@ -109,9 +114,7 @@ export function silentErrorHandler(error: unknown): void {
  */
 export function createErrorHandler(context: string) {
 	return (error: unknown): void => {
-		if (IS_DEV) {
-			console.error(`[Error] ${context}:`, error);
-		}
+		logError(context, error);
 	};
 }
 

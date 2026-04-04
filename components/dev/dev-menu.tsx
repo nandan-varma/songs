@@ -4,6 +4,7 @@ import { Database, RefreshCw, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { cacheManager } from "@/lib/cache";
+import { logError } from "@/lib/utils/logger";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -31,7 +32,7 @@ export function DevMenu() {
 			toast.success("Cleared cache manager");
 		} catch (error) {
 			toast.error("Failed to clear cache");
-			console.error(error);
+			logError("DevMenu:clearCache", error);
 		}
 	};
 
@@ -43,7 +44,7 @@ export function DevMenu() {
 			toast.success("Cleared all storage");
 		} catch (error) {
 			toast.error("Failed to clear storage");
-			console.error(error);
+			logError("DevMenu:clearAll", error);
 		}
 	};
 

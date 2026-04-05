@@ -30,7 +30,7 @@ export function LibraryLoadingGrid() {
 	return (
 		<div className="container mx-auto py-6 px-4 sm:px-6 max-w-7xl">
 			<h1 className="mb-6 text-3xl font-bold">Library</h1>
-			<div className="grid gap-6 md:grid-cols-2 p-2">
+			<div className="grid gap-4 md:gap-6 md:grid-cols-2">
 				<LoadingCard title="Recently Played" />
 				<LoadingCard title="Playlists" />
 			</div>

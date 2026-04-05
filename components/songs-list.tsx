@@ -84,7 +84,7 @@ export const SongsList = memo(function SongsList({
 
 	return (
 		<div
-			className={`space-y-2 ${compact ? "sm:space-y-1.5" : "sm:space-y-2"} overflow-x-hidden ${className}`}
+			className={`space-y-1 md:space-y-2 ${compact ? "sm:space-y-1" : "sm:space-y-1.5"} overflow-x-hidden ${className}`}
 		>
 			{songs.map((song) => (
 				<SongItem key={song.id} song={song} compact={compact} />

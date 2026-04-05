@@ -103,7 +103,7 @@ export const SongItem = memo(function SongItem({
 	return (
 		<Card className="overflow-hidden hover:bg-accent/50 transition-all duration-200 hover:shadow-md">
 			<CardContent
-				className={`p-3 sm:p-4 ${compact ? "md:p-3" : "md:p-4"} overflow-x-hidden`}
+				className={`p-2 sm:p-3 ${compact ? "md:p-2" : "md:p-3"} overflow-x-hidden`}
 			>
 				<div className="flex items-start gap-3 sm:gap-4 md:gap-4 max-w-full min-h-14">
 					{/* Album Art */}

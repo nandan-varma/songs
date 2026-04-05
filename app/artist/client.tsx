@@ -41,7 +41,7 @@ export function Client() {
 			loadingFallback={<ArtistPageLoading />}
 		>
 			{artist && (
-				<div className="container mx-auto space-y-8 px-4 py-8 pb-32">
+				<div className="container mx-auto space-y-4 md:space-y-8 px-4 py-4 md:py-8 pb-32">
 					<ArtistHeaderCard artist={artist} />
 					<ArtistTabs
 						artist={artist}

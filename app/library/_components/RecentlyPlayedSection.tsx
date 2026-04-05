@@ -18,7 +18,7 @@ export function RecentlyPlayedSection({
 }: RecentlyPlayedSectionProps) {
 	return (
 		<Card>
-			<CardHeader className="flex flex-row items-center justify-between">
+			<CardHeader className="flex flex-row items-center justify-between p-4 md:p-6 pb-2 md:pb-6">
 				<CardTitle className="flex items-center gap-2">
 					<History className="h-5 w-5" />
 					Recently Played
@@ -34,7 +34,7 @@ export function RecentlyPlayedSection({
 					</Button>
 				)}
 			</CardHeader>
-			<CardContent>
+			<CardContent className="p-2 md:p-6 md:pt-0">
 				{songs.length === 0 ? (
 					<p className="text-sm text-muted-foreground">
 						No recently played songs yet.

@@ -41,10 +41,10 @@ export function Client() {
 			loadingFallback={<PlaylistPageLoading />}
 		>
 			{playlist && (
-				<div className="container mx-auto space-y-8 px-4 py-8 pb-32">
+				<div className="container mx-auto space-y-4 md:space-y-8 px-4 py-4 md:py-8 pb-32">
 					<Card>
-						<CardContent className="p-6">
-							<div className="flex flex-col gap-6 md:flex-row">
+						<CardContent className="p-4 md:p-6">
+							<div className="flex flex-col gap-4 md:gap-6 md:flex-row">
 								<div className="relative aspect-square w-full flex-shrink-0 md:w-64">
 									<ProgressiveImage
 										images={playlist.image}

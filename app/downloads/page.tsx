@@ -8,8 +8,8 @@ function DownloadsPageContent() {
 	const { count: cachedSongsCount } = useCachedSongs();
 
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="flex items-center justify-between mb-6">
+		<div className="container mx-auto px-4 py-4 md:py-8 space-y-4 md:space-y-6">
+			<div className="flex items-center justify-between">
 				<div>
 					<h1 className="text-3xl font-bold">Offline Music</h1>
 					<p className="text-muted-foreground mt-1">
@@ -17,13 +17,9 @@ function DownloadsPageContent() {
 						{cachedSongsCount === 1 ? "song" : "songs"}
 					</p>
 				</div>
-
-				<div />
 			</div>
 
-			<div className="mb-6">
-				<StorageInfo />
-			</div>
+			<StorageInfo />
 
 			<OfflineSongsList />
 		</div>

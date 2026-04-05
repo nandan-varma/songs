@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Trash2 } from "lucide-react";
+import { Play } from "lucide-react";
 import { motion } from "motion/react";
 import type { Route } from "next";
 import Link from "next/link";
@@ -8,58 +8,47 @@ import { memo, useCallback, useState } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { HistoryItem } from "@/contexts/history-context";
-import { useHistory } from "@/contexts/history-context";
-import { usePlayerActions } from "@/contexts/player-context";
 import { useHistoryDisplay } from "@/hooks/ui/use-history-display";
+import { useAppStore } from "@/hooks/use-store";
 import { logError } from "@/lib/utils/logger";
-import { EntityType } from "@/types/entity";
+import type { DetailedSong } from "@/types/entity";
 
 interface HistoryItemProps {
-	item: HistoryItem;
+	item: DetailedSong;
 	compact?: boolean;
 }
 
 /**
- * Individual history item component with type-aware rendering
- * Supports: Songs, Albums, Artists, Playlists
+ * Individual history item component
+ * Note: History now only tracks songs (simplified from old HistoryItem type)
  */
-const HistoryItemComponent = memo(function HistoryItemComponent({
-	item,
+export const HistoryItemComponent = memo(function HistoryItemComponent({
+	item: song,
 	compact = false,
 }: HistoryItemProps) {
 	const [isLoading, setIsLoading] = useState(false);
-	const { playSong } = usePlayerActions();
-	const { removeFromHistory } = useHistory();
 
-	const data = useHistoryDisplay(item);
+	const data = useHistoryDisplay(song);
 
 	const handlePlay = useCallback(
 		async (e: React.MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 
-			if (!data?.canPlay || item.type !== EntityType.SONG) return;
+			if (!data?.canPlay) return;
 
 			setIsLoading(true);
 			try {
-				playSong(item.data);
+				const { playSong, addToPlaybackHistory } = useAppStore.getState();
+				playSong(song);
+				addToPlaybackHistory(song);
 			} catch (error) {
 				logError("HistoryList:playSong", error);
 			} finally {
 				setIsLoading(false);
 			}
 		},
-		[data, item, playSong],
-	);
-
-	const handleRemove = useCallback(
-		(e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
-			removeFromHistory(item.id);
-		},
-		[item.id, removeFromHistory],
+		[data, song],
 	);
 
 	if (!data) return null;
@@ -91,6 +80,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 								images={data.images}
 								alt={data.title}
 								className="object-cover transition-transform hover:scale-105"
+								sizes="48px"
 							/>
 						) : (
 							<div className="w-full h-full bg-muted flex items-center justify-center">
@@ -130,7 +120,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 
 					{/* Actions */}
 					<div className="flex gap-0.5 sm:gap-1 shrink-0 items-start pt-0.5">
-						{/* Play Button - Only for songs */}
+						{/* Play Button */}
 						{data.canPlay && (
 							<motion.div
 								whileHover={{ scale: 1.05 }}
@@ -148,19 +138,6 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 								</Button>
 							</motion.div>
 						)}
-
-						{/* Remove Button */}
-						<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-							<Button
-								size="icon"
-								variant="ghost"
-								onClick={handleRemove}
-								aria-label="Remove from history"
-								className={`${buttonSize} text-destructive hover:text-destructive`}
-							>
-								<Trash2 className={iconSize} />
-							</Button>
-						</motion.div>
 					</div>
 				</div>
 			</CardContent>
@@ -169,7 +146,7 @@ const HistoryItemComponent = memo(function HistoryItemComponent({
 });
 
 interface HistoryListProps {
-	items: HistoryItem[];
+	items: DetailedSong[];
 	compact?: boolean;
 	emptyMessage?: string;
 	className?: string;
@@ -177,10 +154,7 @@ interface HistoryListProps {
 
 /**
  * Optimized history list component
- * - Supports multiple entity types (songs, albums, artists, playlists)
- * - Type-aware rendering with appropriate actions
- * - Responsive layout for all screen sizes
- * - Memoized for performance
+ * Note: Now only tracks songs (simplified from old multi-type history)
  */
 export const HistoryList = memo(function HistoryList({
 	items,
@@ -201,11 +175,7 @@ export const HistoryList = memo(function HistoryList({
 			className={`space-y-2 ${compact ? "sm:space-y-1.5" : "sm:space-y-2"} overflow-x-hidden ${className}`}
 		>
 			{items.map((item) => (
-				<HistoryItemComponent
-					key={`${item.type}-${item.id}`}
-					item={item}
-					compact={compact}
-				/>
+				<HistoryItemComponent key={item.id} item={item} compact={compact} />
 			))}
 		</div>
 	);

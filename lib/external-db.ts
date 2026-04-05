@@ -1,10 +1,5 @@
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "@/db/schema/auth";
+import { serverConfig } from "@/lib/config/server";
 
-const databaseUrl = process.env.DATABASE_URL;
-
-if (!databaseUrl) {
-	throw new Error("DATABASE_URL is required");
-}
-
-export const external_db = drizzle(databaseUrl, { schema });
+export const external_db = drizzle(serverConfig.DATABASE_URL, { schema });

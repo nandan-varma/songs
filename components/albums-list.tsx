@@ -4,12 +4,17 @@ import { Disc3 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type Album, type AlbumSearchResult, EntityType } from "@/types/entity";
+import { memo } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Album, AlbumSearchResult } from "@/types/entity";
+import { EntityType } from "@/types/entity";
 import { ProgressiveImage } from "./common/progressive-image";
 import { Card, CardContent } from "./ui/card";
 
 interface AlbumsListProps {
 	albums: (Album | AlbumSearchResult)[];
+	isLoading?: boolean;
+	loadingCount?: number;
 }
 
 function isAlbumSearchResult(
@@ -22,8 +27,66 @@ function isAlbumSearchResult(
 	);
 }
 
-export function AlbumsList({ albums }: AlbumsListProps) {
+/**
+ * Album Card Skeleton - Loading placeholder
+ */
+const AlbumCardSkeleton = () => (
+	<Card className="overflow-hidden bg-accent/20 animate-pulse">
+		<CardContent className="p-4">
+			<div className="space-y-3">
+				<Skeleton className="aspect-square w-full rounded-lg" />
+				<div className="space-y-2">
+					<Skeleton className="h-4 w-3/4 rounded" />
+					<Skeleton className="h-3 w-1/2 rounded" />
+					<Skeleton className="h-3 w-1/3 rounded" />
+				</div>
+			</div>
+		</CardContent>
+	</Card>
+);
+
+export const AlbumsList = memo(function AlbumsList({
+	albums,
+	isLoading = false,
+	loadingCount = 6,
+}: AlbumsListProps) {
 	const router = useRouter();
+
+	if (isLoading) {
+		return (
+			<div className="space-y-3">
+				<motion.h2
+					className="text-lg sm:text-xl md:text-2xl font-semibold"
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.3 }}
+				>
+					Albums
+				</motion.h2>
+				<motion.div
+					className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+					initial="hidden"
+					animate="show"
+					transition={{ staggerChildren: 0.05 }}
+				>
+					{Array.from({ length: loadingCount }).map((_, i) => {
+						const skeletonId = `album-skeleton-${i}`;
+						return (
+							<motion.div
+								key={skeletonId}
+								variants={{
+									hidden: { opacity: 0, scale: 0.95 },
+									show: { opacity: 1, scale: 1 },
+								}}
+							>
+								<AlbumCardSkeleton />
+							</motion.div>
+						);
+					})}
+				</motion.div>
+			</div>
+		);
+	}
 
 	if (albums.length === 0) {
 		return null;
@@ -32,7 +95,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 	return (
 		<div className="space-y-3">
 			<motion.h2
-				className="text-2xl font-semibold"
+				className="text-lg sm:text-xl md:text-2xl font-semibold"
 				initial={{ opacity: 0, y: -10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.3 }}
@@ -40,7 +103,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 				Albums
 			</motion.h2>
 			<motion.div
-				className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+				className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
 				initial="hidden"
 				animate="show"
 				transition={{ staggerChildren: 0.05 }}
@@ -54,8 +117,8 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 						}}
 					>
 						<Link href={`/album?id=${album.id}`}>
-							<Card className="overflow-hidden hover:bg-accent/50 transition-colors">
-								<CardContent className="p-4">
+							<Card className="overflow-hidden hover:bg-accent/50 transition-all duration-200 hover:shadow-lg hover:scale-105">
+								<CardContent className="p-3 sm:p-4">
 									<div className="space-y-3">
 										<div className="relative aspect-square w-full">
 											{album.image && album.image.length > 0 ? (
@@ -68,6 +131,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 													}
 													entityType={EntityType.ALBUM}
 													rounded="default"
+													sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 												/>
 											) : (
 												<div className="flex h-full w-full items-center justify-center bg-muted rounded">
@@ -76,11 +140,11 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 											)}
 										</div>
 										<div className="space-y-1">
-											<h3 className="font-medium truncate">
+											<h3 className="font-medium truncate text-sm sm:text-base">
 												{isAlbumSearchResult(album) ? album.name : album.title}
 											</h3>
 											{isAlbumSearchResult(album) && album.artists?.primary ? (
-												<div className="text-sm text-muted-foreground truncate">
+												<div className="text-xs sm:text-sm text-muted-foreground truncate">
 													{album.artists.primary.map((artist, index) => (
 														<span key={artist.id}>
 															<button
@@ -99,7 +163,7 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 													))}
 												</div>
 											) : (
-												<p className="text-sm text-muted-foreground truncate">
+												<p className="text-xs sm:text-sm text-muted-foreground truncate">
 													{isAlbumSearchResult(album)
 														? album.artists?.primary
 																?.map((a) => a.name)
@@ -123,4 +187,4 @@ export function AlbumsList({ albums }: AlbumsListProps) {
 			</motion.div>
 		</div>
 	);
-}
+});

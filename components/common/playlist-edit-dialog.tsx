@@ -2,10 +2,16 @@
 
 import { ListMusic } from "lucide-react";
 import * as React from "react";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
-import { useDragReorder } from "@/hooks/ui/use-drag-reorder";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useDragManager } from "@/hooks/ui/use-queue-drag";
+import { usePlaylists } from "@/hooks/use-store";
+import { useAppStore } from "@/lib/store";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/dialog";
 import { PlaylistSongItem } from "./playlist-song-item";
 
 interface PlaylistEditDialogProps {
@@ -16,7 +22,7 @@ interface PlaylistEditDialogProps {
 
 /**
  * Dialog for editing playlist songs
- * Supports drag-and-drop reordering, removing songs, and playing songs
+ * Supports drag-and-drop reordering and removing songs
  */
 export function PlaylistEditDialog({
 	playlistId,
@@ -24,8 +30,7 @@ export function PlaylistEditDialog({
 	onOpenChange: setControlledOpen,
 }: PlaylistEditDialogProps) {
 	const { playlists, removeSongFromPlaylist, reorderPlaylistSongs } =
-		useLocalPlaylists();
-	const { addSongs, setCurrentIndex } = useQueueActions();
+		usePlaylists();
 	const [internalOpen, setInternalOpen] = React.useState(false);
 
 	const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -40,12 +45,14 @@ export function PlaylistEditDialog({
 		handleDragStart,
 		handleDragEnter,
 		handleDragEnd,
-	} = useDragReorder({
+	} = useDragManager({
 		items: songs,
-		onReorder: (fromIndex, toIndex) => {
-			if (playlist) {
-				reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
+		onReorder: (fromIndex: number, toIndex: number) => {
+			if (!playlist) {
+				return;
 			}
+
+			reorderPlaylistSongs(playlist.id, fromIndex, toIndex);
 		},
 	});
 
@@ -58,8 +65,11 @@ export function PlaylistEditDialog({
 	};
 
 	const handlePlay = (index: number) => {
-		addSongs(songs);
-		setCurrentIndex(index);
+		if (!playlist || songs.length === 0) {
+			return;
+		}
+
+		useAppStore.getState().playQueue(songs, index);
 	};
 
 	if (!playlist) {
@@ -79,6 +89,9 @@ export function PlaylistEditDialog({
 						<ListMusic className="h-5 w-5" />
 						{playlist.name}
 					</DialogTitle>
+					<DialogDescription>
+						Drag to reorder, click remove to delete
+					</DialogDescription>
 				</DialogHeader>
 				<div className="flex-1 overflow-y-auto">
 					{songs.length === 0 ? (
@@ -87,22 +100,26 @@ export function PlaylistEditDialog({
 						</div>
 					) : (
 						<div className="p-4 space-y-2">
-							{displaySongs.map((song, _visualIndex) => {
-								const originalIndex = songs.findIndex((s) => s.id === song.id);
-								return (
-									<PlaylistSongItem
-										key={song.id}
-										song={song}
-										index={originalIndex}
-										isDragging={isDragging(originalIndex)}
-										onRemove={() => handleRemove(originalIndex)}
-										onPlay={() => handlePlay(originalIndex)}
-										onDragStart={handleDragStart}
-										onDragEnter={handleDragEnter}
-										onDragEnd={handleDragEnd}
-									/>
-								);
-							})}
+							{displaySongs.map(
+								(song: (typeof songs)[number], _visualIndex: number) => {
+									const originalIndex = songs.findIndex(
+										(s) => s.id === song.id,
+									);
+									return (
+										<PlaylistSongItem
+											key={song.id}
+											song={song}
+											index={originalIndex}
+											isDragging={isDragging(originalIndex)}
+											onRemove={() => handleRemove(originalIndex)}
+											onPlay={() => handlePlay(originalIndex)}
+											onDragStart={handleDragStart}
+											onDragEnter={handleDragEnter}
+											onDragEnd={handleDragEnd}
+										/>
+									);
+								},
+							)}
 						</div>
 					)}
 				</div>

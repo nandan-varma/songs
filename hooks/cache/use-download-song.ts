@@ -1,70 +1,81 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { cacheManager } from "@/lib/cache";
-import { CACHE_KEYS } from "@/lib/cache/constants";
+import {
+	DOWNLOADED_SONGS_QUERY_KEY,
+	getDownloadedSong,
+	removeDownloadedSong,
+	saveDownloadedSong,
+} from "@/lib/downloads/storage";
+import { useAppStore } from "@/lib/store";
+import { getDownloadUrl } from "@/lib/utils/download";
+import { logError } from "@/lib/utils/logger";
 import type { DetailedSong } from "@/types/entity";
 
-/**
- * Hook to download and cache songs for offline playback
- * Downloads to IndexedDB with automatic retry and error handling
- */
 export function useDownloadSong() {
-	// Check if a song is cached
+	const queryClient = useQueryClient();
+	const addDownloadedSong = useAppStore((state) => state.addDownloadedSong);
+	const removeDownloadedSongId = useAppStore(
+		(state) => state.removeDownloadedSong,
+	);
+
 	const isSongCached = useCallback(async (songId: string): Promise<boolean> => {
-		const cached = await cacheManager.get(
-			CACHE_KEYS.DOWNLOADS(songId),
-			"AUDIO",
-		);
-		return cached !== null;
+		try {
+			return (await getDownloadedSong(songId)) !== null;
+		} catch (error) {
+			logError("CheckCachedSong", error);
+			return false;
+		}
 	}, []);
 
-	// Mutation to download a song
 	const downloadMutation = useMutation({
 		mutationFn: async (song: DetailedSong) => {
-			// Find best quality download URL
-			const downloadTarget =
-				song.downloadUrl.find((url) => url.quality === "320kbps") ||
-				song.downloadUrl[song.downloadUrl.length - 1] ||
-				song.downloadUrl[0];
+			try {
+				const downloadUrl = getDownloadUrl(song, "320kbps");
 
-			if (!downloadTarget?.url) {
-				throw new Error("No download URL available");
+				if (!downloadUrl) {
+					throw new Error("No download URL available for song");
+				}
+
+				const response = await fetch(downloadUrl);
+				if (!response.ok) {
+					throw new Error(`Download failed: HTTP ${response.status}`);
+				}
+
+				const blob = await response.blob();
+				await saveDownloadedSong(song, blob);
+
+				return song;
+			} catch (error) {
+				logError("DownloadSong", error);
+				throw error;
 			}
-
-			// Fetch the song blob
-			const response = await fetch(downloadTarget.url);
-			if (!response.ok) {
-				throw new Error(`Download failed: ${response.status}`);
-			}
-
-			const blob = await response.blob();
-
-			// Cache the song
-			await cacheManager.set(
-				CACHE_KEYS.DOWNLOADS(song.id),
-				{
-					id: song.id,
-					name: song.name,
-					blob: blob,
-					downloadedAt: new Date().toISOString(),
-					url: downloadTarget.url,
-				},
-				undefined, // Use default TTL
-				"AUDIO",
-			);
-
-			return song;
 		},
 		retry: 2,
 		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		onSuccess: (song) => {
+			addDownloadedSong(song.id);
+			void queryClient.invalidateQueries({
+				queryKey: DOWNLOADED_SONGS_QUERY_KEY,
+			});
+		},
 	});
 
-	// Mutation to remove a downloaded song
 	const removeMutation = useMutation({
 		mutationFn: async (songId: string) => {
-			cacheManager.invalidate(`downloads:${songId}`);
+			try {
+				await removeDownloadedSong(songId);
+			} catch (error) {
+				logError("RemoveDownloadedSong", error);
+				throw error;
+			}
+		},
+		onSuccess: (_data, songId) => {
+			removeDownloadedSongId(songId);
+			void queryClient.invalidateQueries({
+				queryKey: DOWNLOADED_SONGS_QUERY_KEY,
+			});
 		},
 	});
 

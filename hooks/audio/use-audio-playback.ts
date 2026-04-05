@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { logAudioError } from "@/lib/utils/audio-error";
+import { normalizeError } from "@/lib/utils/normalize-error";
 import type { UseAudioPlaybackProps } from "@/types/player";
 
 /**
@@ -34,8 +35,10 @@ export function useAudioPlayback({
 		if (songChanged && isPlaying) {
 			const handleCanPlay = () => {
 				if (currentSongIdRef.current === currentSong.id) {
-					audio.play().catch((error) => {
-						logAudioError(error as MediaError, "AudioPlaybackSongChange");
+					audio.play().catch((error: unknown) => {
+						const mediaError =
+							error instanceof Error ? error : normalizeError(error);
+						logAudioError(mediaError, "AudioPlaybackSongChange");
 					});
 				}
 				audio.removeEventListener("canplay", handleCanPlay);
@@ -48,8 +51,10 @@ export function useAudioPlayback({
 			if (audio.readyState >= 3) {
 				audio.removeEventListener("canplay", handleCanPlay);
 				canPlayHandlerRef.current = null;
-				audio.play().catch((error) => {
-					logAudioError(error as MediaError, "AudioPlaybackReadyState");
+				audio.play().catch((error: unknown) => {
+					const mediaError =
+						error instanceof Error ? error : normalizeError(error);
+					logAudioError(mediaError, "AudioPlaybackReadyState");
 				});
 			}
 		}
@@ -64,18 +69,19 @@ export function useAudioPlayback({
 		if (isPlaying) {
 			if (audio.paused) {
 				if (audio.readyState >= 3) {
-					audio.play().catch((error) => {
-						logAudioError(error as MediaError, "AudioPlaybackToggle");
+					audio.play().catch((error: unknown) => {
+						const mediaError =
+							error instanceof Error ? error : normalizeError(error);
+						logAudioError(mediaError, "AudioPlaybackToggle");
 					});
 				} else {
 					if (!canPlayHandlerRef.current) {
 						const handleCanPlay = () => {
 							if (isPlaying && audio.paused) {
-								audio.play().catch((error) => {
-									logAudioError(
-										error as MediaError,
-										"AudioPlaybackCanPlayFallback",
-									);
+								audio.play().catch((error: unknown) => {
+									const mediaError =
+										error instanceof Error ? error : normalizeError(error);
+									logAudioError(mediaError, "AudioPlaybackCanPlayFallback");
 								});
 							}
 							audio.removeEventListener("canplay", handleCanPlay);

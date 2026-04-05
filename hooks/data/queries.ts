@@ -1,21 +1,20 @@
 import type { UseQueryOptions } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import {
-	getAlbumById,
-	getArtistAlbums,
-	getArtistById,
-	getArtistSongs,
-	getPlaylistById,
-	getSongById,
-	getSongSuggestions,
-	searchAlbums,
-	searchArtists,
-	searchMusic,
-	searchPlaylists,
-	searchSongs,
-} from "@/lib/api";
-import { unwrapApiResponse } from "@/lib/api/unwrap-response";
-import { CACHE_KEYS, CACHE_TIMES } from "@/lib/cache";
+	albumQueryOptions,
+	artistAlbumsQueryOptions,
+	artistQueryOptions,
+	artistSongsQueryOptions,
+	globalSearchQueryOptions,
+	playlistQueryOptions,
+	searchAlbumsQueryOptions,
+	searchArtistsQueryOptions,
+	searchPlaylistsQueryOptions,
+	searchSongsQueryOptions,
+	songQueryOptions,
+	songSuggestionsQueryOptions,
+	songsQueryOptions,
+} from "@/lib/queries/music";
 import type {
 	AlbumSearchResult,
 	ArtistSearchResult,
@@ -27,106 +26,113 @@ import type {
 	SearchResponse,
 } from "@/types/api";
 
-/**
- * Hook to fetch a single song by ID
- */
+type QueryHookOptions<T> = Omit<
+	UseQueryOptions<T, Error, T>,
+	"queryKey" | "queryFn"
+> & {
+	enabled?: boolean;
+};
+
+function useConfiguredQuery<T>(
+	baseOptions: UseQueryOptions<T, Error, T>,
+	enabled: boolean,
+	options?: QueryHookOptions<T>,
+) {
+	return useQuery({
+		...baseOptions,
+		...(options as QueryHookOptions<T> | undefined),
+		enabled,
+	});
+}
+
 export function useSong(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedSong[]>,
 ) {
-	return useQuery({
-		queryKey: CACHE_KEYS.SONGS(id),
-		queryFn: async () => {
-			const response = await getSongById(id);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SONG,
-		...options,
-	});
+	return useConfiguredQuery(
+		songQueryOptions(id) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }
 
-/**
- * Hook to fetch a single album by ID
- */
+export function useSongs(
+	ids: string[],
+	options?: QueryHookOptions<DetailedSong[]>,
+) {
+	return useConfiguredQuery(
+		songsQueryOptions(ids) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		ids.length > 0 && options?.enabled !== false,
+		options,
+	);
+}
+
 export function useAlbum(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedAlbum>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedAlbum>,
 ) {
-	return useQuery({
-		queryKey: CACHE_KEYS.ALBUM(id),
-		queryFn: async () => {
-			const response = await getAlbumById(id);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.ALBUM,
-		...options,
-	});
+	return useConfiguredQuery(
+		albumQueryOptions(id) as UseQueryOptions<
+			DetailedAlbum,
+			Error,
+			DetailedAlbum
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }
 
-/**
- * Hook to fetch a single artist by ID
- */
 export function useArtist(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedArtist>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedArtist>,
 ) {
-	return useQuery({
-		queryKey: CACHE_KEYS.ARTIST(id),
-		queryFn: async () => {
-			const response = await getArtistById(id);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.ARTIST,
-		...options,
-	});
+	return useConfiguredQuery(
+		artistQueryOptions(id) as UseQueryOptions<
+			DetailedArtist,
+			Error,
+			DetailedArtist
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }
 
-/**
- * Hook to fetch a single playlist by ID
- */
 export function usePlaylist(
 	id: string,
-	options?: Omit<UseQueryOptions<DetailedPlaylist>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedPlaylist>,
 ) {
-	return useQuery({
-		queryKey: CACHE_KEYS.PLAYLIST(id),
-		queryFn: async () => {
-			const response = await getPlaylistById(id);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.ALBUM, // Playlists have similar TTL to albums
-		...options,
-	});
+	return useConfiguredQuery(
+		playlistQueryOptions(id) as UseQueryOptions<
+			DetailedPlaylist,
+			Error,
+			DetailedPlaylist
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }
 
-/**
- * Hook to fetch global search results across all content types
- */
 export function useGlobalSearch(
 	query: string,
-	options?: Omit<UseQueryOptions<SearchResponse>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<SearchResponse>,
 ) {
-	return useQuery({
-		queryKey: CACHE_KEYS.SEARCH(query),
-		queryFn: () => searchMusic(query),
-		enabled: !!query && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SEARCH,
-		...options,
-	});
+	return useConfiguredQuery(
+		globalSearchQueryOptions(query) as UseQueryOptions<
+			SearchResponse,
+			Error,
+			SearchResponse
+		>,
+		!!query && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -135,23 +141,17 @@ export function useGlobalSearch(
 export function useSearchSongs(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: DetailedSong[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; results: DetailedSong[] }>,
 ) {
-	return useQuery({
-		queryKey: ["search-songs", query, limit],
-		queryFn: async () => {
-			const response = await searchSongs(query, 0, limit);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!query && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SEARCH,
-		...options,
-	});
+	return useConfiguredQuery(
+		searchSongsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: DetailedSong[] },
+			Error,
+			{ total: number; results: DetailedSong[] }
+		>,
+		!!query && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -160,23 +160,17 @@ export function useSearchSongs(
 export function useSearchAlbums(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: AlbumSearchResult[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; results: AlbumSearchResult[] }>,
 ) {
-	return useQuery({
-		queryKey: ["search-albums", query, limit],
-		queryFn: async () => {
-			const response = await searchAlbums(query, 0, limit);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!query && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SEARCH,
-		...options,
-	});
+	return useConfiguredQuery(
+		searchAlbumsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: AlbumSearchResult[] },
+			Error,
+			{ total: number; results: AlbumSearchResult[] }
+		>,
+		!!query && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -185,23 +179,17 @@ export function useSearchAlbums(
 export function useSearchArtists(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: ArtistSearchResult[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; results: ArtistSearchResult[] }>,
 ) {
-	return useQuery({
-		queryKey: ["search-artists", query, limit],
-		queryFn: async () => {
-			const response = await searchArtists(query, 0, limit);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!query && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SEARCH,
-		...options,
-	});
+	return useConfiguredQuery(
+		searchArtistsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: ArtistSearchResult[] },
+			Error,
+			{ total: number; results: ArtistSearchResult[] }
+		>,
+		!!query && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -210,23 +198,20 @@ export function useSearchArtists(
 export function useSearchPlaylists(
 	query: string,
 	limit = 10,
-	options?: Omit<
-		UseQueryOptions<{ total: number; results: PlaylistSearchResult[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{
+		total: number;
+		results: PlaylistSearchResult[];
+	}>,
 ) {
-	return useQuery({
-		queryKey: ["search-playlists", query, limit],
-		queryFn: async () => {
-			const response = await searchPlaylists(query, 0, limit);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!query && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SEARCH,
-		...options,
-	});
+	return useConfiguredQuery(
+		searchPlaylistsQueryOptions(query, limit) as UseQueryOptions<
+			{ total: number; results: PlaylistSearchResult[] },
+			Error,
+			{ total: number; results: PlaylistSearchResult[] }
+		>,
+		!!query && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -235,20 +220,17 @@ export function useSearchPlaylists(
 export function useSongSuggestions(
 	id: string,
 	limit = 10,
-	options?: Omit<UseQueryOptions<DetailedSong[]>, "queryKey" | "queryFn"> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<DetailedSong[]>,
 ) {
-	return useQuery({
-		queryKey: ["suggestions", id, limit],
-		queryFn: async () => {
-			const response = await getSongSuggestions(id, limit);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.SONG,
-		...options,
-	});
+	return useConfiguredQuery(
+		songSuggestionsQueryOptions(id, limit) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -258,23 +240,17 @@ export function useArtistSongs(
 	id: string,
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
-	options?: Omit<
-		UseQueryOptions<{ total: number; songs: DetailedSong[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; songs: DetailedSong[] }>,
 ) {
-	return useQuery({
-		queryKey: ["artist-songs", id, sortBy, sortOrder],
-		queryFn: async () => {
-			const response = await getArtistSongs(id, 0, sortBy, sortOrder);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.ARTIST,
-		...options,
-	});
+	return useConfiguredQuery(
+		artistSongsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
+			{ total: number; songs: DetailedSong[] },
+			Error,
+			{ total: number; songs: DetailedSong[] }
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }
 
 /**
@@ -284,21 +260,15 @@ export function useArtistAlbums(
 	id: string,
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
-	options?: Omit<
-		UseQueryOptions<{ total: number; albums: DetailedAlbum[] }>,
-		"queryKey" | "queryFn"
-	> & {
-		enabled?: boolean;
-	},
+	options?: QueryHookOptions<{ total: number; albums: DetailedAlbum[] }>,
 ) {
-	return useQuery({
-		queryKey: ["artist-albums", id, sortBy, sortOrder],
-		queryFn: async () => {
-			const response = await getArtistAlbums(id, 0, sortBy, sortOrder);
-			return unwrapApiResponse(response);
-		},
-		enabled: !!id && options?.enabled !== false,
-		staleTime: CACHE_TIMES.ARTIST,
-		...options,
-	});
+	return useConfiguredQuery(
+		artistAlbumsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
+			{ total: number; albums: DetailedAlbum[] },
+			Error,
+			{ total: number; albums: DetailedAlbum[] }
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
 }

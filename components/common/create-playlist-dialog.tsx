@@ -2,7 +2,8 @@
 
 import { Loader2, Plus } from "lucide-react";
 import * as React from "react";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
+import { usePlaylists } from "@/hooks/use-store";
+import { logError } from "@/lib/utils/logger";
 import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 import {
@@ -29,7 +30,7 @@ export function CreatePlaylistDialog({
 	open: controlledOpen,
 	onOpenChange: setControlledOpen,
 }: CreatePlaylistDialogProps) {
-	const { createPlaylist, addSongToPlaylist } = useLocalPlaylists();
+	const { createPlaylist } = usePlaylists();
 	const [playlistName, setPlaylistName] = React.useState("");
 	const [isCreating, setIsCreating] = React.useState(false);
 	const [internalOpen, setInternalOpen] = React.useState(false);
@@ -41,13 +42,15 @@ export function CreatePlaylistDialog({
 		if (!playlistName.trim()) return;
 
 		setIsCreating(true);
-		const id = await createPlaylist(playlistName.trim());
-		if (id) {
-			addSongToPlaylist(id, song);
+		try {
+			createPlaylist(playlistName.trim());
+			setPlaylistName("");
+			setIsOpen(false);
+		} catch (error) {
+			logError("CreatePlaylist", error);
+		} finally {
+			setIsCreating(false);
 		}
-		setIsCreating(false);
-		setPlaylistName("");
-		setIsOpen(false);
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -3,12 +3,12 @@
 import { Music, Play, Plus, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { usePlayerActions } from "@/contexts/player-context";
-import { useQueueActions } from "@/contexts/queue-context";
-import { useOffline } from "@/hooks/cache";
+import { useCachedSongs, useDownloadSong } from "@/hooks/cache";
+import { useIsOffline } from "@/hooks/network/use-is-offline";
+import { useAppStore } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 interface SongItemProps {
@@ -130,51 +130,48 @@ const SongItem = memo(function SongItem({
 });
 
 export const OfflineSongsList = memo(function OfflineSongsList() {
-	// TODO: Load cached songs from new cache system
-	const cachedSongsArray: DetailedSong[] = [];
-	const isOfflineMode = useOffline();
-	const { playSong } = usePlayerActions();
-	const { addSong } = useQueueActions();
-	const [imageUrls, setImageUrls] = useState<Map<string, string>>(new Map());
-	const createdUrlsRef = useRef<Set<string>>(new Set());
+	const { cachedSongs, isLoading } = useCachedSongs();
+	const { removeSong } = useDownloadSong();
+	const isOffline = useIsOffline();
 
-	// Load cached images from IndexedDB
-	useEffect(() => {
-		const loadImages = async () => {
-			const urls = new Map<string, string>();
-
-			// TODO: Load images from cache manager when needed
-			// For now, images are served from the API in image URLs
-
-			setImageUrls(urls);
-		};
-
-		if (cachedSongsArray.length > 0) {
-			loadImages();
-		}
-
-		return () => {
-			// Cleanup all created URLs
-			for (const url of createdUrlsRef.current) {
-				URL.revokeObjectURL(url);
-			}
-			createdUrlsRef.current.clear();
-		};
-	}, [cachedSongsArray.length]);
-
-	const handlePlay = useCallback(
-		(song: DetailedSong) => playSong(song),
-		[playSong],
-	);
-	const handleAddToQueue = useCallback(
-		(song: DetailedSong) => addSong(song),
-		[addSong],
-	);
-	const handleRemove = useCallback((_songId: string) => {
-		// TODO: Remove song from cache
+	const handlePlay = useCallback((song: DetailedSong) => {
+		const { playSong, addToPlaybackHistory } = useAppStore.getState();
+		playSong(song);
+		addToPlaybackHistory(song);
 	}, []);
 
-	if (cachedSongsArray.length === 0) {
+	const handleAddToQueue = useCallback((song: DetailedSong) => {
+		const { addSongToQueue } = useAppStore.getState();
+		addSongToQueue(song);
+	}, []);
+
+	const handleRemove = useCallback(
+		(songId: string) => {
+			removeSong(songId);
+		},
+		[removeSong],
+	);
+
+	if (isLoading) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<Card className="text-center py-12">
+					<CardContent>
+						<div className="flex justify-center">
+							<div className="animate-spin">
+								<Music className="h-6 w-6 text-muted-foreground" />
+							</div>
+						</div>
+						<p className="text-muted-foreground mt-4">
+							Loading cached songs...
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
+
+	if (cachedSongs.length === 0) {
 		return (
 			<div className="container mx-auto px-4 py-8">
 				<Card className="text-center py-12">
@@ -201,7 +198,7 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 				transition={{ staggerChildren: 0.05 }}
 			>
 				{/* Cached Songs */}
-				{cachedSongsArray.map((song) => (
+				{cachedSongs.map((song: DetailedSong) => (
 					<motion.div
 						key={`cached-${song.id}`}
 						variants={{
@@ -211,8 +208,8 @@ export const OfflineSongsList = memo(function OfflineSongsList() {
 					>
 						<SongItem
 							song={song}
-							imageUrl={imageUrls.get(song.id)}
-							isOfflineMode={isOfflineMode}
+							imageUrl={undefined}
+							isOfflineMode={isOffline}
 							onPlay={handlePlay}
 							onAddToQueue={handleAddToQueue}
 							onRemove={handleRemove}

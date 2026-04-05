@@ -1,7 +1,8 @@
+"use client";
+
 import { memo } from "react";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
-import { PlaybackMenu } from "./playback-menu";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
 import { SongInfo } from "./song-info";
@@ -26,7 +27,9 @@ interface DesktopLayoutProps {
 
 /**
  * Desktop-optimized player layout
- * Single responsibility: Desktop UI composition
+ * - Horizontal arrangement for wide screens
+ * - Large touch targets for comfort
+ * - Single responsibility: Desktop UI composition
  */
 export const DesktopLayout = memo(function DesktopLayout({
 	currentSong,
@@ -45,12 +48,15 @@ export const DesktopLayout = memo(function DesktopLayout({
 	onReorderQueue,
 }: DesktopLayoutProps) {
 	return (
-		<div className="hidden md:flex items-center gap-6">
-			<SongInfo currentSong={currentSong} />
+		<div className="hidden md:flex items-center justify-between w-full">
+			{/* Left: Song Info */}
+			<div className="flex w-[30%] min-w-[180px] justify-start">
+				<SongInfo currentSong={currentSong} />
+			</div>
 
-			<div className="flex flex-col items-center gap-3 flex-1 max-w-2xl">
-				<div className="flex items-center gap-4">
-					<PlaybackMenu />
+			{/* Center: Controls & Progress */}
+			<div className="flex flex-col items-center justify-center max-w-[40%] flex-1">
+				<div className="flex items-center gap-6 mb-2">
 					<PlaybackControls
 						isPlaying={isPlaying}
 						queueLength={queue.length}
@@ -60,21 +66,26 @@ export const DesktopLayout = memo(function DesktopLayout({
 					/>
 				</div>
 
-				<ProgressBar
-					currentTime={currentTime}
-					duration={duration}
-					onSeekTo={onSeekTo}
-				/>
+				<div className="w-full max-w-[600px]">
+					<ProgressBar
+						currentTime={currentTime}
+						duration={duration}
+						onSeekTo={onSeekTo}
+					/>
+				</div>
 			</div>
 
-			<div className="flex items-center gap-3 w-72 justify-end">
-				<VolumeControl volume={volume} onSetVolume={onSetVolume} />
+			{/* Right: Volume & Queue */}
+			<div className="flex w-[30%] min-w-[180px] items-center justify-end gap-3 pr-2">
 				<QueueButton
 					queue={queue}
 					currentIndex={currentIndex}
 					onRemoveFromQueue={onRemoveFromQueue}
 					onReorderQueue={onReorderQueue}
 				/>
+				<div className="w-[120px]">
+					<VolumeControl volume={volume} onSetVolume={onSetVolume} />
+				</div>
 			</div>
 		</div>
 	);

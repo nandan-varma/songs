@@ -3,15 +3,79 @@
 import { ListMusic } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { memo } from "react";
 import { EntityType, type Playlist } from "@/types/entity";
 import { ProgressiveImage } from "./common/progressive-image";
 import { Card, CardContent } from "./ui/card";
 
 interface PlaylistsListProps {
 	playlists: Playlist[];
+	isLoading?: boolean;
+	loadingCount?: number;
 }
 
-export function PlaylistsList({ playlists }: PlaylistsListProps) {
+/**
+ * Playlist Card Skeleton - Loading placeholder
+ */
+const PlaylistCardSkeleton = () => {
+	const { Skeleton } = require("@/components/ui/skeleton");
+	return (
+		<Card className="overflow-hidden bg-accent/20 animate-pulse">
+			<CardContent className="p-4">
+				<div className="space-y-3">
+					<Skeleton className="aspect-square w-full rounded-lg" />
+					<div className="space-y-2">
+						<Skeleton className="h-4 w-3/4 rounded" />
+						<Skeleton className="h-3 w-1/2 rounded" />
+						<Skeleton className="h-3 w-1/3 rounded" />
+					</div>
+				</div>
+			</CardContent>
+		</Card>
+	);
+};
+
+export const PlaylistsList = memo(function PlaylistsList({
+	playlists,
+	isLoading = false,
+	loadingCount = 4,
+}: PlaylistsListProps) {
+	if (isLoading) {
+		return (
+			<div className="space-y-3">
+				<motion.h2
+					className="text-lg sm:text-xl md:text-2xl font-semibold"
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.3 }}
+				>
+					Playlists
+				</motion.h2>
+				<motion.div
+					className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+					initial="hidden"
+					animate="show"
+					transition={{ staggerChildren: 0.05 }}
+				>
+					{Array.from({ length: loadingCount }).map((_, i) => {
+						const skeletonId = `playlist-skeleton-${i}`;
+						return (
+							<motion.div
+								key={skeletonId}
+								variants={{
+									hidden: { opacity: 0, scale: 0.95 },
+									show: { opacity: 1, scale: 1 },
+								}}
+							>
+								<PlaylistCardSkeleton />
+							</motion.div>
+						);
+					})}
+				</motion.div>
+			</div>
+		);
+	}
+
 	if (playlists.length === 0) {
 		return null;
 	}
@@ -19,7 +83,7 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 	return (
 		<div className="space-y-3">
 			<motion.h2
-				className="text-2xl font-semibold"
+				className="text-lg sm:text-xl md:text-2xl font-semibold"
 				initial={{ opacity: 0, y: -10 }}
 				animate={{ opacity: 1, y: 0 }}
 				transition={{ duration: 0.3 }}
@@ -27,7 +91,7 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 				Playlists
 			</motion.h2>
 			<motion.div
-				className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+				className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
 				initial="hidden"
 				animate="show"
 				transition={{ staggerChildren: 0.05 }}
@@ -41,8 +105,8 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 						}}
 					>
 						<Link href={`/playlist?id=${playlist.id}`}>
-							<Card className="overflow-hidden hover:bg-accent/50 transition-colors">
-								<CardContent className="p-4">
+							<Card className="overflow-hidden hover:bg-accent/50 transition-all duration-200 hover:shadow-lg hover:scale-105">
+								<CardContent className="p-3 sm:p-4">
 									<div className="space-y-3">
 										<div className="relative aspect-square w-full">
 											{playlist.image && playlist.image.length > 0 ? (
@@ -51,6 +115,7 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 													alt={playlist.title}
 													entityType={EntityType.PLAYLIST}
 													rounded="default"
+													sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 												/>
 											) : (
 												<div className="flex h-full w-full items-center justify-center bg-muted rounded">
@@ -59,8 +124,10 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 											)}
 										</div>
 										<div className="space-y-1">
-											<h3 className="font-medium truncate">{playlist.title}</h3>
-											<p className="text-sm text-muted-foreground truncate">
+											<h3 className="font-medium truncate text-sm sm:text-base">
+												{playlist.title}
+											</h3>
+											<p className="text-xs sm:text-sm text-muted-foreground truncate">
 												{playlist.description}
 											</p>
 											<p className="text-xs text-muted-foreground capitalize">
@@ -76,4 +143,4 @@ export function PlaylistsList({ playlists }: PlaylistsListProps) {
 			</motion.div>
 		</div>
 	);
-}
+});

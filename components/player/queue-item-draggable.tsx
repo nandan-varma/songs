@@ -58,22 +58,10 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 	};
 
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: div required for draggable functionality
-		<div
-			role="button"
-			tabIndex={0}
-			draggable={!isCurrentSong}
-			onDragStart={(e) => {
-				e.stopPropagation();
-				if (!isCurrentSong) onDragStart(index);
-			}}
+		<article
 			onDragEnter={(e) => {
 				e.stopPropagation();
 				if (!isCurrentSong) onDragEnter(index);
-			}}
-			onDragEnd={(e) => {
-				e.stopPropagation();
-				onDragEnd();
 			}}
 			onDragOver={(e) => {
 				e.preventDefault();
@@ -90,15 +78,30 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 						: "hover:bg-accent/50 bg-background cursor-move"
 			}`}
 		>
-			<div
-				className={`h-8 w-8 flex items-center justify-center ${
+			<button
+				type="button"
+				draggable={!isCurrentSong}
+				onDragStart={(e) => {
+					e.stopPropagation();
+					if (!isCurrentSong) {
+						onDragStart(index);
+					}
+				}}
+				onDragEnd={(e) => {
+					e.stopPropagation();
+					onDragEnd();
+				}}
+				onKeyDown={handleKeyDown}
+				aria-label={`Reorder ${song.name}`}
+				className={`h-8 w-8 border-0 bg-transparent p-0 flex items-center justify-center ${
 					isCurrentSong
 						? "text-muted-foreground/50 cursor-not-allowed"
-						: "text-muted-foreground"
+						: "text-muted-foreground cursor-grab active:cursor-grabbing"
 				}`}
+				disabled={isCurrentSong}
 			>
 				<GripVertical className="h-4 w-4" />
-			</div>
+			</button>
 			<div className="relative h-10 w-10 shrink-0">
 				{song.image && song.image.length > 0 && (
 					<ProgressiveImage
@@ -106,6 +109,7 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 						alt={song.name}
 						entityType={EntityType.SONG}
 						rounded="default"
+						sizes="40px"
 					/>
 				)}
 			</div>
@@ -145,7 +149,7 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 					<Minus className="h-4 w-4" />
 				</Button>
 			)}
-		</div>
+		</article>
 	);
 });
 

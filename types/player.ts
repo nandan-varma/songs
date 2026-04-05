@@ -51,7 +51,7 @@ export interface AudioEventCallbacks {
 export interface UseAudioSourceProps {
 	currentSong: DetailedSong | null;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
-	isOfflineMode: boolean;
+	isOffline: boolean;
 	getSongBlob: (songId: string) => Promise<Blob | null>;
 }
 
@@ -59,6 +59,11 @@ export interface UseAudioPlaybackProps {
 	currentSong: DetailedSong | null;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
 	isPlaying: boolean;
+}
+
+export interface UseAudioSeekingProps {
+	audioRef: React.RefObject<HTMLAudioElement | null>;
+	currentSong: DetailedSong | null;
 }
 
 export interface UseMediaSessionProps {
@@ -74,7 +79,7 @@ export interface UseMediaSessionProps {
 
 export interface UseOfflineSkipProps {
 	currentSong: DetailedSong | null;
-	isOfflineMode: boolean;
+	isOffline: boolean;
 	isSongCached: (songId: string) => boolean;
 	playNext: () => void;
 }
@@ -159,7 +164,7 @@ export interface DesktopLayoutProps {
 }
 
 export interface PlayerContainerProps {
-	isOfflineMode: boolean;
+	isOffline: boolean;
 	audioElement: React.ReactNode;
 	children: React.ReactNode;
 }

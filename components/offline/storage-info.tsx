@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { HardDrive, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
@@ -7,13 +8,23 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { cacheManager } from "@/lib/cache";
+import { useCachedSongs } from "@/hooks/cache";
+import {
+	clearDownloadedSongsStorage,
+	DOWNLOADED_SONGS_QUERY_KEY,
+} from "@/lib/downloads/storage";
+import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 
 export function StorageInfo() {
+	const queryClient = useQueryClient();
+	const { count: songCount } = useCachedSongs();
+	const clearDownloadedSongs = useAppStore(
+		(state) => state.clearDownloadedSongs,
+	);
+	const resetStore = useAppStore((state) => state.resetStore);
 	const [storageUsed, setStorageUsed] = useState(0);
 	const [storageQuota, setStorageQuota] = useState(0);
-	const [songCount, setSongCount] = useState(0);
 	const [isLoading, setIsLoading] = useState(true);
 
 	const loadStorageInfo = useCallback(async () => {
@@ -26,10 +37,6 @@ export function StorageInfo() {
 				setStorageUsed(estimate.usage || 0);
 				setStorageQuota(estimate.quota || 0);
 			}
-
-			// Get rough count of downloads - this is a placeholder
-			// In a real app, you'd query the cache manager for actual counts
-			setSongCount(0);
 		} catch (error) {
 			logError("StorageInfo:load", error);
 		} finally {
@@ -60,8 +67,11 @@ export function StorageInfo() {
 		}
 
 		try {
-			await cacheManager.clear();
-			localStorage.clear();
+			await clearDownloadedSongsStorage();
+			clearDownloadedSongs();
+			useAppStore.persist.clearStorage();
+			resetStore();
+			queryClient.clear();
 
 			// Clear service worker caches
 			if ("caches" in window) {
@@ -69,6 +79,9 @@ export function StorageInfo() {
 				await Promise.all(cacheNames.map((name) => caches.delete(name)));
 			}
 
+			await queryClient.invalidateQueries({
+				queryKey: DOWNLOADED_SONGS_QUERY_KEY,
+			});
 			loadStorageInfo();
 			window.location.reload();
 		} catch (error) {

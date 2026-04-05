@@ -56,22 +56,10 @@ export const PlaylistSongItem = React.memo(function PlaylistSongItem({
 	};
 
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: div required for draggable functionality
-		<div
-			role="button"
-			tabIndex={0}
-			draggable
-			onDragStart={(e) => {
-				e.stopPropagation();
-				onDragStart(index);
-			}}
+		<article
 			onDragEnter={(e) => {
 				e.stopPropagation();
 				onDragEnter(index);
-			}}
-			onDragEnd={(e) => {
-				e.stopPropagation();
-				onDragEnd();
 			}}
 			onDragOver={(e) => {
 				e.preventDefault();
@@ -86,9 +74,23 @@ export const PlaylistSongItem = React.memo(function PlaylistSongItem({
 					: "hover:bg-accent/50 bg-background cursor-move"
 			}`}
 		>
-			<div className="h-8 w-8 flex items-center justify-center text-muted-foreground">
+			<button
+				type="button"
+				draggable
+				onDragStart={(e) => {
+					e.stopPropagation();
+					onDragStart(index);
+				}}
+				onDragEnd={(e) => {
+					e.stopPropagation();
+					onDragEnd();
+				}}
+				onKeyDown={handleKeyDown}
+				className="h-8 w-8 border-0 bg-transparent p-0 flex items-center justify-center rounded text-muted-foreground cursor-grab active:cursor-grabbing"
+				aria-label={`Reorder ${song.name}`}
+			>
 				<GripVertical className="h-4 w-4" />
-			</div>
+			</button>
 			<Button
 				variant="ghost"
 				size="icon"
@@ -134,7 +136,7 @@ export const PlaylistSongItem = React.memo(function PlaylistSongItem({
 			>
 				<Minus className="h-4 w-4" />
 			</Button>
-		</div>
+		</article>
 	);
 });
 

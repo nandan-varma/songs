@@ -6,7 +6,7 @@ interface QueryParamDetailShellProps {
 	entityLabel: string;
 	isOffline: boolean;
 	isPending: boolean;
-	error?: unknown;
+	error?: Error | null;
 	hasData: boolean;
 	loadingFallback: ReactNode;
 	children: ReactNode;

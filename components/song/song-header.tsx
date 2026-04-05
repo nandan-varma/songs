@@ -34,8 +34,8 @@ export const SongHeader = memo(function SongHeader({
 			transition={getTransition({ staggerChildren: 0.1 }, { duration: 0 })}
 		>
 			<Card>
-				<CardContent className="p-6">
-					<div className="flex flex-col md:flex-row gap-6">
+				<CardContent className="p-4 md:p-6">
+					<div className="flex flex-col md:flex-row gap-4 md:gap-6 min-w-0">
 						{/* Album Art */}
 						<motion.div
 							className="w-full md:w-64 shrink-0"
@@ -63,24 +63,24 @@ export const SongHeader = memo(function SongHeader({
 							)}
 						</motion.div>
 						<motion.div
-							className="flex-1 space-y-4"
+							className="flex-1 space-y-4 min-w-0"
 							variants={{
 								hidden: { opacity: 0, y: 20 },
 								show: { opacity: 1, y: 0 },
 							}}
 						>
-							<div>
+							<div className="min-w-0">
 								<Badge variant="secondary" className="mb-2">
 									Song
 								</Badge>
-								<h1 className="text-4xl font-bold">{song.name}</h1>
+								<h1 className="text-3xl md:text-4xl font-bold truncate">
+									{song.name}
+								</h1>
 							</div>
 
 							<div className="space-y-2">
-								<div>
-									<span className="text-sm text-muted-foreground">
-										Artists:{" "}
-									</span>
+								<div className="truncate text-sm">
+									<span className="text-muted-foreground">Artists: </span>
 									{song.artists?.primary?.map((artist, index) => (
 										<span key={artist.id}>
 											<Link
@@ -95,19 +95,17 @@ export const SongHeader = memo(function SongHeader({
 								</div>
 
 								{song.album?.name && (
-									<div>
-										<span className="text-sm text-muted-foreground">
-											Album:{" "}
-										</span>
+									<div className="truncate text-sm">
+										<span className="text-muted-foreground">Album: </span>
 										{song.album.id ? (
 											<Link
 												href={`/album?id=${song.album.id}`}
-												className="text-sm hover:underline"
+												className="hover:underline"
 											>
 												{song.album.name}
 											</Link>
 										) : (
-											<span className="text-sm">{song.album.name}</span>
+											<span>{song.album.name}</span>
 										)}
 									</div>
 								)}
@@ -131,13 +129,13 @@ export const SongHeader = memo(function SongHeader({
 							</div>
 
 							{/* Action Buttons */}
-							<div className="flex gap-2">
+							<div className="flex flex-wrap items-center gap-3 pt-2">
 								<motion.div
 									whileHover={{ scale: 1.05 }}
 									whileTap={{ scale: 0.98 }}
 								>
 									<Button size="lg" onClick={onPlay} className="gap-2">
-										<Play className="h-5 w-5" />
+										<Play className="h-5 w-5 fill-current" />
 										Play
 									</Button>
 								</motion.div>
@@ -155,8 +153,10 @@ export const SongHeader = memo(function SongHeader({
 										Add to Queue
 									</Button>
 								</motion.div>
-								<DirectDownloadButton song={song} size="lg" showLabel />
-								<DownloadButton song={song} size="lg" />
+								<div className="flex items-center gap-2">
+									<DirectDownloadButton song={song} size="lg" showLabel />
+									<DownloadButton song={song} size="lg" />
+								</div>
 							</div>
 						</motion.div>
 					</div>

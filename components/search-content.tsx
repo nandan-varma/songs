@@ -113,7 +113,7 @@ export default function SearchContent() {
 	}, [query]);
 
 	return (
-		<div className="container mx-auto px-4 py-8 space-y-8">
+		<div className="container mx-auto px-4 py-4 md:py-8 space-y-4 md:space-y-8">
 			<div className="flex justify-center">
 				<SearchBar
 					value={draftQuery}
@@ -134,13 +134,20 @@ export default function SearchContent() {
 				>
 					<TabsList className="grid w-full max-w-md mx-auto grid-cols-5">
 						{TABS.map((tab) => (
-							<TabsTrigger key={tab.value} value={tab.value}>
+							<TabsTrigger
+								key={tab.value}
+								value={tab.value}
+								className="px-1 text-xs md:px-3 md:text-sm"
+							>
 								{tab.label}
 							</TabsTrigger>
 						))}
 					</TabsList>
 
-					<TabsContent value="all" className="space-y-8 mt-6">
+					<TabsContent
+						value="all"
+						className="space-y-6 md:space-y-8 mt-4 md:mt-6"
+					>
 						{globalSearchQuery.isPending ? (
 							<LoadingSpinner />
 						) : globalSearchQuery.data ? (
@@ -151,7 +158,7 @@ export default function SearchContent() {
 						) : null}
 					</TabsContent>
 
-					<TabsContent value="songs" className="mt-6">
+					<TabsContent value="songs" className="mt-4 md:mt-6">
 						<SearchTabContent
 							type="songs"
 							isLoading={
@@ -167,7 +174,7 @@ export default function SearchContent() {
 						</SearchTabContent>
 					</TabsContent>
 
-					<TabsContent value="albums" className="mt-6">
+					<TabsContent value="albums" className="mt-4 md:mt-6">
 						<SearchTabContent
 							type="albums"
 							isLoading={
@@ -181,7 +188,7 @@ export default function SearchContent() {
 						</SearchTabContent>
 					</TabsContent>
 
-					<TabsContent value="artists" className="mt-6">
+					<TabsContent value="artists" className="mt-4 md:mt-6">
 						<SearchTabContent
 							type="artists"
 							isLoading={
@@ -199,7 +206,7 @@ export default function SearchContent() {
 						</SearchTabContent>
 					</TabsContent>
 
-					<TabsContent value="playlists" className="mt-6">
+					<TabsContent value="playlists" className="mt-4 md:mt-6">
 						<SearchTabContent
 							type="playlists"
 							isLoading={

@@ -1,3 +1,4 @@
+import he from "he";
 import { publicConfig } from "@/lib/config/public";
 import type {
 	AlbumSearchResult,
@@ -32,7 +33,13 @@ async function fetchApi<T>(
 		throw new Error(errorMessage);
 	}
 
-	const data = (await response.json()) as ApiResponse<T>;
+	const text = await response.text();
+	const data = JSON.parse(text, (_key, value) => {
+		if (typeof value === "string" && value.includes("&")) {
+			return he.decode(value);
+		}
+		return value;
+	}) as ApiResponse<T>;
 	return data.data;
 }
 

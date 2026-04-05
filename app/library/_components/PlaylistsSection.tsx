@@ -18,8 +18,8 @@ export function PlaylistsSection({
 	onDeletePlaylist,
 }: PlaylistsSectionProps) {
 	return (
-		<Card>
-			<CardHeader className="flex flex-row items-center justify-between">
+		<Card className="min-w-0 overflow-hidden">
+			<CardHeader className="flex flex-row items-center justify-between p-4 md:p-6 pb-2 md:pb-6 min-w-0">
 				<CardTitle className="flex items-center gap-2">
 					<Music className="h-5 w-5" />
 					Playlists
@@ -28,7 +28,7 @@ export function PlaylistsSection({
 					{playlists.length}
 				</span>
 			</CardHeader>
-			<CardContent>
+			<CardContent className="p-2 md:p-6 md:pt-0">
 				{playlists.length === 0 ? (
 					<p className="text-sm text-muted-foreground">
 						No playlists yet. Create one from any song.

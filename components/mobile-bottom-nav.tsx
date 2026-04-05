@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Heart, Home, Library, Search } from "lucide-react";
+import { Download, Heart, Home, Library } from "lucide-react";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { memo, useCallback } from "react";

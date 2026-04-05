@@ -5,10 +5,10 @@ import { SongsList } from "@/components/songs-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { feature_flags } from "@/lib/constants";
 import { detailedSongToSong } from "@/lib/utils";
 import type { DetailedArtist } from "@/types/api";
 import { EntityType } from "@/types/entity";
-import { feature_flags } from "@/lib/constants";
 
 interface ArtistTabsProps {
 	artist: DetailedArtist;

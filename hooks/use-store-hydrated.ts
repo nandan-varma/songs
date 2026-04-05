@@ -4,23 +4,23 @@ import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 
 export function useStoreHydrated() {
-	const [hydrated, setHydrated] = useState(useAppStore.persist.hasHydrated());
+	const [hydrated, setHydrated] = useState(false);
 
 	useEffect(() => {
-		setHydrated(useAppStore.persist.hasHydrated());
+		setHydrated(useAppStore.persist?.hasHydrated() ?? false);
 
-		const unsubscribeHydrate = useAppStore.persist.onHydrate(() => {
+		const unsubscribeHydrate = useAppStore.persist?.onHydrate(() => {
 			setHydrated(false);
 		});
-		const unsubscribeFinishHydration = useAppStore.persist.onFinishHydration(
+		const unsubscribeFinishHydration = useAppStore.persist?.onFinishHydration(
 			() => {
 				setHydrated(true);
 			},
 		);
 
 		return () => {
-			unsubscribeHydrate();
-			unsubscribeFinishHydration();
+			unsubscribeHydrate?.();
+			unsubscribeFinishHydration?.();
 		};
 	}, []);
 

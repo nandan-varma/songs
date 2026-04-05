@@ -1,52 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useIsOffline } from "./use-is-offline";
 
 /**
  * Monitors network connectivity and provides online/offline status
  * Shows toast notifications when network status changes
  */
 export function useNetworkDetection() {
-	const [isOnline, setIsOnline] = useState(true);
+	const isOffline = useIsOffline();
+	const hasAnnouncedInitialState = useRef(false);
 
 	useEffect(() => {
-		if (typeof window === "undefined") return;
+		if (!hasAnnouncedInitialState.current) {
+			hasAnnouncedInitialState.current = true;
+			return;
+		}
 
-		let isInitial = true;
+		if (isOffline) {
+			toast.warning("No internet connection", {
+				description: "Only downloaded songs are available until you reconnect.",
+			});
+			return;
+		}
 
-		const updateOnlineStatus = () => {
-			const online = navigator.onLine;
-			const wasOnline = isOnline;
-			setIsOnline(online);
+		toast.success("Back online", {
+			description: "Internet connection restored.",
+		});
+	}, [isOffline]);
 
-			// Show toast notifications for network changes (skip initial load)
-			if (!isInitial) {
-				if (!online) {
-					toast.warning("No internet connection", {
-						description:
-							"Switched to offline mode. Only cached songs are available.",
-					});
-				} else if (wasOnline === false) {
-					toast.success("Back online", {
-						description: "Internet connection restored.",
-					});
-				}
-			}
-
-			isInitial = false;
-		};
-
-		// Set initial state
-		updateOnlineStatus();
-
-		// Listen for network changes
-		window.addEventListener("online", updateOnlineStatus);
-		window.addEventListener("offline", updateOnlineStatus);
-
-		return () => {
-			window.removeEventListener("online", updateOnlineStatus);
-			window.removeEventListener("offline", updateOnlineStatus);
-		};
-	}, [isOnline]);
-
-	return { isOnline };
+	return { isOnline: !isOffline };
 }

@@ -1,15 +1,21 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { Database, RefreshCw, Trash2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
-import { cacheManager } from "@/lib/cache";
+import {
+	clearDownloadedSongsStorage,
+	DOWNLOADED_SONGS_QUERY_KEY,
+} from "@/lib/downloads/storage";
+import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -17,6 +23,11 @@ import {
 import { ScrollArea } from "../ui/scroll-area";
 
 export function DevMenu() {
+	const queryClient = useQueryClient();
+	const clearDownloadedSongs = useAppStore(
+		(state) => state.clearDownloadedSongs,
+	);
+	const resetStore = useAppStore((state) => state.resetStore);
 	const [isOpen, setIsOpen] = React.useState(false);
 
 	const handleClearLocalStorage = () => {
@@ -28,8 +39,12 @@ export function DevMenu() {
 
 	const handleClearCache = async () => {
 		try {
-			await cacheManager.clear();
-			toast.success("Cleared cache manager");
+			await clearDownloadedSongsStorage();
+			clearDownloadedSongs();
+			await queryClient.invalidateQueries({
+				queryKey: DOWNLOADED_SONGS_QUERY_KEY,
+			});
+			toast.success("Cleared downloaded songs");
 		} catch (error) {
 			toast.error("Failed to clear cache");
 			logError("DevMenu:clearCache", error);
@@ -38,7 +53,11 @@ export function DevMenu() {
 
 	const handleClearAll = async () => {
 		try {
-			await cacheManager.clear();
+			await clearDownloadedSongsStorage();
+			clearDownloadedSongs();
+			useAppStore.persist.clearStorage();
+			resetStore();
+			queryClient.clear();
 			localStorage.clear();
 			sessionStorage.clear();
 			toast.success("Cleared all storage");
@@ -66,6 +85,9 @@ export function DevMenu() {
 						<Database className="h-5 w-5" />
 						Developer Tools
 					</DialogTitle>
+					<DialogDescription>
+						Clear storage and manage cache/service workers
+					</DialogDescription>
 				</DialogHeader>
 				<ScrollArea className="flex-1 overflow-auto">
 					<div className="space-y-4 p-1">

@@ -25,7 +25,7 @@ export function useSearchSuggestions(query: string) {
 				const results = await searchMusic(query, {
 					signal: abortControllerRef.current?.signal,
 				});
-				const topQuery = results.data.topQuery;
+				const topQuery = results.topQuery;
 				const names = topQuery.results.slice(0, 5).map((item) => {
 					return item.title;
 				});

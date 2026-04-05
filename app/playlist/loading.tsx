@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Loading() {
+export function PlaylistPageLoading() {
 	return (
 		<div className="container mx-auto px-4 py-8 pb-32 space-y-8">
 			{/* Playlist Header */}
@@ -40,6 +40,8 @@ export default function Loading() {
 			<div className="space-y-4">
 				{Array.from({ length: 10 }).map((_, i) => (
 					<div
+						// Skeleton items are static loading placeholders with a fixed count.
+						// The index is stable and appropriate for keys here since items don't reorder.
 						// biome-ignore lint/suspicious/noArrayIndexKey: skeleton keys are stable
 						key={`track-skeleton-${i}`}
 						className="flex items-center gap-4 p-4 rounded-lg border"
@@ -55,4 +57,8 @@ export default function Loading() {
 			</div>
 		</div>
 	);
+}
+
+export default function Loading() {
+	return <PlaylistPageLoading />;
 }

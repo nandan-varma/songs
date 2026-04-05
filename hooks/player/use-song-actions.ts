@@ -1,13 +1,10 @@
 /**
  * Song Actions Hook
  * Centralizes song action logic (queue, playlist, favorites)
- * Replaces: song-action-menu.tsx pattern (~50 LOC)
  */
 
 import { useCallback } from "react";
-import { useFavorites } from "@/contexts/favorites-context";
-import { useLocalPlaylists } from "@/contexts/local-playlists-context";
-import { useQueueActions } from "@/contexts/queue-context";
+import { useAppStore, useFavorites, usePlaylists } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 
 export interface UseSongActionsOptions {
@@ -26,9 +23,8 @@ export interface UseSongActionsOptions {
  *   useSongActions({ onSongAdded: () => toast.success("Added!") });
  */
 export function useSongActions(options?: UseSongActionsOptions) {
-	const { isFavorite, toggleFavorite } = useFavorites();
-	const { addSong, insertSongAt } = useQueueActions();
-	const { playlists, addSongToPlaylist } = useLocalPlaylists();
+	const { toggleFavorite, isFavorite } = useFavorites();
+	const { playlists, addSongToPlaylist } = usePlaylists();
 
 	const handlePlay = useCallback(
 		(_song: DetailedSong, onPlay?: () => void) => {
@@ -40,23 +36,24 @@ export function useSongActions(options?: UseSongActionsOptions) {
 
 	const handlePlayNext = useCallback(
 		(song: DetailedSong) => {
-			insertSongAt(song, 1);
+			useAppStore.getState().insertSongNext(song);
 			options?.onSongAdded?.();
 		},
-		[insertSongAt, options],
+		[options],
 	);
 
 	const handleAddToQueue = useCallback(
 		(song: DetailedSong) => {
-			addSong(song);
+			const { addSongToQueue } = useAppStore.getState();
+			addSongToQueue(song);
 			options?.onSongAdded?.();
 		},
-		[addSong, options],
+		[options],
 	);
 
 	const handleToggleFavorite = useCallback(
-		(song: DetailedSong) => {
-			toggleFavorite(song);
+		(songId: string) => {
+			toggleFavorite(songId);
 		},
 		[toggleFavorite],
 	);

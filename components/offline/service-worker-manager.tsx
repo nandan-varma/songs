@@ -1,12 +1,46 @@
 "use client";
 
+/**
+ * Service Worker Manager Component
+ *
+ * Handles:
+ * - Service worker registration and errors
+ * - Displaying update notifications
+ * - Offline mode detection
+ * - Build info display on new deployments
+ *
+ * This component is typically rendered at the app root level
+ */
+
 import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useServiceWorker } from "@/hooks/network/use-service-worker";
 import { formatBuildInfo, getBuildInfo } from "@/lib/deployment";
+import { logError } from "@/lib/utils/logger";
 
+/**
+ * Manages Service Worker lifecycle and notifications
+ *
+ * Features:
+ * - Registers and updates service worker
+ * - Shows notifications for app updates
+ * - Detects offline mode
+ * - Displays build info on new deployments
+ * - Handles registration errors with retry capability
+ *
+ * @component
+ * @example
+ * render() {
+ *   return (
+ *     <div>
+ *       <main>{children}</main>
+ *       <ServiceWorkerManager />
+ *     </div>
+ *   );
+ * }
+ */
 export function ServiceWorkerManager() {
 	const {
 		updateAvailable,
@@ -16,21 +50,28 @@ export function ServiceWorkerManager() {
 		retryRegistration,
 		deploymentDetected,
 	} = useServiceWorker();
+
 	const [buildInfo, setBuildInfo] = useState<string | null>(null);
 
+	/**
+	 * Fetch build info when new deployment is detected
+	 */
 	useEffect(() => {
 		if (deploymentDetected) {
-			// Fetch and format build info for display
 			getBuildInfo()
 				.then((info) => {
 					setBuildInfo(formatBuildInfo(info));
 				})
-				.catch(() => {
+				.catch((error) => {
+					logError("BuildInfoFetch", error);
 					setBuildInfo("New version available");
 				});
 		}
 	}, [deploymentDetected]);
 
+	/**
+	 * Show update notification when new version is available
+	 */
 	useEffect(() => {
 		if (updateAvailable) {
 			toast.info("Update Available", {
@@ -44,6 +85,9 @@ export function ServiceWorkerManager() {
 		}
 	}, [updateAvailable, buildInfo, updateServiceWorker]);
 
+	/**
+	 * Notify user when offline mode is detected
+	 */
 	useEffect(() => {
 		if (registrationError && !isOnline) {
 			toast.error("Offline Mode Active", {
@@ -54,6 +98,9 @@ export function ServiceWorkerManager() {
 		}
 	}, [registrationError, isOnline]);
 
+	/**
+	 * Show error UI when service worker registration fails
+	 */
 	if (registrationError && isOnline) {
 		return (
 			<div className="fixed bottom-20 left-4 right-4 z-50 max-w-md mx-auto">

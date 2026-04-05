@@ -4,22 +4,18 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { AudioPlayer } from "@/components/audio-player";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
 import { ErrorBoundary } from "@/components/common/error-boundary";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { Navigation } from "@/components/navigation";
 import { ServiceWorkerManager } from "@/components/offline/service-worker-manager";
 import { KeyboardShortcutsManager } from "@/components/ui/keyboard-shortcuts-manager";
 import { Toaster } from "@/components/ui/sonner";
+import { metadataBase, publicConfig } from "@/lib/config/public";
 import Providers from "./providers";
-
-// if dev environment then localhost else production url
-const isDev = process.env.NODE_ENV === "development";
-
-const url = isDev
-	? "http://localhost:3000"
-	: `https://${process.env.VERCEL_URL}`;
 
 export const metadata: Metadata = {
 	title: "Music App",
 	description: "Stream your favorite music",
+	metadataBase,
 	manifest: "/manifest.json",
 	icons: {
 		icon: [
@@ -45,7 +41,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		title: "Music App",
 		description: "Stream your favorite music",
-		url: url,
+		url: publicConfig.NEXT_PUBLIC_SITE_URL,
 		siteName: "Music App",
 		images: [
 			{
@@ -83,8 +79,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
 	width: "device-width",
 	initialScale: 1,
-	userScalable: true,
-	maximumScale: 5,
+	maximumScale: 1,
+	userScalable: false,
 };
 
 export default function RootLayout({
@@ -109,6 +105,7 @@ export default function RootLayout({
 						<main id="main-content" className="pb-32 md:pb-36">
 							{children}
 						</main>
+						<MobileBottomNav />
 						<KeyboardShortcutsManager />
 						<ErrorBoundary context="AudioPlayer">
 							<AudioPlayer />

@@ -1,13 +1,15 @@
 "use client";
 
 import { Heart, Loader2 } from "lucide-react";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { SongsList } from "@/components/songs-list";
+import { Button } from "@/components/ui/button";
 import { useSongs } from "@/hooks/data/queries";
 import { useFavorites } from "@/hooks/use-store";
 import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { detailedSongToSong } from "@/lib/utils";
 
-export default function FavoritesPage() {
+function FavoritesContent() {
 	const isHydrated = useStoreHydrated();
 	const { favoriteIds } = useFavorites();
 
@@ -61,5 +63,23 @@ export default function FavoritesPage() {
 				</div>
 			) : null}
 		</div>
+	);
+}
+
+export default function FavoritesPage() {
+	return (
+		<ErrorBoundary
+			context="FavoritesPage"
+			fallback={({ resetError }) => (
+				<div className="container mx-auto py-6 px-4 sm:px-6 max-w-7xl flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+					<p className="text-muted-foreground">
+						Failed to load favorites. Please try again.
+					</p>
+					<Button onClick={resetError}>Try Again</Button>
+				</div>
+			)}
+		>
+			<FavoritesContent />
+		</ErrorBoundary>
 	);
 }

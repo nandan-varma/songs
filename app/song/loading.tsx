@@ -10,7 +10,7 @@ export function SongPageLoading() {
 				<CardContent className="p-6">
 					<div className="flex flex-col md:flex-row gap-6">
 						{/* Album Art Skeleton */}
-						<Skeleton className="w-full md:w-64 aspect-square rounded-lg flex-shrink-0" />
+						<Skeleton className="w-full md:w-64 aspect-square rounded-lg shrink-0" />
 
 						{/* Song Details Skeleton */}
 						<div className="flex-1 space-y-4">

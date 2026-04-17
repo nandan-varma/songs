@@ -9,7 +9,7 @@ export function PlaylistPageLoading() {
 				<CardContent className="p-6">
 					<div className="flex flex-col md:flex-row gap-6">
 						{/* Playlist Cover Skeleton */}
-						<Skeleton className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-lg" />
+						<Skeleton className="relative aspect-square w-full md:w-64 shrink-0 rounded-lg" />
 
 						{/* Playlist Details Skeleton */}
 						<div className="flex-1 space-y-4">

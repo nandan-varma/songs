@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback } from "react";
 import { usePlaybackSpeedValue } from "@/hooks/use-store";
 import { useAppStore } from "@/lib/store";

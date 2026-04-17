@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { logAudioError } from "@/lib/utils/audio-error";
 import { SEEK_OFFSET_SECONDS, type UseMediaSessionProps } from "@/types/player";

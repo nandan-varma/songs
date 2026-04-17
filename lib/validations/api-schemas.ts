@@ -8,7 +8,7 @@ import { z } from "zod";
 // ============ BASE SCHEMAS ============
 const ImageSchema = z.object({
 	quality: z.string(),
-	url: z.string().url(),
+	url: z.url(),
 });
 
 const ArtistMiniSchema = z.object({
@@ -28,7 +28,7 @@ const AlbumMiniSchema = z.object({
 
 const DownloadUrlSchema = z.object({
 	quality: z.string(),
-	url: z.string().url(),
+	url: z.url(),
 });
 
 // ============ ENTITY SCHEMAS ============
@@ -133,12 +133,16 @@ export const PlaylistSearchResultSchema = z.object({
 });
 
 // ============ RESPONSE SCHEMAS ============
-export const PaginatedResponseSchema = z.object({
-	results: z.array(z.unknown()),
-	total: z.number(),
-	start: z.number(),
-	count: z.number(),
-});
+export function createPaginatedResponseSchema<T extends z.ZodType>(
+	itemSchema: T,
+) {
+	return z.object({
+		results: z.array(itemSchema),
+		total: z.number(),
+		start: z.number(),
+		count: z.number(),
+	});
+}
 
 export const SearchResponseSchema = z.object({
 	songs: z.object({

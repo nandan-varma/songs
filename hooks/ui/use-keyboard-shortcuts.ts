@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useRef } from "react";
 import { usePlayer } from "@/hooks/use-store";
 import { useAppStore } from "@/lib/store";

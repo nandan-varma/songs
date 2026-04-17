@@ -1,7 +1,9 @@
 "use client";
 
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OfflineSongsList } from "@/components/offline/offline-songs-list";
 import { StorageInfo } from "@/components/offline/storage-info";
+import { Button } from "@/components/ui/button";
 import { useCachedSongs } from "@/hooks/cache";
 
 function DownloadsPageContent() {
@@ -26,4 +28,20 @@ function DownloadsPageContent() {
 	);
 }
 
-export default DownloadsPageContent;
+export default function DownloadsPage() {
+	return (
+		<ErrorBoundary
+			context="DownloadsPage"
+			fallback={({ resetError }) => (
+				<div className="container mx-auto px-4 py-4 md:py-8 flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+					<p className="text-muted-foreground">
+						Failed to load downloads. Please try again.
+					</p>
+					<Button onClick={resetError}>Try Again</Button>
+				</div>
+			)}
+		>
+			<DownloadsPageContent />
+		</ErrorBoundary>
+	);
+}

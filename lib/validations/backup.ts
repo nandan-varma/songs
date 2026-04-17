@@ -1,11 +1,24 @@
 import { z } from "zod";
+import { DetailedSongSchema } from "./entities";
+
+// Helper for JSON values
+const literalSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+type Literal = z.infer<typeof literalSchema>;
+type Json = Literal | { [key: string]: Json } | Json[];
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+	z.union([
+		literalSchema,
+		z.array(jsonSchema),
+		z.record(z.string(), jsonSchema),
+	]),
+);
 
 export const BackupDataSchema = z.object({
 	version: z.string(),
 	timestamp: z.number(),
-	localStorage: z.record(z.string(), z.unknown()).optional(),
+	localStorage: z.record(z.string(), jsonSchema).optional(),
 	indexedDB: z
-		.record(z.string(), z.record(z.string(), z.array(z.unknown())))
+		.record(z.string(), z.record(z.string(), z.array(DetailedSongSchema)))
 		.optional(),
 });
 

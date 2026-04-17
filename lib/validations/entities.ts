@@ -17,8 +17,8 @@ import {
  * Image schema - consistent across all entities
  */
 export const ImageSchema = z.object({
-	quality: z.nativeEnum(ImageQuality),
-	url: z.string().url(),
+	quality: z.enum(ImageQuality),
+	url: z.url(),
 });
 
 /**
@@ -26,7 +26,7 @@ export const ImageSchema = z.object({
  */
 export const DownloadUrlSchema = z.object({
 	quality: z.nativeEnum(AudioQuality),
-	url: z.string().url(),
+	url: z.url(),
 });
 
 /**
@@ -38,7 +38,7 @@ export const ArtistMiniSchema = z.object({
 	role: z.union([z.nativeEnum(ArtistRole), z.string()]),
 	type: z.union([z.nativeEnum(EntityType), z.string()]),
 	image: z.array(ImageSchema),
-	url: z.string().url(),
+	url: z.url(),
 });
 
 /**
@@ -47,7 +47,7 @@ export const ArtistMiniSchema = z.object({
 export const AlbumMiniSchema = z.object({
 	id: z.string().nullable(),
 	name: z.string().nullable(),
-	url: z.string().url().nullable(),
+	url: z.url().nullable(),
 });
 
 /**
@@ -84,7 +84,7 @@ export const DetailedSongSchema = z.object({
 	language: z.union([z.nativeEnum(Language), z.string()]),
 	hasLyrics: z.boolean(),
 	lyricsId: z.string().nullable(),
-	url: z.string().url(),
+	url: z.url(),
 	copyright: z.string().nullable(),
 	album: AlbumMiniSchema,
 	artists: ArtistsGroupSchema,
@@ -106,7 +106,7 @@ export const DetailedAlbumSchema = z.object({
 	explicitContent: z.boolean(),
 	artists: ArtistsGroupSchema,
 	songCount: z.number().nullable(),
-	url: z.string().url(),
+	url: z.url(),
 	image: z.array(ImageSchema),
 	songs: z.array(DetailedSongSchema),
 });
@@ -117,7 +117,7 @@ export const DetailedAlbumSchema = z.object({
 export const DetailedArtistSchema = z.object({
 	id: z.string(),
 	name: z.string(),
-	url: z.string().url(),
+	url: z.url(),
 	type: z.union([z.nativeEnum(EntityType), z.string()]),
 	image: z.array(ImageSchema),
 	followerCount: z.number().nullable(),
@@ -151,7 +151,7 @@ export const DetailedPlaylistSchema = z.object({
 	language: z.union([z.nativeEnum(Language), z.string()]),
 	explicitContent: z.boolean(),
 	songCount: z.number().nullable(),
-	url: z.string().url(),
+	url: z.url(),
 	image: z.array(ImageSchema),
 	songs: z.array(DetailedSongSchema),
 	artists: z.array(ArtistMiniSchema),
@@ -175,12 +175,16 @@ export const LocalPlaylistSchema = z.object({
 /**
  * Paginated response schema for search results
  */
-export const PaginatedResponseSchema = z.object({
-	results: z.array(z.unknown()), // Results array, type depends on context
-	total: z.number(),
-	start: z.number(),
-	count: z.number(),
-});
+export function createPaginatedResponseSchema<T extends z.ZodTypeAny>(
+	itemSchema: T,
+) {
+	return z.object({
+		results: z.array(itemSchema), // Results array, type depends on context
+		total: z.number(),
+		start: z.number(),
+		count: z.number(),
+	});
+}
 
 /**
  * Search response schema

@@ -102,7 +102,7 @@ export function BreadcrumbNav() {
 					<motion.div
 						whileHover={{ x: -3 }}
 						whileTap={{ scale: 0.95 }}
-						className="flex-shrink-0"
+						className="shrink-0"
 					>
 						<Button
 							variant="ghost"
@@ -116,7 +116,7 @@ export function BreadcrumbNav() {
 					</motion.div>
 
 					{/* Divider */}
-					<div className="w-px h-6 bg-border flex-shrink-0" />
+					<div className="w-px h-6 bg-border shrink-0" />
 
 					{/* Breadcrumbs */}
 					<Breadcrumb className="flex-1 min-w-0">
@@ -124,19 +124,19 @@ export function BreadcrumbNav() {
 							<BreadcrumbItem>
 								<BreadcrumbLink asChild>
 									<Link href="/" className="flex items-center gap-1.5">
-										<Home className="h-3.5 w-3.5 flex-shrink-0" />
+										<Home className="h-3.5 w-3.5 shrink-0" />
 										<span className="truncate">Home</span>
 									</Link>
 								</BreadcrumbLink>
 							</BreadcrumbItem>
 							{breadcrumbs.map((crumb: BreadcrumbSegment) => (
 								<div key={crumb.href} className="flex items-center gap-1.5">
-									<BreadcrumbSeparator className="flex-shrink-0" />
+									<BreadcrumbSeparator className="shrink-0" />
 									<BreadcrumbItem>
 										{crumb.isCurrentPage ? (
 											<BreadcrumbPage className="flex items-center gap-1.5 truncate">
 												{crumb.icon && (
-													<span className="flex-shrink-0">{crumb.icon}</span>
+													<span className="shrink-0">{crumb.icon}</span>
 												)}
 												<span className="truncate">{crumb.label}</span>
 											</BreadcrumbPage>
@@ -147,7 +147,7 @@ export function BreadcrumbNav() {
 													className="flex items-center gap-1.5 truncate"
 												>
 													{crumb.icon && (
-														<span className="flex-shrink-0">{crumb.icon}</span>
+														<span className="shrink-0">{crumb.icon}</span>
 													)}
 													<span className="truncate">{crumb.label}</span>
 												</Link>

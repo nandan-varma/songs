@@ -45,10 +45,6 @@ export function logAudioError(
 		? {
 				code: error.code,
 				message: error.message,
-				MEDIA_ERR_ABORTED: error.MEDIA_ERR_ABORTED,
-				MEDIA_ERR_NETWORK: error.MEDIA_ERR_NETWORK,
-				DECODE: error.MEDIA_ERR_DECODE,
-				SRC_NOT_SUPPORTED: error.MEDIA_ERR_SRC_NOT_SUPPORTED,
 				context,
 				timestamp: new Date().toISOString(),
 			}

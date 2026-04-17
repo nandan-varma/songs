@@ -4,7 +4,7 @@ import { publicConfig } from "@/lib/config/public";
 const serverConfigSchema = z.object({
 	DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
 	BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
-	BETTER_AUTH_URL: z.string().url(),
+	BETTER_AUTH_URL: z.url(),
 });
 
 export const serverConfig = serverConfigSchema.parse({

@@ -8,7 +8,7 @@ export function ArtistPageLoading() {
 			<Card>
 				<CardContent className="p-6">
 					<div className="flex flex-col gap-6 md:flex-row">
-						<Skeleton className="relative aspect-square w-full flex-shrink-0 rounded-full md:w-64" />
+						<Skeleton className="relative aspect-square w-full shrink-0 rounded-full md:w-64" />
 						<div className="flex-1 space-y-4">
 							<div className="space-y-2">
 								<Skeleton className="h-6 w-16" />

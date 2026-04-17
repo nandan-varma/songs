@@ -14,7 +14,7 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 	if (!currentSong) {
 		return (
 			<div className="flex items-center gap-4 min-w-0 w-72">
-				<div className="relative h-16 w-16 flex-shrink-0 bg-muted rounded flex items-center justify-center">
+				<div className="relative h-16 w-16 shrink-0 bg-muted rounded flex items-center justify-center">
 					<div className="h-8 w-8 bg-muted-foreground/20 rounded" />
 				</div>
 				<div className="min-w-0 flex-1">
@@ -38,7 +38,7 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 			transition={{ duration: 0.3 }}
 		>
 			{currentSong.image && currentSong.image.length > 0 && (
-				<div className="relative h-16 w-16 flex-shrink-0">
+				<div className="relative h-16 w-16 shrink-0">
 					<ProgressiveImage
 						images={currentSong.image}
 						alt={currentSong.name}

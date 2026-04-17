@@ -1,8 +1,4 @@
-import {
-	INITIAL_STATE,
-	type StoreGet,
-	type StoreSet,
-} from "@/lib/store/internal";
+import { type StoreGet, type StoreSet } from "@/lib/store/internal";
 import type { AppStoreActions } from "@/lib/store/types";
 
 export function createDownloadsAndUiSlice(
@@ -46,7 +42,11 @@ export function createDownloadsAndUiSlice(
 		},
 		isDownloaded: (songId) => get().downloadedSongIds.has(songId),
 		resetStore: () => {
-			set({ ...INITIAL_STATE });
+			set({
+				isQueueOpen: false,
+				sleepTimerMinutes: null,
+				downloadedSongIds: new Set(),
+			});
 		},
 	};
 }

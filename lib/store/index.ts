@@ -43,11 +43,29 @@ export const useAppStore = create<AppStore>()(
 				}
 
 				const persisted = persistedState as PersistedAppStoreState;
+				const persistedFavorites = persisted.favoriteIds ?? [];
+				const persistedDownloads = persisted.downloadedSongIds ?? [];
+
+				const currentFavorites = Array.from(currentState.favoriteIds);
+				const currentDownloads = Array.from(currentState.downloadedSongIds);
+
+				const favoritesChanged =
+					persistedFavorites.length !== currentFavorites.length ||
+					!persistedFavorites.every((id) => currentFavorites.includes(id));
+
+				const downloadsChanged =
+					persistedDownloads.length !== currentDownloads.length ||
+					!persistedDownloads.every((id) => currentDownloads.includes(id));
+
 				return {
 					...currentState,
 					...persisted,
-					favoriteIds: new Set(persisted.favoriteIds ?? []),
-					downloadedSongIds: new Set(persisted.downloadedSongIds ?? []),
+					favoriteIds: favoritesChanged
+						? new Set(persistedFavorites)
+						: currentState.favoriteIds,
+					downloadedSongIds: downloadsChanged
+						? new Set(persistedDownloads)
+						: currentState.downloadedSongIds,
 				};
 			},
 		},

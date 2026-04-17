@@ -1,3 +1,5 @@
+"use client";
+
 import { type RefObject, useEffect, useRef } from "react";
 import { logAudioError } from "@/lib/utils/audio-error";
 import {

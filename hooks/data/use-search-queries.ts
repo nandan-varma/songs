@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Parallel Search Queries Orchestration Hook
  * Fetches songs/albums/artists/playlists in parallel

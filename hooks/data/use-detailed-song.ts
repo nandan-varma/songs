@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Lazy Load Detailed Song Hook
  * Fetches full song details when needed (e.g., in action menus)

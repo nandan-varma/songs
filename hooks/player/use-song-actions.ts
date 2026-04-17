@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Song Actions Hook
  * Centralizes song action logic (queue, playlist, favorites)

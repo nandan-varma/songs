@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * useControlledState Hook
  * Manages state for controlled/uncontrolled patterns (dialog, popover, etc.)

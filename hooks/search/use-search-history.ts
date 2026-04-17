@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 
 const SEARCH_HISTORY_KEY = "music-app-search-history";

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { useCurrentTime } from "@/hooks/use-store";
 import { useAppStore } from "@/lib/store";

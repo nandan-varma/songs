@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * PWA installation utilities
  * Manages the Web App Install Prompt and tracks installation state

@@ -1,3 +1,5 @@
+"use client";
+
 import { toast } from "sonner";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useAppStore } from "@/hooks/use-store";

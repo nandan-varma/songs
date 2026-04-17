@@ -16,7 +16,7 @@ export function NavigationActions() {
 						variant="outline"
 						size="sm"
 						onClick={promptInstall}
-						className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
+						className="shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
 						aria-label="Install app"
 					>
 						<Smartphone className="h-4 w-4" aria-hidden="true" />
@@ -27,7 +27,7 @@ export function NavigationActions() {
 				</motion.div>
 			)}
 
-			<div className="w-[38px] flex-shrink-0 sm:w-auto">
+			<div className="w-[38px] shrink-0 sm:w-auto">
 				<NavigationAuthButton />
 			</div>
 

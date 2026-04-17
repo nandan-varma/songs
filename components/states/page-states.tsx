@@ -34,7 +34,7 @@ interface PageStatesProps<T> {
 
 const DefaultLoadingState = memo(function DefaultLoadingState() {
 	return (
-		<div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+		<div className="flex flex-col items-center justify-center min-h-100 gap-4">
 			<Loader2 className="h-8 w-8 animate-spin text-primary" />
 			<p className="text-muted-foreground">Loading...</p>
 		</div>
@@ -47,7 +47,7 @@ const DefaultErrorState = memo(function DefaultErrorState({
 	error: Error | null;
 }) {
 	return (
-		<div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-destructive">
+		<div className="flex flex-col items-center justify-center min-h-100 gap-4 text-destructive">
 			<AlertCircle className="h-8 w-8" />
 			<div className="text-center">
 				<p className="font-semibold">Error loading content</p>
@@ -59,7 +59,7 @@ const DefaultErrorState = memo(function DefaultErrorState({
 
 const DefaultEmptyState = memo(function DefaultEmptyState() {
 	return (
-		<div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-muted-foreground">
+		<div className="flex flex-col items-center justify-center min-h-100 gap-4 text-muted-foreground">
 			<p className="text-lg">No content available</p>
 		</div>
 	);
@@ -67,7 +67,7 @@ const DefaultEmptyState = memo(function DefaultEmptyState() {
 
 const DefaultOfflineState = memo(function DefaultOfflineState() {
 	return (
-		<div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-muted-foreground">
+		<div className="flex flex-col items-center justify-center min-h-100 gap-4 text-muted-foreground">
 			<WifiOff className="h-8 w-8" />
 			<div className="text-center">
 				<p className="font-semibold">Offline Mode</p>

@@ -120,7 +120,8 @@ export function isStorageAvailable(): boolean {
 		localStorage.setItem(testKey, "test");
 		localStorage.removeItem(testKey);
 		return true;
-	} catch {
+	} catch (error) {
+		logError("Storage:isAvailable", error);
 		return false;
 	}
 }
@@ -159,7 +160,8 @@ export async function hasStorageSpace(
 		const info = await getStorageInfo();
 		if (!info) return true;
 		return info.quota - info.usage > threshold;
-	} catch {
-		return true; // Assume space is available if we can't check
+	} catch (error) {
+		logError("Storage:hasSpace", error);
+		return true;
 	}
 }

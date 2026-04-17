@@ -10,6 +10,7 @@
 		"format": "biome format",
 		"test": "vitest",
 		"test:coverage": "vitest --coverage",
+		"clean": "rm -rf .next coverage",
 		"analyze": "node ./scripts/generate-build-info.mjs && ANALYZE=true next build --webpack",
 		"analyze:turbopack": "node ./scripts/generate-build-info.mjs && next experimental-analyze"
 	},

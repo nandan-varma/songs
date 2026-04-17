@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Unified drag-and-drop reordering hook
  * Consolidates 3 previous implementations into a single, reusable hook

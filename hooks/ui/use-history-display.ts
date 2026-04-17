@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Hook for transforming history items into display format
  * Handles type-aware rendering data for songs

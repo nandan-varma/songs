@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useRef } from "react";
 
 interface PerformanceMetrics {
@@ -49,7 +51,7 @@ export function usePerformanceMonitor(options: UsePerformanceMonitorOptions) {
 				`[${componentName}] Render #${renderCountRef.current} took ${duration.toFixed(2)}ms`,
 			);
 		}
-	});
+	}, [componentName, logRenders, slowRenderThreshold]);
 
 	const getMetrics = useCallback((): PerformanceMetrics => {
 		const durations = durationRef.current;

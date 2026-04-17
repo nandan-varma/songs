@@ -54,7 +54,7 @@ async function fetchWithRetry(
 				lastError = error instanceof Error ? error : new Error(String(error));
 
 				if (attempt < retries) {
-					const delay = RETRY_DELAY_BASE * Math.pow(2, attempt);
+					const delay = RETRY_DELAY_BASE * 2 ** attempt;
 					await new Promise((resolve) => setTimeout(resolve, delay));
 				}
 			}
@@ -84,6 +84,11 @@ async function fetchApi<T>(
 		}
 		return value;
 	}) as ApiResponse<T>;
+
+	if (!data || typeof data !== "object") {
+		throw new Error(`${errorMessage}: Invalid response format`);
+	}
+
 	return data.data;
 }
 

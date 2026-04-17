@@ -46,7 +46,11 @@ export function createDownloadsAndUiSlice(
 		},
 		isDownloaded: (songId) => get().downloadedSongIds.has(songId),
 		resetStore: () => {
-			set({ ...INITIAL_STATE });
+			set({
+				isQueueOpen: false,
+				sleepTimerMinutes: null,
+				downloadedSongIds: new Set(),
+			});
 		},
 	};
 }

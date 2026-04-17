@@ -38,10 +38,10 @@ function generateSessionId(): string {
 function getStoredUserId(): string {
 	if (typeof window === "undefined") return "anonymous";
 	const key = "analytics_user_id";
-	let userId = localStorage.getItem(key);
+	let userId = sessionStorage.getItem(key);
 	if (!userId) {
 		userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-		localStorage.setItem(key, userId);
+		sessionStorage.setItem(key, userId);
 	}
 	return userId;
 }

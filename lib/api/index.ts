@@ -17,9 +17,52 @@ const API_BASE_URL = publicConfig.NEXT_PUBLIC_API_URL;
 
 const ENTITY_ID_REGEX = /^[a-zA-Z0-9-]{5,50}$/;
 
+const DEFAULT_TIMEOUT = 30000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_BASE = 1000;
+
 function validateEntityId(id: string): void {
 	if (!ENTITY_ID_REGEX.test(id)) {
 		throw new Error(`Invalid entity ID format: ${id}`);
+	}
+}
+
+async function fetchWithRetry(
+	url: string,
+	options: RequestInit & { signal?: AbortSignal },
+	retries = MAX_RETRIES,
+): Promise<Response> {
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+
+	const fetchOptions = {
+		...options,
+		signal: options.signal
+			? AbortSignal.any([options.signal, controller.signal])
+			: controller.signal,
+	};
+
+	try {
+		let lastError: Error | null = null;
+
+		for (let attempt = 0; attempt <= retries; attempt++) {
+			try {
+				const response = await fetch(url, fetchOptions);
+				clearTimeout(timeoutId);
+				return response;
+			} catch (error) {
+				lastError = error instanceof Error ? error : new Error(String(error));
+
+				if (attempt < retries) {
+					const delay = RETRY_DELAY_BASE * Math.pow(2, attempt);
+					await new Promise((resolve) => setTimeout(resolve, delay));
+				}
+			}
+		}
+
+		throw lastError;
+	} finally {
+		clearTimeout(timeoutId);
 	}
 }
 
@@ -28,9 +71,10 @@ async function fetchApi<T>(
 	errorMessage: string,
 	options?: { signal?: AbortSignal },
 ): Promise<T> {
-	const response = await fetch(url, { signal: options?.signal });
+	const response = await fetchWithRetry(url, { signal: options?.signal });
+
 	if (!response.ok) {
-		throw new Error(errorMessage);
+		throw new Error(`${errorMessage} (HTTP ${response.status})`);
 	}
 
 	const text = await response.text();
@@ -58,10 +102,12 @@ export async function searchSongs(
 	query: string,
 	page = 0,
 	limit = 10,
+	options?: { signal?: AbortSignal },
 ): Promise<PaginatedResponse<DetailedSong>> {
 	return fetchApi<PaginatedResponse<DetailedSong>>(
 		`${API_BASE_URL}/search/songs?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
 		"Failed to search songs",
+		options,
 	);
 }
 
@@ -69,10 +115,12 @@ export async function searchAlbums(
 	query: string,
 	page = 0,
 	limit = 10,
+	options?: { signal?: AbortSignal },
 ): Promise<PaginatedResponse<AlbumSearchResult>> {
 	return fetchApi<PaginatedResponse<AlbumSearchResult>>(
 		`${API_BASE_URL}/search/albums?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
 		"Failed to search albums",
+		options,
 	);
 }
 
@@ -80,10 +128,12 @@ export async function searchArtists(
 	query: string,
 	page = 0,
 	limit = 10,
+	options?: { signal?: AbortSignal },
 ): Promise<PaginatedResponse<ArtistSearchResult>> {
 	return fetchApi<PaginatedResponse<ArtistSearchResult>>(
 		`${API_BASE_URL}/search/artists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
 		"Failed to search artists",
+		options,
 	);
 }
 
@@ -91,10 +141,12 @@ export async function searchPlaylists(
 	query: string,
 	page = 0,
 	limit = 10,
+	options?: { signal?: AbortSignal },
 ): Promise<PaginatedResponse<PlaylistSearchResult>> {
 	return fetchApi<PaginatedResponse<PlaylistSearchResult>>(
 		`${API_BASE_URL}/search/playlists?query=${encodeURIComponent(query)}&page=${page}&limit=${limit}`,
 		"Failed to search playlists",
+		options,
 	);
 }
 
@@ -106,21 +158,27 @@ export async function getSongById(id: string): Promise<DetailedSong[]> {
 	);
 }
 
-export async function getSongsByIds(ids: string[]): Promise<DetailedSong[]> {
+export async function getSongsByIds(
+	ids: string[],
+	options?: { signal?: AbortSignal },
+): Promise<DetailedSong[]> {
 	return fetchApi<DetailedSong[]>(
 		`${API_BASE_URL}/songs?ids=${ids.join(",")}`,
 		"Failed to fetch songs",
+		options,
 	);
 }
 
 export async function getSongSuggestions(
 	id: string,
 	limit = 10,
+	options?: { signal?: AbortSignal },
 ): Promise<DetailedSong[]> {
 	validateEntityId(id);
 	return fetchApi<DetailedSong[]>(
 		`${API_BASE_URL}/songs/${encodeURIComponent(id)}/suggestions?limit=${limit}`,
 		"Failed to fetch song suggestions",
+		options,
 	);
 }
 

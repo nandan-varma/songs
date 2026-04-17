@@ -1,10 +1,25 @@
 // Cache keys for all entities
 export const CACHE_KEYS = {
 	SONGS: (id: string) => ["song", id] as const,
+	SONGS_BY_IDS: (ids: string[]) => ["songs", ...ids] as const,
 	ALBUM: (id: string) => ["album", id] as const,
 	ARTIST: (id: string) => ["artist", id] as const,
 	PLAYLIST: (id: string) => ["playlist", id] as const,
 	SEARCH: (query: string) => ["search", query] as const,
+	SEARCH_SONGS: (query: string, limit: number) =>
+		["search-songs", query, limit] as const,
+	SEARCH_ALBUMS: (query: string, limit: number) =>
+		["search-albums", query, limit] as const,
+	SEARCH_ARTISTS: (query: string, limit: number) =>
+		["search-artists", query, limit] as const,
+	SEARCH_PLAYLISTS: (query: string, limit: number) =>
+		["search-playlists", query, limit] as const,
+	SUGGESTIONS: (id: string, limit: number) =>
+		["suggestions", id, limit] as const,
+	ARTIST_SONGS: (id: string, sortBy: string, sortOrder: string) =>
+		["artist-songs", id, sortBy, sortOrder] as const,
+	ARTIST_ALBUMS: (id: string, sortBy: string, sortOrder: string) =>
+		["artist-albums", id, sortBy, sortOrder] as const,
 	DOWNLOADS: (id: string) => ["downloads", id] as const,
 	ALL_DOWNLOADS: ["downloads"] as const,
 	QUEUE: ["queue"] as const,
@@ -19,11 +34,11 @@ export const CACHE_TIMES = {
 	ALBUM: 1000 * 60 * 10, // 10 min
 	ARTIST: 1000 * 60 * 10, // 10 min
 	SEARCH: 1000 * 60 * 1, // 1 min
-	DOWNLOADS: Infinity, // Never invalidate
-	QUEUE: Infinity,
-	HISTORY: Infinity,
-	FAVORITES: Infinity,
-	RECENTLY_PLAYED: Infinity,
+	DOWNLOADS: 1000 * 60 * 60, // 1 hour
+	QUEUE: 1000 * 60 * 60, // 1 hour
+	HISTORY: 1000 * 60 * 60, // 1 hour
+	FAVORITES: 1000 * 60 * 60, // 1 hour
+	RECENTLY_PLAYED: 1000 * 60 * 60, // 1 hour
 } as const;
 
 // IndexedDB storage config

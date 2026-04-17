@@ -33,6 +33,7 @@ export const CACHE_TIMES = {
 	SONG: 1000 * 60 * 10, // 10 min
 	ALBUM: 1000 * 60 * 10, // 10 min
 	ARTIST: 1000 * 60 * 10, // 10 min
+	PLAYLIST: 1000 * 60 * 10, // 10 min
 	SEARCH: 1000 * 60 * 1, // 1 min
 	DOWNLOADS: 1000 * 60 * 60, // 1 hour
 	QUEUE: 1000 * 60 * 60, // 1 hour

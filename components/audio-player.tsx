@@ -21,6 +21,7 @@ import {
 } from "@/hooks/use-store";
 import { getDownloadedSongBlob } from "@/lib/downloads/storage";
 import { useAppStore } from "@/lib/store";
+import * as selectors from "@/lib/store/selectors";
 import { DesktopLayout } from "./player/desktop-layout";
 import { MobileLayout } from "./player/mobile-layout";
 import { PlayerContainer } from "./player/player-container";
@@ -38,7 +39,7 @@ export function AudioPlayer() {
 	const duration = useDuration();
 	const queue = useQueueSongs();
 	const queueIndex = useQueueIndex();
-	const downloadedSongIds = useAppStore((state) => state.downloadedSongIds);
+	const downloadedSongIds = useAppStore(selectors.selectDownloadedSongIds);
 
 	const audioRef = useRef<HTMLAudioElement>(null);
 

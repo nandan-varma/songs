@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useAppStore } from "@/lib/store";
 import * as selectors from "@/lib/store/selectors";
@@ -47,15 +48,20 @@ export function useQueue() {
 }
 
 export function useFavorites() {
-	return {
-		favoriteIds: useAppStore(selectors.selectFavoriteIds),
-		isFavorite: (songId: string) => useAppStore.getState().isFavorite(songId),
-		toggleFavorite: (songId: string) =>
-			useAppStore.getState().toggleFavorite(songId),
-		addFavorite: (songId: string) => useAppStore.getState().addFavorite(songId),
-		removeFavorite: (songId: string) =>
-			useAppStore.getState().removeFavorite(songId),
-	};
+	const favoriteIds = useAppStore(selectors.selectFavoriteIds);
+	return useMemo(
+		() => ({
+			favoriteIds,
+			isFavorite: (songId: string) => useAppStore.getState().isFavorite(songId),
+			toggleFavorite: (songId: string) =>
+				useAppStore.getState().toggleFavorite(songId),
+			addFavorite: (songId: string) =>
+				useAppStore.getState().addFavorite(songId),
+			removeFavorite: (songId: string) =>
+				useAppStore.getState().removeFavorite(songId),
+		}),
+		[favoriteIds],
+	);
 }
 
 export function useIsFavorite(songId: string) {
@@ -63,37 +69,47 @@ export function useIsFavorite(songId: string) {
 }
 
 export function useHistory() {
-	return {
-		searchHistory: useAppStore(selectors.selectSearchHistory),
-		playbackHistory: useAppStore(selectors.selectPlaybackHistory),
-		visitHistory: useAppStore(selectors.selectVisitHistory),
-		addToSearchHistory: (query: string) =>
-			useAppStore.getState().addToSearchHistory(query),
-		clearSearchHistory: () => useAppStore.getState().clearSearchHistory(),
-		addToPlaybackHistory: (song: DetailedSong) =>
-			useAppStore.getState().addToPlaybackHistory(song),
-		clearPlaybackHistory: () => useAppStore.getState().clearPlaybackHistory(),
-		addToVisitHistory: (visit: EntityVisit) =>
-			useAppStore.getState().addToVisitHistory(visit),
-		clearVisitHistory: () => useAppStore.getState().clearVisitHistory(),
-	};
+	const searchHistory = useAppStore(selectors.selectSearchHistory);
+	const playbackHistory = useAppStore(selectors.selectPlaybackHistory);
+	const visitHistory = useAppStore(selectors.selectVisitHistory);
+	return useMemo(
+		() => ({
+			searchHistory,
+			playbackHistory,
+			visitHistory,
+			addToSearchHistory: (query: string) =>
+				useAppStore.getState().addToSearchHistory(query),
+			clearSearchHistory: () => useAppStore.getState().clearSearchHistory(),
+			addToPlaybackHistory: (song: DetailedSong) =>
+				useAppStore.getState().addToPlaybackHistory(song),
+			clearPlaybackHistory: () => useAppStore.getState().clearPlaybackHistory(),
+			addToVisitHistory: (visit: EntityVisit) =>
+				useAppStore.getState().addToVisitHistory(visit),
+			clearVisitHistory: () => useAppStore.getState().clearVisitHistory(),
+		}),
+		[searchHistory, playbackHistory, visitHistory],
+	);
 }
 
 export function usePlaylists() {
-	return {
-		playlists: useAppStore(selectors.selectPlaylists),
-		createPlaylist: (name: string) =>
-			useAppStore.getState().createPlaylist(name),
-		updatePlaylist: (id: string, name: string) =>
-			useAppStore.getState().updatePlaylist(id, name),
-		deletePlaylist: (id: string) => useAppStore.getState().deletePlaylist(id),
-		addSongToPlaylist: (id: string, song: DetailedSong) =>
-			useAppStore.getState().addSongToPlaylist(id, song),
-		removeSongFromPlaylist: (id: string, songId: string) =>
-			useAppStore.getState().removeSongFromPlaylist(id, songId),
-		reorderPlaylistSongs: (id: string, fromIndex: number, toIndex: number) =>
-			useAppStore.getState().reorderPlaylistSongs(id, fromIndex, toIndex),
-	};
+	const playlists = useAppStore(selectors.selectPlaylists);
+	return useMemo(
+		() => ({
+			playlists,
+			createPlaylist: (name: string) =>
+				useAppStore.getState().createPlaylist(name),
+			updatePlaylist: (id: string, name: string) =>
+				useAppStore.getState().updatePlaylist(id, name),
+			deletePlaylist: (id: string) => useAppStore.getState().deletePlaylist(id),
+			addSongToPlaylist: (id: string, song: DetailedSong) =>
+				useAppStore.getState().addSongToPlaylist(id, song),
+			removeSongFromPlaylist: (id: string, songId: string) =>
+				useAppStore.getState().removeSongFromPlaylist(id, songId),
+			reorderPlaylistSongs: (id: string, fromIndex: number, toIndex: number) =>
+				useAppStore.getState().reorderPlaylistSongs(id, fromIndex, toIndex),
+		}),
+		[playlists],
+	);
 }
 
 export function useUIState() {
@@ -106,25 +122,32 @@ export function useUIState() {
 }
 
 export function useUIActions() {
-	return {
-		setIsQueueOpen: (open: boolean) =>
-			useAppStore.getState().setIsQueueOpen(open),
-		setSleepTimer: (minutes: number | null) =>
-			useAppStore.getState().setSleepTimer(minutes),
-	};
+	return useMemo(
+		() => ({
+			setIsQueueOpen: (open: boolean) =>
+				useAppStore.getState().setIsQueueOpen(open),
+			setSleepTimer: (minutes: number | null) =>
+				useAppStore.getState().setSleepTimer(minutes),
+		}),
+		[],
+	);
 }
 
 export function useDownloads() {
-	return {
-		downloadedSongIds: useAppStore(selectors.selectDownloadedSongIds),
-		addDownloadedSong: (songId: string) =>
-			useAppStore.getState().addDownloadedSong(songId),
-		removeDownloadedSong: (songId: string) =>
-			useAppStore.getState().removeDownloadedSong(songId),
-		clearDownloadedSongs: () => useAppStore.getState().clearDownloadedSongs(),
-		isDownloaded: (songId: string) =>
-			useAppStore.getState().isDownloaded(songId),
-	};
+	const downloadedSongIds = useAppStore(selectors.selectDownloadedSongIds);
+	return useMemo(
+		() => ({
+			downloadedSongIds,
+			addDownloadedSong: (songId: string) =>
+				useAppStore.getState().addDownloadedSong(songId),
+			removeDownloadedSong: (songId: string) =>
+				useAppStore.getState().removeDownloadedSong(songId),
+			clearDownloadedSongs: () => useAppStore.getState().clearDownloadedSongs(),
+			isDownloaded: (songId: string) =>
+				useAppStore.getState().isDownloaded(songId),
+		}),
+		[downloadedSongIds],
+	);
 }
 
 export function useIsDownloaded(songId: string) {

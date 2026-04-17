@@ -43,20 +43,19 @@ It is based on the current repository state, scripts, and conventions in this co
 
 ## Test Commands
 
-- There is currently no test runner configured.
-- No `*.test.*` or `*.spec.*` files exist in the repo at the time of writing.
-- There is no supported "single test" command yet because there are no tests.
-- If you need targeted verification today, use:
-  - single-file lint: `npx biome check path/to/file.tsx`
-  - full verification: `npm run build`
-- If you introduce a test framework later, add package scripts and update this file.
+- Run tests: `npm run test`
+- Run tests with coverage: `npm run test:coverage`
+- Run in watch mode: `npm run test -- --watch`
+- No dedicated "single test" command exists; use vitest's file filtering
+- Test files are in `__tests__/` directory
+- Use `npm run build` as the authoritative verification for non-trivial changes
 
 ## Verification Expectations
 
 - For small isolated edits: run targeted `biome check` on touched files.
 - For cross-cutting or architectural edits: run `npm run lint` and `npm run build`.
 - If dependencies change: run `pnpm install` to sync the lockfile.
-- Do not claim tests passed; there are no automated tests configured.
+- After test changes: run `npm run test` to verify.
 
 ## General Code Style
 
@@ -94,16 +93,18 @@ It is based on the current repository state, scripts, and conventions in this co
 ## React And Next.js Conventions
 
 - Add `"use client";` only when a file truly needs client-side hooks or browser APIs.
+- All hook files in `hooks/` require `"use client";` - don't forget this directive.
 - Prefer server-compatible modules by default.
 - Route files may use default exports; elsewhere prefer named exports.
 - Keep page components thin and move repeated logic into shared components or hooks.
 - Current entity pages intentionally still use query params like `/song?id=...`.
 - Do not migrate to dynamic route segments unless explicitly requested.
+- Wrap top-level client components with `ErrorBoundary` from `@/components/common/error-boundary`.
 
 ## State Management
 
 - The public Zustand interface lives in `hooks/use-store.ts`.
-- Store implementation is split under `lib/store/`.
+- Store implementation is split under `lib/store/` with slices in `lib/store/slices/`.
 - When changing store behavior, preserve the public API unless there is a clear reason to change it.
 - Prefer adding behavior inside the appropriate slice:
   - playback / queue
@@ -111,6 +112,8 @@ It is based on the current repository state, scripts, and conventions in this co
   - playlists
   - downloads / UI
 - Keep persisted state compatible with `PersistedAppStoreState` unless intentionally changing storage shape.
+- Slice functions use `set as never` type assertion - this is intentional for TypeScript compatibility.
+- Return values from store hooks should be memoized with `useMemo` to prevent unnecessary re-renders.
 
 ## React Query Conventions
 
@@ -179,4 +182,5 @@ It is based on the current repository state, scripts, and conventions in this co
 - Ensure imports are clean.
 - Ensure Biome passes.
 - Ensure `npm run build` passes for non-trivial changes.
-- Mention clearly if verification was limited because no automated tests exist.
+- Run `npm run test` if tests exist.
+- Mention clearly if verification was limited.

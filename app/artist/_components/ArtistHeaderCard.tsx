@@ -21,7 +21,7 @@ export function ArtistHeaderCard({ artist }: ArtistHeaderCardProps) {
 		<Card>
 			<CardContent className="p-6">
 				<div className="flex flex-col gap-6 md:flex-row">
-					<div className="relative aspect-square w-full flex-shrink-0 md:w-64">
+					<div className="relative aspect-square w-full shrink-0 md:w-64">
 						<ProgressiveImage
 							images={artist.image}
 							alt={artist.name}

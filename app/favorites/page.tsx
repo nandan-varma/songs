@@ -2,8 +2,8 @@
 
 import { Heart, Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { Button } from "@/components/ui/button";
 import { SongsList } from "@/components/songs-list";
+import { Button } from "@/components/ui/button";
 import { useSongs } from "@/hooks/data/queries";
 import { useFavorites } from "@/hooks/use-store";
 import { useStoreHydrated } from "@/hooks/use-store-hydrated";

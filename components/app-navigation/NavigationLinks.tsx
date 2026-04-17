@@ -17,7 +17,7 @@ function NavigationLink({
 			<Button
 				variant="ghost"
 				size="sm"
-				className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
+				className="shrink-0 focus:outline-none focus:ring-2 focus:ring-primary"
 				aria-label={label}
 			>
 				<Icon className="h-4 w-4" aria-hidden="true" />

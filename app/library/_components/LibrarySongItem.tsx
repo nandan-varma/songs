@@ -17,7 +17,7 @@ export function LibrarySongItem({ song, onClick }: LibrarySongItemProps) {
 			onClick={onClick}
 		>
 			{song.image && song.image.length > 0 ? (
-				<div className="relative h-10 w-10 flex-shrink-0">
+				<div className="relative h-10 w-10 shrink-0">
 					<Image
 						src={song.image[0]?.url || song.image[1]?.url || ""}
 						alt={song.name}
@@ -27,7 +27,7 @@ export function LibrarySongItem({ song, onClick }: LibrarySongItemProps) {
 					/>
 				</div>
 			) : (
-				<div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded bg-muted">
+				<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted">
 					<Music className="h-5 w-5 text-muted-foreground" />
 				</div>
 			)}

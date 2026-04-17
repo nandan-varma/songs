@@ -1,8 +1,4 @@
-import {
-	INITIAL_STATE,
-	type StoreGet,
-	type StoreSet,
-} from "@/lib/store/internal";
+import { type StoreGet, type StoreSet } from "@/lib/store/internal";
 import type { AppStoreActions } from "@/lib/store/types";
 
 export function createDownloadsAndUiSlice(

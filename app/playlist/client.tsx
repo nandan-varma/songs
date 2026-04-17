@@ -45,7 +45,7 @@ export function Client() {
 					<Card>
 						<CardContent className="p-4 md:p-6">
 							<div className="flex flex-col gap-4 md:gap-6 md:flex-row">
-								<div className="relative aspect-square w-full flex-shrink-0 md:w-64">
+								<div className="relative aspect-square w-full shrink-0 md:w-64">
 									<ProgressiveImage
 										images={playlist.image}
 										alt={playlist.name}

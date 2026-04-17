@@ -193,7 +193,7 @@ export class ErrorBoundary extends React.Component<
 			const hasRetriesLeft = this.state.retryCount < maxRetries;
 
 			return (
-				<div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center">
+				<div className="flex flex-col items-center justify-center min-h-100 p-8 text-center">
 					<AlertTriangle className="h-12 w-12 text-destructive mb-4" />
 					<h2 className="text-xl font-semibold mb-2">{title}</h2>
 					<p className="text-muted-foreground mb-4 max-w-md">{message}</p>

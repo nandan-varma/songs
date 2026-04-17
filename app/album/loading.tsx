@@ -9,7 +9,7 @@ export function AlbumPageLoading() {
 				<CardContent className="p-6">
 					<div className="flex flex-col md:flex-row gap-6">
 						{/* Album Art Skeleton */}
-						<Skeleton className="relative aspect-square w-full md:w-64 flex-shrink-0 rounded-lg" />
+						<Skeleton className="relative aspect-square w-full md:w-64 shrink-0 rounded-lg" />
 
 						{/* Album Details Skeleton */}
 						<div className="flex-1 space-y-4">

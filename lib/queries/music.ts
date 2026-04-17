@@ -16,13 +16,18 @@ import {
 } from "@/lib/api";
 import { CACHE_KEYS, CACHE_TIMES } from "@/lib/cache";
 
+const DEFAULT_RETRY_CONFIG = {
+	retry: 3,
+	retryDelay: (attemptIndex: number) =>
+		Math.min(1000 * 2 ** attemptIndex, 30000),
+} as const;
+
 export function songQueryOptions(id: string) {
 	return queryOptions({
 		queryKey: CACHE_KEYS.SONGS(id),
 		queryFn: () => getSongById(id),
 		staleTime: CACHE_TIMES.SONG,
-		retry: 3,
-		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		...DEFAULT_RETRY_CONFIG,
 	});
 }
 
@@ -31,8 +36,7 @@ export function songsQueryOptions(ids: string[]) {
 		queryKey: CACHE_KEYS.SONGS_BY_IDS(ids),
 		queryFn: () => getSongsByIds(ids),
 		staleTime: CACHE_TIMES.SONG,
-		retry: 3,
-		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		...DEFAULT_RETRY_CONFIG,
 	});
 }
 
@@ -41,8 +45,7 @@ export function albumQueryOptions(id: string) {
 		queryKey: CACHE_KEYS.ALBUM(id),
 		queryFn: () => getAlbumById(id),
 		staleTime: CACHE_TIMES.ALBUM,
-		retry: 3,
-		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		...DEFAULT_RETRY_CONFIG,
 	});
 }
 
@@ -51,8 +54,7 @@ export function artistQueryOptions(id: string) {
 		queryKey: CACHE_KEYS.ARTIST(id),
 		queryFn: () => getArtistById(id),
 		staleTime: CACHE_TIMES.ARTIST,
-		retry: 3,
-		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		...DEFAULT_RETRY_CONFIG,
 	});
 }
 
@@ -60,9 +62,8 @@ export function playlistQueryOptions(id: string) {
 	return queryOptions({
 		queryKey: CACHE_KEYS.PLAYLIST(id),
 		queryFn: () => getPlaylistById(id),
-		staleTime: CACHE_TIMES.ALBUM,
-		retry: 3,
-		retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+		staleTime: CACHE_TIMES.PLAYLIST,
+		...DEFAULT_RETRY_CONFIG,
 	});
 }
 

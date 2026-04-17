@@ -42,9 +42,9 @@ function useConfiguredQuery<T>(
 ) {
 	return useQuery({
 		...baseOptions,
-		...(options as QueryHookOptions<T> | undefined),
 		enabled,
-	});
+		...options,
+	} as UseQueryOptions<T, Error, T>);
 }
 
 export function useSong(
@@ -67,11 +67,7 @@ export function useSongs(
 	options?: QueryHookOptions<DetailedSong[]>,
 ) {
 	return useConfiguredQuery(
-		songsQueryOptions(ids) as UseQueryOptions<
-			DetailedSong[],
-			Error,
-			DetailedSong[]
-		>,
+		songsQueryOptions(ids) as UseQueryOptions<DetailedSong[], Error>,
 		ids.length > 0 && options?.enabled !== false,
 		options,
 	);
@@ -82,11 +78,7 @@ export function useAlbum(
 	options?: QueryHookOptions<DetailedAlbum>,
 ) {
 	return useConfiguredQuery(
-		albumQueryOptions(id) as UseQueryOptions<
-			DetailedAlbum,
-			Error,
-			DetailedAlbum
-		>,
+		albumQueryOptions(id) as UseQueryOptions<DetailedAlbum, Error>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -97,11 +89,7 @@ export function useArtist(
 	options?: QueryHookOptions<DetailedArtist>,
 ) {
 	return useConfiguredQuery(
-		artistQueryOptions(id) as UseQueryOptions<
-			DetailedArtist,
-			Error,
-			DetailedArtist
-		>,
+		artistQueryOptions(id) as UseQueryOptions<DetailedArtist, Error>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -112,11 +100,7 @@ export function usePlaylist(
 	options?: QueryHookOptions<DetailedPlaylist>,
 ) {
 	return useConfiguredQuery(
-		playlistQueryOptions(id) as UseQueryOptions<
-			DetailedPlaylist,
-			Error,
-			DetailedPlaylist
-		>,
+		playlistQueryOptions(id) as UseQueryOptions<DetailedPlaylist, Error>,
 		!!id && options?.enabled !== false,
 		options,
 	);
@@ -127,11 +111,7 @@ export function useGlobalSearch(
 	options?: QueryHookOptions<SearchResponse>,
 ) {
 	return useConfiguredQuery(
-		globalSearchQueryOptions(query) as UseQueryOptions<
-			SearchResponse,
-			Error,
-			SearchResponse
-		>,
+		globalSearchQueryOptions(query) as UseQueryOptions<SearchResponse, Error>,
 		!!query && options?.enabled !== false,
 		options,
 	);
@@ -148,8 +128,7 @@ export function useSearchSongs(
 	return useConfiguredQuery(
 		searchSongsQueryOptions(query, limit) as UseQueryOptions<
 			{ total: number; results: DetailedSong[] },
-			Error,
-			{ total: number; results: DetailedSong[] }
+			Error
 		>,
 		!!query && options?.enabled !== false,
 		options,
@@ -167,8 +146,7 @@ export function useSearchAlbums(
 	return useConfiguredQuery(
 		searchAlbumsQueryOptions(query, limit) as UseQueryOptions<
 			{ total: number; results: AlbumSearchResult[] },
-			Error,
-			{ total: number; results: AlbumSearchResult[] }
+			Error
 		>,
 		!!query && options?.enabled !== false,
 		options,
@@ -186,8 +164,7 @@ export function useSearchArtists(
 	return useConfiguredQuery(
 		searchArtistsQueryOptions(query, limit) as UseQueryOptions<
 			{ total: number; results: ArtistSearchResult[] },
-			Error,
-			{ total: number; results: ArtistSearchResult[] }
+			Error
 		>,
 		!!query && options?.enabled !== false,
 		options,
@@ -208,8 +185,7 @@ export function useSearchPlaylists(
 	return useConfiguredQuery(
 		searchPlaylistsQueryOptions(query, limit) as UseQueryOptions<
 			{ total: number; results: PlaylistSearchResult[] },
-			Error,
-			{ total: number; results: PlaylistSearchResult[] }
+			Error
 		>,
 		!!query && options?.enabled !== false,
 		options,
@@ -227,8 +203,7 @@ export function useSongSuggestions(
 	return useConfiguredQuery(
 		songSuggestionsQueryOptions(id, limit) as UseQueryOptions<
 			DetailedSong[],
-			Error,
-			DetailedSong[]
+			Error
 		>,
 		!!id && options?.enabled !== false,
 		options,
@@ -247,8 +222,7 @@ export function useArtistSongs(
 	return useConfiguredQuery(
 		artistSongsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
 			{ total: number; songs: DetailedSong[] },
-			Error,
-			{ total: number; songs: DetailedSong[] }
+			Error
 		>,
 		!!id && options?.enabled !== false,
 		options,
@@ -267,8 +241,7 @@ export function useArtistAlbums(
 	return useConfiguredQuery(
 		artistAlbumsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
 			{ total: number; albums: DetailedAlbum[] },
-			Error,
-			{ total: number; albums: DetailedAlbum[] }
+			Error
 		>,
 		!!id && options?.enabled !== false,
 		options,

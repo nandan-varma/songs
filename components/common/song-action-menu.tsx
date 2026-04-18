@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, ListPlus, MoreHorizontal, Play } from "lucide-react";
+import { Heart, ListPlus, MoreHorizontal, Play, Share2 } from "lucide-react";
 import * as React from "react";
 import { useDetailedSong } from "@/hooks/data/use-detailed-song";
 import { useSongActions } from "@/hooks/player/use-song-actions";
@@ -107,6 +107,28 @@ export function SongActionMenu({
 						}`}
 					/>
 					{isFav ? "Remove from Favorites" : "Add to Favorites"}
+				</DropdownMenuItem>
+
+				<DropdownMenuItem
+					onClick={async () => {
+						const shareUrl = `${window.location.origin}/song?id=${song.id}`;
+						if (navigator.share) {
+							try {
+								await navigator.share({
+									title: song.title,
+									text: `Check out ${song.title}`,
+									url: shareUrl,
+								});
+							} catch {
+								await navigator.clipboard.writeText(shareUrl);
+							}
+						} else {
+							await navigator.clipboard.writeText(shareUrl);
+						}
+					}}
+				>
+					<Share2 className="mr-2 h-4 w-4" />
+					Share
 				</DropdownMenuItem>
 
 				<DropdownMenuSeparator />

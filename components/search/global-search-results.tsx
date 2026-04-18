@@ -7,7 +7,6 @@ import { AlbumsList } from "../albums-list";
 import { ArtistsList } from "../artists-list";
 import { PlaylistsList } from "../playlists-list";
 import { SongsList } from "../songs-list";
-import { Separator } from "../ui/separator";
 import { EmptyState } from "./search-states";
 
 interface GlobalSearchResultsProps {
@@ -34,48 +33,45 @@ export const GlobalSearchResults = memo(function GlobalSearchResults({
 
 	return (
 		<motion.div
-			className="space-y-8"
+			className="space-y-4 sm:space-y-6"
 			initial="hidden"
 			animate="show"
-			transition={{ staggerChildren: 0.1 }}
+			transition={{ staggerChildren: 0.05 }}
 		>
 			{hasAnySongs && (
 				<motion.div
 					variants={{
-						hidden: { opacity: 0, y: 20 },
+						hidden: { opacity: 0, y: 10 },
 						show: { opacity: 1, y: 0 },
 					}}
 				>
 					<SongsList songs={songs.results} />
-					<Separator />
 				</motion.div>
 			)}
 			{hasAnyAlbums && (
 				<motion.div
 					variants={{
-						hidden: { opacity: 0, y: 20 },
+						hidden: { opacity: 0, y: 10 },
 						show: { opacity: 1, y: 0 },
 					}}
 				>
 					<AlbumsList albums={albums.results} />
-					<Separator />
 				</motion.div>
 			)}
 			{hasAnyArtists && (
 				<motion.div
 					variants={{
-						hidden: { opacity: 0, y: 20 },
+						hidden: { opacity: 0, y: 10 },
 						show: { opacity: 1, y: 0 },
 					}}
 				>
 					<ArtistsList artists={artists.results} />
-					<Separator />
 				</motion.div>
 			)}
 			{hasAnyPlaylists && (
 				<motion.div
 					variants={{
-						hidden: { opacity: 0, y: 20 },
+						hidden: { opacity: 0, y: 10 },
 						show: { opacity: 1, y: 0 },
 					}}
 				>

@@ -35,6 +35,22 @@ self.addEventListener("activate", (event) => {
 });
 
 /**
+ * Message event - handle commands from clients
+ * - SKIP_WAITING: activate the waiting worker immediately
+ * - CLEAR_CACHE: wipe the cache storage used by this worker
+ */
+self.addEventListener("message", (event) => {
+	if (event.data?.type === "SKIP_WAITING") {
+		self.skipWaiting();
+		return;
+	}
+
+	if (event.data?.type === "CLEAR_CACHE") {
+		event.waitUntil(caches.delete(CACHE_NAME));
+	}
+});
+
+/**
  * Fetch event - implement caching strategies
  * - Network-first: API requests (with fallback to cache)
  * - Cache-first: Static assets (JS, CSS, images)
@@ -46,6 +62,13 @@ self.addEventListener("fetch", (event) => {
 
 	// Skip chrome extensions and non-http(s)
 	if (!url.protocol.startsWith("http")) {
+		return;
+	}
+
+	// Audio/streaming requests are never cached - large, range-requested,
+	// and would blow past storage quota if stored in Cache Storage
+	if (isAudioRequest(request, url)) {
+		event.respondWith(fetch(request));
 		return;
 	}
 
@@ -137,4 +160,21 @@ function isStaticAsset(url) {
  */
 function isApiRequest(url) {
 	return url.pathname.startsWith("/api/");
+}
+
+/**
+ * Check if a request is for audio/streaming content that should
+ * never go through the cache (range requests, audio file extensions,
+ * or the browser-reported "audio" destination)
+ */
+function isAudioRequest(request, url) {
+	if (request.destination === "audio") {
+		return true;
+	}
+
+	if (request.headers.has("range")) {
+		return true;
+	}
+
+	return /\.(mp3|m4a|aac|ogg|opus|wav|flac|webm)(\?|$)/i.test(url.pathname);
 }

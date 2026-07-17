@@ -29,7 +29,6 @@ export function useAudioSource({
 		}
 
 		const audio = audioRef.current;
-		let newBlobUrl: string | null = null;
 
 		if (blobUrlRef.current) {
 			URL.revokeObjectURL(blobUrlRef.current);
@@ -41,7 +40,7 @@ export function useAudioSource({
 		const loadSource = async () => {
 			const cachedBlob = await getSongBlob(currentSong.id);
 			if (cachedBlob) {
-				newBlobUrl = URL.createObjectURL(cachedBlob);
+				const newBlobUrl = URL.createObjectURL(cachedBlob);
 				audio.src = newBlobUrl;
 				blobUrlRef.current = newBlobUrl;
 			} else {

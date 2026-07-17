@@ -44,7 +44,14 @@ export function useOfflinePlayerActions() {
 			);
 		}
 
-		const validStartIndex = Math.min(startIndex, filtered.length - 1);
+		// Resolve the originally requested song's position in the filtered
+		// queue, since startIndex was computed against the unfiltered list
+		const targetSong = songs[Math.min(startIndex, songs.length - 1)];
+		const resolvedIndex = targetSong
+			? filtered.findIndex((song) => song.id === targetSong.id)
+			: -1;
+		const validStartIndex = resolvedIndex >= 0 ? resolvedIndex : 0;
+
 		const { playQueue } = useAppStore.getState();
 		playQueue(filtered, validStartIndex);
 	};

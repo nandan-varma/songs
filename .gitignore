@@ -37,3 +37,4 @@ next-env.d.ts
 
 # build metadata - generated at build time
 /public/build-info.json
+.env*

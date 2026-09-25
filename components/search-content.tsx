@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
 import { SearchBar } from "@/components/common/search-bar";
+import { DiscoverContent } from "@/components/discover/discover-content";
 import { HistoryList } from "@/components/history-list";
 import { PlaylistsList } from "@/components/playlists-list";
 import { GlobalSearchResults } from "@/components/search/global-search-results";
@@ -122,7 +123,12 @@ export default function SearchContent() {
 				/>
 			</div>
 
-			{!query && <HistoryList items={playbackHistory} />}
+			{!query && (
+				<div className="space-y-6 md:space-y-8">
+					<DiscoverContent />
+					<HistoryList items={playbackHistory} />
+				</div>
+			)}
 
 			{hasError && <ErrorState />}
 

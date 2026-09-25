@@ -4,25 +4,34 @@ import {
 	albumQueryOptions,
 	artistAlbumsQueryOptions,
 	artistQueryOptions,
+	artistRadioQueryOptions,
 	artistSongsQueryOptions,
+	chartsQueryOptions,
 	globalSearchQueryOptions,
 	playlistQueryOptions,
+	radioFeaturedQueryOptions,
+	radioStationsQueryOptions,
 	searchAlbumsQueryOptions,
 	searchArtistsQueryOptions,
 	searchPlaylistsQueryOptions,
 	searchSongsQueryOptions,
+	songLyricsQueryOptions,
 	songQueryOptions,
 	songSuggestionsQueryOptions,
 	songsQueryOptions,
+	trendingQueryOptions,
 } from "@/lib/queries/music";
 import type {
 	AlbumSearchResult,
 	ArtistSearchResult,
+	Chart,
 	DetailedAlbum,
 	DetailedArtist,
 	DetailedPlaylist,
 	DetailedSong,
+	Lyrics,
 	PlaylistSearchResult,
+	RadioStation,
 	SearchResponse,
 } from "@/types/api";
 
@@ -269,6 +278,101 @@ export function useArtistAlbums(
 			{ total: number; albums: DetailedAlbum[] }
 		>,
 		!!id && options?.enabled !== false,
+		options,
+	);
+}
+
+/**
+ * Hook to fetch lyrics for a song
+ */
+export function useSongLyrics(id: string, options?: QueryHookOptions<Lyrics>) {
+	return useConfiguredQuery(
+		songLyricsQueryOptions(id) as UseQueryOptions<Lyrics, Error, Lyrics>,
+		!!id && options?.enabled !== false,
+		options,
+	);
+}
+
+/**
+ * Hook to fetch algorithmic radio for a specific artist
+ */
+export function useArtistRadio(
+	id: string,
+	limit = 20,
+	options?: QueryHookOptions<DetailedSong[]>,
+) {
+	return useConfiguredQuery(
+		artistRadioQueryOptions(id, limit) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		!!id && options?.enabled !== false,
+		options,
+	);
+}
+
+/**
+ * Hook to fetch trending content for a given type and language
+ */
+export function useTrending(
+	type: "song" | "album" | "playlist",
+	language: string,
+	options?: QueryHookOptions<DetailedSong[]>,
+) {
+	return useConfiguredQuery(
+		trendingQueryOptions(type, language) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		!!language && options?.enabled !== false,
+		options,
+	);
+}
+
+/**
+ * Hook to fetch editorial charts
+ */
+export function useCharts(options?: QueryHookOptions<Chart[]>) {
+	return useConfiguredQuery(
+		chartsQueryOptions() as UseQueryOptions<Chart[], Error, Chart[]>,
+		options?.enabled !== false,
+		options,
+	);
+}
+
+/**
+ * Hook to fetch known featured radio stations
+ */
+export function useRadioStations(options?: QueryHookOptions<RadioStation[]>) {
+	return useConfiguredQuery(
+		radioStationsQueryOptions() as UseQueryOptions<
+			RadioStation[],
+			Error,
+			RadioStation[]
+		>,
+		options?.enabled !== false,
+		options,
+	);
+}
+
+/**
+ * Hook to fetch songs from a featured radio station
+ */
+export function useRadioFeatured(
+	name: string,
+	language: string,
+	limit = 20,
+	options?: QueryHookOptions<DetailedSong[]>,
+) {
+	return useConfiguredQuery(
+		radioFeaturedQueryOptions(name, language, limit) as UseQueryOptions<
+			DetailedSong[],
+			Error,
+			DetailedSong[]
+		>,
+		!!name && options?.enabled !== false,
 		options,
 	);
 }

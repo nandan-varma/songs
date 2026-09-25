@@ -18,6 +18,7 @@ export function createDownloadsAndUiSlice(
 	| "clearDownloadedSongs"
 	| "isDownloaded"
 	| "resetStore"
+	| "setContentLanguage"
 > {
 	return {
 		setIsQueueOpen: (open) => {
@@ -25,6 +26,9 @@ export function createDownloadsAndUiSlice(
 		},
 		setSleepTimer: (minutes) => {
 			set({ sleepTimerMinutes: minutes });
+		},
+		setContentLanguage: (language) => {
+			set({ contentLanguage: language });
 		},
 		addDownloadedSong: (songId) => {
 			set((state) => ({

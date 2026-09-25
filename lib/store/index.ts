@@ -36,6 +36,7 @@ export const useAppStore = create<AppStore>()(
 				playbackSpeed: state.playbackSpeed,
 				downloadedSongIds: Array.from(state.downloadedSongIds),
 				sleepTimerMinutes: state.sleepTimerMinutes,
+				contentLanguage: state.contentLanguage,
 			}),
 			merge: (persistedState, currentState) => {
 				if (!persistedState || typeof persistedState !== "object") {

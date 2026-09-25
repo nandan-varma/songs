@@ -29,6 +29,7 @@ export const INITIAL_STATE: AppStoreState = {
 	isQueueOpen: false,
 	downloadedSongIds: new Set(),
 	sleepTimerMinutes: null,
+	contentLanguage: "english",
 };
 
 export function clampVolume(volume: number) {

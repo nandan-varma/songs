@@ -5,7 +5,7 @@ import { ShareButton } from "@/components/common/share-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getArtistById } from "@/lib/api";
+import { getArtistById, getArtistRadio } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 import type { DetailedArtist } from "@/types/api";
@@ -56,13 +56,9 @@ export function ArtistHeaderCard({ artist }: ArtistHeaderCardProps) {
 	const handleRadio = async () => {
 		try {
 			setIsLoading("radio");
-			const detailed = await getArtistById(artist.id, { songCount: 30 });
-			if (detailed?.topSongs && detailed.topSongs.length > 0) {
-				const radioSongs = [...detailed.topSongs].sort(
-					() => Math.random() - 0.5,
-				);
+			const radioSongs = await getArtistRadio(artist.id, 30);
+			if (radioSongs.length > 0) {
 				useAppStore.getState().playQueue(radioSongs);
-				useAppStore.getState().toggleShuffle();
 			}
 		} catch (error) {
 			logError("ArtistHeaderCard:radio", error);

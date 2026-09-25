@@ -259,6 +259,28 @@ export interface DetailedPlaylist {
 	artists: ArtistMini[];
 }
 
+export interface Lyrics {
+	lyrics: string;
+	snippet: string | null;
+	copyright: string | null;
+}
+
+export interface Chart {
+	id: string;
+	name: string;
+	image: Image[];
+	type: EntityType | string;
+	songCount: number | null;
+	url: string;
+	language: Language | string | null;
+}
+
+export interface RadioStation {
+	name: string;
+	language: string;
+	label: string;
+}
+
 /**
  * Represents a visit to an entity (song, album, artist, or playlist)
  * Used for tracking user navigation history

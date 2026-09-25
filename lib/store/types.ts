@@ -23,6 +23,7 @@ export interface AppStoreState {
 	isQueueOpen: boolean;
 	downloadedSongIds: Set<string>;
 	sleepTimerMinutes: number | null;
+	contentLanguage: string;
 }
 
 export interface PersistedAppStoreState {
@@ -35,6 +36,7 @@ export interface PersistedAppStoreState {
 	playbackSpeed: number;
 	downloadedSongIds: string[];
 	sleepTimerMinutes: number | null;
+	contentLanguage: string;
 }
 
 export interface AppStoreActions {
@@ -82,6 +84,7 @@ export interface AppStoreActions {
 	) => void;
 	setIsQueueOpen: (open: boolean) => void;
 	setSleepTimer: (minutes: number | null) => void;
+	setContentLanguage: (language: string) => void;
 	addDownloadedSong: (songId: string) => void;
 	removeDownloadedSong: (songId: string) => void;
 	syncDownloadedSongs: (songIds: string[]) => void;

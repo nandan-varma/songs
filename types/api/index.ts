@@ -8,12 +8,15 @@ import type {
 	AlbumSearchResult,
 	Artist,
 	ArtistSearchResult,
+	Chart,
 	DetailedAlbum,
 	DetailedArtist,
 	DetailedPlaylist,
 	DetailedSong,
+	Lyrics,
 	Playlist,
 	PlaylistSearchResult,
+	RadioStation,
 	Song,
 } from "../entity";
 
@@ -22,12 +25,15 @@ export type {
 	AlbumSearchResult,
 	Artist,
 	ArtistSearchResult,
+	Chart,
 	DetailedAlbum,
 	DetailedArtist,
 	DetailedPlaylist,
 	DetailedSong,
+	Lyrics,
 	Playlist,
 	PlaylistSearchResult,
+	RadioStation,
 	Song,
 };
 

@@ -4,12 +4,15 @@ import type {
 	AlbumSearchResult,
 	ApiResponse,
 	ArtistSearchResult,
+	Chart,
 	DetailedAlbum,
 	DetailedArtist,
 	DetailedPlaylist,
 	DetailedSong,
+	Lyrics,
 	PaginatedResponse,
 	PlaylistSearchResult,
+	RadioStation,
 	SearchResponse,
 } from "@/types/api";
 
@@ -195,5 +198,56 @@ export async function getPlaylistById(
 	return fetchApi<DetailedPlaylist>(
 		`${API_BASE_URL}/playlists?id=${encodeURIComponent(id)}&page=${page}&limit=${limit}`,
 		"Failed to fetch playlist",
+	);
+}
+
+export async function getSongLyrics(id: string): Promise<Lyrics> {
+	validateEntityId(id);
+	return fetchApi<Lyrics>(
+		`${API_BASE_URL}/songs/${encodeURIComponent(id)}/lyrics`,
+		"Failed to fetch lyrics",
+	);
+}
+
+export async function getArtistRadio(
+	id: string,
+	limit = 20,
+): Promise<DetailedSong[]> {
+	validateEntityId(id);
+	return fetchApi<DetailedSong[]>(
+		`${API_BASE_URL}/artists/${encodeURIComponent(id)}/radio?limit=${limit}`,
+		"Failed to fetch artist radio",
+	);
+}
+
+export async function getTrending(
+	type: "song" | "album" | "playlist",
+	language: string,
+): Promise<DetailedSong[]> {
+	return fetchApi<DetailedSong[]>(
+		`${API_BASE_URL}/trending?type=${type}&language=${encodeURIComponent(language)}`,
+		"Failed to fetch trending content",
+	);
+}
+
+export async function getCharts(): Promise<Chart[]> {
+	return fetchApi<Chart[]>(`${API_BASE_URL}/charts`, "Failed to fetch charts");
+}
+
+export async function getRadioStations(): Promise<RadioStation[]> {
+	return fetchApi<RadioStation[]>(
+		`${API_BASE_URL}/radio/stations`,
+		"Failed to fetch radio stations",
+	);
+}
+
+export async function getRadioFeatured(
+	name: string,
+	language: string,
+	limit = 20,
+): Promise<DetailedSong[]> {
+	return fetchApi<DetailedSong[]>(
+		`${API_BASE_URL}/radio/featured?name=${encodeURIComponent(name)}&language=${encodeURIComponent(language)}&limit=${limit}`,
+		"Failed to fetch featured radio",
 	);
 }

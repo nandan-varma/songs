@@ -3,11 +3,17 @@ import {
 	getAlbumById,
 	getArtistAlbums,
 	getArtistById,
+	getArtistRadio,
 	getArtistSongs,
+	getCharts,
 	getPlaylistById,
+	getRadioFeatured,
+	getRadioStations,
 	getSongById,
+	getSongLyrics,
 	getSongSuggestions,
 	getSongsByIds,
+	getTrending,
 	searchAlbums,
 	searchArtists,
 	searchMusic,
@@ -125,5 +131,60 @@ export function artistAlbumsQueryOptions(
 		queryKey: ["artist-albums", id, sortBy, sortOrder],
 		queryFn: () => getArtistAlbums(id, 0, sortBy, sortOrder),
 		staleTime: CACHE_TIMES.ARTIST,
+	});
+}
+
+export function songLyricsQueryOptions(id: string) {
+	return queryOptions({
+		queryKey: CACHE_KEYS.LYRICS(id),
+		queryFn: () => getSongLyrics(id),
+		staleTime: CACHE_TIMES.LYRICS,
+	});
+}
+
+export function artistRadioQueryOptions(id: string, limit: number) {
+	return queryOptions({
+		queryKey: CACHE_KEYS.ARTIST_RADIO(id),
+		queryFn: () => getArtistRadio(id, limit),
+		staleTime: CACHE_TIMES.ARTIST,
+	});
+}
+
+export function trendingQueryOptions(
+	type: "song" | "album" | "playlist",
+	language: string,
+) {
+	return queryOptions({
+		queryKey: CACHE_KEYS.TRENDING(type, language),
+		queryFn: () => getTrending(type, language),
+		staleTime: CACHE_TIMES.TRENDING,
+	});
+}
+
+export function chartsQueryOptions() {
+	return queryOptions({
+		queryKey: CACHE_KEYS.CHARTS,
+		queryFn: () => getCharts(),
+		staleTime: CACHE_TIMES.CHARTS,
+	});
+}
+
+export function radioStationsQueryOptions() {
+	return queryOptions({
+		queryKey: CACHE_KEYS.RADIO_STATIONS,
+		queryFn: () => getRadioStations(),
+		staleTime: CACHE_TIMES.RADIO_STATIONS,
+	});
+}
+
+export function radioFeaturedQueryOptions(
+	name: string,
+	language: string,
+	limit: number,
+) {
+	return queryOptions({
+		queryKey: CACHE_KEYS.RADIO_FEATURED(name),
+		queryFn: () => getRadioFeatured(name, language, limit),
+		staleTime: CACHE_TIMES.RADIO_STATIONS,
 	});
 }

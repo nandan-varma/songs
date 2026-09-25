@@ -4,6 +4,7 @@ import { useQueryState } from "nuqs";
 import { useEffect } from "react";
 import { QueryParamDetailShell } from "@/components/entity/query-param-detail-shell";
 import { SongHeader } from "@/components/song/song-header";
+import { SongLyrics } from "@/components/song/song-lyrics";
 import { SongSuggestions } from "@/components/song/song-suggestions";
 import { useSong, useSongSuggestions } from "@/hooks/data/queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
@@ -63,6 +64,8 @@ export function Client() {
 						onPlay={() => playSong(song)}
 						onAddToQueue={() => addToQueue(song)}
 					/>
+
+					{song.hasLyrics && <SongLyrics songId={song.id} />}
 
 					<SongSuggestions
 						suggestions={filteredSuggestions.map(detailedSongToSong)}

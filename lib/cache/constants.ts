@@ -5,6 +5,13 @@ export const CACHE_KEYS = {
 	ARTIST: (id: string) => ["artist", id] as const,
 	PLAYLIST: (id: string) => ["playlist", id] as const,
 	SEARCH: (query: string) => ["search", query] as const,
+	LYRICS: (id: string) => ["lyrics", id] as const,
+	ARTIST_RADIO: (id: string) => ["artist-radio", id] as const,
+	TRENDING: (type: string, language: string) =>
+		["trending", type, language] as const,
+	CHARTS: ["charts"] as const,
+	RADIO_STATIONS: ["radio-stations"] as const,
+	RADIO_FEATURED: (name: string) => ["radio-featured", name] as const,
 	DOWNLOADS: (id: string) => ["downloads", id] as const,
 	ALL_DOWNLOADS: ["downloads"] as const,
 	QUEUE: ["queue"] as const,
@@ -19,6 +26,10 @@ export const CACHE_TIMES = {
 	ALBUM: 1000 * 60 * 10, // 10 min
 	ARTIST: 1000 * 60 * 10, // 10 min
 	SEARCH: 1000 * 60 * 1, // 1 min
+	LYRICS: 1000 * 60 * 60, // 1 hour
+	TRENDING: 1000 * 60 * 15, // 15 min
+	CHARTS: 1000 * 60 * 30, // 30 min
+	RADIO_STATIONS: 1000 * 60 * 60, // 1 hour
 	DOWNLOADS: Infinity, // Never invalidate
 	QUEUE: Infinity,
 	HISTORY: Infinity,

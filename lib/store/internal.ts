@@ -30,6 +30,7 @@ export const INITIAL_STATE: AppStoreState = {
 	downloadedSongIds: new Set(),
 	sleepTimerMinutes: null,
 	contentLanguage: "english",
+	isRadioEnabled: false,
 };
 
 export function clampVolume(volume: number) {

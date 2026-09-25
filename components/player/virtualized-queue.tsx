@@ -45,8 +45,14 @@ export const VirtualizedQueue = memo(function VirtualizedQueue({
 	const totalSize = virtualizer.getTotalSize();
 
 	return (
-		<div ref={parentRef} className="h-[calc(100vh-8rem)] mt-4 overflow-y-auto">
-			<div className="space-y-2 pr-4" style={{ height: `${totalSize}px` }}>
+		<div
+			ref={parentRef}
+			className="relative h-[calc(100vh-8rem)] mt-4 overflow-y-auto"
+		>
+			<div
+				className="relative space-y-2 pr-4"
+				style={{ height: `${totalSize}px` }}
+			>
 				{virtualItems.map((virtualItem) => {
 					const displayIndex = displayQueue[virtualItem.index];
 					if (displayIndex === undefined) return null;

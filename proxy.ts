@@ -1,4 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { publicConfig } from "@/lib/config/public";
+
+const apiOrigin = new URL(publicConfig.NEXT_PUBLIC_API_URL).origin;
 
 export function proxy(request: NextRequest) {
 	const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
@@ -10,7 +13,10 @@ export function proxy(request: NextRequest) {
 			isDev ? "'unsafe-eval'" : ""
 		};
 		style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
-		img-src 'self' blob: data:;
+		img-src 'self' blob: data: https://*.saavncdn.com https://www.jiosaavn.com;
+		media-src 'self' blob: https://*.saavncdn.com;
+		connect-src 'self' ${apiOrigin} https://*.saavncdn.com ${isDev ? "ws:" : ""};
+		worker-src 'self';
 		font-src 'self';
 		object-src 'none';
 		base-uri 'self';

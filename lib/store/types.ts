@@ -24,6 +24,7 @@ export interface AppStoreState {
 	downloadedSongIds: Set<string>;
 	sleepTimerMinutes: number | null;
 	contentLanguage: string;
+	isRadioEnabled: boolean;
 }
 
 export interface PersistedAppStoreState {
@@ -85,6 +86,7 @@ export interface AppStoreActions {
 	setIsQueueOpen: (open: boolean) => void;
 	setSleepTimer: (minutes: number | null) => void;
 	setContentLanguage: (language: string) => void;
+	toggleRadioMode: () => void;
 	addDownloadedSong: (songId: string) => void;
 	removeDownloadedSong: (songId: string) => void;
 	syncDownloadedSongs: (songIds: string[]) => void;

@@ -34,6 +34,8 @@ export const useQueueIndex = () => useAppStore(selectors.selectQueueIndex);
 export const useIsShuffleEnabled = () =>
 	useAppStore(selectors.selectIsShuffleEnabled);
 export const useRepeatMode = () => useAppStore(selectors.selectRepeatMode);
+export const useIsRadioEnabled = () =>
+	useAppStore(selectors.selectIsRadioEnabled);
 export const useQueueLength = () => useAppStore(selectors.selectQueueLength);
 export function useQueue() {
 	return useAppStore(

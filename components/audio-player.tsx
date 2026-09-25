@@ -8,6 +8,7 @@ import { useAudioSource } from "@/hooks/audio/use-audio-source";
 import { useMediaSession } from "@/hooks/audio/use-media-session";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflineSkip } from "@/hooks/player/use-offline-skip";
+import { useRadioMode } from "@/hooks/player/use-radio-mode";
 import {
 	useCurrentSong,
 	useCurrentTime,
@@ -78,6 +79,7 @@ export function AudioPlayer() {
 		isSongCached: (songId) => downloadedSongIds.has(songId),
 		playNext,
 	});
+	useRadioMode();
 	useAudioSource({
 		currentSong,
 		audioRef,

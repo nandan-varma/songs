@@ -19,6 +19,7 @@ export function createDownloadsAndUiSlice(
 	| "isDownloaded"
 	| "resetStore"
 	| "setContentLanguage"
+	| "toggleRadioMode"
 > {
 	return {
 		setIsQueueOpen: (open) => {
@@ -29,6 +30,9 @@ export function createDownloadsAndUiSlice(
 		},
 		setContentLanguage: (language) => {
 			set({ contentLanguage: language });
+		},
+		toggleRadioMode: () => {
+			set((state) => ({ isRadioEnabled: !state.isRadioEnabled }));
 		},
 		addDownloadedSong: (songId) => {
 			set((state) => ({

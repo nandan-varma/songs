@@ -13,6 +13,8 @@ export const selectQueueIndex = (state: AppStoreState) => state.queueIndex;
 export const selectIsShuffleEnabled = (state: AppStoreState) =>
 	state.isShuffleEnabled;
 export const selectRepeatMode = (state: AppStoreState) => state.repeatMode;
+export const selectIsRadioEnabled = (state: AppStoreState) =>
+	state.isRadioEnabled;
 export const selectQueueLength = (state: AppStoreState) => state.queue.length;
 export const selectFavoriteIds = (state: AppStoreState) => state.favoriteIds;
 export const selectIsFavorite = (songId: string) => (state: AppStoreState) =>

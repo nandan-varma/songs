@@ -17,6 +17,7 @@ interface PlaylistsListProps {
 	playlists: Playlist[];
 	isLoading?: boolean;
 	loadingCount?: number;
+	title?: string;
 }
 
 const PlaylistCardSkeleton = () => (
@@ -37,6 +38,7 @@ export const PlaylistsList = memo(function PlaylistsList({
 	playlists,
 	isLoading = false,
 	loadingCount = 8,
+	title = "Playlists",
 }: PlaylistsListProps) {
 	const [playingId, setPlayingId] = useState<string | null>(null);
 
@@ -62,7 +64,7 @@ export const PlaylistsList = memo(function PlaylistsList({
 					initial={{ opacity: 0, y: -10 }}
 					animate={{ opacity: 1, y: 0 }}
 				>
-					Playlists
+					{title}
 				</motion.h2>
 				<motion.div
 					className="grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
@@ -97,7 +99,7 @@ export const PlaylistsList = memo(function PlaylistsList({
 				initial={{ opacity: 0, y: -10 }}
 				animate={{ opacity: 1, y: 0 }}
 			>
-				Playlists
+				{title}
 			</motion.h2>
 			<motion.div
 				className="grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"

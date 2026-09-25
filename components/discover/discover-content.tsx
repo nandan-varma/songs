@@ -141,7 +141,7 @@ export const DiscoverContent = memo(function DiscoverContent() {
 				emptyMessage="No trending songs right now"
 			/>
 
-			<PlaylistsList playlists={chartsAsPlaylists} />
+			<PlaylistsList playlists={chartsAsPlaylists} title="Charts" />
 
 			<RadioStations stations={stations} />
 		</motion.div>

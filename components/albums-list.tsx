@@ -18,6 +18,7 @@ interface AlbumsListProps {
 	albums: (Album | AlbumSearchResult)[];
 	isLoading?: boolean;
 	loadingCount?: number;
+	title?: string;
 }
 
 function isAlbumSearchResult(
@@ -48,6 +49,7 @@ export const AlbumsList = memo(function AlbumsList({
 	albums,
 	isLoading = false,
 	loadingCount = 10,
+	title = "Albums",
 }: AlbumsListProps) {
 	const [playingId, setPlayingId] = useState<string | null>(null);
 
@@ -73,7 +75,7 @@ export const AlbumsList = memo(function AlbumsList({
 					initial={{ opacity: 0, y: -10 }}
 					animate={{ opacity: 1, y: 0 }}
 				>
-					Albums
+					{title}
 				</motion.h2>
 				<motion.div
 					className="grid gap-2 sm:gap-2.5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7"
@@ -108,7 +110,7 @@ export const AlbumsList = memo(function AlbumsList({
 				initial={{ opacity: 0, y: -10 }}
 				animate={{ opacity: 1, y: 0 }}
 			>
-				Albums
+				{title}
 			</motion.h2>
 			<motion.div
 				className="grid gap-2 sm:gap-2.5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7"
@@ -156,9 +158,14 @@ export const AlbumsList = memo(function AlbumsList({
 										<h3 className="font-medium truncate text-xs sm:text-sm">
 											{isAlbumSearchResult(album) ? album.name : album.title}
 										</h3>
-										{isAlbumSearchResult(album) && album.artists?.primary && (
+										{isAlbumSearchResult(album) && album.artists && (
 											<p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-												{album.artists.primary.map((a) => a.name).join(", ")}
+												{(album.artists.primary.length > 0
+													? album.artists.primary
+													: album.artists.all
+												)
+													.map((a) => a.name)
+													.join(", ")}
 											</p>
 										)}
 										<p className="text-[10px] text-muted-foreground/70">

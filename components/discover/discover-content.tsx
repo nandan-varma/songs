@@ -3,6 +3,8 @@
 import { Loader2, Radio as RadioIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useState } from "react";
+import { toast } from "sonner";
+import { AlbumsList } from "@/components/albums-list";
 import { PlaylistsList } from "@/components/playlists-list";
 import { SongsList } from "@/components/songs-list";
 import {
@@ -36,9 +38,12 @@ function RadioStations({ stations }: { stations: RadioStation[] }) {
 			const songs = await getRadioFeatured(station.name, station.language);
 			if (songs.length > 0) {
 				useAppStore.getState().playQueue(songs);
+			} else {
+				toast.info(`${station.label} has nothing queued right now`);
 			}
 		} catch (error) {
 			logError("RadioStations:play", error);
+			toast.error(`Could not start ${station.label}`);
 		} finally {
 			setLoadingStation(null);
 		}
@@ -85,6 +90,14 @@ export const DiscoverContent = memo(function DiscoverContent() {
 
 	const { data: trendingSongs = [], isLoading: isTrendingLoading } =
 		useTrending("song", contentLanguage);
+	const { data: trendingAlbums = [], isLoading: isAlbumsLoading } = useTrending(
+		"album",
+		contentLanguage,
+	);
+	const { data: trendingPlaylists = [] } = useTrending(
+		"playlist",
+		contentLanguage,
+	);
 	const { data: charts = [] } = useCharts();
 	const { data: stations = [] } = useRadioStations();
 
@@ -98,9 +111,21 @@ export const DiscoverContent = memo(function DiscoverContent() {
 		description: chart.songCount ? `${chart.songCount} songs` : "",
 	}));
 
+	const trendingPlaylistCards = trendingPlaylists.map((playlist) => ({
+		id: playlist.id,
+		title: playlist.name,
+		image: playlist.image,
+		url: playlist.url,
+		language: playlist.language,
+		type: playlist.type,
+		description: playlist.songCount ? `${playlist.songCount} songs` : "",
+	}));
+
 	if (
 		!isTrendingLoading &&
 		trendingSongs.length === 0 &&
+		trendingAlbums.length === 0 &&
+		trendingPlaylistCards.length === 0 &&
 		charts.length === 0 &&
 		stations.length === 0
 	) {
@@ -139,6 +164,17 @@ export const DiscoverContent = memo(function DiscoverContent() {
 				songs={trendingSongs.map(detailedSongToSong)}
 				isLoading={isTrendingLoading}
 				emptyMessage="No trending songs right now"
+			/>
+
+			<AlbumsList
+				albums={trendingAlbums}
+				isLoading={isAlbumsLoading}
+				title="Trending Albums"
+			/>
+
+			<PlaylistsList
+				playlists={trendingPlaylistCards}
+				title="Trending Playlists"
 			/>
 
 			<PlaylistsList playlists={chartsAsPlaylists} title="Charts" />

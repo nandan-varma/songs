@@ -19,14 +19,6 @@ const API_BASE_URL = publicConfig.NEXT_PUBLIC_API_URL;
 /** The API paginates every list from page 0. */
 export const FIRST_SEARCH_PAGE = 0;
 
-const ENTITY_ID_REGEX = /^[a-zA-Z0-9-]{5,50}$/;
-
-function validateEntityId(id: string): void {
-	if (!ENTITY_ID_REGEX.test(id)) {
-		throw new Error(`Invalid entity ID format: ${id}`);
-	}
-}
-
 export class ApiError extends Error {
 	constructor(
 		message: string,
@@ -120,7 +112,6 @@ export async function searchPlaylists(
 }
 
 export async function getSongById(id: string): Promise<DetailedSong[]> {
-	validateEntityId(id);
 	return fetchApi<DetailedSong[]>(
 		`${API_BASE_URL}/songs/${encodeURIComponent(id)}`,
 		"Failed to fetch song",
@@ -138,7 +129,6 @@ export async function getSongSuggestions(
 	id: string,
 	limit = 10,
 ): Promise<DetailedSong[]> {
-	validateEntityId(id);
 	return fetchApi<DetailedSong[]>(
 		`${API_BASE_URL}/songs/${encodeURIComponent(id)}/suggestions?limit=${limit}`,
 		"Failed to fetch song suggestions",
@@ -146,7 +136,6 @@ export async function getSongSuggestions(
 }
 
 export async function getAlbumById(id: string): Promise<DetailedAlbum> {
-	validateEntityId(id);
 	return fetchApi<DetailedAlbum>(
 		`${API_BASE_URL}/albums?id=${encodeURIComponent(id)}`,
 		"Failed to fetch album",
@@ -163,7 +152,6 @@ export async function getArtistById(
 		sortOrder?: "asc" | "desc";
 	},
 ): Promise<DetailedArtist> {
-	validateEntityId(id);
 	const params = new URLSearchParams({ id });
 
 	if (options?.page !== undefined)
@@ -187,7 +175,6 @@ export async function getArtistSongs(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<{ total: number; songs: DetailedSong[] }> {
-	validateEntityId(id);
 	return fetchApi<{ total: number; songs: DetailedSong[] }>(
 		`${API_BASE_URL}/artists/${encodeURIComponent(id)}/songs?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
 		"Failed to fetch artist songs",
@@ -200,7 +187,6 @@ export async function getArtistAlbums(
 	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
 	sortOrder: "asc" | "desc" = "desc",
 ): Promise<{ total: number; albums: DetailedAlbum[] }> {
-	validateEntityId(id);
 	return fetchApi<{ total: number; albums: DetailedAlbum[] }>(
 		`${API_BASE_URL}/artists/${encodeURIComponent(id)}/albums?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
 		"Failed to fetch artist albums",
@@ -224,7 +210,6 @@ async function getPlaylistPage(
 
 /** Fetches a playlist with every song, not just the API's default first 10. */
 export async function getPlaylistById(id: string): Promise<DetailedPlaylist> {
-	validateEntityId(id);
 	const first = await getPlaylistPage(id, 0, PLAYLIST_PAGE_SIZE);
 	const songs = [...first.songs];
 	const total = first.songCount ?? songs.length;
@@ -252,7 +237,6 @@ function dedupeById<T extends { id: string }>(items: T[]): T[] {
 }
 
 export async function getSongLyrics(id: string): Promise<Lyrics> {
-	validateEntityId(id);
 	return fetchApi<Lyrics>(
 		`${API_BASE_URL}/songs/${encodeURIComponent(id)}/lyrics`,
 		"Failed to fetch lyrics",

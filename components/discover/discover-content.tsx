@@ -162,6 +162,7 @@ export const DiscoverContent = memo(function DiscoverContent() {
 
 			<SongsList
 				songs={trendingSongs.map(detailedSongToSong)}
+				detailedSongs={trendingSongs}
 				isLoading={isTrendingLoading}
 				emptyMessage="No trending songs right now"
 			/>

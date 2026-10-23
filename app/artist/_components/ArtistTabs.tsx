@@ -122,7 +122,11 @@ export function ArtistTabs({ artist, onPlayTopSongs }: ArtistTabsProps) {
 							</Button>
 							<SortSelect value={songSort} onChange={setSongSort} />
 						</div>
-						<SongsList songs={topSongs.map(detailedSongToSong)} />
+						<SongsList
+							songs={topSongs.map(detailedSongToSong)}
+							detailedSongs={topSongs}
+							numbered
+						/>
 						<LoadMoreButton
 							hasNextPage={songsQuery.hasNextPage}
 							isFetching={songsQuery.isFetchingNextPage}
@@ -189,7 +193,11 @@ export function ArtistTabs({ artist, onPlayTopSongs }: ArtistTabsProps) {
 
 			{singles.length > 0 && feature_flags.Artist_page_singles_enabled && (
 				<TabsContent value="singles" className="space-y-4">
-					<SongsList songs={singles.map(detailedSongToSong)} />
+					<SongsList
+						songs={singles.map(detailedSongToSong)}
+						detailedSongs={singles}
+						numbered
+					/>
 				</TabsContent>
 			)}
 

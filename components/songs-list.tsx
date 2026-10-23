@@ -3,10 +3,14 @@
 import { memo } from "react";
 import { SongItem } from "@/components/song-item";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Song } from "@/types/entity";
+import type { DetailedSong, Song } from "@/types/entity";
 
 interface SongsListProps {
 	songs: Song[];
+	/** Full song data for `songs` (same order); lets rows play the whole list without fetching. */
+	detailedSongs?: DetailedSong[];
+	/** Show a leading track-number column. */
+	numbered?: boolean;
 	compact?: boolean;
 	emptyMessage?: string;
 	className?: string;
@@ -34,12 +38,18 @@ const SongItemSkeleton = ({ compact = false }: { compact?: boolean }) => (
 
 export const SongsList = memo(function SongsList({
 	songs,
+	detailedSongs,
+	numbered = false,
 	compact = false,
 	emptyMessage = "No songs found",
 	className = "",
 	isLoading = false,
 	loadingCount = 10,
 }: SongsListProps) {
+	const detailedById = detailedSongs
+		? new Map(detailedSongs.map((song) => [song.id, song]))
+		: undefined;
+
 	if (isLoading) {
 		return (
 			<div
@@ -63,11 +73,16 @@ export const SongsList = memo(function SongsList({
 	}
 
 	return (
-		<div
-			className={`space-y-0.5 ${compact ? "sm:space-y-0.5" : "sm:space-y-1"} overflow-x-hidden ${className}`}
-		>
-			{songs.map((song) => (
-				<SongItem key={song.id} song={song} compact={compact} />
+		<div className={`overflow-x-hidden ${className}`}>
+			{songs.map((song, position) => (
+				<SongItem
+					key={song.id}
+					song={song}
+					index={numbered ? position + 1 : undefined}
+					detailed={detailedById?.get(song.id)}
+					queue={detailedSongs}
+					compact={compact}
+				/>
 			))}
 		</div>
 	);

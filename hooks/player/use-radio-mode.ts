@@ -73,7 +73,7 @@ export function useRadioMode() {
 		isPlaying,
 		currentSong,
 		queueIndex,
-		queue.length,
+		queue,
 		repeatMode,
 	]);
 }

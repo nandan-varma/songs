@@ -136,7 +136,11 @@ export function Client() {
 					</Card>
 
 					{filteredSongs.length > 0 && (
-						<SongsList songs={filteredSongs.map(detailedSongToSong)} />
+						<SongsList
+							songs={filteredSongs.map(detailedSongToSong)}
+							detailedSongs={filteredSongs}
+							numbered
+						/>
 					)}
 				</div>
 			)}

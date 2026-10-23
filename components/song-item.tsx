@@ -1,168 +1,160 @@
 "use client";
 
-import { Loader2, Play, Plus } from "lucide-react";
-import { motion } from "motion/react";
+import { Loader2, Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { memo, useCallback, useState } from "react";
+import { FavoriteButton } from "@/components/common/favorite-button";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongActionMenu } from "@/components/common/song-action-menu";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { getSongById } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 import { logError } from "@/lib/utils/logger";
-import type { Song } from "@/types/entity";
+import { formatTime } from "@/lib/utils/time";
+import type { DetailedSong, Song } from "@/types/entity";
 
 interface SongItemProps {
 	song: Song;
+	/** 1-based position shown in the leading column; omit to show only artwork. */
+	index?: number;
+	/** Full song data when the list already has it; avoids a fetch on play. */
+	detailed?: DetailedSong;
+	/** Songs to queue when this row is played, starting at this song. */
+	queue?: DetailedSong[];
 	compact?: boolean;
+}
+
+function EqualizerBars() {
+	return (
+		<span className="flex h-3.5 items-end gap-0.5" aria-hidden="true">
+			{[0, 150, 300].map((delay) => (
+				<span
+					key={delay}
+					className="w-0.5 animate-pulse rounded-full bg-primary"
+					style={{ height: "100%", animationDelay: `${delay}ms` }}
+				/>
+			))}
+		</span>
+	);
 }
 
 export const SongItem = memo(function SongItem({
 	song,
+	index,
+	detailed,
+	queue,
 	compact = false,
 }: SongItemProps) {
 	const [isLoading, setIsLoading] = useState(false);
+	const isCurrent = useAppStore((state) => state.currentSong?.id === song.id);
+	const isPlaying = useAppStore((state) => isCurrent && state.isPlaying);
 
-	const handlePlay = useCallback(
-		async (e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
+	const handlePlay = useCallback(async () => {
+		const state = useAppStore.getState();
+		if (isCurrent) {
+			state.togglePlayPause();
+			return;
+		}
+		if (isLoading) return;
 
-			if (isLoading) return;
-
-			try {
-				setIsLoading(true);
-				const [detailedSong] = await getSongById(song.id);
-				if (!detailedSong) {
-					return;
-				}
-
-				const state = useAppStore.getState();
-				state.playSong(detailedSong);
-				state.addToPlaybackHistory(detailedSong);
-			} catch (error) {
-				logError("SongItem:play", error);
-			} finally {
-				setIsLoading(false);
+		try {
+			setIsLoading(true);
+			const startIndex = queue?.findIndex((item) => item.id === song.id) ?? -1;
+			if (queue && startIndex >= 0) {
+				state.playQueue(queue, startIndex);
+				state.addToPlaybackHistory(queue[startIndex] as DetailedSong);
+				return;
 			}
-		},
-		[song.id, isLoading],
-	);
+			const [fetched] = await getSongById(song.id);
+			if (!fetched) return;
+			state.playSong(fetched);
+			state.addToPlaybackHistory(fetched);
+		} catch (error) {
+			logError("SongItem:play", error);
+		} finally {
+			setIsLoading(false);
+		}
+	}, [isCurrent, isLoading, queue, song.id]);
 
-	const handleAddToQueue = useCallback(
-		async (e: React.MouseEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
-
-			if (isLoading) return;
-
-			try {
-				setIsLoading(true);
-				const [detailedSong] = await getSongById(song.id);
-				if (!detailedSong) {
-					return;
-				}
-
-				useAppStore.getState().addSongToQueue(detailedSong);
-			} catch (error) {
-				logError("SongItem:addToQueue", error);
-			} finally {
-				setIsLoading(false);
-			}
-		},
-		[song.id, isLoading],
-	);
-
-	const displayArtists =
-		song.primaryArtists.split(", ").length > 2
-			? `${song.primaryArtists.split(", ").slice(0, 2).join(", ")}...`
-			: song.primaryArtists;
-
-	const imageSize = compact
-		? "h-9 w-9 sm:h-10 sm:w-10"
-		: "h-10 w-10 sm:h-12 sm:w-12";
-	const buttonSize = compact
-		? "h-8 w-8 sm:h-9 sm:w-9"
-		: "h-9 w-9 sm:h-10 sm:w-10";
-	const iconSize = compact ? "h-3.5 w-3.5" : "h-4 w-4";
+	const artwork = compact ? "h-9 w-9" : "h-10 w-10";
+	const PlayIcon = isPlaying ? Pause : Play;
 
 	return (
-		<Card className="overflow-hidden hover:bg-accent/50 transition-all duration-150 hover:shadow-sm">
-			<CardContent
-				className={`p-1.5 sm:p-2 ${compact ? "md:p-1.5" : "md:p-2"} overflow-x-hidden`}
+		<div
+			className={cn(
+				"group flex items-center gap-3 rounded-md px-2 py-1.5 hover:bg-accent/60",
+				isCurrent && "bg-accent/40",
+			)}
+		>
+			{index !== undefined && (
+				<span className="hidden w-6 shrink-0 justify-center text-sm tabular-nums text-muted-foreground sm:flex">
+					{isPlaying ? (
+						<EqualizerBars />
+					) : (
+						<span className={cn(isCurrent && "text-primary")}>{index}</span>
+					)}
+				</span>
+			)}
+
+			<button
+				type="button"
+				onClick={handlePlay}
+				aria-label={isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
+				className={cn(
+					"relative shrink-0 overflow-hidden rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+					artwork,
+				)}
 			>
-				<div className="flex items-start gap-2 sm:gap-3 max-w-full min-h-10">
-					<Link
-						href={`/song?id=${song.id}`}
-						className={`relative ${imageSize} shrink-0 overflow-hidden rounded-md transition-transform duration-150 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2`}
-					>
-						<ProgressiveImage
-							images={song.image}
-							alt={song.title}
-							className="object-cover"
-							sizes="40px"
-						/>
-					</Link>
+				<ProgressiveImage
+					images={song.image}
+					alt=""
+					className="object-cover"
+					sizes="40px"
+				/>
+				<span
+					className={cn(
+						"absolute inset-0 flex items-center justify-center bg-black/55 text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
+						(isLoading || isCurrent) && "opacity-100",
+					)}
+				>
+					{isLoading ? (
+						<Loader2 className="h-4 w-4 animate-spin" />
+					) : (
+						<PlayIcon className="h-4 w-4 fill-current" />
+					)}
+				</span>
+			</button>
 
-					<div className="flex-1 min-w-0 py-0.5">
-						<Link href={`/song?id=${song.id}`} className="block group">
-							<h3
-								className={`font-medium truncate group-hover:text-primary transition-colors duration-150 ${
-									compact ? "text-xs sm:text-xs" : "text-xs sm:text-sm"
-								}`}
-							>
-								{song.title}
-							</h3>
-						</Link>
-						<p
-							className={`text-muted-foreground truncate ${
-								compact ? "text-[10px] sm:text-xs" : "text-[10px] sm:text-xs"
-							}`}
-						>
-							{displayArtists}
-						</p>
-					</div>
+			<div className="min-w-0 flex-1">
+				<Link
+					href={`/song?id=${song.id}`}
+					className={cn(
+						"block truncate text-sm font-medium hover:underline",
+						isCurrent && "text-primary",
+					)}
+				>
+					{song.title}
+				</Link>
+				<p className="truncate text-xs text-muted-foreground">
+					{song.primaryArtists || song.singers}
+				</p>
+			</div>
 
-					<div className="flex gap-1 sm:gap-1.5 shrink-0 items-center">
-						<motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-							<Button
-								size="icon"
-								variant="ghost"
-								onClick={handlePlay}
-								disabled={isLoading}
-								aria-label="Play song"
-								className={`${buttonSize} hover:bg-primary/20 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary`}
-							>
-								{isLoading ? (
-									<Loader2 className={`${iconSize} animate-spin`} />
-								) : (
-									<Play className={`${iconSize} fill-current`} />
-								)}
-							</Button>
-						</motion.div>
+			{!compact && song.album && (
+				<span className="hidden w-1/4 truncate text-sm text-muted-foreground lg:block">
+					{song.album}
+				</span>
+			)}
 
-						<motion.div
-							whileHover={{ scale: 1.1 }}
-							whileTap={{ scale: 0.9 }}
-							className="hidden sm:block"
-						>
-							<Button
-								size="icon"
-								variant="ghost"
-								onClick={handleAddToQueue}
-								disabled={isLoading}
-								aria-label="Add to queue"
-								className={`${buttonSize} hover:bg-primary/20 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary`}
-							>
-								<Plus className={iconSize} />
-							</Button>
-						</motion.div>
+			{detailed && <FavoriteButton song={detailed} />}
 
-						<SongActionMenu song={song} />
-					</div>
-				</div>
-			</CardContent>
-		</Card>
+			{detailed && (
+				<span className="hidden w-10 text-right text-xs tabular-nums text-muted-foreground sm:block">
+					{formatTime(detailed.duration ?? 0)}
+				</span>
+			)}
+
+			<SongActionMenu song={song} />
+		</div>
 	);
 });

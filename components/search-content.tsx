@@ -198,6 +198,7 @@ export default function SearchContent() {
 						>
 							<SongsList
 								songs={searchResults.songs.results.map(detailedSongToSong)}
+								detailedSongs={searchResults.songs.results}
 							/>
 							<LoadMoreButton
 								hasNextPage={searchResults.songs.hasNextPage}

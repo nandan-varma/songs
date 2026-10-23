@@ -57,7 +57,10 @@ export default function FavoritesPage() {
 				</div>
 			) : favoriteSongs && favoriteSongs.length > 0 ? (
 				<div className="max-w-4xl mx-auto">
-					<SongsList songs={favoriteSongs.map(detailedSongToSong)} />
+					<SongsList
+						songs={favoriteSongs.map(detailedSongToSong)}
+						detailedSongs={favoriteSongs}
+					/>
 				</div>
 			) : null}
 		</div>

@@ -4,9 +4,12 @@ import { Loader2, Mic2 } from "lucide-react";
 import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSongLyrics } from "@/hooks/data/queries";
+import { cn } from "@/lib/utils";
 
 interface SongLyricsProps {
 	songId: string;
+	/** Cap the height and scroll inside the card; turn off when the parent already scrolls. */
+	capHeight?: boolean;
 }
 
 /**
@@ -14,6 +17,7 @@ interface SongLyricsProps {
  */
 export const SongLyrics = memo(function SongLyrics({
 	songId,
+	capHeight = true,
 }: SongLyricsProps) {
 	const { data: lyrics, isPending, error } = useSongLyrics(songId);
 
@@ -33,7 +37,12 @@ export const SongLyrics = memo(function SongLyrics({
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 					</div>
 				) : (
-					<div className="max-h-96 space-y-1 overflow-y-auto text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+					<div
+						className={cn(
+							"space-y-1 text-sm leading-relaxed text-muted-foreground whitespace-pre-line",
+							capHeight && "max-h-96 overflow-y-auto",
+						)}
+					>
 						{lyrics?.lyrics.replace(/<br\s*\/?>/gi, "\n")}
 					</div>
 				)}

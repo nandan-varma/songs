@@ -1,10 +1,12 @@
 "use client";
 
 import { Maximize2 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { CoverImage } from "@/components/common/cover-image";
 import { FavoriteButton } from "@/components/common/favorite-button";
 import { SongLyrics } from "@/components/song/song-lyrics";
+import { SongsList } from "@/components/songs-list";
 import { Button } from "@/components/ui/button";
 import {
 	Sheet,
@@ -13,25 +15,51 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	useCurrentSong,
 	useIsPlaying,
 	useQueueLength,
+	useQueueSongs,
+	useVolume,
 } from "@/hooks/use-store";
 import { useAppStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
+import { SleepTimerMenu } from "./sleep-timer-menu";
+import { VolumeControl } from "./volume-control";
 
-/** Full-screen view of the current song: large artwork, controls and lyrics. */
+/** Blurred, darkened artwork that tints the whole screen and crossfades between songs. */
+function Backdrop({ songId, imageUrl }: { songId: string; imageUrl?: string }) {
+	return (
+		<div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-background">
+			<AnimatePresence>
+				<motion.div
+					key={songId}
+					className="absolute inset-0 scale-125 bg-cover bg-center blur-3xl"
+					style={{ backgroundImage: imageUrl ? `url(${imageUrl})` : undefined }}
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 0.8 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.8 }}
+				/>
+			</AnimatePresence>
+			<div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
+		</div>
+	);
+}
+
+/** Full-screen view of the current song: artwork, controls, volume, queue and lyrics. */
 export function NowPlayingSheet() {
 	const song = useCurrentSong();
 	const isPlaying = useIsPlaying();
 	const queueLength = useQueueLength();
+	const queue = useQueueSongs();
+	const volume = useVolume();
 
 	if (!song) return null;
 
-	const { togglePlayPause, playPrevious, playNext, setSongTime } =
+	const { togglePlayPause, playPrevious, playNext, setSongTime, setVolume } =
 		useAppStore.getState();
 
 	return (
@@ -43,28 +71,44 @@ export function NowPlayingSheet() {
 			</SheetTrigger>
 			<SheetContent
 				side="bottom"
-				className="h-dvh gap-6 overflow-y-auto px-6 pt-12 pb-8"
+				className="h-dvh gap-0 overflow-hidden border-0 bg-transparent p-0"
 			>
+				<Backdrop songId={song.id} imageUrl={song.image.at(-1)?.url} />
 				<SheetTitle className="sr-only">Now playing: {song.name}</SheetTitle>
 				<SheetDescription className="sr-only">
-					Large artwork, playback controls and lyrics for the current song.
+					Artwork, playback controls, queue and lyrics for the current song.
 				</SheetDescription>
 
-				<div
-					className={cn(
-						"mx-auto grid w-full gap-8 md:items-start",
-						song.hasLyrics ? "max-w-5xl md:grid-cols-2" : "max-w-md",
-					)}
-				>
-					<div className="mx-auto w-full max-w-md space-y-6">
-						<div className="relative aspect-square w-full overflow-hidden rounded-xl shadow-2xl">
-							<CoverImage
-								images={song.image}
-								alt={song.name}
-								priority
-								sizes="(max-width: 768px) 90vw, 448px"
-							/>
-						</div>
+				<p className="pt-5 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+					Now playing
+				</p>
+
+				<div className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 gap-8 overflow-y-auto px-6 py-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-center lg:gap-16 lg:overflow-hidden">
+					<div className="mx-auto w-full max-w-sm space-y-6 lg:max-w-none">
+						<motion.div
+							className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10"
+							animate={{ scale: isPlaying ? 1 : 0.9 }}
+							transition={{ type: "spring", stiffness: 220, damping: 24 }}
+						>
+							<AnimatePresence mode="popLayout">
+								<motion.div
+									key={song.id}
+									className="absolute inset-0"
+									initial={{ opacity: 0, scale: 1.05 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0 }}
+									transition={{ duration: 0.4 }}
+								>
+									<CoverImage
+										images={song.image}
+										alt={song.name}
+										priority
+										rounded="none"
+										sizes="(max-width: 1024px) 90vw, 416px"
+									/>
+								</motion.div>
+							</AnimatePresence>
+						</motion.div>
 
 						<div className="flex items-center justify-between gap-3">
 							<div className="min-w-0">
@@ -75,13 +119,24 @@ export function NowPlayingSheet() {
 									{song.name}
 								</Link>
 								<p className="truncate text-muted-foreground">
-									{song.artists.primary.map((artist) => artist.name).join(", ")}
+									{song.artists.primary.map((artist, index) => (
+										<span key={artist.id}>
+											{index > 0 && ", "}
+											<Link
+												href={`/artist?id=${artist.id}`}
+												className="hover:underline"
+											>
+												{artist.name}
+											</Link>
+										</span>
+									))}
 								</p>
 							</div>
 							<FavoriteButton song={song} />
 						</div>
 
 						<ProgressBar onSeekTo={setSongTime} />
+
 						<div className="flex justify-center">
 							<PlaybackControls
 								isPlaying={isPlaying}
@@ -91,9 +146,34 @@ export function NowPlayingSheet() {
 								onPlayNext={playNext}
 							/>
 						</div>
+
+						<div className="flex items-center justify-between gap-4">
+							<SleepTimerMenu />
+							<div className="w-40">
+								<VolumeControl volume={volume} onSetVolume={setVolume} />
+							</div>
+						</div>
 					</div>
 
-					{song.hasLyrics && <SongLyrics songId={song.id} />}
+					<Tabs
+						defaultValue={song.hasLyrics ? "lyrics" : "queue"}
+						className="flex min-h-0 flex-col gap-4 lg:h-[min(36rem,70dvh)]"
+					>
+						<TabsList className="w-fit">
+							{song.hasLyrics && (
+								<TabsTrigger value="lyrics">Lyrics</TabsTrigger>
+							)}
+							<TabsTrigger value="queue">Up next ({queueLength})</TabsTrigger>
+						</TabsList>
+						{song.hasLyrics && (
+							<TabsContent value="lyrics" className="min-h-0 overflow-y-auto">
+								<SongLyrics songId={song.id} capHeight={false} />
+							</TabsContent>
+						)}
+						<TabsContent value="queue" className="min-h-0 overflow-y-auto">
+							<SongsList songs={queue} compact />
+						</TabsContent>
+					</Tabs>
 				</div>
 			</SheetContent>
 		</Sheet>

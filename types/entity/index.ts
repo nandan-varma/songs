@@ -223,7 +223,6 @@ export interface DetailedArtist {
 	twitter: string | null;
 	wiki: string | null;
 	availableLanguages: string[];
-	isRadioPresent: boolean | null;
 	topSongs: DetailedSong[] | null;
 	topAlbums: DetailedAlbum[] | null;
 	singles: DetailedSong[] | null;

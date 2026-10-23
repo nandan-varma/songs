@@ -33,7 +33,7 @@ export const SongLyrics = memo(function SongLyrics({
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 					</div>
 				) : (
-					<div className="space-y-1 text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+					<div className="max-h-96 space-y-1 overflow-y-auto text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
 						{lyrics?.lyrics.replace(/<br\s*\/?>/gi, "\n")}
 					</div>
 				)}

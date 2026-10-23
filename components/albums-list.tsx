@@ -135,6 +135,8 @@ export const AlbumsList = memo(function AlbumsList({
 				{albums.map((album) => (
 					<motion.div
 						key={album.id}
+						whileHover={{ y: -4 }}
+						whileTap={{ scale: 0.98 }}
 						variants={{
 							hidden: { opacity: 0, scale: 0.95 },
 							show: { opacity: 1, scale: 1 },

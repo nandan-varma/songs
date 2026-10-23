@@ -1,6 +1,7 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { MotionConfig } from "motion/react";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
@@ -36,7 +37,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<ErrorBoundary context="App">
-				{children}
+				<MotionConfig reducedMotion="user">{children}</MotionConfig>
 				{process.env.NODE_ENV === "development" && <ReactQueryDevtools />}
 			</ErrorBoundary>
 		</QueryClientProvider>

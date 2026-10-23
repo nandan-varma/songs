@@ -31,6 +31,12 @@ const LANGUAGE_OPTIONS = [
 
 const TRENDING_SONGS_SHOWN = 10;
 
+function getGreeting(): string {
+	const hour = new Date().getHours();
+	if (hour < 12) return "Good morning";
+	return hour < 18 ? "Good afternoon" : "Good evening";
+}
+
 function RadioStations({ stations }: { stations: RadioStation[] }) {
 	const [loadingStation, setLoadingStation] = useState<string | null>(null);
 
@@ -140,6 +146,10 @@ export const DiscoverContent = memo(function DiscoverContent() {
 			initial={{ opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
 		>
+			<h1 className="text-2xl md:text-3xl font-bold" suppressHydrationWarning>
+				{getGreeting()}
+			</h1>
+
 			<div className="flex items-center justify-between">
 				<h2 className="text-base sm:text-lg md:text-xl font-semibold">
 					Trending

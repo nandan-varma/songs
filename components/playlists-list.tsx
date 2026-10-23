@@ -124,6 +124,8 @@ export const PlaylistsList = memo(function PlaylistsList({
 				{playlists.map((playlist) => (
 					<motion.div
 						key={playlist.id}
+						whileHover={{ y: -4 }}
+						whileTap={{ scale: 0.98 }}
 						variants={{
 							hidden: { opacity: 0, scale: 0.95 },
 							show: { opacity: 1, scale: 1 },

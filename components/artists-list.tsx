@@ -145,6 +145,8 @@ export const ArtistsList = memo(function ArtistsList({
 				{artists.map((artist) => (
 					<motion.div
 						key={artist.id}
+						whileHover={{ y: -4 }}
+						whileTap={{ scale: 0.98 }}
 						variants={{
 							hidden: { opacity: 0, scale: 0.95 },
 							show: { opacity: 1, scale: 1 },

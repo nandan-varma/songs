@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { HeartIcon } from "@animateicons/react/lucide";
 import { motion } from "motion/react";
 import { memo } from "react";
 import { useFavorites, useIsFavorite } from "@/hooks/use-store";
@@ -45,7 +45,7 @@ export const FavoriteButton = memo(function FavoriteButton({
 					animate={isFav ? { scale: [1, 1.3, 1] } : {}}
 					transition={{ duration: 0.3 }}
 				>
-					<Heart className={`${isFav ? "fill-current" : ""} h-4 w-4`} />
+					<HeartIcon size={18} className={isFav ? "fill-current" : ""} />
 				</motion.div>
 			</Button>
 		</motion.div>

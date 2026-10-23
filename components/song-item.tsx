@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Pause, Play } from "lucide-react";
+import { LoaderIcon, PauseIcon, PlayIcon } from "@animateicons/react/lucide";
 import Link from "next/link";
 import { memo, useCallback, useState } from "react";
 import { FavoriteButton } from "@/components/common/favorite-button";
@@ -77,7 +77,7 @@ export const SongItem = memo(function SongItem({
 	}, [isCurrent, isLoading, queue, song.id]);
 
 	const artwork = compact ? "h-9 w-9" : "h-10 w-10";
-	const PlayIcon = isPlaying ? Pause : Play;
+	const ActionIcon = isPlaying ? PauseIcon : PlayIcon;
 
 	return (
 		<div
@@ -118,9 +118,9 @@ export const SongItem = memo(function SongItem({
 					)}
 				>
 					{isLoading ? (
-						<Loader2 className="h-4 w-4 animate-spin" />
+						<LoaderIcon size={16} />
 					) : (
-						<PlayIcon className="h-4 w-4 fill-current" />
+						<ActionIcon size={16} className="fill-current" />
 					)}
 				</span>
 			</button>

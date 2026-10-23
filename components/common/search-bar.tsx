@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { SearchIcon } from "@animateicons/react/lucide";
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { Button } from "../ui/button";
@@ -55,7 +55,10 @@ export const SearchBar = memo(function SearchBar({
 				whileFocus={{ scale: 1.01 }}
 				transition={{ duration: 0.2 }}
 			>
-				<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+				<SearchIcon
+					size={16}
+					className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+				/>
 				<Input
 					type="text"
 					value={value}
@@ -74,7 +77,7 @@ export const SearchBar = memo(function SearchBar({
 				aria-label="Search"
 				disabled={!value.trim()}
 			>
-				<Search className="h-4 w-4" />
+				<SearchIcon size={16} />
 			</Button>
 		</div>
 	);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2Icon, VolumeXIcon } from "@animateicons/react/lucide";
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { useAppStore } from "@/lib/store";
@@ -65,11 +65,7 @@ export const VolumeControl = memo(function VolumeControl({
 					className="h-10 w-10 sm:h-11 sm:w-11 md:h-12 md:w-12 hover:bg-primary/10 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary"
 					aria-label={isSilent ? "Unmute" : "Mute"}
 				>
-					{isSilent ? (
-						<VolumeX className="h-5 w-5 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-					) : (
-						<Volume2 className="h-5 w-5 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-					)}
+					{isSilent ? <VolumeXIcon size={22} /> : <Volume2Icon size={22} />}
 				</Button>
 			</motion.div>
 

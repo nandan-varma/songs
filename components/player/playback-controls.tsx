@@ -1,14 +1,14 @@
 "use client";
 
 import {
-	Pause,
-	Play,
-	Repeat,
-	Repeat1,
-	Shuffle,
-	SkipBack,
-	SkipForward,
-} from "lucide-react";
+	PauseIcon,
+	PlayIcon,
+	Repeat1Icon,
+	RepeatIcon,
+	ShuffleIcon,
+	SkipBackIcon,
+	SkipForwardIcon,
+} from "@animateicons/react/lucide";
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { useIsShuffleEnabled, useRepeatMode } from "@/hooks/use-store";
@@ -57,7 +57,7 @@ export const PlaybackControls = memo(function PlaybackControls({
 				)}
 				aria-label="Toggle shuffle"
 			>
-				<Shuffle className="h-4 w-4 md:h-5 md:w-5" />
+				<ShuffleIcon size={20} />
 				{isShuffleEnabled && (
 					<div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />
 				)}
@@ -72,7 +72,7 @@ export const PlaybackControls = memo(function PlaybackControls({
 					className="h-10 w-10 md:h-11 md:w-11 text-foreground hover:bg-transparent hover:text-primary transition-colors focus:outline-none focus:ring-0"
 					aria-label="Previous track"
 				>
-					<SkipBack className="h-5 w-5 md:h-6 md:w-6 fill-current" />
+					<SkipBackIcon size={24} className="fill-current" />
 				</Button>
 			</motion.div>
 
@@ -85,9 +85,9 @@ export const PlaybackControls = memo(function PlaybackControls({
 					aria-label={isPlaying ? "Pause" : "Play"}
 				>
 					{isPlaying ? (
-						<Pause className="h-6 w-6 md:h-7 md:w-7 fill-current" />
+						<PauseIcon size={28} className="fill-current" />
 					) : (
-						<Play className="h-6 w-6 md:h-7 md:w-7 fill-current ml-1" />
+						<PlayIcon size={28} className="ml-1 fill-current" />
 					)}
 				</Button>
 			</motion.div>
@@ -101,7 +101,7 @@ export const PlaybackControls = memo(function PlaybackControls({
 					className="h-10 w-10 md:h-11 md:w-11 text-foreground hover:bg-transparent hover:text-primary transition-colors focus:outline-none focus:ring-0"
 					aria-label="Next track"
 				>
-					<SkipForward className="h-5 w-5 md:h-6 md:w-6 fill-current" />
+					<SkipForwardIcon size={24} className="fill-current" />
 				</Button>
 			</motion.div>
 
@@ -116,9 +116,9 @@ export const PlaybackControls = memo(function PlaybackControls({
 				aria-label="Toggle repeat"
 			>
 				{repeatMode === "one" ? (
-					<Repeat1 className="h-4 w-4 md:h-5 md:w-5" />
+					<Repeat1Icon size={20} />
 				) : (
-					<Repeat className="h-4 w-4 md:h-5 md:w-5" />
+					<RepeatIcon size={20} />
 				)}
 				{repeatMode !== "off" && (
 					<div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary" />

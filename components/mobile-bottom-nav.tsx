@@ -1,6 +1,11 @@
 "use client";
 
-import { Download, Heart, Home, Library } from "lucide-react";
+import {
+	Disc3Icon,
+	DownloadIcon,
+	HeartIcon,
+	HouseIcon,
+} from "@animateicons/react/lucide";
 import { motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { memo, useCallback } from "react";
@@ -19,10 +24,10 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 	const pathname = usePathname();
 
 	const navItems = [
-		{ path: VALID_ROUTES[0], icon: Home, label: "Home" },
-		{ path: VALID_ROUTES[1], icon: Library, label: "Library" },
-		{ path: VALID_ROUTES[2], icon: Download, label: "Downloads" },
-		{ path: VALID_ROUTES[3], icon: Heart, label: "Favorites" },
+		{ path: VALID_ROUTES[0], icon: HouseIcon, label: "Home" },
+		{ path: VALID_ROUTES[1], icon: Disc3Icon, label: "Library" },
+		{ path: VALID_ROUTES[2], icon: DownloadIcon, label: "Downloads" },
+		{ path: VALID_ROUTES[3], icon: HeartIcon, label: "Favorites" },
 	] as const;
 
 	const isActive = useCallback(
@@ -68,7 +73,7 @@ export const MobileBottomNav = memo(function MobileBottomNav() {
 								aria-label={item.label}
 								aria-current={active ? "page" : undefined}
 							>
-								<Icon className="h-6 w-6 sm:h-5 sm:w-5" />
+								<Icon size={22} />
 								<span className="text-xs sm:text-[10px] mt-1 font-medium truncate whitespace-nowrap">
 									{item.label}
 								</span>

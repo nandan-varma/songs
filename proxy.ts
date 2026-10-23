@@ -12,7 +12,7 @@ export function proxy(request: NextRequest) {
 		script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${
 			isDev ? "'unsafe-eval'" : ""
 		};
-		style-src 'self' ${isDev ? "'unsafe-inline'" : `'nonce-${nonce}'`};
+		style-src 'self' 'unsafe-inline';
 		img-src 'self' blob: data: https://*.saavncdn.com https://www.jiosaavn.com;
 		media-src 'self' blob: https://*.saavncdn.com;
 		connect-src 'self' ${apiOrigin} https://*.saavncdn.com ${isDev ? "ws:" : ""};

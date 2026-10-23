@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { connection } from "next/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { AudioPlayer } from "@/components/audio-player";
 import { BreadcrumbNav } from "@/components/breadcrumb-nav";
@@ -83,11 +84,14 @@ export const viewport: Viewport = {
 	userScalable: false,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	// The CSP in proxy.ts uses a per-request nonce, which only works on dynamically rendered pages.
+	await connection();
+
 	return (
 		<html lang="en">
 			<body className={`antialiased dark`}>

@@ -2,6 +2,7 @@ import { Loader, LogIn, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { NavLabel } from "./nav-label";
 
 export function NavigationAuthButton() {
 	const router = useRouter();
@@ -13,7 +14,7 @@ export function NavigationAuthButton() {
 				variant="ghost"
 				size="sm"
 				aria-label="Loading..."
-				className="w-full focus:outline-none focus:ring-2 focus:ring-primary"
+				className="focus:outline-none focus:ring-2 focus:ring-primary"
 				disabled
 			>
 				<Loader className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -28,10 +29,10 @@ export function NavigationAuthButton() {
 				size="sm"
 				onClick={() => authClient.signOut()}
 				aria-label="Logout"
-				className="w-full focus:outline-none focus:ring-2 focus:ring-primary"
+				className="focus:outline-none focus:ring-2 focus:ring-primary"
 			>
 				<LogOut className="h-4 w-4" aria-hidden="true" />
-				<span className="ml-2 hidden whitespace-nowrap sm:inline">Logout</span>
+				<NavLabel>Logout</NavLabel>
 			</Button>
 		);
 	}
@@ -44,10 +45,10 @@ export function NavigationAuthButton() {
 				router.push("/auth");
 			}}
 			aria-label="Login"
-			className="w-full focus:outline-none focus:ring-2 focus:ring-primary"
+			className="focus:outline-none focus:ring-2 focus:ring-primary"
 		>
 			<LogIn className="h-4 w-4" aria-hidden="true" />
-			<span className="ml-2 hidden whitespace-nowrap sm:inline">Login</span>
+			<NavLabel>Login</NavLabel>
 		</Button>
 	);
 }

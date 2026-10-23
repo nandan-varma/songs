@@ -21,8 +21,6 @@ export const SongLyrics = memo(function SongLyrics({
 }: SongLyricsProps) {
 	const { data: lyrics, isPending, error } = useSongLyrics(songId);
 
-	if (error) return null;
-
 	return (
 		<Card>
 			<CardHeader>
@@ -32,7 +30,11 @@ export const SongLyrics = memo(function SongLyrics({
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				{isPending ? (
+				{error ? (
+					<p className="py-6 text-center text-sm text-muted-foreground">
+						Lyrics aren't available for this song.
+					</p>
+				) : isPending ? (
 					<div className="flex items-center justify-center py-8">
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 					</div>

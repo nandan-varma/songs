@@ -1,37 +1,22 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { AlbumsList } from "@/components/albums-list";
-import { ArtistsList } from "@/components/artists-list";
+import { EntityGrid } from "@/components/common/entity-grid";
 import { LoadMoreButton } from "@/components/common/load-more-button";
-import { SearchBar } from "@/components/common/search-bar";
 import { DiscoverContent } from "@/components/discover/discover-content";
 import { HistoryList } from "@/components/history-list";
-import { PlaylistsList } from "@/components/playlists-list";
-import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
+import { ErrorState } from "@/components/search/search-states";
 import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchQueries } from "@/hooks/data/use-search-queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useHistory } from "@/hooks/use-store";
-import { isJioSaavnLink, resolveJioSaavnLink } from "@/lib/api";
-import { logError } from "@/lib/utils/logger";
-import type {
-	Artist,
-	ArtistSearchResult,
-	Playlist,
-	PlaylistSearchResult,
-} from "@/types/entity";
-
-// ============================================================================
-// TYPES & CONSTANTS
-// ============================================================================
-
-type TabType = "all" | "songs" | "albums" | "artists" | "playlists";
+import {
+	albumToItem,
+	artistToItem,
+	playlistToItem,
+} from "@/lib/utils/entity-items";
 
 const TABS = [
 	{ value: "all", label: "All" },
@@ -41,264 +26,138 @@ const TABS = [
 	{ value: "playlists", label: "Playlists" },
 ] as const;
 
+type TabType = (typeof TABS)[number]["value"];
+
 const SEARCH_PAGE_SIZE = 20;
-const SEARCH_DEBOUNCE_MS = 350;
 const ALL_TAB_SONGS = 5;
 
-/** Convert artist search result to standard artist format */
-const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
-	id: artist.id,
-	title: artist.name,
-	image: artist.image,
-	type: artist.type,
-	description: artist.role,
-	position: undefined,
-});
-
-/** Convert playlist search result to standard playlist format */
-const playlistSearchResultToPlaylist = (
-	playlist: PlaylistSearchResult,
-): Playlist => ({
-	id: playlist.id,
-	title: playlist.name,
-	image: playlist.image,
-	url: playlist.url,
-	language: playlist.language,
-	type: playlist.type,
-	description: `${playlist.songCount} songs`,
-});
-
+/** Search results (or the discover home when there is no query); the query itself is typed in the navbar. */
 export default function SearchContent() {
-	const [queryParam, setQueryParam] = useQueryState("q");
+	const [query] = useQueryState("q", { defaultValue: "" });
 	const [tabParam, setTabParam] = useQueryState("tab");
-	const router = useRouter();
 	const isOffline = useIsOffline();
 	const { playbackHistory } = useHistory();
 
-	const query = queryParam ?? "";
 	const activeTab = (tabParam as TabType | null) ?? "all";
-	const [draftQuery, setDraftQuery] = useState(query);
-	const lastPushedQuery = useRef(query);
-
-	const searchEnabled = !!query.trim() && !isOffline;
-
-	// Fetch all entity types in parallel
-	const searchResults = useSearchQueries(query, {
+	const results = useSearchQueries(query, {
 		limit: SEARCH_PAGE_SIZE,
-		enabled: searchEnabled,
+		enabled: !!query.trim() && !isOffline,
 	});
+	const { songs, albums, artists, playlists } = results;
 
-	const hasError =
-		searchResults.songs.error ||
-		searchResults.albums.error ||
-		searchResults.artists.error ||
-		searchResults.playlists.error;
+	if (!query) {
+		return (
+			<div className="container mx-auto space-y-6 px-4 py-4 md:space-y-8 md:py-8">
+				<DiscoverContent />
+				<HistoryList items={playbackHistory} />
+			</div>
+		);
+	}
 
-	const handleSearch = useCallback(() => {
-		const nextQuery = draftQuery.trim();
-		if (isJioSaavnLink(nextQuery)) {
-			const toastId = toast.loading("Opening link...");
-			resolveJioSaavnLink(nextQuery)
-				.then((entity) => {
-					toast.dismiss(toastId);
-					router.push(`/${entity.type}?id=${encodeURIComponent(entity.id)}`);
-				})
-				.catch((error: unknown) => {
-					logError("Search:resolveLink", error);
-					toast.error(
-						error instanceof Error ? error.message : "Could not open link",
-						{ id: toastId },
-					);
-				});
-			return;
-		}
-		lastPushedQuery.current = nextQuery;
-		void setQueryParam(nextQuery ? nextQuery : null);
-		if (!tabParam) {
-			void setTabParam(activeTab);
-		}
-	}, [activeTab, draftQuery, router, setQueryParam, setTabParam, tabParam]);
+	if (results.isError) {
+		return (
+			<div className="container mx-auto px-4 py-8">
+				<ErrorState />
+			</div>
+		);
+	}
 
-	const handleTabChange = useCallback(
-		(tab: string) => {
-			void setTabParam(tab as TabType);
-		},
-		[setTabParam],
-	);
-
-	// Search as you type; Enter (handleSearch) skips the delay.
-	useEffect(() => {
-		const next = draftQuery.trim();
-		if (next === query || isJioSaavnLink(next)) return;
-		const timer = setTimeout(() => {
-			lastPushedQuery.current = next;
-			void setQueryParam(next || null);
-			if (next && !tabParam) void setTabParam(activeTab);
-		}, SEARCH_DEBOUNCE_MS);
-		return () => clearTimeout(timer);
-	}, [activeTab, draftQuery, query, setQueryParam, setTabParam, tabParam]);
-
-	// Reflect external URL changes (back/forward, history links) in the input.
-	useEffect(() => {
-		if (query !== lastPushedQuery.current) setDraftQuery(query);
-	}, [query]);
+	const albumItems = albums.results.map(albumToItem);
+	const artistItems = artists.results.map(artistToItem);
+	const playlistItems = playlists.results.map(playlistToItem);
 
 	return (
-		<div className="container mx-auto px-4 py-4 md:py-8 space-y-4 md:space-y-8">
-			<div className="flex justify-center">
-				<SearchBar
-					value={draftQuery}
-					onChange={setDraftQuery}
-					onSearch={handleSearch}
-				/>
-			</div>
+		<div className="container mx-auto px-4 py-4 md:py-8">
+			<Tabs
+				value={activeTab}
+				onValueChange={(tab) => void setTabParam(tab)}
+				className="w-full"
+			>
+				<TabsList className="mx-auto grid w-full max-w-md grid-cols-5">
+					{TABS.map((tab) => (
+						<TabsTrigger
+							key={tab.value}
+							value={tab.value}
+							className="px-1 text-xs md:px-3 md:text-sm"
+						>
+							{tab.label}
+						</TabsTrigger>
+					))}
+				</TabsList>
 
-			{!query && (
-				<div className="space-y-6 md:space-y-8">
-					<DiscoverContent />
-					<HistoryList items={playbackHistory} />
-				</div>
-			)}
-
-			{hasError && <ErrorState />}
-
-			{query && !hasError && (
-				<Tabs
-					value={activeTab}
-					onValueChange={handleTabChange}
-					className="w-full"
+				<TabsContent
+					value="all"
+					className="mt-4 space-y-6 md:mt-6 md:space-y-8"
 				>
-					<TabsList className="grid w-full max-w-md mx-auto grid-cols-5">
-						{TABS.map((tab) => (
-							<TabsTrigger
-								key={tab.value}
-								value={tab.value}
-								className="px-1 text-xs md:px-3 md:text-sm"
-							>
-								{tab.label}
-							</TabsTrigger>
-						))}
-					</TabsList>
-
-					<TabsContent
-						value="all"
-						className="space-y-6 md:space-y-8 mt-4 md:mt-6"
+					<SearchTabContent
+						type="results"
+						isLoading={results.isLoading}
+						hasResults={
+							songs.results.length +
+								albumItems.length +
+								artistItems.length +
+								playlistItems.length >
+							0
+						}
+						query={query}
 					>
-						<SearchTabContent
-							type="results"
-							isLoading={searchResults.isLoading}
-							hasResults={
-								searchResults.songs.results.length > 0 ||
-								searchResults.albums.results.length > 0 ||
-								searchResults.artists.results.length > 0 ||
-								searchResults.playlists.results.length > 0
-							}
-							query={query}
-						>
-							<SongsList
-								songs={searchResults.songs.results.slice(0, ALL_TAB_SONGS)}
-							/>
-							<AlbumsList shelf albums={searchResults.albums.results} />
-							<ArtistsList
-								shelf
-								artists={searchResults.artists.results.map(
-									artistSearchResultToArtist,
-								)}
-							/>
-							<PlaylistsList
-								shelf
-								playlists={searchResults.playlists.results.map(
-									playlistSearchResultToPlaylist,
-								)}
-							/>
-						</SearchTabContent>
-					</TabsContent>
+						<SongsList songs={songs.results.slice(0, ALL_TAB_SONGS)} />
+						<EntityGrid shelf kind="album" title="Albums" items={albumItems} />
+						<EntityGrid
+							shelf
+							kind="artist"
+							title="Artists"
+							items={artistItems}
+						/>
+						<EntityGrid
+							shelf
+							kind="playlist"
+							title="Playlists"
+							items={playlistItems}
+						/>
+					</SearchTabContent>
+				</TabsContent>
 
-					<TabsContent value="songs" className="mt-4 md:mt-6">
-						<SearchTabContent
-							type="songs"
-							isLoading={
-								searchResults.songs.isLoading &&
-								searchResults.songs.results.length === 0
-							}
-							hasResults={searchResults.songs.results.length > 0}
-							query={query}
-						>
-							<SongsList songs={searchResults.songs.results} />
-							<LoadMoreButton
-								hasNextPage={searchResults.songs.hasNextPage}
-								isFetching={searchResults.songs.isFetchingNextPage}
-								onLoadMore={searchResults.songs.fetchNextPage}
-							/>
-						</SearchTabContent>
-					</TabsContent>
+				<TabsContent value="songs" className="mt-4 md:mt-6">
+					<SearchTabContent
+						type="songs"
+						isLoading={songs.isLoading}
+						hasResults={songs.results.length > 0}
+						query={query}
+					>
+						<SongsList songs={songs.results} />
+						<LoadMoreButton
+							hasNextPage={songs.hasNextPage}
+							isFetching={songs.isFetchingNextPage}
+							onLoadMore={songs.fetchNextPage}
+						/>
+					</SearchTabContent>
+				</TabsContent>
 
-					<TabsContent value="albums" className="mt-4 md:mt-6">
+				{(
+					[
+						["albums", "album", albums, albumItems],
+						["artists", "artist", artists, artistItems],
+						["playlists", "playlist", playlists, playlistItems],
+					] as const
+				).map(([tab, kind, section, items]) => (
+					<TabsContent key={tab} value={tab} className="mt-4 md:mt-6">
 						<SearchTabContent
-							type="albums"
-							isLoading={
-								searchResults.albums.isLoading &&
-								searchResults.albums.results.length === 0
-							}
-							hasResults={searchResults.albums.results.length > 0}
+							type={tab}
+							isLoading={section.isLoading}
+							hasResults={items.length > 0}
 							query={query}
 						>
-							<AlbumsList albums={searchResults.albums.results} />
+							<EntityGrid kind={kind} title={tab} items={items} />
 							<LoadMoreButton
-								hasNextPage={searchResults.albums.hasNextPage}
-								isFetching={searchResults.albums.isFetchingNextPage}
-								onLoadMore={searchResults.albums.fetchNextPage}
+								hasNextPage={section.hasNextPage}
+								isFetching={section.isFetchingNextPage}
+								onLoadMore={section.fetchNextPage}
 							/>
 						</SearchTabContent>
 					</TabsContent>
-
-					<TabsContent value="artists" className="mt-4 md:mt-6">
-						<SearchTabContent
-							type="artists"
-							isLoading={
-								searchResults.artists.isLoading &&
-								searchResults.artists.results.length === 0
-							}
-							hasResults={searchResults.artists.results.length > 0}
-							query={query}
-						>
-							<ArtistsList
-								artists={searchResults.artists.results.map(
-									artistSearchResultToArtist,
-								)}
-							/>
-							<LoadMoreButton
-								hasNextPage={searchResults.artists.hasNextPage}
-								isFetching={searchResults.artists.isFetchingNextPage}
-								onLoadMore={searchResults.artists.fetchNextPage}
-							/>
-						</SearchTabContent>
-					</TabsContent>
-
-					<TabsContent value="playlists" className="mt-4 md:mt-6">
-						<SearchTabContent
-							type="playlists"
-							isLoading={
-								searchResults.playlists.isLoading &&
-								searchResults.playlists.results.length === 0
-							}
-							hasResults={searchResults.playlists.results.length > 0}
-							query={query}
-						>
-							<PlaylistsList
-								playlists={searchResults.playlists.results.map(
-									playlistSearchResultToPlaylist,
-								)}
-							/>
-							<LoadMoreButton
-								hasNextPage={searchResults.playlists.hasNextPage}
-								isFetching={searchResults.playlists.isFetchingNextPage}
-								onLoadMore={searchResults.playlists.fetchNextPage}
-							/>
-						</SearchTabContent>
-					</TabsContent>
-				</Tabs>
-			)}
+				))}
+			</Tabs>
 		</div>
 	);
 }

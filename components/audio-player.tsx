@@ -111,6 +111,7 @@ export function AudioPlayer() {
 
 	return (
 		<PlayerContainer
+			isVisible={hasCurrentSong}
 			isOffline={isOffline}
 			audioElement={
 				<audio ref={audioRef}>
@@ -118,7 +119,11 @@ export function AudioPlayer() {
 				</audio>
 			}
 		>
-			<MobileLayout {...layoutProps} />
+			<MobileLayout
+				currentSong={layoutProps.currentSong}
+				isPlaying={layoutProps.isPlaying}
+				onTogglePlayPause={togglePlayPause}
+			/>
 			<DesktopLayout {...layoutProps} />
 		</PlayerContainer>
 	);

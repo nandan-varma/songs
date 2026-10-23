@@ -6,6 +6,8 @@ import { memo } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface PlayerContainerProps {
+	/** The player bar only appears once something is playing; the audio element stays mounted. */
+	isVisible: boolean;
 	isOffline: boolean;
 	audioElement: ReactNode;
 	children: ReactNode;
@@ -16,12 +18,16 @@ interface PlayerContainerProps {
  * Single responsibility: Layout wrapper
  */
 export const PlayerContainer = memo(function PlayerContainer({
+	isVisible,
 	isOffline,
 	audioElement,
 	children,
 }: PlayerContainerProps) {
 	return (
-		<div className="fixed z-50 max-w-[1400px] mx-auto transition-all duration-300 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-3 right-3 md:bottom-6 md:left-6 md:right-6 bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl md:rounded-full">
+		<div
+			hidden={!isVisible}
+			className="fixed z-50 max-w-[1400px] mx-auto transition-all duration-300 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-3 right-3 md:bottom-6 md:left-6 md:right-6 bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur-xl border border-border/50 shadow-2xl rounded-2xl md:rounded-full"
+		>
 			{audioElement}
 
 			{isOffline && (
@@ -36,7 +42,7 @@ export const PlayerContainer = memo(function PlayerContainer({
 				</div>
 			)}
 
-			<div className="min-h-[130px] md:min-h-[90px] px-4 py-3 md:py-2 md:px-6 flex items-center justify-center w-full mx-auto">
+			<div className="md:min-h-[90px] px-3 py-2 md:px-6 flex items-center justify-center w-full mx-auto">
 				{children}
 			</div>
 		</div>

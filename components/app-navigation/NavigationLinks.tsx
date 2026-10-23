@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { Button } from "@/components/ui/button";
+import { NavLabel } from "./nav-label";
 
 function NavigationLink({
 	href,
@@ -14,7 +15,11 @@ function NavigationLink({
 	icon: ComponentType<{ size?: number }>;
 }) {
 	return (
-		<Link href={href} aria-label={`Go to ${label.toLowerCase()} page`}>
+		<Link
+			href={href}
+			aria-label={`Go to ${label.toLowerCase()} page`}
+			title={label}
+		>
 			<Button
 				variant="ghost"
 				size="sm"
@@ -22,7 +27,7 @@ function NavigationLink({
 				aria-label={label}
 			>
 				<Icon size={16} />
-				<span className="ml-2 hidden whitespace-nowrap sm:inline">{label}</span>
+				<NavLabel>{label}</NavLabel>
 			</Button>
 		</Link>
 	);
@@ -30,7 +35,7 @@ function NavigationLink({
 
 export function NavigationLinks() {
 	return (
-		<div className="flex items-center gap-1">
+		<div className="hidden items-center gap-1 md:flex">
 			<NavigationLink href="/downloads" label="Downloads" icon={DownloadIcon} />
 			<NavigationLink href="/favorites" label="Favorites" icon={HeartIcon} />
 			<NavigationLink href="/library" label="Library" icon={Disc3Icon} />

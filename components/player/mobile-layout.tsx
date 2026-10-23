@@ -1,115 +1,90 @@
 "use client";
 
+import { Pause, Play } from "lucide-react";
 import { memo } from "react";
 import { CoverImage } from "@/components/common/cover-image";
+import { FavoriteButton } from "@/components/common/favorite-button";
+import { Button } from "@/components/ui/button";
+import { useCurrentTime, useDuration } from "@/hooks/use-store";
 import type { DetailedSong } from "@/types/entity";
 import { NowPlayingSheet } from "./now-playing-sheet";
-import { PlaybackControls } from "./playback-controls";
-import { ProgressBar } from "./progress-bar";
-import { QueueButton } from "./queue-button";
-import { SleepTimerMenu } from "./sleep-timer-menu";
-import { VolumeControl } from "./volume-control";
 
 interface MobileLayoutProps {
 	currentSong: DetailedSong | null;
 	isPlaying: boolean;
-	volume: number;
-	queue: DetailedSong[];
-	currentIndex: number;
 	onTogglePlayPause: () => void;
-	onPlayPrevious: () => void;
-	onPlayNext: () => void;
-	onSeekTo: (time: number) => void;
-	onSetVolume: (volume: number) => void;
-	onRemoveFromQueue: (index: number) => void;
-	onReorderQueue: (fromIndex: number, toIndex: number) => void;
+}
+
+/** Thin progress line along the bottom edge of the mini player. */
+function MiniProgress() {
+	const currentTime = useCurrentTime();
+	const duration = useDuration();
+	const percent =
+		duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+
+	return (
+		<div className="absolute inset-x-3 bottom-0 h-0.5 overflow-hidden rounded-full bg-white/10">
+			<div
+				className="h-full bg-primary transition-[width] duration-200"
+				style={{ width: `${percent}%` }}
+			/>
+		</div>
+	);
 }
 
 /**
- * Mobile-optimized player layout
- * - Touch-friendly button sizing (min 44-48px)
- * - Responsive spacing for readability
- * - Single responsibility: Mobile UI composition
+ * Compact mini player: artwork, title, like and play/pause.
+ * Tapping the song opens the full-screen player, which holds seek, skip, queue and lyrics.
  */
 export const MobileLayout = memo(function MobileLayout({
 	currentSong,
 	isPlaying,
-	volume,
-	queue,
-	currentIndex,
 	onTogglePlayPause,
-	onPlayPrevious,
-	onPlayNext,
-	onSeekTo,
-	onSetVolume,
-	onRemoveFromQueue,
-	onReorderQueue,
 }: MobileLayoutProps) {
+	if (!currentSong) return null;
+
 	return (
-		<div className="md:hidden flex flex-col gap-3 w-full max-w-md mx-auto">
-			{/* Top Row: Song Info and Queue */}
-			<div className="flex items-center justify-between gap-3">
-				<div className="flex items-center gap-3 overflow-hidden">
-					{currentSong?.image && currentSong.image.length > 0 ? (
-						<div className="relative h-14 w-14 shrink-0 rounded-md overflow-hidden shadow-sm">
-							<CoverImage
-								images={currentSong.image}
-								alt={currentSong.name}
-								rounded="default"
-								priority
-								className="h-full w-full object-cover"
-								sizes="(max-width: 640px) 56px, 80px"
-							/>
-						</div>
-					) : (
-						<div className="h-14 w-14 shrink-0 bg-muted rounded-md flex items-center justify-center">
-							<div className="h-6 w-6 bg-muted-foreground/20 rounded-sm" />
-						</div>
-					)}
-					<div className="min-w-0 flex flex-col justify-center">
-						<h3 className="font-semibold text-sm truncate text-foreground leading-tight">
-							{currentSong?.name || "No song playing"}
-						</h3>
-						<div className="text-xs text-muted-foreground truncate mt-0.5">
-							{currentSong?.artists?.primary?.map((artist, index) => (
-								<span key={artist.id}>
-									{artist.name}
-									{index < (currentSong.artists.primary.length ?? 0) - 1 &&
-										", "}
-								</span>
-							)) || "Select a song"}
-						</div>
+		<div className="relative flex w-full items-center gap-2 pb-1 md:hidden">
+			<NowPlayingSheet>
+				<button
+					type="button"
+					aria-label={`Open player for ${currentSong.name}`}
+					className="flex min-w-0 flex-1 items-center gap-3 text-left"
+				>
+					<div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md">
+						<CoverImage
+							images={currentSong.image}
+							alt=""
+							priority
+							sizes="48px"
+						/>
 					</div>
-				</div>
+					<div className="min-w-0">
+						<p className="truncate text-sm font-semibold">{currentSong.name}</p>
+						<p className="truncate text-xs text-muted-foreground">
+							{currentSong.artists.primary
+								.map((artist) => artist.name)
+								.join(", ")}
+						</p>
+					</div>
+				</button>
+			</NowPlayingSheet>
 
-				<div className="shrink-0 flex items-center gap-1">
-					<VolumeControl volume={volume} onSetVolume={onSetVolume} />
-					<SleepTimerMenu />
-					<NowPlayingSheet />
-					<QueueButton
-						queue={queue}
-						currentIndex={currentIndex}
-						onRemoveFromQueue={onRemoveFromQueue}
-						onReorderQueue={onReorderQueue}
-					/>
-				</div>
-			</div>
-
-			{/* Progress Bar */}
-			<div className="w-full">
-				<ProgressBar onSeekTo={onSeekTo} />
-			</div>
-
-			{/* Controls Section */}
-			<div className="flex justify-center items-center">
-				<PlaybackControls
-					isPlaying={isPlaying}
-					queueLength={queue.length}
-					onTogglePlayPause={onTogglePlayPause}
-					onPlayPrevious={onPlayPrevious}
-					onPlayNext={onPlayNext}
-				/>
-			</div>
+			<FavoriteButton song={currentSong} />
+			<Button
+				size="icon"
+				variant="ghost"
+				onClick={onTogglePlayPause}
+				aria-label={isPlaying ? "Pause" : "Play"}
+				className="h-11 w-11"
+			>
+				{isPlaying ? (
+					<Pause className="h-6 w-6 fill-current" />
+				) : (
+					<Play className="h-6 w-6 fill-current" />
+				)}
+			</Button>
+			<MiniProgress />
 		</div>
 	);
 });

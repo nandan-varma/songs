@@ -4,6 +4,7 @@ import { DevMenu } from "@/components/dev/dev-menu";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/ui/use-pwa-install";
 import { NavigationAuthButton } from "./NavigationAuthButton";
+import { NavLabel } from "./nav-label";
 
 export function NavigationActions() {
 	const { isInstallable, promptInstall } = usePWAInstall();
@@ -20,14 +21,12 @@ export function NavigationActions() {
 						aria-label="Install app"
 					>
 						<Smartphone className="h-4 w-4" aria-hidden="true" />
-						<span className="ml-2 hidden whitespace-nowrap sm:inline">
-							Install
-						</span>
+						<NavLabel>Install</NavLabel>
 					</Button>
 				</motion.div>
 			)}
 
-			<div className="w-[38px] flex-shrink-0 sm:w-auto">
+			<div className="flex-shrink-0">
 				<NavigationAuthButton />
 			</div>
 

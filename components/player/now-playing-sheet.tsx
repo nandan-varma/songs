@@ -50,7 +50,7 @@ function Backdrop({ songId, imageUrl }: { songId: string; imageUrl?: string }) {
 }
 
 /** Full-screen view of the current song: artwork, controls, volume, queue and lyrics. */
-export function NowPlayingSheet() {
+export function NowPlayingSheet({ children }: { children?: React.ReactNode }) {
 	const song = useCurrentSong();
 	const isPlaying = useIsPlaying();
 	const queueLength = useQueueLength();
@@ -65,9 +65,11 @@ export function NowPlayingSheet() {
 	return (
 		<Sheet>
 			<SheetTrigger asChild>
-				<Button variant="ghost" size="icon" aria-label="Open now playing">
-					<Maximize2 className="h-4 w-4" />
-				</Button>
+				{children ?? (
+					<Button variant="ghost" size="icon" aria-label="Open now playing">
+						<Maximize2 className="h-4 w-4" />
+					</Button>
+				)}
 			</SheetTrigger>
 			<SheetContent
 				side="bottom"
@@ -83,10 +85,10 @@ export function NowPlayingSheet() {
 					Now playing
 				</p>
 
-				<div className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 gap-8 overflow-y-auto px-6 py-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-center lg:gap-16 lg:overflow-hidden">
+				<div className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 gap-6 overflow-y-auto px-6 py-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:items-center lg:gap-16 lg:overflow-hidden">
 					<div className="mx-auto w-full max-w-sm space-y-6 lg:max-w-none">
 						<motion.div
-							className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10"
+							className="relative mx-auto aspect-square w-[min(100%,40dvh)] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-white/10 lg:w-full"
 							animate={{ scale: isPlaying ? 1 : 0.9 }}
 							transition={{ type: "spring", stiffness: 220, damping: 24 }}
 						>
@@ -171,7 +173,7 @@ export function NowPlayingSheet() {
 							</TabsContent>
 						)}
 						<TabsContent value="queue" className="min-h-0 overflow-y-auto">
-							<SongsList songs={queue} compact />
+							<SongsList songs={queue} compact emptyMessage="Nothing queued" />
 						</TabsContent>
 					</Tabs>
 				</div>

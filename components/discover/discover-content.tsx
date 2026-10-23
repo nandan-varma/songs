@@ -4,8 +4,7 @@ import { Loader2, Radio as RadioIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
-import { AlbumsList } from "@/components/albums-list";
-import { PlaylistsList } from "@/components/playlists-list";
+import { EntityGrid } from "@/components/common/entity-grid";
 import { SongsList } from "@/components/songs-list";
 import {
 	Select,
@@ -16,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { useCharts, useTrending } from "@/hooks/data/queries";
 import { useAppStore } from "@/lib/store";
+import { albumToItem, playlistToItem } from "@/lib/utils/entity-items";
 import { logError } from "@/lib/utils/logger";
 import { Language } from "@/types/entity";
 
@@ -55,31 +55,11 @@ export const DiscoverContent = memo(function DiscoverContent() {
 	);
 	const { data: charts = [] } = useCharts();
 
-	const chartsAsPlaylists = charts.map((chart) => ({
-		id: chart.id,
-		title: chart.name,
-		image: chart.image,
-		url: chart.url,
-		language: chart.language ?? contentLanguage,
-		type: chart.type,
-		description: chart.songCount ? `${chart.songCount} songs` : "",
-	}));
-
-	const trendingPlaylistCards = trendingPlaylists.map((playlist) => ({
-		id: playlist.id,
-		title: playlist.name,
-		image: playlist.image,
-		url: playlist.url,
-		language: playlist.language,
-		type: playlist.type,
-		description: playlist.songCount ? `${playlist.songCount} songs` : "",
-	}));
-
 	if (
 		!isTrendingLoading &&
 		trendingSongs.length === 0 &&
 		trendingAlbums.length === 0 &&
-		trendingPlaylistCards.length === 0 &&
+		trendingPlaylists.length === 0 &&
 		charts.length === 0
 	) {
 		return null;
@@ -124,20 +104,27 @@ export const DiscoverContent = memo(function DiscoverContent() {
 				emptyMessage="No trending songs right now"
 			/>
 
-			<AlbumsList
+			<EntityGrid
 				shelf
-				albums={trendingAlbums}
-				isLoading={isAlbumsLoading}
+				kind="album"
 				title="Trending Albums"
+				items={trendingAlbums.map(albumToItem)}
+				isLoading={isAlbumsLoading}
 			/>
 
-			<PlaylistsList
+			<EntityGrid
 				shelf
-				playlists={trendingPlaylistCards}
+				kind="playlist"
 				title="Trending Playlists"
+				items={trendingPlaylists.map(playlistToItem)}
 			/>
 
-			<PlaylistsList shelf playlists={chartsAsPlaylists} title="Charts" />
+			<EntityGrid
+				shelf
+				kind="playlist"
+				title="Charts"
+				items={charts.map(playlistToItem)}
+			/>
 		</motion.div>
 	);
 });

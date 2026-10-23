@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
@@ -45,6 +45,7 @@ const TABS = [
 ] as const;
 
 const SEARCH_PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 350;
 
 /** Convert artist search result to standard artist format */
 const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
@@ -79,6 +80,7 @@ export default function SearchContent() {
 	const query = queryParam ?? "";
 	const activeTab = (tabParam as TabType | null) ?? "all";
 	const [draftQuery, setDraftQuery] = useState(query);
+	const lastPushedQuery = useRef(query);
 
 	const searchEnabled = !!query.trim() && !isOffline;
 
@@ -118,6 +120,7 @@ export default function SearchContent() {
 				});
 			return;
 		}
+		lastPushedQuery.current = nextQuery;
 		void setQueryParam(nextQuery ? nextQuery : null);
 		if (!tabParam) {
 			void setTabParam(activeTab);
@@ -131,8 +134,21 @@ export default function SearchContent() {
 		[setTabParam],
 	);
 
+	// Search as you type; Enter (handleSearch) skips the delay.
 	useEffect(() => {
-		setDraftQuery(query);
+		const next = draftQuery.trim();
+		if (next === query || isJioSaavnLink(next)) return;
+		const timer = setTimeout(() => {
+			lastPushedQuery.current = next;
+			void setQueryParam(next || null);
+			if (next && !tabParam) void setTabParam(activeTab);
+		}, SEARCH_DEBOUNCE_MS);
+		return () => clearTimeout(timer);
+	}, [activeTab, draftQuery, query, setQueryParam, setTabParam, tabParam]);
+
+	// Reflect external URL changes (back/forward, history links) in the input.
+	useEffect(() => {
+		if (query !== lastPushedQuery.current) setDraftQuery(query);
 	}, [query]);
 
 	return (

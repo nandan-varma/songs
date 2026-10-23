@@ -1,4 +1,4 @@
-import { Disc3, Play, Plus } from "lucide-react";
+import { Disc3, Play, Plus, Shuffle } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { ProgressiveImage } from "@/components/common/progressive-image";
@@ -13,6 +13,7 @@ interface AlbumHeaderProps {
 	album: DetailedAlbum;
 	songsCount: number;
 	onPlayAll: () => void;
+	onShuffle: () => void;
 	onAddAllToQueue: () => void;
 }
 
@@ -20,6 +21,7 @@ export function AlbumHeader({
 	album,
 	songsCount,
 	onPlayAll,
+	onShuffle,
 	onAddAllToQueue,
 }: AlbumHeaderProps) {
 	const { getTransition } = useAnimationPreferences();
@@ -117,6 +119,21 @@ export function AlbumHeader({
 									>
 										<Play className="h-4 w-4" />
 										Play
+									</Button>
+								</motion.div>
+								<motion.div
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.98 }}
+								>
+									<Button
+										size="sm"
+										variant="secondary"
+										onClick={onShuffle}
+										className="gap-1.5"
+										disabled={songsCount === 0}
+									>
+										<Shuffle className="h-4 w-4" />
+										Shuffle
 									</Button>
 								</motion.div>
 								<motion.div

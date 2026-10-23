@@ -1,5 +1,6 @@
 "use client";
 
+import { shuffle } from "es-toolkit";
 import { Play, Plus, Shuffle } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { ProgressiveImage } from "@/components/common/progressive-image";
@@ -33,7 +34,7 @@ export function Client() {
 
 	const handleShuffle = () => {
 		if (filteredSongs.length > 0) {
-			const shuffled = [...filteredSongs].sort(() => Math.random() - 0.5);
+			const shuffled = shuffle(filteredSongs);
 			playQueue(shuffled);
 		}
 	};

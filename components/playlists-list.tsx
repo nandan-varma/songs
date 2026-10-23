@@ -13,7 +13,12 @@ import { EntityType, type Playlist } from "@/types/entity";
 import { ProgressiveImage } from "./common/progressive-image";
 import { Card, CardContent } from "./ui/card";
 
+const SHELF_CLASS =
+	"grid grid-flow-col auto-cols-[38%] sm:auto-cols-[24%] md:auto-cols-[18%] lg:auto-cols-[14%] gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [&>*]:snap-start [scrollbar-width:none]";
+
 interface PlaylistsListProps {
+	/** Lay items out as a single horizontally scrolling row. */
+	shelf?: boolean;
 	playlists: Playlist[];
 	isLoading?: boolean;
 	loadingCount?: number;
@@ -35,6 +40,7 @@ const PlaylistCardSkeleton = () => (
 );
 
 export const PlaylistsList = memo(function PlaylistsList({
+	shelf = false,
 	playlists,
 	isLoading = false,
 	loadingCount = 8,
@@ -67,7 +73,11 @@ export const PlaylistsList = memo(function PlaylistsList({
 					{title}
 				</motion.h2>
 				<motion.div
-					className="grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+					className={
+						shelf
+							? SHELF_CLASS
+							: "grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+					}
 					initial="hidden"
 					animate="show"
 					transition={{ staggerChildren: 0.03 }}
@@ -102,7 +112,11 @@ export const PlaylistsList = memo(function PlaylistsList({
 				{title}
 			</motion.h2>
 			<motion.div
-				className="grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+				className={
+					shelf
+						? SHELF_CLASS
+						: "grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+				}
 				initial="hidden"
 				animate="show"
 				transition={{ staggerChildren: 0.03 }}

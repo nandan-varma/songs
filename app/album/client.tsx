@@ -1,5 +1,6 @@
 "use client";
 
+import { shuffle } from "es-toolkit";
 import { useQueryState } from "nuqs";
 import { AlbumHeader } from "@/components/album/album-header";
 import { QueryParamDetailShell } from "@/components/entity/query-param-detail-shell";
@@ -41,6 +42,7 @@ export function Client() {
 						album={album}
 						songsCount={filteredSongs.length}
 						onPlayAll={() => playQueue(filteredSongs)}
+						onShuffle={() => playQueue(shuffle(filteredSongs))}
 						onAddAllToQueue={() => {
 							for (const song of filteredSongs) {
 								addToQueue(song);
@@ -53,6 +55,7 @@ export function Client() {
 							songs={filteredSongs.map(detailedSongToSong)}
 							detailedSongs={filteredSongs}
 							numbered
+							compact
 						/>
 					)}
 				</div>

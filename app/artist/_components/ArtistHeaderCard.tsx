@@ -1,3 +1,4 @@
+import { shuffle } from "es-toolkit";
 import { ExternalLink, Loader2, Play, Radio, Shuffle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -44,7 +45,7 @@ export function ArtistHeaderCard({ artist }: ArtistHeaderCardProps) {
 			setIsLoading("shuffle");
 			const detailed = await getArtistById(artist.id, { songCount: 20 });
 			if (detailed?.topSongs && detailed.topSongs.length > 0) {
-				const shuffled = [...detailed.topSongs].sort(() => Math.random() - 0.5);
+				const shuffled = shuffle(detailed.topSongs);
 				useAppStore.getState().playQueue(shuffled);
 			}
 		} catch (error) {
@@ -64,9 +65,7 @@ export function ArtistHeaderCard({ artist }: ArtistHeaderCardProps) {
 			}
 			// JioSaavn often has no station queued; fall back to a shuffled mix of the artist's songs.
 			const detailed = await getArtistById(artist.id, { songCount: 30 });
-			const mix = [...(detailed.topSongs ?? [])].sort(
-				() => Math.random() - 0.5,
-			);
+			const mix = shuffle(detailed.topSongs ?? []);
 			if (mix.length > 0) {
 				useAppStore.getState().playQueue(mix);
 				toast.info("No radio station available, playing a mix instead");

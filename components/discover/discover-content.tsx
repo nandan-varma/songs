@@ -29,6 +29,8 @@ const LANGUAGE_OPTIONS = [
 	Language.TELUGU,
 ];
 
+const TRENDING_SONGS_SHOWN = 10;
+
 function RadioStations({ stations }: { stations: RadioStation[] }) {
 	const [loadingStation, setLoadingStation] = useState<string | null>(null);
 
@@ -161,24 +163,29 @@ export const DiscoverContent = memo(function DiscoverContent() {
 			</div>
 
 			<SongsList
-				songs={trendingSongs.map(detailedSongToSong)}
+				songs={trendingSongs
+					.slice(0, TRENDING_SONGS_SHOWN)
+					.map(detailedSongToSong)}
 				detailedSongs={trendingSongs}
+				numbered
 				isLoading={isTrendingLoading}
 				emptyMessage="No trending songs right now"
 			/>
 
 			<AlbumsList
+				shelf
 				albums={trendingAlbums}
 				isLoading={isAlbumsLoading}
 				title="Trending Albums"
 			/>
 
 			<PlaylistsList
+				shelf
 				playlists={trendingPlaylistCards}
 				title="Trending Playlists"
 			/>
 
-			<PlaylistsList playlists={chartsAsPlaylists} title="Charts" />
+			<PlaylistsList shelf playlists={chartsAsPlaylists} title="Charts" />
 
 			<RadioStations stations={stations} />
 		</motion.div>

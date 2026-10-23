@@ -1,5 +1,6 @@
 "use client";
 
+import { shuffle } from "es-toolkit";
 import { Users } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -14,7 +15,12 @@ import { EntityType } from "@/types/entity";
 import { ProgressiveImage } from "./common/progressive-image";
 import { Card, CardContent } from "./ui/card";
 
+const SHELF_CLASS =
+	"grid grid-flow-col auto-cols-[38%] sm:auto-cols-[24%] md:auto-cols-[18%] lg:auto-cols-[14%] gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [&>*]:snap-start [scrollbar-width:none]";
+
 interface ArtistsListProps {
+	/** Lay items out as a single horizontally scrolling row. */
+	shelf?: boolean;
 	artists: (Artist | ArtistSearchResult)[];
 	isLoading?: boolean;
 	loadingCount?: number;
@@ -41,6 +47,7 @@ const ArtistCardSkeleton = () => (
 );
 
 export const ArtistsList = memo(function ArtistsList({
+	shelf = false,
 	artists,
 	isLoading = false,
 	loadingCount = 10,
@@ -66,7 +73,7 @@ export const ArtistsList = memo(function ArtistsList({
 			setPlayingId(artist.id);
 			const detailed = await getArtistById(artist.id, { songCount: 20 });
 			if (detailed?.topSongs && detailed.topSongs.length > 0) {
-				const shuffled = [...detailed.topSongs].sort(() => Math.random() - 0.5);
+				const shuffled = shuffle(detailed.topSongs);
 				useAppStore.getState().playQueue(shuffled);
 			}
 		} catch (error) {
@@ -87,7 +94,11 @@ export const ArtistsList = memo(function ArtistsList({
 					Artists
 				</motion.h2>
 				<motion.div
-					className="grid gap-2 sm:gap-2.5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7"
+					className={
+						shelf
+							? SHELF_CLASS
+							: "grid gap-2 sm:gap-2.5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7"
+					}
 					initial="hidden"
 					animate="show"
 					transition={{ staggerChildren: 0.03 }}
@@ -122,7 +133,11 @@ export const ArtistsList = memo(function ArtistsList({
 				Artists
 			</motion.h2>
 			<motion.div
-				className="grid gap-2 sm:gap-2.5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7"
+				className={
+					shelf
+						? SHELF_CLASS
+						: "grid gap-2 sm:gap-2.5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7"
+				}
 				initial="hidden"
 				animate="show"
 				transition={{ staggerChildren: 0.03 }}

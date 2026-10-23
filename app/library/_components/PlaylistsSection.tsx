@@ -43,7 +43,10 @@ export function PlaylistsSection({
 									className="group flex items-center justify-between rounded-lg p-2 hover:bg-muted/50"
 								>
 									<Link
-										href={`/library/playlist?id=${playlist.id}`}
+										href={{
+											pathname: "/library/playlist",
+											query: { id: playlist.id },
+										}}
 										className="flex-1 min-w-0 text-left pr-2"
 									>
 										<p className="font-medium truncate">{playlist.name}</p>

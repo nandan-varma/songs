@@ -18,8 +18,8 @@ import type {
 
 const API_BASE_URL = publicConfig.NEXT_PUBLIC_API_URL;
 
-/** Search pages are 1-indexed; page 0 returns a differently ordered, offset result set. */
-export const FIRST_SEARCH_PAGE = 1;
+/** The API paginates every list from page 0. */
+export const FIRST_SEARCH_PAGE = 0;
 
 const ENTITY_ID_REGEX = /^[a-zA-Z0-9-]{5,50}$/;
 

@@ -1,9 +1,11 @@
 "use client";
 
-import { Heart, Loader2 } from "lucide-react";
+import { shuffle } from "es-toolkit";
+import { Heart, Loader2, Play, Shuffle } from "lucide-react";
 import { SongsList } from "@/components/songs-list";
+import { Button } from "@/components/ui/button";
 import { useSongs } from "@/hooks/data/queries";
-import { useFavorites } from "@/hooks/use-store";
+import { useAppStore, useFavorites } from "@/hooks/use-store";
 import { useStoreHydrated } from "@/hooks/use-store-hydrated";
 import { detailedSongToSong } from "@/lib/utils";
 
@@ -56,10 +58,30 @@ export default function FavoritesPage() {
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			) : favoriteSongs && favoriteSongs.length > 0 ? (
-				<div className="max-w-4xl mx-auto">
+				<div className="max-w-4xl mx-auto space-y-4">
+					<div className="flex gap-2">
+						<Button
+							onClick={() => useAppStore.getState().playQueue(favoriteSongs)}
+							className="gap-1.5"
+						>
+							<Play className="h-4 w-4" />
+							Play
+						</Button>
+						<Button
+							variant="secondary"
+							onClick={() =>
+								useAppStore.getState().playQueue(shuffle(favoriteSongs))
+							}
+							className="gap-1.5"
+						>
+							<Shuffle className="h-4 w-4" />
+							Shuffle
+						</Button>
+					</div>
 					<SongsList
 						songs={favoriteSongs.map(detailedSongToSong)}
 						detailedSongs={favoriteSongs}
+						numbered
 					/>
 				</div>
 			) : null}

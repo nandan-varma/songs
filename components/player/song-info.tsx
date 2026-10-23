@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { memo } from "react";
+import { FavoriteButton } from "@/components/common/favorite-button";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import { type DetailedSong, EntityType } from "@/types/entity";
 
@@ -70,6 +71,7 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 					))}
 				</div>
 			</div>
+			<FavoriteButton song={currentSong} />
 		</motion.div>
 	);
 });

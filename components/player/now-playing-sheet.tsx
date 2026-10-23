@@ -19,6 +19,7 @@ import {
 	useQueueLength,
 } from "@/hooks/use-store";
 import { useAppStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
 
@@ -49,7 +50,12 @@ export function NowPlayingSheet() {
 					Large artwork, playback controls and lyrics for the current song.
 				</SheetDescription>
 
-				<div className="mx-auto grid w-full max-w-5xl gap-8 md:grid-cols-2 md:items-start">
+				<div
+					className={cn(
+						"mx-auto grid w-full gap-8 md:items-start",
+						song.hasLyrics ? "max-w-5xl md:grid-cols-2" : "max-w-md",
+					)}
+				>
 					<div className="mx-auto w-full max-w-md space-y-6">
 						<div className="relative aspect-square w-full overflow-hidden rounded-xl shadow-2xl">
 							<CoverImage

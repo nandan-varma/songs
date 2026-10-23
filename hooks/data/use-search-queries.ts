@@ -1,10 +1,9 @@
 /**
  * Parallel Search Queries Orchestration Hook
- * Fetches songs/albums/artists/playlists in parallel
- * Replaces: search-content.tsx lines 40-90 (duplicated query calls)
+ * Fetches songs/albums/artists/playlists in parallel, each with its own pagination
  */
 
-import { useQueries } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
 	searchAlbumsQueryOptions,
 	searchArtistsQueryOptions,
@@ -18,108 +17,105 @@ import type {
 	PlaylistSearchResult,
 } from "@/types/api";
 
+export interface SearchSection<T> {
+	results: T[];
+	total: number;
+	isLoading: boolean;
+	error: Error | null;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	fetchNextPage: () => void;
+}
+
 export interface SearchResult {
-	songs: {
-		results: DetailedSong[];
-		total: number;
-		isLoading: boolean;
-		error: Error | null;
-	};
-	albums: {
-		results: AlbumSearchResult[];
-		total: number;
-		isLoading: boolean;
-		error: Error | null;
-	};
-	artists: {
-		results: ArtistSearchResult[];
-		total: number;
-		isLoading: boolean;
-		error: Error | null;
-	};
-	playlists: {
-		results: PlaylistSearchResult[];
-		total: number;
-		isLoading: boolean;
-		error: Error | null;
-	};
+	songs: SearchSection<DetailedSong>;
+	albums: SearchSection<AlbumSearchResult>;
+	artists: SearchSection<ArtistSearchResult>;
+	playlists: SearchSection<PlaylistSearchResult>;
+	isLoading: boolean;
+	isError: boolean;
 }
 
 export interface UseSearchQueriesOptions {
-	/** Limit results per category */
+	/** Page size per category */
 	limit?: number;
 	/** Enable/disable queries */
 	enabled?: boolean;
 }
 
+interface InfiniteSearchQuery<T> {
+	data: { pages: { total: number; results: T[] }[] } | undefined;
+	isPending: boolean;
+	error: Error | null;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	fetchNextPage: () => unknown;
+}
+
+/** Flattens loaded pages; upstream pages can overlap, so repeats are dropped. */
+function toSection<T extends { id: string }>(
+	query: InfiniteSearchQuery<T>,
+): SearchSection<T> {
+	const seen = new Set<string>();
+	const results: T[] = [];
+	for (const page of query.data?.pages ?? []) {
+		for (const item of page.results) {
+			if (seen.has(item.id)) continue;
+			seen.add(item.id);
+			results.push(item);
+		}
+	}
+
+	return {
+		results,
+		total: query.data?.pages[0]?.total ?? 0,
+		isLoading: query.isPending,
+		error: query.error,
+		hasNextPage: query.hasNextPage,
+		isFetchingNextPage: query.isFetchingNextPage,
+		fetchNextPage: () => {
+			void query.fetchNextPage();
+		},
+	};
+}
+
 /**
  * Hook to fetch search results for all entity types in parallel
- * Orchestrates 4 queries with efficient batching
  *
  * @param query - Search query string
  * @param options - Query options
- * @returns Combined search results for all entity types
- *
- * @example
- * const { songs, albums, artists, playlists } = useSearchQueries("Taylor Swift", {
- *   limit: 10,
- *   enabled: query.length > 2,
- * });
+ * @returns Combined, paginated search results for all entity types
  */
 export function useSearchQueries(
 	query: string,
 	options?: UseSearchQueriesOptions,
-) {
+): SearchResult {
 	const limit = options?.limit ?? 10;
 	const enabled = options?.enabled !== false && !!query;
 
-	const results = useQueries({
-		queries: [
-			{
-				...searchSongsQueryOptions(query, limit),
-				enabled,
-			},
-			{
-				...searchAlbumsQueryOptions(query, limit),
-				enabled,
-			},
-			{
-				...searchArtistsQueryOptions(query, limit),
-				enabled,
-			},
-			{
-				...searchPlaylistsQueryOptions(query, limit),
-				enabled,
-			},
-		],
+	const songs = useInfiniteQuery({
+		...searchSongsQueryOptions(query, limit),
+		enabled,
+	});
+	const albums = useInfiniteQuery({
+		...searchAlbumsQueryOptions(query, limit),
+		enabled,
+	});
+	const artists = useInfiniteQuery({
+		...searchArtistsQueryOptions(query, limit),
+		enabled,
+	});
+	const playlists = useInfiniteQuery({
+		...searchPlaylistsQueryOptions(query, limit),
+		enabled,
 	});
 
 	return {
-		songs: {
-			results: results[0].data?.results ?? [],
-			total: results[0].data?.total ?? 0,
-			isLoading: results[0].isPending,
-			error: results[0].error,
-		},
-		albums: {
-			results: results[1].data?.results ?? [],
-			total: results[1].data?.total ?? 0,
-			isLoading: results[1].isPending,
-			error: results[1].error,
-		},
-		artists: {
-			results: results[2].data?.results ?? [],
-			total: results[2].data?.total ?? 0,
-			isLoading: results[2].isPending,
-			error: results[2].error,
-		},
-		playlists: {
-			results: results[3].data?.results ?? [],
-			total: results[3].data?.total ?? 0,
-			isLoading: results[3].isPending,
-			error: results[3].error,
-		},
-		isLoading: results.some((r) => r.isPending),
-		isError: results.some((r) => r.isError),
+		songs: toSection(songs),
+		albums: toSection(albums),
+		artists: toSection(artists),
+		playlists: toSection(playlists),
+		isLoading: [songs, albums, artists, playlists].some((q) => q.isPending),
+		isError: [songs, albums, artists, playlists].some((q) => q.isError),
 	};
 }

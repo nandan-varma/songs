@@ -1,9 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useQueryState } from "nuqs";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AlbumsList } from "@/components/albums-list";
 import { ArtistsList } from "@/components/artists-list";
+import { LoadMoreButton } from "@/components/common/load-more-button";
 import { SearchBar } from "@/components/common/search-bar";
 import { DiscoverContent } from "@/components/discover/discover-content";
 import { HistoryList } from "@/components/history-list";
@@ -17,7 +20,9 @@ import { useGlobalSearch } from "@/hooks/data/queries";
 import { useSearchQueries } from "@/hooks/data/use-search-queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useHistory } from "@/hooks/use-store";
+import { isJioSaavnLink, resolveJioSaavnLink } from "@/lib/api";
 import { detailedSongToSong } from "@/lib/utils";
+import { logError } from "@/lib/utils/logger";
 import type {
 	Artist,
 	ArtistSearchResult,
@@ -67,6 +72,7 @@ const playlistSearchResultToPlaylist = (
 export default function SearchContent() {
 	const [queryParam, setQueryParam] = useQueryState("q");
 	const [tabParam, setTabParam] = useQueryState("tab");
+	const router = useRouter();
 	const isOffline = useIsOffline();
 	const { playbackHistory } = useHistory();
 
@@ -96,11 +102,27 @@ export default function SearchContent() {
 
 	const handleSearch = useCallback(() => {
 		const nextQuery = draftQuery.trim();
+		if (isJioSaavnLink(nextQuery)) {
+			const toastId = toast.loading("Opening link...");
+			resolveJioSaavnLink(nextQuery)
+				.then((entity) => {
+					toast.dismiss(toastId);
+					router.push(`/${entity.type}?id=${encodeURIComponent(entity.id)}`);
+				})
+				.catch((error: unknown) => {
+					logError("Search:resolveLink", error);
+					toast.error(
+						error instanceof Error ? error.message : "Could not open link",
+						{ id: toastId },
+					);
+				});
+			return;
+		}
 		void setQueryParam(nextQuery ? nextQuery : null);
 		if (!tabParam) {
 			void setTabParam(activeTab);
 		}
-	}, [activeTab, draftQuery, setQueryParam, setTabParam, tabParam]);
+	}, [activeTab, draftQuery, router, setQueryParam, setTabParam, tabParam]);
 
 	const handleTabChange = useCallback(
 		(tab: string) => {
@@ -177,6 +199,11 @@ export default function SearchContent() {
 							<SongsList
 								songs={searchResults.songs.results.map(detailedSongToSong)}
 							/>
+							<LoadMoreButton
+								hasNextPage={searchResults.songs.hasNextPage}
+								isFetching={searchResults.songs.isFetchingNextPage}
+								onLoadMore={searchResults.songs.fetchNextPage}
+							/>
 						</SearchTabContent>
 					</TabsContent>
 
@@ -191,6 +218,11 @@ export default function SearchContent() {
 							query={query}
 						>
 							<AlbumsList albums={searchResults.albums.results} />
+							<LoadMoreButton
+								hasNextPage={searchResults.albums.hasNextPage}
+								isFetching={searchResults.albums.isFetchingNextPage}
+								onLoadMore={searchResults.albums.fetchNextPage}
+							/>
 						</SearchTabContent>
 					</TabsContent>
 
@@ -209,6 +241,11 @@ export default function SearchContent() {
 									artistSearchResultToArtist,
 								)}
 							/>
+							<LoadMoreButton
+								hasNextPage={searchResults.artists.hasNextPage}
+								isFetching={searchResults.artists.isFetchingNextPage}
+								onLoadMore={searchResults.artists.fetchNextPage}
+							/>
 						</SearchTabContent>
 					</TabsContent>
 
@@ -226,6 +263,11 @@ export default function SearchContent() {
 								playlists={searchResults.playlists.results.map(
 									playlistSearchResultToPlaylist,
 								)}
+							/>
+							<LoadMoreButton
+								hasNextPage={searchResults.playlists.hasNextPage}
+								isFetching={searchResults.playlists.isFetchingNextPage}
+								onLoadMore={searchResults.playlists.fetchNextPage}
 							/>
 						</SearchTabContent>
 					</TabsContent>

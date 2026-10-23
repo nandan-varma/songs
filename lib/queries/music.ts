@@ -1,5 +1,6 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import {
+	FIRST_SEARCH_PAGE,
 	getAlbumById,
 	getArtistAlbums,
 	getArtistById,
@@ -70,36 +71,54 @@ export function globalSearchQueryOptions(query: string) {
 	});
 }
 
-export function searchSongsQueryOptions(query: string, limit: number) {
-	return queryOptions({
-		queryKey: ["search-songs", query, limit],
-		queryFn: () => searchSongs(query, 0, limit),
+function nextPageParam(
+	loaded: number,
+	total: number,
+	lastPageSize: number,
+	lastPageParam: number,
+): number | undefined {
+	return lastPageSize > 0 && loaded < total ? lastPageParam + 1 : undefined;
+}
+
+function searchInfiniteOptions<T>(
+	kind: string,
+	query: string,
+	limit: number,
+	fetchPage: (
+		query: string,
+		page: number,
+		limit: number,
+	) => Promise<{ total: number; results: T[] }>,
+) {
+	return infiniteQueryOptions({
+		queryKey: ["search", kind, query, limit],
+		queryFn: ({ pageParam }) => fetchPage(query, pageParam, limit),
+		initialPageParam: FIRST_SEARCH_PAGE,
+		getNextPageParam: (lastPage, pages, lastPageParam) =>
+			nextPageParam(
+				pages.reduce((count, page) => count + page.results.length, 0),
+				lastPage.total,
+				lastPage.results.length,
+				lastPageParam,
+			),
 		staleTime: CACHE_TIMES.SEARCH,
 	});
+}
+
+export function searchSongsQueryOptions(query: string, limit: number) {
+	return searchInfiniteOptions("songs", query, limit, searchSongs);
 }
 
 export function searchAlbumsQueryOptions(query: string, limit: number) {
-	return queryOptions({
-		queryKey: ["search-albums", query, limit],
-		queryFn: () => searchAlbums(query, 0, limit),
-		staleTime: CACHE_TIMES.SEARCH,
-	});
+	return searchInfiniteOptions("albums", query, limit, searchAlbums);
 }
 
 export function searchArtistsQueryOptions(query: string, limit: number) {
-	return queryOptions({
-		queryKey: ["search-artists", query, limit],
-		queryFn: () => searchArtists(query, 0, limit),
-		staleTime: CACHE_TIMES.SEARCH,
-	});
+	return searchInfiniteOptions("artists", query, limit, searchArtists);
 }
 
 export function searchPlaylistsQueryOptions(query: string, limit: number) {
-	return queryOptions({
-		queryKey: ["search-playlists", query, limit],
-		queryFn: () => searchPlaylists(query, 0, limit),
-		staleTime: CACHE_TIMES.SEARCH,
-	});
+	return searchInfiniteOptions("playlists", query, limit, searchPlaylists);
 }
 
 export function songSuggestionsQueryOptions(id: string, limit: number) {
@@ -110,26 +129,47 @@ export function songSuggestionsQueryOptions(id: string, limit: number) {
 	});
 }
 
+export type ArtistSortBy = "popularity" | "latest" | "alphabetical";
+export type ArtistSortOrder = "asc" | "desc";
+
 export function artistSongsQueryOptions(
 	id: string,
-	sortBy: "popularity" | "latest" | "alphabetical",
-	sortOrder: "asc" | "desc",
+	sortBy: ArtistSortBy,
+	sortOrder: ArtistSortOrder,
 ) {
-	return queryOptions({
+	return infiniteQueryOptions({
 		queryKey: ["artist-songs", id, sortBy, sortOrder],
-		queryFn: () => getArtistSongs(id, 0, sortBy, sortOrder),
+		queryFn: ({ pageParam }) =>
+			getArtistSongs(id, pageParam, sortBy, sortOrder),
+		initialPageParam: 0,
+		getNextPageParam: (lastPage, pages, lastPageParam) =>
+			nextPageParam(
+				pages.reduce((count, page) => count + page.songs.length, 0),
+				lastPage.total,
+				lastPage.songs.length,
+				lastPageParam,
+			),
 		staleTime: CACHE_TIMES.ARTIST,
 	});
 }
 
 export function artistAlbumsQueryOptions(
 	id: string,
-	sortBy: "popularity" | "latest" | "alphabetical",
-	sortOrder: "asc" | "desc",
+	sortBy: ArtistSortBy,
+	sortOrder: ArtistSortOrder,
 ) {
-	return queryOptions({
+	return infiniteQueryOptions({
 		queryKey: ["artist-albums", id, sortBy, sortOrder],
-		queryFn: () => getArtistAlbums(id, 0, sortBy, sortOrder),
+		queryFn: ({ pageParam }) =>
+			getArtistAlbums(id, pageParam, sortBy, sortOrder),
+		initialPageParam: 0,
+		getNextPageParam: (lastPage, pages, lastPageParam) =>
+			nextPageParam(
+				pages.reduce((count, page) => count + page.albums.length, 0),
+				lastPage.total,
+				lastPage.albums.length,
+				lastPageParam,
+			),
 		staleTime: CACHE_TIMES.ARTIST,
 	});
 }
@@ -150,8 +190,8 @@ export function artistRadioQueryOptions(id: string, limit: number) {
 	});
 }
 
-export function trendingQueryOptions(
-	type: "song" | "album" | "playlist",
+export function trendingQueryOptions<K extends "song" | "album" | "playlist">(
+	type: K,
 	language: string,
 ) {
 	return queryOptions({

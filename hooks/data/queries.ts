@@ -1,6 +1,8 @@
 import type { UseQueryOptions } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
+	type ArtistSortBy,
+	type ArtistSortOrder,
 	albumQueryOptions,
 	artistAlbumsQueryOptions,
 	artistQueryOptions,
@@ -11,10 +13,6 @@ import {
 	playlistQueryOptions,
 	radioFeaturedQueryOptions,
 	radioStationsQueryOptions,
-	searchAlbumsQueryOptions,
-	searchArtistsQueryOptions,
-	searchPlaylistsQueryOptions,
-	searchSongsQueryOptions,
 	songLyricsQueryOptions,
 	songQueryOptions,
 	songSuggestionsQueryOptions,
@@ -22,15 +20,12 @@ import {
 	trendingQueryOptions,
 } from "@/lib/queries/music";
 import type {
-	AlbumSearchResult,
-	ArtistSearchResult,
 	Chart,
 	DetailedAlbum,
 	DetailedArtist,
 	DetailedPlaylist,
 	DetailedSong,
 	Lyrics,
-	PlaylistSearchResult,
 	RadioStation,
 	SearchResponse,
 } from "@/types/api";
@@ -145,85 +140,6 @@ export function useGlobalSearch(
 }
 
 /**
- * Hook to fetch songs by search query
- */
-export function useSearchSongs(
-	query: string,
-	limit = 10,
-	options?: QueryHookOptions<{ total: number; results: DetailedSong[] }>,
-) {
-	return useConfiguredQuery(
-		searchSongsQueryOptions(query, limit) as UseQueryOptions<
-			{ total: number; results: DetailedSong[] },
-			Error,
-			{ total: number; results: DetailedSong[] }
-		>,
-		!!query && options?.enabled !== false,
-		options,
-	);
-}
-
-/**
- * Hook to fetch albums by search query
- */
-export function useSearchAlbums(
-	query: string,
-	limit = 10,
-	options?: QueryHookOptions<{ total: number; results: AlbumSearchResult[] }>,
-) {
-	return useConfiguredQuery(
-		searchAlbumsQueryOptions(query, limit) as UseQueryOptions<
-			{ total: number; results: AlbumSearchResult[] },
-			Error,
-			{ total: number; results: AlbumSearchResult[] }
-		>,
-		!!query && options?.enabled !== false,
-		options,
-	);
-}
-
-/**
- * Hook to fetch artists by search query
- */
-export function useSearchArtists(
-	query: string,
-	limit = 10,
-	options?: QueryHookOptions<{ total: number; results: ArtistSearchResult[] }>,
-) {
-	return useConfiguredQuery(
-		searchArtistsQueryOptions(query, limit) as UseQueryOptions<
-			{ total: number; results: ArtistSearchResult[] },
-			Error,
-			{ total: number; results: ArtistSearchResult[] }
-		>,
-		!!query && options?.enabled !== false,
-		options,
-	);
-}
-
-/**
- * Hook to fetch playlists by search query
- */
-export function useSearchPlaylists(
-	query: string,
-	limit = 10,
-	options?: QueryHookOptions<{
-		total: number;
-		results: PlaylistSearchResult[];
-	}>,
-) {
-	return useConfiguredQuery(
-		searchPlaylistsQueryOptions(query, limit) as UseQueryOptions<
-			{ total: number; results: PlaylistSearchResult[] },
-			Error,
-			{ total: number; results: PlaylistSearchResult[] }
-		>,
-		!!query && options?.enabled !== false,
-		options,
-	);
-}
-
-/**
  * Hook to fetch suggested songs based on a song ID
  */
 export function useSongSuggestions(
@@ -243,43 +159,33 @@ export function useSongSuggestions(
 }
 
 /**
- * Hook to fetch songs by a specific artist with sorting
+ * Hook to page through every song by an artist with sorting
  */
 export function useArtistSongs(
 	id: string,
-	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
-	sortOrder: "asc" | "desc" = "desc",
-	options?: QueryHookOptions<{ total: number; songs: DetailedSong[] }>,
+	sortBy: ArtistSortBy = "popularity",
+	sortOrder: ArtistSortOrder = "desc",
+	options?: { enabled?: boolean },
 ) {
-	return useConfiguredQuery(
-		artistSongsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
-			{ total: number; songs: DetailedSong[] },
-			Error,
-			{ total: number; songs: DetailedSong[] }
-		>,
-		!!id && options?.enabled !== false,
-		options,
-	);
+	return useInfiniteQuery({
+		...artistSongsQueryOptions(id, sortBy, sortOrder),
+		enabled: !!id && options?.enabled !== false,
+	});
 }
 
 /**
- * Hook to fetch albums by a specific artist with sorting
+ * Hook to page through every album by an artist with sorting
  */
 export function useArtistAlbums(
 	id: string,
-	sortBy: "popularity" | "latest" | "alphabetical" = "popularity",
-	sortOrder: "asc" | "desc" = "desc",
-	options?: QueryHookOptions<{ total: number; albums: DetailedAlbum[] }>,
+	sortBy: ArtistSortBy = "popularity",
+	sortOrder: ArtistSortOrder = "desc",
+	options?: { enabled?: boolean },
 ) {
-	return useConfiguredQuery(
-		artistAlbumsQueryOptions(id, sortBy, sortOrder) as UseQueryOptions<
-			{ total: number; albums: DetailedAlbum[] },
-			Error,
-			{ total: number; albums: DetailedAlbum[] }
-		>,
-		!!id && options?.enabled !== false,
-		options,
-	);
+	return useInfiniteQuery({
+		...artistAlbumsQueryOptions(id, sortBy, sortOrder),
+		enabled: !!id && options?.enabled !== false,
+	});
 }
 
 /**
@@ -315,20 +221,15 @@ export function useArtistRadio(
 /**
  * Hook to fetch trending content for a given type and language
  */
-export function useTrending(
-	type: "song" | "album" | "playlist",
+export function useTrending<K extends "song" | "album" | "playlist">(
+	type: K,
 	language: string,
-	options?: QueryHookOptions<DetailedSong[]>,
+	options?: { enabled?: boolean },
 ) {
-	return useConfiguredQuery(
-		trendingQueryOptions(type, language) as UseQueryOptions<
-			DetailedSong[],
-			Error,
-			DetailedSong[]
-		>,
-		!!language && options?.enabled !== false,
-		options,
-	);
+	return useQuery({
+		...trendingQueryOptions(type, language),
+		enabled: !!language && options?.enabled !== false,
+	});
 }
 
 /**

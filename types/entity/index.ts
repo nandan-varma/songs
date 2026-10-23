@@ -108,7 +108,7 @@ export interface AlbumSearchResult {
 	name: string;
 	description: string;
 	url: string;
-	year: number;
+	year: number | null;
 	type: EntityType | string;
 	playCount: number | null;
 	language: Language | string;

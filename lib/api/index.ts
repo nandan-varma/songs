@@ -18,6 +18,9 @@ import type {
 
 const API_BASE_URL = publicConfig.NEXT_PUBLIC_API_URL;
 
+/** Search pages are 1-indexed; page 0 returns a differently ordered, offset result set. */
+export const FIRST_SEARCH_PAGE = 1;
+
 const ENTITY_ID_REGEX = /^[a-zA-Z0-9-]{5,50}$/;
 
 function validateEntityId(id: string): void {
@@ -26,17 +29,45 @@ function validateEntityId(id: string): void {
 	}
 }
 
+export class ApiError extends Error {
+	constructor(
+		message: string,
+		readonly status: number,
+	) {
+		super(message);
+		this.name = "ApiError";
+	}
+}
+
+/** The API reports failures as `{ success: false, message }`. */
+function readApiMessage(body: string): string | null {
+	try {
+		const parsed: unknown = JSON.parse(body);
+		if (
+			typeof parsed === "object" &&
+			parsed !== null &&
+			"message" in parsed &&
+			typeof parsed.message === "string"
+		) {
+			return parsed.message;
+		}
+	} catch {
+		// Non-JSON error bodies fall back to the caller's message.
+	}
+	return null;
+}
+
 async function fetchApi<T>(
 	url: string,
 	errorMessage: string,
 	options?: { signal?: AbortSignal },
 ): Promise<T> {
 	const response = await fetch(url, { signal: options?.signal });
+	const text = await response.text();
 	if (!response.ok) {
-		throw new Error(errorMessage);
+		throw new ApiError(readApiMessage(text) ?? errorMessage, response.status);
 	}
 
-	const text = await response.text();
 	const data = JSON.parse(text, (_key, value) => {
 		if (typeof value === "string" && value.includes("&")) {
 			return he.decode(value);
@@ -59,7 +90,7 @@ export async function searchMusic(
 
 export async function searchSongs(
 	query: string,
-	page = 0,
+	page = FIRST_SEARCH_PAGE,
 	limit = 10,
 ): Promise<PaginatedResponse<DetailedSong>> {
 	return fetchApi<PaginatedResponse<DetailedSong>>(
@@ -70,7 +101,7 @@ export async function searchSongs(
 
 export async function searchAlbums(
 	query: string,
-	page = 0,
+	page = FIRST_SEARCH_PAGE,
 	limit = 10,
 ): Promise<PaginatedResponse<AlbumSearchResult>> {
 	return fetchApi<PaginatedResponse<AlbumSearchResult>>(
@@ -81,7 +112,7 @@ export async function searchAlbums(
 
 export async function searchArtists(
 	query: string,
-	page = 0,
+	page = FIRST_SEARCH_PAGE,
 	limit = 10,
 ): Promise<PaginatedResponse<ArtistSearchResult>> {
 	return fetchApi<PaginatedResponse<ArtistSearchResult>>(
@@ -92,7 +123,7 @@ export async function searchArtists(
 
 export async function searchPlaylists(
 	query: string,
-	page = 0,
+	page = FIRST_SEARCH_PAGE,
 	limit = 10,
 ): Promise<PaginatedResponse<PlaylistSearchResult>> {
 	return fetchApi<PaginatedResponse<PlaylistSearchResult>>(
@@ -189,16 +220,48 @@ export async function getArtistAlbums(
 	);
 }
 
-export async function getPlaylistById(
+/** Upstream caps a playlist page at 50 songs, so larger playlists need several requests. */
+const PLAYLIST_PAGE_SIZE = 50;
+const PLAYLIST_MAX_PAGES = 20;
+
+async function getPlaylistPage(
 	id: string,
-	page = 0,
-	limit = 10,
+	page: number,
+	limit: number,
 ): Promise<DetailedPlaylist> {
-	validateEntityId(id);
 	return fetchApi<DetailedPlaylist>(
 		`${API_BASE_URL}/playlists?id=${encodeURIComponent(id)}&page=${page}&limit=${limit}`,
 		"Failed to fetch playlist",
 	);
+}
+
+/** Fetches a playlist with every song, not just the API's default first 10. */
+export async function getPlaylistById(id: string): Promise<DetailedPlaylist> {
+	validateEntityId(id);
+	const first = await getPlaylistPage(id, 0, PLAYLIST_PAGE_SIZE);
+	const songs = [...first.songs];
+	const total = first.songCount ?? songs.length;
+
+	for (
+		let page = 1;
+		songs.length < total && page < PLAYLIST_MAX_PAGES;
+		page++
+	) {
+		const next = await getPlaylistPage(id, page, PLAYLIST_PAGE_SIZE);
+		if (next.songs.length === 0) break;
+		songs.push(...next.songs);
+	}
+
+	return { ...first, songs: dedupeById(songs) };
+}
+
+function dedupeById<T extends { id: string }>(items: T[]): T[] {
+	const seen = new Set<string>();
+	return items.filter((item) => {
+		if (seen.has(item.id)) return false;
+		seen.add(item.id);
+		return true;
+	});
 }
 
 export async function getSongLyrics(id: string): Promise<Lyrics> {
@@ -220,11 +283,17 @@ export async function getArtistRadio(
 	);
 }
 
-export async function getTrending(
-	type: "song" | "album" | "playlist",
+interface TrendingTypeMap {
+	song: DetailedSong;
+	album: DetailedAlbum;
+	playlist: DetailedPlaylist;
+}
+
+export async function getTrending<K extends keyof TrendingTypeMap>(
+	type: K,
 	language: string,
-): Promise<DetailedSong[]> {
-	return fetchApi<DetailedSong[]>(
+): Promise<TrendingTypeMap[K][]> {
+	return fetchApi<TrendingTypeMap[K][]>(
 		`${API_BASE_URL}/trending?type=${type}&language=${encodeURIComponent(language)}`,
 		"Failed to fetch trending content",
 	);
@@ -250,4 +319,59 @@ export async function getRadioFeatured(
 		`${API_BASE_URL}/radio/featured?name=${encodeURIComponent(name)}&language=${encodeURIComponent(language)}&limit=${limit}`,
 		"Failed to fetch featured radio",
 	);
+}
+
+const JIOSAAVN_LINK_REGEX =
+	/^https?:\/\/(?:www\.)?jiosaavn\.com\/(song|album|artist|featured|s\/playlist)\//i;
+
+export type ResolvedLink =
+	| { type: "song"; id: string }
+	| { type: "album"; id: string }
+	| { type: "artist"; id: string }
+	| { type: "playlist"; id: string };
+
+export function isJioSaavnLink(value: string): boolean {
+	return JIOSAAVN_LINK_REGEX.test(value.trim());
+}
+
+/** Resolves a pasted jiosaavn.com URL to the entity it points at. */
+export async function resolveJioSaavnLink(
+	rawLink: string,
+): Promise<ResolvedLink> {
+	const link = rawLink.trim();
+	const kind = JIOSAAVN_LINK_REGEX.exec(link)?.[1]?.toLowerCase();
+	if (!kind) throw new Error("Not a JioSaavn link");
+	const encoded = encodeURIComponent(link);
+
+	switch (kind) {
+		case "song": {
+			const [song] = await fetchApi<DetailedSong[]>(
+				`${API_BASE_URL}/songs?link=${encoded}`,
+				"Failed to resolve song link",
+			);
+			if (!song) throw new Error("Song not found");
+			return { type: "song", id: song.id };
+		}
+		case "album": {
+			const album = await fetchApi<DetailedAlbum>(
+				`${API_BASE_URL}/albums?link=${encoded}`,
+				"Failed to resolve album link",
+			);
+			return { type: "album", id: album.id };
+		}
+		case "artist": {
+			const artist = await fetchApi<DetailedArtist>(
+				`${API_BASE_URL}/artists?link=${encoded}&songCount=1&albumCount=1`,
+				"Failed to resolve artist link",
+			);
+			return { type: "artist", id: artist.id };
+		}
+		default: {
+			const playlist = await fetchApi<DetailedPlaylist>(
+				`${API_BASE_URL}/playlists?link=${encoded}&limit=1`,
+				"Failed to resolve playlist link",
+			);
+			return { type: "playlist", id: playlist.id };
+		}
+	}
 }

@@ -29,7 +29,7 @@ export const SearchBar = memo(function SearchBar({
 	value,
 	onChange,
 	onSearch,
-	placeholder = "Search for songs, albums, or artists...",
+	placeholder = "Search songs, albums, artists, or paste a JioSaavn link...",
 }: SearchBarProps) {
 	// Stable event handlers using useCallback
 	const handleKeyDown = useCallback(

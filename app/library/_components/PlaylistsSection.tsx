@@ -1,4 +1,5 @@
-import { Music, Pencil, Trash2 } from "lucide-react";
+import { Music, Pencil, Play, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,17 +42,24 @@ export function PlaylistsSection({
 									key={playlist.id}
 									className="group flex items-center justify-between rounded-lg p-2 hover:bg-muted/50"
 								>
-									<button
-										type="button"
-										onClick={() => onPlayPlaylist(playlist.id)}
+									<Link
+										href={`/library/playlist?id=${playlist.id}`}
 										className="flex-1 min-w-0 text-left pr-2"
 									>
 										<p className="font-medium truncate">{playlist.name}</p>
 										<p className="text-sm text-muted-foreground truncate">
 											{playlist.songs.length} songs
 										</p>
-									</button>
+									</Link>
 									<div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={() => onPlayPlaylist(playlist.id)}
+											aria-label="Play playlist"
+										>
+											<Play className="h-4 w-4" />
+										</Button>
 										<Button
 											variant="ghost"
 											size="icon"

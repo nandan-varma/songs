@@ -3,6 +3,7 @@
 import { memo } from "react";
 import { CoverImage } from "@/components/common/cover-image";
 import type { DetailedSong } from "@/types/entity";
+import { NowPlayingSheet } from "./now-playing-sheet";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
@@ -84,6 +85,7 @@ export const MobileLayout = memo(function MobileLayout({
 				<div className="shrink-0 flex items-center gap-1">
 					<VolumeControl volume={volume} onSetVolume={onSetVolume} />
 					<SleepTimerMenu />
+					<NowPlayingSheet />
 					<QueueButton
 						queue={queue}
 						currentIndex={currentIndex}

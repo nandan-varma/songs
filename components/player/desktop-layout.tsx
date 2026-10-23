@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import type { DetailedSong } from "@/types/entity";
+import { NowPlayingSheet } from "./now-playing-sheet";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
@@ -71,6 +72,7 @@ export const DesktopLayout = memo(function DesktopLayout({
 			{/* Right: Volume & Queue */}
 			<div className="flex w-[30%] min-w-[180px] items-center justify-end gap-3 pr-2">
 				<SleepTimerMenu />
+				<NowPlayingSheet />
 				<QueueButton
 					queue={queue}
 					currentIndex={currentIndex}

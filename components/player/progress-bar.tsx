@@ -1,20 +1,20 @@
 "use client";
 
 import { memo, useCallback } from "react";
+import { useCurrentTime, useDuration } from "@/hooks/use-store";
 import { formatTime } from "@/lib/utils/time";
 import { Slider } from "../ui/slider";
 
 interface ProgressBarProps {
-	currentTime: number;
-	duration: number;
 	onSeekTo: (time: number) => void;
 }
 
+/** Subscribes to playback time itself so ticks re-render only this bar, not the whole player. */
 export const ProgressBar = memo(function ProgressBar({
-	currentTime,
-	duration,
 	onSeekTo,
 }: ProgressBarProps) {
+	const currentTime = useCurrentTime();
+	const duration = useDuration();
 	const handleValueChange = useCallback(
 		([value]: number[]) => {
 			if (value !== undefined) {

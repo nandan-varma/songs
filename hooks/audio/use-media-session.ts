@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useAppStore } from "@/lib/store";
 import { logAudioError } from "@/lib/utils/audio-error";
 import { SEEK_OFFSET_SECONDS, type UseMediaSessionProps } from "@/types/player";
 
@@ -9,8 +10,6 @@ export function useMediaSession({
 	currentSong,
 	audioRef,
 	isPlaying,
-	currentTime,
-	duration,
 	playNext,
 	playPrevious,
 	seekTo,
@@ -117,15 +116,24 @@ export function useMediaSession({
 		};
 	}, [playNext, playPrevious, seekTo, audioRef]);
 
+	// The browser extrapolates position while playing, so only report it on play/pause and song changes.
 	useEffect(() => {
-		if (!("mediaSession" in navigator) || !audioRef.current || duration <= 0) {
+		const audio = audioRef.current;
+		if (
+			!("mediaSession" in navigator) ||
+			!audio ||
+			!currentSong ||
+			!isPlaying
+		) {
 			return;
 		}
 
+		const { duration, currentTime } = useAppStore.getState();
+		if (duration <= 0) return;
 		navigator.mediaSession.setPositionState({
-			duration: duration,
-			playbackRate: audioRef.current.playbackRate || 1,
-			position: currentTime,
+			duration,
+			playbackRate: audio.playbackRate || 1,
+			position: Math.min(currentTime, duration),
 		});
-	}, [currentTime, duration, audioRef]);
+	}, [currentSong, isPlaying, audioRef]);
 }

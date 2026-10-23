@@ -1,4 +1,4 @@
-import { Music, Play, Plus } from "lucide-react";
+import { Music, Play, Plus, Radio } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { memo } from "react";
@@ -14,6 +14,7 @@ import { type DetailedSong, EntityType } from "@/types/entity";
 interface SongHeaderProps {
 	song: DetailedSong;
 	onPlay: () => void;
+	onRadio: () => void;
 	onAddToQueue: () => void;
 }
 
@@ -23,6 +24,7 @@ interface SongHeaderProps {
 export const SongHeader = memo(function SongHeader({
 	song,
 	onPlay,
+	onRadio,
 	onAddToQueue,
 }: SongHeaderProps) {
 	const { getTransition } = useAnimationPreferences();
@@ -137,6 +139,20 @@ export const SongHeader = memo(function SongHeader({
 									<Button size="lg" onClick={onPlay} className="gap-2">
 										<Play className="h-5 w-5 fill-current" />
 										Play
+									</Button>
+								</motion.div>
+								<motion.div
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.98 }}
+								>
+									<Button
+										size="lg"
+										variant="secondary"
+										onClick={onRadio}
+										className="gap-2"
+									>
+										<Radio className="h-5 w-5" />
+										Radio
 									</Button>
 								</motion.div>
 								<motion.div

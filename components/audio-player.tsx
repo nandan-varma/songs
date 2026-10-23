@@ -11,8 +11,6 @@ import { useOfflineSkip } from "@/hooks/player/use-offline-skip";
 import { useRadioMode } from "@/hooks/player/use-radio-mode";
 import {
 	useCurrentSong,
-	useCurrentTime,
-	useDuration,
 	useIsMuted,
 	useIsPlaying,
 	useQueueIndex,
@@ -33,8 +31,6 @@ export function AudioPlayer() {
 	const isPlaying = useIsPlaying();
 	const volume = useVolume();
 	const isMuted = useIsMuted();
-	const currentTime = useCurrentTime();
-	const duration = useDuration();
 	const queue = useQueueSongs();
 	const queueIndex = useQueueIndex();
 	const downloadedSongIds = useAppStore((state) => state.downloadedSongIds);
@@ -91,8 +87,6 @@ export function AudioPlayer() {
 		currentSong,
 		audioRef,
 		isPlaying,
-		currentTime,
-		duration,
 		playNext,
 		playPrevious,
 		seekTo,
@@ -104,8 +98,6 @@ export function AudioPlayer() {
 		currentSong: currentSong ?? null,
 		isPlaying: hasCurrentSong && isPlaying,
 		volume,
-		currentTime,
-		duration,
 		queue,
 		currentIndex: queueIndex,
 		onTogglePlayPause: togglePlayPause,

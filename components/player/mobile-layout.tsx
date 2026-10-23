@@ -13,8 +13,6 @@ interface MobileLayoutProps {
 	currentSong: DetailedSong | null;
 	isPlaying: boolean;
 	volume: number;
-	currentTime: number;
-	duration: number;
 	queue: DetailedSong[];
 	currentIndex: number;
 	onTogglePlayPause: () => void;
@@ -36,8 +34,6 @@ export const MobileLayout = memo(function MobileLayout({
 	currentSong,
 	isPlaying,
 	volume,
-	currentTime,
-	duration,
 	queue,
 	currentIndex,
 	onTogglePlayPause,
@@ -99,11 +95,7 @@ export const MobileLayout = memo(function MobileLayout({
 
 			{/* Progress Bar */}
 			<div className="w-full">
-				<ProgressBar
-					currentTime={currentTime}
-					duration={duration}
-					onSeekTo={onSeekTo}
-				/>
+				<ProgressBar onSeekTo={onSeekTo} />
 			</div>
 
 			{/* Controls Section */}

@@ -70,8 +70,6 @@ export interface UseMediaSessionProps {
 	currentSong: DetailedSong | null;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
 	isPlaying: boolean;
-	currentTime: number;
-	duration: number;
 	playNext: () => void;
 	playPrevious: () => void;
 	seekTo: (time: number) => void;

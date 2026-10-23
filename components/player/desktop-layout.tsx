@@ -13,8 +13,6 @@ interface DesktopLayoutProps {
 	currentSong: DetailedSong | null;
 	isPlaying: boolean;
 	volume: number;
-	currentTime: number;
-	duration: number;
 	queue: DetailedSong[];
 	currentIndex: number;
 	onTogglePlayPause: () => void;
@@ -36,8 +34,6 @@ export const DesktopLayout = memo(function DesktopLayout({
 	currentSong,
 	isPlaying,
 	volume,
-	currentTime,
-	duration,
 	queue,
 	currentIndex,
 	onTogglePlayPause,
@@ -68,11 +64,7 @@ export const DesktopLayout = memo(function DesktopLayout({
 				</div>
 
 				<div className="w-full max-w-[600px]">
-					<ProgressBar
-						currentTime={currentTime}
-						duration={duration}
-						onSeekTo={onSeekTo}
-					/>
+					<ProgressBar onSeekTo={onSeekTo} />
 				</div>
 			</div>
 

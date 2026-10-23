@@ -34,7 +34,6 @@ export const useAppStore = create<AppStore>()(
 				playlists: state.playlists,
 				volume: state.volume,
 				downloadedSongIds: Array.from(state.downloadedSongIds),
-				sleepTimerMinutes: state.sleepTimerMinutes,
 				contentLanguage: state.contentLanguage,
 			}),
 			merge: (persistedState, currentState) => {

@@ -11,17 +11,14 @@ import { SearchBar } from "@/components/common/search-bar";
 import { DiscoverContent } from "@/components/discover/discover-content";
 import { HistoryList } from "@/components/history-list";
 import { PlaylistsList } from "@/components/playlists-list";
-import { GlobalSearchResults } from "@/components/search/global-search-results";
 import { ErrorState, LoadingSpinner } from "@/components/search/search-states";
 import { SearchTabContent } from "@/components/search/search-tab-content";
 import { SongsList } from "@/components/songs-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGlobalSearch } from "@/hooks/data/queries";
 import { useSearchQueries } from "@/hooks/data/use-search-queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useHistory } from "@/hooks/use-store";
 import { isJioSaavnLink, resolveJioSaavnLink } from "@/lib/api";
-import { detailedSongToSong } from "@/lib/utils";
 import { logError } from "@/lib/utils/logger";
 import type {
 	Artist,
@@ -46,6 +43,7 @@ const TABS = [
 
 const SEARCH_PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 350;
+const ALL_TAB_SONGS = 5;
 
 /** Convert artist search result to standard artist format */
 const artistSearchResultToArtist = (artist: ArtistSearchResult): Artist => ({
@@ -84,11 +82,6 @@ export default function SearchContent() {
 
 	const searchEnabled = !!query.trim() && !isOffline;
 
-	// Fetch global search when viewing "all" tab
-	const globalSearchQuery = useGlobalSearch(query, {
-		enabled: activeTab === "all" && searchEnabled,
-	});
-
 	// Fetch all entity types in parallel
 	const searchResults = useSearchQueries(query, {
 		limit: SEARCH_PAGE_SIZE,
@@ -96,7 +89,6 @@ export default function SearchContent() {
 	});
 
 	const hasError =
-		!!globalSearchQuery.error ||
 		searchResults.songs.error ||
 		searchResults.albums.error ||
 		searchResults.artists.error ||
@@ -192,14 +184,34 @@ export default function SearchContent() {
 						value="all"
 						className="space-y-6 md:space-y-8 mt-4 md:mt-6"
 					>
-						{globalSearchQuery.isPending ? (
-							<LoadingSpinner />
-						) : globalSearchQuery.data ? (
-							<GlobalSearchResults
-								results={globalSearchQuery.data}
-								query={query}
+						<SearchTabContent
+							type="results"
+							isLoading={searchResults.isLoading}
+							hasResults={
+								searchResults.songs.results.length > 0 ||
+								searchResults.albums.results.length > 0 ||
+								searchResults.artists.results.length > 0 ||
+								searchResults.playlists.results.length > 0
+							}
+							query={query}
+						>
+							<SongsList
+								songs={searchResults.songs.results.slice(0, ALL_TAB_SONGS)}
 							/>
-						) : null}
+							<AlbumsList shelf albums={searchResults.albums.results} />
+							<ArtistsList
+								shelf
+								artists={searchResults.artists.results.map(
+									artistSearchResultToArtist,
+								)}
+							/>
+							<PlaylistsList
+								shelf
+								playlists={searchResults.playlists.results.map(
+									playlistSearchResultToPlaylist,
+								)}
+							/>
+						</SearchTabContent>
 					</TabsContent>
 
 					<TabsContent value="songs" className="mt-4 md:mt-6">
@@ -212,10 +224,7 @@ export default function SearchContent() {
 							hasResults={searchResults.songs.results.length > 0}
 							query={query}
 						>
-							<SongsList
-								songs={searchResults.songs.results.map(detailedSongToSong)}
-								detailedSongs={searchResults.songs.results}
-							/>
+							<SongsList songs={searchResults.songs.results} />
 							<LoadMoreButton
 								hasNextPage={searchResults.songs.hasNextPage}
 								isFetching={searchResults.songs.isFetchingNextPage}

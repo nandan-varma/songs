@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import type { Route } from "next";
 import Link from "next/link";
 import { memo, useCallback, useState } from "react";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHistoryDisplay } from "@/hooks/ui/use-history-display";
@@ -76,7 +76,7 @@ export const HistoryItemComponent = memo(function HistoryItemComponent({
 						className={`relative ${imageSize} shrink-0 overflow-hidden rounded`}
 					>
 						{data.images && data.images.length > 0 ? (
-							<ProgressiveImage
+							<CoverImage
 								images={data.images}
 								alt={data.title}
 								className="object-cover transition-transform hover:scale-105"

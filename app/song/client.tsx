@@ -58,9 +58,7 @@ export function Client() {
 		songs.filter((candidate) => candidate.id !== id);
 	const albumSongs = withoutCurrent(album?.songs ?? []);
 	const moreFromArtist = withoutCurrent(artistSongs?.pages[0]?.songs ?? []);
-	// JioSaavn often has no station queued, so similar songs fall back to the artist's catalogue.
-	const similarSongs =
-		suggestions.length > 0 ? withoutCurrent(suggestions) : moreFromArtist;
+	const similarSongs = withoutCurrent(suggestions);
 
 	// Track visit to song
 	useEffect(() => {
@@ -111,7 +109,7 @@ export function Client() {
 					{album && (
 						<SongSection title={`From ${album.name}`} songs={albumSongs} />
 					)}
-					{artist && suggestions.length > 0 && (
+					{artist && (
 						<SongSection
 							title={`More from ${artist.name}`}
 							songs={moreFromArtist}

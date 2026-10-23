@@ -17,7 +17,6 @@ import type {
 	Playlist,
 	PlaylistSearchResult,
 	RadioStation,
-	Song,
 } from "../entity";
 
 export type {
@@ -34,26 +33,12 @@ export type {
 	Playlist,
 	PlaylistSearchResult,
 	RadioStation,
-	Song,
 };
-
-export interface SearchResultSection<T> {
-	results: T[];
-	position: number;
-}
 
 export interface PaginatedResponse<T> {
 	total: number;
 	start: number;
 	results: T[];
-}
-
-export interface SearchResponse {
-	albums: SearchResultSection<Album>;
-	songs: SearchResultSection<Song>;
-	artists: SearchResultSection<Artist>;
-	playlists: SearchResultSection<Playlist>;
-	topQuery: SearchResultSection<Song | Artist>;
 }
 
 export interface ApiResponse<T> {

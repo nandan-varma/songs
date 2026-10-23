@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { Card, CardContent } from "@/components/ui/card";
 import type { DetailedArtist } from "@/types/api";
 import { EntityType } from "@/types/entity";
@@ -26,10 +26,9 @@ export function SimilarArtistsGrid({ artists }: SimilarArtistsGridProps) {
 							<Link href={`/artist?id=${artist.id}`}>
 								<div className="space-y-3">
 									<div className="relative aspect-square w-full">
-										<ProgressiveImage
+										<CoverImage
 											images={artist.image}
 											alt={artist.name}
-											entityType={EntityType.ARTIST}
 											rounded="full"
 											sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 										/>

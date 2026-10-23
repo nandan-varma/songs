@@ -1,7 +1,7 @@
 import { Disc3, Play, Plus, Shuffle } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { ShareButton } from "@/components/common/share-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,10 +43,9 @@ export function AlbumHeader({
 							}}
 						>
 							{album.image && album.image.length > 0 ? (
-								<ProgressiveImage
+								<CoverImage
 									images={album.image}
 									alt={album.name}
-									entityType={EntityType.ALBUM}
 									rounded="default"
 									priority
 									sizes="(max-width: 768px) 100vw, 240px"

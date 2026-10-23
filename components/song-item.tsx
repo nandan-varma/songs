@@ -1,26 +1,23 @@
 "use client";
 
-import { LoaderIcon, PauseIcon, PlayIcon } from "@animateicons/react/lucide";
+import { PauseIcon, PlayIcon } from "@animateicons/react/lucide";
 import Link from "next/link";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback } from "react";
+import { CoverImage } from "@/components/common/cover-image";
 import { FavoriteButton } from "@/components/common/favorite-button";
-import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongActionMenu } from "@/components/common/song-action-menu";
-import { getSongById } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { logError } from "@/lib/utils/logger";
 import { formatTime } from "@/lib/utils/time";
-import type { DetailedSong, Song } from "@/types/entity";
+import type { DetailedSong } from "@/types/entity";
 
 interface SongItemProps {
-	song: Song;
+	song: DetailedSong;
 	/** 1-based position shown in the leading column; omit to show only artwork. */
 	index?: number;
-	/** Full song data when the list already has it; avoids a fetch on play. */
-	detailed?: DetailedSong;
-	/** Songs to queue when this row is played, starting at this song. */
-	queue?: DetailedSong[];
+	/** The list this row belongs to; playing a row queues the whole list from that song. */
+	queue: DetailedSong[];
 	compact?: boolean;
 }
 
@@ -41,40 +38,24 @@ function EqualizerBars() {
 export const SongItem = memo(function SongItem({
 	song,
 	index,
-	detailed,
 	queue,
 	compact = false,
 }: SongItemProps) {
-	const [isLoading, setIsLoading] = useState(false);
 	const isCurrent = useAppStore((state) => state.currentSong?.id === song.id);
 	const isPlaying = useAppStore((state) => isCurrent && state.isPlaying);
 
-	const handlePlay = useCallback(async () => {
+	const handlePlay = useCallback(() => {
 		const state = useAppStore.getState();
 		if (isCurrent) {
 			state.togglePlayPause();
 			return;
 		}
-		if (isLoading) return;
-
-		try {
-			setIsLoading(true);
-			const startIndex = queue?.findIndex((item) => item.id === song.id) ?? -1;
-			if (queue && startIndex >= 0) {
-				state.playQueue(queue, startIndex);
-				state.addToPlaybackHistory(queue[startIndex] as DetailedSong);
-				return;
-			}
-			const [fetched] = await getSongById(song.id);
-			if (!fetched) return;
-			state.playSong(fetched);
-			state.addToPlaybackHistory(fetched);
-		} catch (error) {
-			logError("SongItem:play", error);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [isCurrent, isLoading, queue, song.id]);
+		state.playQueue(
+			queue,
+			queue.findIndex((item) => item.id === song.id),
+		);
+		state.addToPlaybackHistory(song);
+	}, [isCurrent, queue, song]);
 
 	const artwork = compact ? "h-9 w-9" : "h-10 w-10";
 	const ActionIcon = isPlaying ? PauseIcon : PlayIcon;
@@ -99,13 +80,13 @@ export const SongItem = memo(function SongItem({
 			<button
 				type="button"
 				onClick={handlePlay}
-				aria-label={isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
+				aria-label={isPlaying ? `Pause ${song.name}` : `Play ${song.name}`}
 				className={cn(
 					"relative shrink-0 overflow-hidden rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 					artwork,
 				)}
 			>
-				<ProgressiveImage
+				<CoverImage
 					images={song.image}
 					alt=""
 					className="object-cover"
@@ -114,14 +95,10 @@ export const SongItem = memo(function SongItem({
 				<span
 					className={cn(
 						"absolute inset-0 flex items-center justify-center bg-black/55 text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
-						(isLoading || isCurrent) && "opacity-100",
+						isCurrent && "opacity-100",
 					)}
 				>
-					{isLoading ? (
-						<LoaderIcon size={16} />
-					) : (
-						<ActionIcon size={16} className="fill-current" />
-					)}
+					<ActionIcon size={16} className="fill-current" />
 				</span>
 			</button>
 
@@ -133,26 +110,24 @@ export const SongItem = memo(function SongItem({
 						isCurrent && "text-primary",
 					)}
 				>
-					{song.title}
+					{song.name}
 				</Link>
 				<p className="truncate text-xs text-muted-foreground">
-					{song.primaryArtists || song.singers}
+					{song.artists.primary.map((artist) => artist.name).join(", ")}
 				</p>
 			</div>
 
-			{!compact && song.album && (
+			{!compact && song.album.name && (
 				<span className="hidden w-1/4 truncate text-sm text-muted-foreground lg:block">
-					{song.album}
+					{song.album.name}
 				</span>
 			)}
 
-			{detailed && <FavoriteButton song={detailed} />}
+			<FavoriteButton song={song} />
 
-			{detailed && (
-				<span className="hidden w-10 text-right text-xs tabular-nums text-muted-foreground sm:block">
-					{formatTime(detailed.duration ?? 0)}
-				</span>
-			)}
+			<span className="hidden w-10 text-right text-xs tabular-nums text-muted-foreground sm:block">
+				{formatTime(song.duration ?? 0)}
+			</span>
 
 			<SongActionMenu song={song} />
 		</div>

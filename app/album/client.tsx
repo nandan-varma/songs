@@ -8,7 +8,6 @@ import { SongsList } from "@/components/songs-list";
 import { useAlbum } from "@/hooks/data/queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
-import { detailedSongToSong } from "@/lib/utils";
 import { AlbumPageLoading } from "./loading";
 
 export function Client() {
@@ -51,12 +50,7 @@ export function Client() {
 					/>
 
 					{filteredSongs.length > 0 && (
-						<SongsList
-							songs={filteredSongs.map(detailedSongToSong)}
-							detailedSongs={filteredSongs}
-							numbered
-							compact
-						/>
+						<SongsList songs={filteredSongs} numbered compact />
 					)}
 				</div>
 			)}

@@ -2,10 +2,10 @@
 
 import { ListMusic } from "lucide-react";
 import { motion } from "motion/react";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useQueueDragManager } from "@/hooks/ui/use-queue-drag";
+import { useDragManager } from "@/hooks/ui/use-queue-drag";
 import type { DetailedSong } from "@/types/entity";
 import { QueueHeader } from "./queue-header";
 import { VirtualizedQueue } from "./virtualized-queue";
@@ -33,16 +33,20 @@ export const QueueButton = memo(function QueueButton({
 	const queueCount = queue.length;
 	const hasQueue = queueCount > 0;
 
+	const queueIndices = useMemo(
+		() => Array.from({ length: queueCount }, (_, index) => index),
+		[queueCount],
+	);
 	const {
-		displayQueue,
+		displayItems: displayQueue,
 		isDragging,
 		handleDragStart,
 		handleDragEnter,
 		handleDragEnd,
-	} = useQueueDragManager({
-		queueLength: queueCount,
-		currentIndex,
-		onReorderQueue,
+	} = useDragManager({
+		items: queueIndices,
+		onReorder: onReorderQueue,
+		excludeIndex: currentIndex,
 	});
 
 	return (

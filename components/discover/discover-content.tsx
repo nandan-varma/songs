@@ -14,12 +14,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useCharts, useRadioStations, useTrending } from "@/hooks/data/queries";
-import { getRadioFeatured } from "@/lib/api";
+import { useCharts, useTrending } from "@/hooks/data/queries";
 import { useAppStore } from "@/lib/store";
-import { detailedSongToSong } from "@/lib/utils";
 import { logError } from "@/lib/utils/logger";
-import { Language, type RadioStation } from "@/types/entity";
+import { Language } from "@/types/entity";
 
 const LANGUAGE_OPTIONS = [
 	Language.ENGLISH,
@@ -35,57 +33,6 @@ function getGreeting(): string {
 	const hour = new Date().getHours();
 	if (hour < 12) return "Good morning";
 	return hour < 18 ? "Good afternoon" : "Good evening";
-}
-
-function RadioStations({ stations }: { stations: RadioStation[] }) {
-	const [loadingStation, setLoadingStation] = useState<string | null>(null);
-
-	const handlePlay = async (station: RadioStation) => {
-		try {
-			setLoadingStation(station.name);
-			const songs = await getRadioFeatured(station.name, station.language);
-			if (songs.length > 0) {
-				useAppStore.getState().playQueue(songs);
-			} else {
-				toast.info(`${station.label} has nothing queued right now`);
-			}
-		} catch (error) {
-			logError("RadioStations:play", error);
-			toast.error(`Could not start ${station.label}`);
-		} finally {
-			setLoadingStation(null);
-		}
-	};
-
-	if (stations.length === 0) return null;
-
-	return (
-		<div className="space-y-2">
-			<h2 className="text-base sm:text-lg md:text-xl font-semibold">
-				Radio Stations
-			</h2>
-			<div className="grid gap-2 sm:gap-2.5 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-				{stations.map((station) => (
-					<button
-						key={station.name}
-						type="button"
-						onClick={() => handlePlay(station)}
-						disabled={loadingStation !== null}
-						className="flex items-center gap-2 rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent/60 disabled:opacity-60"
-					>
-						{loadingStation === station.name ? (
-							<Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
-						) : (
-							<RadioIcon className="h-4 w-4 shrink-0 text-primary" />
-						)}
-						<span className="truncate text-xs sm:text-sm font-medium">
-							{station.label}
-						</span>
-					</button>
-				))}
-			</div>
-		</div>
-	);
 }
 
 /**
@@ -107,7 +54,6 @@ export const DiscoverContent = memo(function DiscoverContent() {
 		contentLanguage,
 	);
 	const { data: charts = [] } = useCharts();
-	const { data: stations = [] } = useRadioStations();
 
 	const chartsAsPlaylists = charts.map((chart) => ({
 		id: chart.id,
@@ -134,8 +80,7 @@ export const DiscoverContent = memo(function DiscoverContent() {
 		trendingSongs.length === 0 &&
 		trendingAlbums.length === 0 &&
 		trendingPlaylistCards.length === 0 &&
-		charts.length === 0 &&
-		stations.length === 0
+		charts.length === 0
 	) {
 		return null;
 	}
@@ -173,10 +118,7 @@ export const DiscoverContent = memo(function DiscoverContent() {
 			</div>
 
 			<SongsList
-				songs={trendingSongs
-					.slice(0, TRENDING_SONGS_SHOWN)
-					.map(detailedSongToSong)}
-				detailedSongs={trendingSongs}
+				songs={trendingSongs.slice(0, TRENDING_SONGS_SHOWN)}
 				numbered
 				isLoading={isTrendingLoading}
 				emptyMessage="No trending songs right now"
@@ -196,8 +138,6 @@ export const DiscoverContent = memo(function DiscoverContent() {
 			/>
 
 			<PlaylistsList shelf playlists={chartsAsPlaylists} title="Charts" />
-
-			<RadioStations stations={stations} />
 		</motion.div>
 	);
 });

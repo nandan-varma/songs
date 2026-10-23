@@ -12,7 +12,7 @@ import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 import type { Artist, ArtistSearchResult } from "@/types/entity";
 import { EntityType } from "@/types/entity";
-import { ProgressiveImage } from "./common/progressive-image";
+import { CoverImage } from "./common/cover-image";
 import { Card, CardContent } from "./ui/card";
 
 const SHELF_CLASS =
@@ -157,14 +157,13 @@ export const ArtistsList = memo(function ArtistsList({
 								<Link href={`/artist?id=${artist.id}`} className="block">
 									<div className="relative aspect-square w-full">
 										{artist.image && artist.image.length > 0 ? (
-											<ProgressiveImage
+											<CoverImage
 												images={artist.image}
 												alt={
 													isArtistSearchResult(artist)
 														? artist.name
 														: artist.title
 												}
-												entityType={EntityType.ARTIST}
 												rounded="full"
 												sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
 											/>

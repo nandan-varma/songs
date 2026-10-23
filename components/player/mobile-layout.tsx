@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
 import { ProgressBar } from "./progress-bar";
@@ -51,7 +51,7 @@ export const MobileLayout = memo(function MobileLayout({
 				<div className="flex items-center gap-3 overflow-hidden">
 					{currentSong?.image && currentSong.image.length > 0 ? (
 						<div className="relative h-14 w-14 shrink-0 rounded-md overflow-hidden shadow-sm">
-							<ProgressiveImage
+							<CoverImage
 								images={currentSong.image}
 								alt={currentSong.name}
 								rounded="default"

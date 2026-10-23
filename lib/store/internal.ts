@@ -27,7 +27,6 @@ export const INITIAL_STATE: AppStoreState = {
 	playlists: [],
 	isQueueOpen: false,
 	downloadedSongIds: new Set(),
-	sleepTimerMinutes: null,
 	contentLanguage: "english",
 	isRadioEnabled: false,
 };

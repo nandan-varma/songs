@@ -2,10 +2,8 @@
 
 import { Heart, ListPlus, MoreHorizontal, Play, Share2 } from "lucide-react";
 import * as React from "react";
-import { useDetailedSong } from "@/hooks/data/use-detailed-song";
 import { useSongActions } from "@/hooks/player/use-song-actions";
-import { songToDetailedSong } from "@/lib/utils";
-import type { Song } from "@/types/entity";
+import type { DetailedSong } from "@/types/entity";
 import { Button } from "../ui/button";
 import {
 	DropdownMenu,
@@ -23,7 +21,7 @@ import {
 import { CreatePlaylistDialog } from "./create-playlist-dialog";
 
 interface SongActionMenuProps {
-	song: Song;
+	song: DetailedSong;
 	showPlayNext?: boolean;
 	showAddToQueue?: boolean;
 	onPlay?: () => void;
@@ -35,13 +33,6 @@ export function SongActionMenu({
 	showAddToQueue = true,
 	onPlay,
 }: SongActionMenuProps) {
-	const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
-	// Fetch detailed song when menu opens
-	const { data: detailedSongArray } = useDetailedSong(
-		isMenuOpen ? song.id : null,
-	);
-
 	const {
 		handlePlay,
 		handlePlayNext,
@@ -52,46 +43,36 @@ export function SongActionMenu({
 		isFavorite,
 	} = useSongActions();
 
-	// Get detailed song, falling back to basic info
-	const detailedSong = React.useMemo(() => {
-		if (detailedSongArray?.[0]) return detailedSongArray[0];
-		return songToDetailedSong(song);
-	}, [detailedSongArray, song]);
-
 	const isFav = isFavorite(song.id);
 
-	const handleOpen = (open: boolean) => {
-		setIsMenuOpen(open);
-	};
-
 	return (
-		<DropdownMenu open={isMenuOpen} onOpenChange={handleOpen}>
+		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" size="icon" className="h-8 w-8">
 					<MoreHorizontal className="h-4 w-4" />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-48">
-				<DropdownMenuLabel>{song.title}</DropdownMenuLabel>
+				<DropdownMenuLabel>{song.name}</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 
 				<DropdownMenuGroup>
 					{onPlay && (
-						<DropdownMenuItem onClick={() => handlePlay(detailedSong, onPlay)}>
+						<DropdownMenuItem onClick={() => handlePlay(song, onPlay)}>
 							<Play className="mr-2 h-4 w-4" />
 							Play
 						</DropdownMenuItem>
 					)}
 
 					{showPlayNext && (
-						<DropdownMenuItem onClick={() => handlePlayNext(detailedSong)}>
+						<DropdownMenuItem onClick={() => handlePlayNext(song)}>
 							<Play className="mr-2 h-4 w-4" />
 							Play Next
 						</DropdownMenuItem>
 					)}
 
 					{showAddToQueue && (
-						<DropdownMenuItem onClick={() => handleAddToQueue(detailedSong)}>
+						<DropdownMenuItem onClick={() => handleAddToQueue(song)}>
 							<ListPlus className="mr-2 h-4 w-4" />
 							Add to Queue
 						</DropdownMenuItem>
@@ -100,7 +81,7 @@ export function SongActionMenu({
 
 				<DropdownMenuSeparator />
 
-				<DropdownMenuItem onClick={() => handleToggleFavorite(detailedSong.id)}>
+				<DropdownMenuItem onClick={() => handleToggleFavorite(song.id)}>
 					<Heart
 						className={`mr-2 h-4 w-4 ${
 							isFav ? "fill-red-500 text-red-500" : ""
@@ -115,8 +96,8 @@ export function SongActionMenu({
 						if (navigator.share) {
 							try {
 								await navigator.share({
-									title: song.title,
-									text: `Check out ${song.title}`,
+									title: song.name,
+									text: `Check out ${song.name}`,
 									url: shareUrl,
 								});
 							} catch {
@@ -143,10 +124,8 @@ export function SongActionMenu({
 							playlists.map((playlist) => (
 								<DropdownMenuCheckboxItem
 									key={playlist.id}
-									checked={playlist.songs.some((s) => s.id === detailedSong.id)}
-									onCheckedChange={() =>
-										handleAddToPlaylist(playlist.id, detailedSong)
-									}
+									checked={playlist.songs.some((s) => s.id === song.id)}
+									onCheckedChange={() => handleAddToPlaylist(playlist.id, song)}
 								>
 									{playlist.name}
 								</DropdownMenuCheckboxItem>
@@ -156,7 +135,7 @@ export function SongActionMenu({
 						)}
 						<DropdownMenuSeparator />
 						<CreatePlaylistDialog
-							song={detailedSong}
+							song={song}
 							trigger={
 								<DropdownMenuItem
 									onSelect={(e) => {

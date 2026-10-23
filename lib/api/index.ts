@@ -12,8 +12,6 @@ import type {
 	Lyrics,
 	PaginatedResponse,
 	PlaylistSearchResult,
-	RadioStation,
-	SearchResponse,
 } from "@/types/api";
 
 const API_BASE_URL = publicConfig.NEXT_PUBLIC_API_URL;
@@ -75,17 +73,6 @@ async function fetchApi<T>(
 		return value;
 	}) as ApiResponse<T>;
 	return data.data;
-}
-
-export async function searchMusic(
-	query: string,
-	options?: { signal?: AbortSignal },
-): Promise<SearchResponse> {
-	return fetchApi<SearchResponse>(
-		`${API_BASE_URL}/search?query=${encodeURIComponent(query)}`,
-		"Failed to fetch search results",
-		options,
-	);
 }
 
 export async function searchSongs(
@@ -272,17 +259,6 @@ export async function getSongLyrics(id: string): Promise<Lyrics> {
 	);
 }
 
-export async function getArtistRadio(
-	id: string,
-	limit = 20,
-): Promise<DetailedSong[]> {
-	validateEntityId(id);
-	return fetchApi<DetailedSong[]>(
-		`${API_BASE_URL}/artists/${encodeURIComponent(id)}/radio?limit=${limit}`,
-		"Failed to fetch artist radio",
-	);
-}
-
 interface TrendingTypeMap {
 	song: DetailedSong;
 	album: DetailedAlbum;
@@ -301,24 +277,6 @@ export async function getTrending<K extends keyof TrendingTypeMap>(
 
 export async function getCharts(): Promise<Chart[]> {
 	return fetchApi<Chart[]>(`${API_BASE_URL}/charts`, "Failed to fetch charts");
-}
-
-export async function getRadioStations(): Promise<RadioStation[]> {
-	return fetchApi<RadioStation[]>(
-		`${API_BASE_URL}/radio/stations`,
-		"Failed to fetch radio stations",
-	);
-}
-
-export async function getRadioFeatured(
-	name: string,
-	language: string,
-	limit = 20,
-): Promise<DetailedSong[]> {
-	return fetchApi<DetailedSong[]>(
-		`${API_BASE_URL}/radio/featured?name=${encodeURIComponent(name)}&language=${encodeURIComponent(language)}&limit=${limit}`,
-		"Failed to fetch featured radio",
-	);
 }
 
 const JIOSAAVN_LINK_REGEX =

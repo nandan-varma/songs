@@ -24,8 +24,6 @@ export const selectPlaybackHistory = (state: AppStoreState) =>
 export const selectVisitHistory = (state: AppStoreState) => state.visitHistory;
 export const selectPlaylists = (state: AppStoreState) => state.playlists;
 export const selectIsQueueOpen = (state: AppStoreState) => state.isQueueOpen;
-export const selectSleepTimerMinutes = (state: AppStoreState) =>
-	state.sleepTimerMinutes;
 export const selectDownloadedSongIds = (state: AppStoreState) =>
 	state.downloadedSongIds;
 export const selectIsDownloaded = (songId: string) => (state: AppStoreState) =>

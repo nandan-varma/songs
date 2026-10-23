@@ -77,19 +77,6 @@ export interface AlbumMini {
 	url: string | null;
 }
 
-export interface Song {
-	id: string;
-	title: string;
-	image: Image[];
-	album: string;
-	url: string;
-	type: EntityType | string;
-	description: string;
-	primaryArtists: string;
-	singers: string;
-	language: Language | string;
-}
-
 export interface Album {
 	id: string;
 	title: string;

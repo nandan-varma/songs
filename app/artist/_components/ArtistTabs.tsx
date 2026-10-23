@@ -1,8 +1,8 @@
 import { Play } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CoverImage } from "@/components/common/cover-image";
 import { LoadMoreButton } from "@/components/common/load-more-button";
-import { ProgressiveImage } from "@/components/common/progressive-image";
 import { SongsList } from "@/components/songs-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useArtistAlbums, useArtistSongs } from "@/hooks/data/queries";
 import { feature_flags } from "@/lib/constants";
 import type { ArtistSortBy, ArtistSortOrder } from "@/lib/queries/music";
-import { detailedSongToSong } from "@/lib/utils";
 import type { DetailedArtist } from "@/types/api";
 import { EntityType } from "@/types/entity";
 
@@ -122,11 +121,7 @@ export function ArtistTabs({ artist, onPlayTopSongs }: ArtistTabsProps) {
 							</Button>
 							<SortSelect value={songSort} onChange={setSongSort} />
 						</div>
-						<SongsList
-							songs={topSongs.map(detailedSongToSong)}
-							detailedSongs={topSongs}
-							numbered
-						/>
+						<SongsList songs={topSongs} numbered />
 						<LoadMoreButton
 							hasNextPage={songsQuery.hasNextPage}
 							isFetching={songsQuery.isFetchingNextPage}
@@ -156,10 +151,9 @@ export function ArtistTabs({ artist, onPlayTopSongs }: ArtistTabsProps) {
 										<Link href={`/album?id=${album.id}`}>
 											<div className="space-y-3">
 												<div className="relative aspect-square w-full">
-													<ProgressiveImage
+													<CoverImage
 														images={album.image}
 														alt={album.name}
-														entityType={EntityType.ALBUM}
 														rounded="default"
 														sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 													/>
@@ -193,11 +187,7 @@ export function ArtistTabs({ artist, onPlayTopSongs }: ArtistTabsProps) {
 
 			{singles.length > 0 && feature_flags.Artist_page_singles_enabled && (
 				<TabsContent value="singles" className="space-y-4">
-					<SongsList
-						songs={singles.map(detailedSongToSong)}
-						detailedSongs={singles}
-						numbered
-					/>
+					<SongsList songs={singles} numbered />
 				</TabsContent>
 			)}
 

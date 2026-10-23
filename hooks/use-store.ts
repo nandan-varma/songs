@@ -99,7 +99,6 @@ export function useUIState() {
 	return useAppStore(
 		useShallow((state) => ({
 			isQueueOpen: state.isQueueOpen,
-			sleepTimerMinutes: state.sleepTimerMinutes,
 		})),
 	);
 }
@@ -108,8 +107,6 @@ export function useUIActions() {
 	return {
 		setIsQueueOpen: (open: boolean) =>
 			useAppStore.getState().setIsQueueOpen(open),
-		setSleepTimer: (minutes: number | null) =>
-			useAppStore.getState().setSleepTimer(minutes),
 	};
 }
 

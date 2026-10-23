@@ -21,7 +21,6 @@ export interface AppStoreState {
 	playlists: LocalPlaylist[];
 	isQueueOpen: boolean;
 	downloadedSongIds: Set<string>;
-	sleepTimerMinutes: number | null;
 	contentLanguage: string;
 	isRadioEnabled: boolean;
 }
@@ -34,7 +33,6 @@ export interface PersistedAppStoreState {
 	playlists: LocalPlaylist[];
 	volume: number;
 	downloadedSongIds: string[];
-	sleepTimerMinutes: number | null;
 	contentLanguage: string;
 }
 
@@ -81,7 +79,6 @@ export interface AppStoreActions {
 		toIndex: number,
 	) => void;
 	setIsQueueOpen: (open: boolean) => void;
-	setSleepTimer: (minutes: number | null) => void;
 	setContentLanguage: (language: string) => void;
 	toggleRadioMode: () => void;
 	addDownloadedSong: (songId: string) => void;

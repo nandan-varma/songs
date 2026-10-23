@@ -11,7 +11,6 @@ export function createDownloadsAndUiSlice(
 ): Pick<
 	AppStoreActions,
 	| "setIsQueueOpen"
-	| "setSleepTimer"
 	| "addDownloadedSong"
 	| "removeDownloadedSong"
 	| "syncDownloadedSongs"
@@ -24,9 +23,6 @@ export function createDownloadsAndUiSlice(
 	return {
 		setIsQueueOpen: (open) => {
 			set({ isQueueOpen: open });
-		},
-		setSleepTimer: (minutes) => {
-			set({ sleepTimerMinutes: minutes });
 		},
 		setContentLanguage: (language) => {
 			set({ contentLanguage: language });

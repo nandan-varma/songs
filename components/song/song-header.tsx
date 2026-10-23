@@ -2,7 +2,7 @@ import { Music, Play, Plus, Radio } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { memo } from "react";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { DirectDownloadButton } from "@/components/direct-download-button";
 import { DownloadButton } from "@/components/download-button";
 import { Badge } from "@/components/ui/badge";
@@ -47,10 +47,9 @@ export const SongHeader = memo(function SongHeader({
 							}}
 						>
 							{song.image && song.image.length > 0 ? (
-								<ProgressiveImage
+								<CoverImage
 									images={song.image}
 									alt={song.name}
-									entityType={EntityType.SONG}
 									rounded="default"
 									priority
 									objectFit="contain"

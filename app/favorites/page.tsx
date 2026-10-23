@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { useSongs } from "@/hooks/data/queries";
 import { useAppStore, useFavorites } from "@/hooks/use-store";
 import { useStoreHydrated } from "@/hooks/use-store-hydrated";
-import { detailedSongToSong } from "@/lib/utils";
 
 export default function FavoritesPage() {
 	const isHydrated = useStoreHydrated();
@@ -78,11 +77,7 @@ export default function FavoritesPage() {
 							Shuffle
 						</Button>
 					</div>
-					<SongsList
-						songs={favoriteSongs.map(detailedSongToSong)}
-						detailedSongs={favoriteSongs}
-						numbered
-					/>
+					<SongsList songs={favoriteSongs} numbered />
 				</div>
 			) : null}
 		</div>

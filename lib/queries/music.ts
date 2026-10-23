@@ -4,12 +4,9 @@ import {
 	getAlbumById,
 	getArtistAlbums,
 	getArtistById,
-	getArtistRadio,
 	getArtistSongs,
 	getCharts,
 	getPlaylistById,
-	getRadioFeatured,
-	getRadioStations,
 	getSongById,
 	getSongLyrics,
 	getSongSuggestions,
@@ -17,7 +14,6 @@ import {
 	getTrending,
 	searchAlbums,
 	searchArtists,
-	searchMusic,
 	searchPlaylists,
 	searchSongs,
 } from "@/lib/api";
@@ -60,14 +56,6 @@ export function playlistQueryOptions(id: string) {
 		queryKey: CACHE_KEYS.PLAYLIST(id),
 		queryFn: () => getPlaylistById(id),
 		staleTime: CACHE_TIMES.ALBUM,
-	});
-}
-
-export function globalSearchQueryOptions(query: string) {
-	return queryOptions({
-		queryKey: CACHE_KEYS.SEARCH(query),
-		queryFn: () => searchMusic(query),
-		staleTime: CACHE_TIMES.SEARCH,
 	});
 }
 
@@ -182,14 +170,6 @@ export function songLyricsQueryOptions(id: string) {
 	});
 }
 
-export function artistRadioQueryOptions(id: string, limit: number) {
-	return queryOptions({
-		queryKey: CACHE_KEYS.ARTIST_RADIO(id),
-		queryFn: () => getArtistRadio(id, limit),
-		staleTime: CACHE_TIMES.ARTIST,
-	});
-}
-
 export function trendingQueryOptions<K extends "song" | "album" | "playlist">(
 	type: K,
 	language: string,
@@ -206,25 +186,5 @@ export function chartsQueryOptions() {
 		queryKey: CACHE_KEYS.CHARTS,
 		queryFn: () => getCharts(),
 		staleTime: CACHE_TIMES.CHARTS,
-	});
-}
-
-export function radioStationsQueryOptions() {
-	return queryOptions({
-		queryKey: CACHE_KEYS.RADIO_STATIONS,
-		queryFn: () => getRadioStations(),
-		staleTime: CACHE_TIMES.RADIO_STATIONS,
-	});
-}
-
-export function radioFeaturedQueryOptions(
-	name: string,
-	language: string,
-	limit: number,
-) {
-	return queryOptions({
-		queryKey: CACHE_KEYS.RADIO_FEATURED(name),
-		queryFn: () => getRadioFeatured(name, language, limit),
-		staleTime: CACHE_TIMES.RADIO_STATIONS,
 	});
 }

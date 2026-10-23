@@ -1,9 +1,5 @@
 /**
- * Unified drag-and-drop reordering hook
- * Consolidates 3 previous implementations into a single, reusable hook
- * - useQueueDragManager: Queue-specific drag logic
- * - useDragReorder (ui): Generic drag logic
- * - useDragReorder (data): Advanced drag with validation
+ * Drag-and-drop reordering hook
  *
  * Handles drag state tracking, visual reordering, and reorder callbacks
  * Works with any list (queue, playlists, etc.)
@@ -36,7 +32,6 @@ interface UseDragManagerReturn<T> {
 
 /**
  * Unified drag-and-drop management
- * Replaces: useQueueDragManager, useDragReorder (both versions)
  * Usage:
  *   const { displayItems, isDragging, handleDragStart, ... } = useDragManager({
  *     items: queue,
@@ -109,28 +104,5 @@ export function useDragManager<T>({
 		handleDragStart,
 		handleDragEnter,
 		handleDragEnd,
-	};
-}
-
-// Backward compatibility export for current queue-button usage
-export function useQueueDragManager({
-	queueLength,
-	currentIndex,
-	onReorderQueue,
-}: {
-	queueLength: number;
-	currentIndex: number;
-	onReorderQueue: (fromIndex: number, toIndex: number) => void;
-}) {
-	const indices = Array.from({ length: queueLength }, (_, i) => i);
-	const { displayItems: displayQueue, ...rest } = useDragManager({
-		items: indices,
-		onReorder: onReorderQueue,
-		excludeIndex: currentIndex,
-	});
-
-	return {
-		displayQueue: displayQueue as number[],
-		...rest,
 	};
 }

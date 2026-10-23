@@ -6,13 +6,9 @@ import {
 	albumQueryOptions,
 	artistAlbumsQueryOptions,
 	artistQueryOptions,
-	artistRadioQueryOptions,
 	artistSongsQueryOptions,
 	chartsQueryOptions,
-	globalSearchQueryOptions,
 	playlistQueryOptions,
-	radioFeaturedQueryOptions,
-	radioStationsQueryOptions,
 	songLyricsQueryOptions,
 	songQueryOptions,
 	songSuggestionsQueryOptions,
@@ -26,8 +22,6 @@ import type {
 	DetailedPlaylist,
 	DetailedSong,
 	Lyrics,
-	RadioStation,
-	SearchResponse,
 } from "@/types/api";
 
 type QueryHookOptions<T> = Omit<
@@ -124,21 +118,6 @@ export function usePlaylist(
 	);
 }
 
-export function useGlobalSearch(
-	query: string,
-	options?: QueryHookOptions<SearchResponse>,
-) {
-	return useConfiguredQuery(
-		globalSearchQueryOptions(query) as UseQueryOptions<
-			SearchResponse,
-			Error,
-			SearchResponse
-		>,
-		!!query && options?.enabled !== false,
-		options,
-	);
-}
-
 /**
  * Hook to fetch suggested songs based on a song ID
  */
@@ -200,25 +179,6 @@ export function useSongLyrics(id: string, options?: QueryHookOptions<Lyrics>) {
 }
 
 /**
- * Hook to fetch algorithmic radio for a specific artist
- */
-export function useArtistRadio(
-	id: string,
-	limit = 20,
-	options?: QueryHookOptions<DetailedSong[]>,
-) {
-	return useConfiguredQuery(
-		artistRadioQueryOptions(id, limit) as UseQueryOptions<
-			DetailedSong[],
-			Error,
-			DetailedSong[]
-		>,
-		!!id && options?.enabled !== false,
-		options,
-	);
-}
-
-/**
  * Hook to fetch trending content for a given type and language
  */
 export function useTrending<K extends "song" | "album" | "playlist">(
@@ -239,41 +199,6 @@ export function useCharts(options?: QueryHookOptions<Chart[]>) {
 	return useConfiguredQuery(
 		chartsQueryOptions() as UseQueryOptions<Chart[], Error, Chart[]>,
 		options?.enabled !== false,
-		options,
-	);
-}
-
-/**
- * Hook to fetch known featured radio stations
- */
-export function useRadioStations(options?: QueryHookOptions<RadioStation[]>) {
-	return useConfiguredQuery(
-		radioStationsQueryOptions() as UseQueryOptions<
-			RadioStation[],
-			Error,
-			RadioStation[]
-		>,
-		options?.enabled !== false,
-		options,
-	);
-}
-
-/**
- * Hook to fetch songs from a featured radio station
- */
-export function useRadioFeatured(
-	name: string,
-	language: string,
-	limit = 20,
-	options?: QueryHookOptions<DetailedSong[]>,
-) {
-	return useConfiguredQuery(
-		radioFeaturedQueryOptions(name, language, limit) as UseQueryOptions<
-			DetailedSong[],
-			Error,
-			DetailedSong[]
-		>,
-		!!name && options?.enabled !== false,
 		options,
 	);
 }

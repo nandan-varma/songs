@@ -1,5 +1,4 @@
 import { SongsList } from "@/components/songs-list";
-import { detailedSongToSong } from "@/lib/utils";
 import type { DetailedSong } from "@/types/entity";
 
 interface SongSectionProps {
@@ -14,7 +13,7 @@ export function SongSection({ title, songs }: SongSectionProps) {
 	return (
 		<section className="space-y-2">
 			<h2 className="text-xl font-semibold">{title}</h2>
-			<SongsList songs={songs.map(detailedSongToSong)} detailedSongs={songs} />
+			<SongsList songs={songs} />
 		</section>
 	);
 }

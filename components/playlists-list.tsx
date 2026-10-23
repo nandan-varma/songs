@@ -10,7 +10,7 @@ import { getPlaylistById } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 import { EntityType, type Playlist } from "@/types/entity";
-import { ProgressiveImage } from "./common/progressive-image";
+import { CoverImage } from "./common/cover-image";
 import { Card, CardContent } from "./ui/card";
 
 const SHELF_CLASS =
@@ -136,10 +136,9 @@ export const PlaylistsList = memo(function PlaylistsList({
 								<Link href={`/playlist?id=${playlist.id}`} className="block">
 									<div className="relative aspect-square w-full">
 										{playlist.image && playlist.image.length > 0 ? (
-											<ProgressiveImage
+											<CoverImage
 												images={playlist.image}
 												alt={playlist.title}
-												entityType={EntityType.PLAYLIST}
 												rounded="default"
 												sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
 											/>

@@ -3,7 +3,7 @@
 import { shuffle } from "es-toolkit";
 import { Play, Plus, Shuffle } from "lucide-react";
 import { useQueryState } from "nuqs";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { ShareButton } from "@/components/common/share-button";
 import { QueryParamDetailShell } from "@/components/entity/query-param-detail-shell";
 import { SongsList } from "@/components/songs-list";
@@ -13,7 +13,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { usePlaylist } from "@/hooks/data/queries";
 import { useIsOffline } from "@/hooks/network/use-is-offline";
 import { useOfflinePlayerActions } from "@/hooks/player/use-offline-player";
-import { detailedSongToSong } from "@/lib/utils";
 import { EntityType } from "@/types/entity";
 import { PlaylistPageLoading } from "./loading";
 
@@ -55,10 +54,9 @@ export function Client() {
 						<CardContent className="p-4 sm:p-6">
 							<div className="flex flex-col gap-4 sm:gap-6 md:flex-row">
 								<div className="relative aspect-square w-full flex-shrink-0 md:w-52 lg:w-60">
-									<ProgressiveImage
+									<CoverImage
 										images={playlist.image}
 										alt={playlist.name}
-										entityType={EntityType.PLAYLIST}
 										rounded="default"
 										priority
 										sizes="(max-width: 768px) 100vw, 240px"
@@ -137,11 +135,7 @@ export function Client() {
 					</Card>
 
 					{filteredSongs.length > 0 && (
-						<SongsList
-							songs={filteredSongs.map(detailedSongToSong)}
-							detailedSongs={filteredSongs}
-							numbered
-						/>
+						<SongsList songs={filteredSongs} numbered />
 					)}
 				</div>
 			)}

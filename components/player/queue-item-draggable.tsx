@@ -3,7 +3,7 @@
 import { GripVertical, Minus } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { Button } from "@/components/ui/button";
 import type { DetailedSong } from "@/types/entity";
 import { EntityType } from "@/types/entity";
@@ -104,10 +104,9 @@ export const QueueItemDraggable = memo(function QueueItemDraggable({
 			</button>
 			<div className="relative h-10 w-10 shrink-0">
 				{song.image && song.image.length > 0 && (
-					<ProgressiveImage
+					<CoverImage
 						images={song.image}
 						alt={song.name}
-						entityType={EntityType.SONG}
 						rounded="default"
 						sizes="40px"
 					/>

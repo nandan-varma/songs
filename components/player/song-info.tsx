@@ -3,8 +3,8 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { memo } from "react";
+import { CoverImage } from "@/components/common/cover-image";
 import { FavoriteButton } from "@/components/common/favorite-button";
-import { ProgressiveImage } from "@/components/common/progressive-image";
 import { type DetailedSong, EntityType } from "@/types/entity";
 
 interface SongInfoProps {
@@ -40,10 +40,9 @@ export const SongInfo = memo(function SongInfo({ currentSong }: SongInfoProps) {
 		>
 			{currentSong.image && currentSong.image.length > 0 && (
 				<div className="relative h-16 w-16 flex-shrink-0">
-					<ProgressiveImage
+					<CoverImage
 						images={currentSong.image}
 						alt={currentSong.name}
-						entityType={EntityType.SONG}
 						rounded="default"
 						priority
 						sizes="(max-width: 1024px) 100px, 120px"

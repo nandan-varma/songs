@@ -9,7 +9,7 @@ import {
 	useQueueSongs,
 	useRepeatMode,
 } from "@/hooks/use-store";
-import { getArtistSongs, getSongSuggestions } from "@/lib/api";
+import { getSongSuggestions } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 
@@ -48,15 +48,7 @@ export function useRadioMode() {
 		let cancelled = false;
 		(async () => {
 			try {
-				let suggestions = await getSongSuggestions(currentSong.id, 10);
-				if (suggestions.length === 0) {
-					// JioSaavn often has no station queued, so continue with the artist's catalogue instead.
-					const artistId = currentSong.artists.primary[0]?.id;
-					if (!artistId) return;
-					const queuedIds = new Set(queue.map((song) => song.id));
-					const { songs } = await getArtistSongs(artistId);
-					suggestions = songs.filter((song) => !queuedIds.has(song.id));
-				}
+				const suggestions = await getSongSuggestions(currentSong.id, 10);
 				if (cancelled || suggestions.length === 0) return;
 				useAppStore.getState().addSongsToQueue(suggestions);
 				useAppStore.getState().playNext();

@@ -11,7 +11,7 @@ import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 import type { Album, AlbumSearchResult } from "@/types/entity";
 import { EntityType } from "@/types/entity";
-import { ProgressiveImage } from "./common/progressive-image";
+import { CoverImage } from "./common/cover-image";
 import { Card, CardContent } from "./ui/card";
 
 const SHELF_CLASS =
@@ -147,12 +147,11 @@ export const AlbumsList = memo(function AlbumsList({
 								<Link href={`/album?id=${album.id}`} className="block">
 									<div className="relative aspect-square w-full">
 										{album.image && album.image.length > 0 ? (
-											<ProgressiveImage
+											<CoverImage
 												images={album.image}
 												alt={
 													isAlbumSearchResult(album) ? album.name : album.title
 												}
-												entityType={EntityType.ALBUM}
 												rounded="default"
 												sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
 											/>

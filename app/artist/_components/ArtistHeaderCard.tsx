@@ -1,13 +1,12 @@
 import { shuffle } from "es-toolkit";
-import { ExternalLink, Loader2, Play, Radio, Shuffle } from "lucide-react";
+import { ExternalLink, Loader2, Play, Shuffle } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import { ProgressiveImage } from "@/components/common/progressive-image";
+import { CoverImage } from "@/components/common/cover-image";
 import { ShareButton } from "@/components/common/share-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getArtistById, getArtistRadio } from "@/lib/api";
+import { getArtistById } from "@/lib/api";
 import { useAppStore } from "@/lib/store";
 import { logError } from "@/lib/utils/logger";
 import type { DetailedArtist } from "@/types/api";
@@ -55,39 +54,14 @@ export function ArtistHeaderCard({ artist }: ArtistHeaderCardProps) {
 		}
 	};
 
-	const handleRadio = async () => {
-		try {
-			setIsLoading("radio");
-			const radioSongs = await getArtistRadio(artist.id, 30);
-			if (radioSongs.length > 0) {
-				useAppStore.getState().playQueue(radioSongs);
-				return;
-			}
-			// JioSaavn often has no station queued; fall back to a shuffled mix of the artist's songs.
-			const detailed = await getArtistById(artist.id, { songCount: 30 });
-			const mix = shuffle(detailed.topSongs ?? []);
-			if (mix.length > 0) {
-				useAppStore.getState().playQueue(mix);
-				toast.info("No radio station available, playing a mix instead");
-			} else {
-				toast.error("No songs available for this artist");
-			}
-		} catch (error) {
-			logError("ArtistHeaderCard:radio", error);
-		} finally {
-			setIsLoading(null);
-		}
-	};
-
 	return (
 		<Card>
 			<CardContent className="p-4 sm:p-6">
 				<div className="flex flex-col gap-4 md:flex-row">
 					<div className="relative aspect-square w-full flex-shrink-0 md:w-52 lg:w-60">
-						<ProgressiveImage
+						<CoverImage
 							images={artist.image}
 							alt={artist.name}
-							entityType={EntityType.ARTIST}
 							rounded="full"
 							priority
 							sizes="(max-width: 768px) 100vw, 240px"
@@ -149,23 +123,6 @@ export function ArtistHeaderCard({ artist }: ArtistHeaderCardProps) {
 								)}
 								Shuffle
 							</Button>
-							{(artist.isRadioPresent === true ||
-								(artist.topSongs && artist.topSongs.length > 5)) && (
-								<Button
-									size="sm"
-									variant="outline"
-									onClick={handleRadio}
-									disabled={isLoading !== null}
-									className="gap-1.5"
-								>
-									{isLoading === "radio" ? (
-										<Loader2 className="h-4 w-4 animate-spin" />
-									) : (
-										<Radio className="h-4 w-4" />
-									)}
-									Radio
-								</Button>
-							)}
 							<ShareButton title={artist.name} type="artist" id={artist.id} />
 						</div>
 

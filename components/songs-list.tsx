@@ -3,12 +3,10 @@
 import { memo } from "react";
 import { SongItem } from "@/components/song-item";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { DetailedSong, Song } from "@/types/entity";
+import type { DetailedSong } from "@/types/entity";
 
 interface SongsListProps {
-	songs: Song[];
-	/** Full song data for `songs` (same order); lets rows play the whole list without fetching. */
-	detailedSongs?: DetailedSong[];
+	songs: DetailedSong[];
 	/** Show a leading track-number column. */
 	numbered?: boolean;
 	compact?: boolean;
@@ -38,7 +36,6 @@ const SongItemSkeleton = ({ compact = false }: { compact?: boolean }) => (
 
 export const SongsList = memo(function SongsList({
 	songs,
-	detailedSongs,
 	numbered = false,
 	compact = false,
 	emptyMessage = "No songs found",
@@ -46,10 +43,6 @@ export const SongsList = memo(function SongsList({
 	isLoading = false,
 	loadingCount = 10,
 }: SongsListProps) {
-	const detailedById = detailedSongs
-		? new Map(detailedSongs.map((song) => [song.id, song]))
-		: undefined;
-
 	if (isLoading) {
 		return (
 			<div
@@ -79,8 +72,7 @@ export const SongsList = memo(function SongsList({
 					key={song.id}
 					song={song}
 					index={numbered ? position + 1 : undefined}
-					detailed={detailedById?.get(song.id)}
-					queue={detailedSongs}
+					queue={songs}
 					compact={compact}
 				/>
 			))}

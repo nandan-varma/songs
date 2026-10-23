@@ -68,12 +68,5 @@ export function useRadioMode() {
 		return () => {
 			cancelled = true;
 		};
-	}, [
-		isRadioEnabled,
-		isPlaying,
-		currentSong,
-		queueIndex,
-		queue,
-		repeatMode,
-	]);
+	}, [isRadioEnabled, isPlaying, currentSong, queueIndex, queue, repeatMode]);
 }

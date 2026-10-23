@@ -33,7 +33,6 @@ export const useAppStore = create<AppStore>()(
 				visitHistory: state.visitHistory,
 				playlists: state.playlists,
 				volume: state.volume,
-				playbackSpeed: state.playbackSpeed,
 				downloadedSongIds: Array.from(state.downloadedSongIds),
 				sleepTimerMinutes: state.sleepTimerMinutes,
 				contentLanguage: state.contentLanguage,

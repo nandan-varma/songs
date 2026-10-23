@@ -1,5 +1,4 @@
 import {
-	clampPlaybackSpeed,
 	clampVolume,
 	moveItem,
 	type StoreGet,
@@ -22,7 +21,6 @@ export function createPlaybackSlice(
 	| "setSongTime"
 	| "setSongDuration"
 	| "setVolume"
-	| "setPlaybackSpeed"
 	| "setCurrentSong"
 	| "setIsPlaying"
 	| "setIsMuted"
@@ -143,9 +141,6 @@ export function createPlaybackSlice(
 		},
 		setVolume: (volume) => {
 			set({ volume: clampVolume(volume) });
-		},
-		setPlaybackSpeed: (speed) => {
-			set({ playbackSpeed: clampPlaybackSpeed(speed) });
 		},
 		setCurrentSong: (song) => {
 			set({ currentSong: song });

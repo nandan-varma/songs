@@ -5,8 +5,6 @@ export const selectIsPlaying = (state: AppStoreState) => state.isPlaying;
 export const selectCurrentTime = (state: AppStoreState) => state.currentTime;
 export const selectDuration = (state: AppStoreState) => state.duration;
 export const selectVolume = (state: AppStoreState) => state.volume;
-export const selectPlaybackSpeed = (state: AppStoreState) =>
-	state.playbackSpeed;
 export const selectIsMuted = (state: AppStoreState) => state.isMuted;
 export const selectQueue = (state: AppStoreState) => state.queue;
 export const selectQueueIndex = (state: AppStoreState) => state.queueIndex;

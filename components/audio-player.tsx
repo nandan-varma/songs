@@ -15,7 +15,6 @@ import {
 	useDuration,
 	useIsMuted,
 	useIsPlaying,
-	usePlaybackSpeedValue,
 	useQueueIndex,
 	useQueueSongs,
 	useVolume,
@@ -33,7 +32,6 @@ export function AudioPlayer() {
 	const currentSong = useCurrentSong();
 	const isPlaying = useIsPlaying();
 	const volume = useVolume();
-	const playbackSpeed = usePlaybackSpeedValue();
 	const isMuted = useIsMuted();
 	const currentTime = useCurrentTime();
 	const duration = useDuration();
@@ -86,7 +84,7 @@ export function AudioPlayer() {
 		isOffline,
 		getSongBlob: getDownloadedSongBlob,
 	});
-	useAudioSettings({ audioRef, volume, playbackSpeed, isMuted });
+	useAudioSettings({ audioRef, volume, isMuted });
 	useAudioPlayback({ currentSong, audioRef, isPlaying });
 	useAudioSeeking({ audioRef, currentSong });
 	useMediaSession({

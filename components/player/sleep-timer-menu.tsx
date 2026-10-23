@@ -1,6 +1,6 @@
 "use client";
 
-import { Gauge, Moon } from "lucide-react";
+import { Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -8,18 +8,15 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuRadioGroup,
 	DropdownMenuRadioItem,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePlaybackSpeed } from "@/hooks/playback/use-playback-speed";
 import { useSleepTimer } from "@/hooks/playback/use-sleep-timer";
 import { formatTime } from "@/lib/utils/time";
 
 const NO_TIMER = "off";
 
-/** Playback speed and sleep timer, tucked behind a single player button. */
-export function PlaybackOptionsMenu() {
-	const { speed, setSpeed, PLAYBACK_SPEEDS } = usePlaybackSpeed();
+/** Sleep timer: pauses playback after the chosen number of minutes. */
+export function SleepTimerMenu() {
 	const { isActive, timeRemaining, startTimer, cancelTimer, presets } =
 		useSleepTimer();
 
@@ -29,31 +26,13 @@ export function PlaybackOptionsMenu() {
 				<Button
 					variant="ghost"
 					size="icon"
-					aria-label="Playback speed and sleep timer"
+					aria-label="Sleep timer"
 					className={isActive ? "text-primary" : undefined}
 				>
-					{isActive ? (
-						<Moon className="h-4 w-4" />
-					) : (
-						<Gauge className="h-4 w-4" />
-					)}
+					<Moon className="h-4 w-4" />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" side="top" className="w-44">
-				<DropdownMenuLabel>Speed</DropdownMenuLabel>
-				<DropdownMenuRadioGroup
-					value={String(speed)}
-					onValueChange={(value) =>
-						setSpeed(Number(value) as (typeof PLAYBACK_SPEEDS)[number])
-					}
-				>
-					{PLAYBACK_SPEEDS.map((option) => (
-						<DropdownMenuRadioItem key={option} value={String(option)}>
-							{option}x
-						</DropdownMenuRadioItem>
-					))}
-				</DropdownMenuRadioGroup>
-				<DropdownMenuSeparator />
 				<DropdownMenuLabel>
 					Sleep timer
 					{isActive &&

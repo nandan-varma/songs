@@ -8,7 +8,6 @@ export interface AppStoreState {
 	currentTime: number;
 	duration: number;
 	volume: number;
-	playbackSpeed: number;
 	isMuted: boolean;
 	queue: DetailedSong[];
 	queueIndex: number;
@@ -34,7 +33,6 @@ export interface PersistedAppStoreState {
 	visitHistory: EntityVisit[];
 	playlists: LocalPlaylist[];
 	volume: number;
-	playbackSpeed: number;
 	downloadedSongIds: string[];
 	sleepTimerMinutes: number | null;
 	contentLanguage: string;
@@ -49,7 +47,6 @@ export interface AppStoreActions {
 	setSongTime: (time: number) => void;
 	setSongDuration: (duration: number) => void;
 	setVolume: (volume: number) => void;
-	setPlaybackSpeed: (speed: number) => void;
 	setCurrentSong: (song: DetailedSong | null) => void;
 	setIsPlaying: (playing: boolean) => void;
 	setIsMuted: (muted: boolean) => void;

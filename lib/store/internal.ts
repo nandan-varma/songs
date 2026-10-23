@@ -14,7 +14,6 @@ export const INITIAL_STATE: AppStoreState = {
 	currentTime: 0,
 	duration: 0,
 	volume: DEFAULT_VOLUME,
-	playbackSpeed: 1,
 	isMuted: false,
 	queue: [],
 	queueIndex: 0,
@@ -35,10 +34,6 @@ export const INITIAL_STATE: AppStoreState = {
 
 export function clampVolume(volume: number) {
 	return Math.max(0, Math.min(1, volume));
-}
-
-export function clampPlaybackSpeed(speed: number) {
-	return Math.max(0.25, Math.min(2, speed));
 }
 
 export function createPlaylistId() {

@@ -12,8 +12,6 @@ export const useIsPlaying = () => useAppStore(selectors.selectIsPlaying);
 export const useCurrentTime = () => useAppStore(selectors.selectCurrentTime);
 export const useDuration = () => useAppStore(selectors.selectDuration);
 export const useVolume = () => useAppStore(selectors.selectVolume);
-export const usePlaybackSpeedValue = () =>
-	useAppStore(selectors.selectPlaybackSpeed);
 export const useIsMuted = () => useAppStore(selectors.selectIsMuted);
 export function usePlayer() {
 	return useAppStore(
@@ -23,7 +21,6 @@ export function usePlayer() {
 			currentTime: state.currentTime,
 			duration: state.duration,
 			volume: state.volume,
-			playbackSpeed: state.playbackSpeed,
 			isMuted: state.isMuted,
 		})),
 	);

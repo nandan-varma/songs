@@ -4,9 +4,9 @@ import { memo } from "react";
 import { ProgressiveImage } from "@/components/common/progressive-image";
 import type { DetailedSong } from "@/types/entity";
 import { PlaybackControls } from "./playback-controls";
-import { PlaybackOptionsMenu } from "./playback-options-menu";
 import { ProgressBar } from "./progress-bar";
 import { QueueButton } from "./queue-button";
+import { SleepTimerMenu } from "./sleep-timer-menu";
 import { VolumeControl } from "./volume-control";
 
 interface MobileLayoutProps {
@@ -87,7 +87,7 @@ export const MobileLayout = memo(function MobileLayout({
 
 				<div className="shrink-0 flex items-center gap-1">
 					<VolumeControl volume={volume} onSetVolume={onSetVolume} />
-					<PlaybackOptionsMenu />
+					<SleepTimerMenu />
 					<QueueButton
 						queue={queue}
 						currentIndex={currentIndex}

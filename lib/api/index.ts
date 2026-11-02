@@ -1,4 +1,4 @@
-import he from "he";
+import { decode } from "he";
 import { publicConfig } from "@/lib/config/public";
 import type {
 	AlbumSearchResult,
@@ -60,7 +60,7 @@ async function fetchApi<T>(
 
 	const data = JSON.parse(text, (_key, value) => {
 		if (typeof value === "string" && value.includes("&")) {
-			return he.decode(value);
+			return decode(value);
 		}
 		return value;
 	}) as ApiResponse<T>;

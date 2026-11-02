@@ -50,7 +50,7 @@ export function useOfflinePlayerActions() {
 		const resolvedIndex = targetSong
 			? filtered.findIndex((song) => song.id === targetSong.id)
 			: -1;
-		const validStartIndex = resolvedIndex >= 0 ? resolvedIndex : 0;
+		const validStartIndex = Math.max(resolvedIndex, 0);
 
 		const { playQueue } = useAppStore.getState();
 		playQueue(filtered, validStartIndex);

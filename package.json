@@ -50,7 +50,7 @@
 		"@tanstack/react-query": "^5.105.1",
 		"@tanstack/react-virtual": "3.14.25",
 		"@types/he": "1.2.3",
-		"better-auth": "1.6.26",
+		"better-auth": "1.7.15",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",

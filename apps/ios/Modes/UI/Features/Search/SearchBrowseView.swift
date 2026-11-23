@@ -3,92 +3,80 @@ import SwiftUI
 
 struct SearchBrowseView: View {
     @Environment(AppModel.self) private var model
-    @State private var sections: [HotSection] = []
+    @Environment(\.metrics) private var metrics
     @State private var charts: [SaavnAPI.Chart] = []
-    @State private var loading = true
-    @State private var failed = false
-    @State private var retry = 0
-
-    struct HotSection: Identifiable {
-        let language: String
-        let hits: [SaavnAPI.Hit]
-        var id: String { language }
-    }
 
     var body: some View {
-        Group {
-            if loading {
-                List { SkeletonRows() }.musicListStyle()
-            } else if failed {
-                LoadFailedView { retry += 1 }
-            } else if sections.isEmpty {
-                ContentUnavailableView("No songs yet", systemImage: "music.note")
-            } else {
-                List {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: metrics.shelfSpacing) {
+                if let launch = model.launch {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: metrics.gap), count: columns), spacing: metrics.gap) {
+                        ForEach(launch.genres) { tile in
+                            ZoomLink(route: MusicRoute.genre(tile)) { GenreTileView(tile: tile) }.buttonStyle(CardPressStyle())
+                        }
+                    }
+                    .padding(.horizontal, metrics.inset)
                     if !charts.isEmpty {
-                        Section("Charts") {
+                        Shelf(title: "Charts", showsChevron: true) {
                             ForEach(charts) { chart in
-                                NavigationLink(value: MusicRoute.chart(chart.id)) {
-                                    CollectionRow(imageURL: chart.image, title: chart.name,
-                                                  subtitle: chart.songCount.map { "\($0) songs" } ?? "")
+                                ZoomLink(route: MusicRoute.chart(chart.id)) {
+                                    TileCard(url: chart.image, title: chart.name, subtitle: chart.songCount.map { "\($0) songs" })
                                 }
+                                .buttonStyle(CardPressStyle())
                             }
                         }
                     }
-                    ForEach(sections) { section in
-                        let context = section.hits.map { SongReference.hit($0) }
-                        Section {
-                            ForEach(section.hits, id: \.song.id) { hit in
-                                SongListRow(source: .hit(hit), context: context)
-                            }
-                        } header: {
-                            SectionHeading(title: "Hot in \(section.language.capitalized)")
+                } else if model.launchFailed {
+                    LoadFailedView { Task { await model.loadLaunch(force: true) } }
+                } else {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: metrics.gap), count: columns), spacing: metrics.gap) {
+                        ForEach(0..<10, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: metrics.cardRadius, style: .continuous).fill(.quaternary).aspectRatio(1.75, contentMode: .fit)
                         }
                     }
+                    .padding(.horizontal, metrics.inset)
                 }
-                .musicListStyle()
             }
+            .padding(.top, 4)
+            .padding(.bottom, 160)
         }
+        .scrollIndicators(.hidden)
         .background(Color(.systemBackground))
-        .musicRoutes()
-        .task(id: LoadKey(languages: model.settings.languages, delivery: model.delivery, retry: retry)) {
-            await load()
-        }
+        .task(id: model.settings.languages) { await model.loadLaunch() }
         .task(id: "charts") {
             charts = (try? await SaavnAPI.charts(delivery: model.delivery)) ?? []
             ImagePipeline.shared.prefetch(charts.compactMap(\.image))
         }
     }
 
-    private func load() async {
-        loading = true
-        failed = false
-        let languages = model.settings.languages
-        guard !languages.isEmpty else {
-            sections = []
-            loading = false
-            return
-        }
-        var loaded: [HotSection] = []
-        for language in languages {
-            do {
-                let hits = try await SaavnAPI.trending(language: language, delivery: model.delivery)
-                guard !Task.isCancelled else { return }
-                if !hits.isEmpty { loaded.append(HotSection(language: language, hits: Array(hits.prefix(20)))) }
-            } catch {
-                guard !Task.isCancelled else { return }
-            }
-        }
-        guard !Task.isCancelled else { return }
-        sections = loaded
-        failed = loaded.isEmpty
-        loading = false
-        ImagePipeline.shared.prefetch(loaded.flatMap { $0.hits.compactMap(\.song.image) })
-    }
+    private var columns: Int { metrics.width > 700 ? 4 : 2 }
+}
 
-    private struct LoadKey: Equatable {
-        let languages: [String]
-        let delivery: Delivery
-        let retry: Int
+struct GenreTileView: View {
+    let tile: SaavnAPI.Tile
+    @Environment(\.metrics) private var metrics
+    @State private var color = Color(.systemGray3)
+
+    var body: some View {
+        Color.clear
+            .aspectRatio(1.75, contentMode: .fit)
+            .overlay(alignment: .topLeading) { color }
+            .overlay(alignment: .bottomTrailing) {
+                GeometryReader { proxy in
+                    Artwork(url: tile.image, radius: proxy.size.height * 0.07)
+                        .frame(width: proxy.size.height * 0.62, height: proxy.size.height * 0.62)
+                        .rotationEffect(.degrees(24))
+                        .shadow(color: .black.opacity(0.25), radius: 5, y: 3)
+                        .position(x: proxy.size.width - proxy.size.height * 0.22, y: proxy.size.height * 0.68)
+                }
+            }
+            .overlay(alignment: .bottomLeading) {
+                Text(tile.name).font(.body.weight(.semibold)).foregroundStyle(.white).lineLimit(2)
+                    .padding(metrics.gap * 0.8)
+            }
+            .clipShape(.rect(cornerRadius: metrics.cardRadius, style: .continuous))
+            .task(id: tile.image) {
+                if let c = await loadTint(for: tile.image, scheme: .light) { color = c.top }
+            }
     }
 }

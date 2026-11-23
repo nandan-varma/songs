@@ -35,7 +35,7 @@ extension AppModel {
             }
         }
         nc.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.saveNow() }
+            MainActor.assumeIsolated { self?.saveNow(); self?.saveListeningNow() }
         }
     }
 

@@ -2,7 +2,7 @@ import Foundation
 import ModesCore
 
 private struct PersistedState: Codable {
-    static let currentVersion = 5
+    static let currentVersion = 6
 
     var version = currentVersion
     var profile: PersonalizedProfile
@@ -16,7 +16,7 @@ extension AppModel {
     private static let stateURL: URL = {
         let directory = URL.applicationSupportDirectory
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return directory.appendingPathComponent("listener-v5.plist")
+        return directory.appendingPathComponent("listener-v6.plist")
     }()
 
     static var eventsURL: URL { URL.documentsDirectory.appending(path: "events.jsonl") }
@@ -33,7 +33,7 @@ extension AppModel {
             lastSong = state.lastSong
         } catch {
             let aside = Self.stateURL.deletingLastPathComponent()
-                .appendingPathComponent("listener-v5.unreadable-\(Int(Date().timeIntervalSince1970)).plist")
+                .appendingPathComponent("listener-v6.unreadable-\(Int(Date().timeIntervalSince1970)).plist")
             AppLog.error("persistence", "state unreadable, moving it aside: \(error)")
             do { try FileManager.default.moveItem(at: Self.stateURL, to: aside) }
             catch { persistenceBlocked = true }

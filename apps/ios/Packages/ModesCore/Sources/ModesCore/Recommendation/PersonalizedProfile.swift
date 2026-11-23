@@ -1,7 +1,10 @@
 import Foundation
 
 public enum PlaybackSignal: Sendable {
-    case completed
+    case completed(plays: Int)
+    case replayed
+    case saved
+    case queued
     case skipped(fraction: Double, heard: Bool)
     case favorite
     case rejected
@@ -14,16 +17,22 @@ public struct PersonalizedProfile: Codable, Sendable {
     public var recent: [String] = []
     public var liked: [String] = []
 
-    public init(prior: Float = 1) {
-        learner = SparseLearner(prior: prior)
+    public init() {
+        learner = SparseLearner()
     }
 
     public mutating func learn(_ song: SongFeatures, signal: PlaybackSignal, encoder: SongEncoder,
                                gate: LearningGate = LearningGate()) {
         let features = encoder.features(for: song)
         switch signal {
-        case .completed:
-            learn(features, target: 1, weight: 1, gate: gate, signal: .completion)
+        case .completed(let plays):
+            learn(features, target: 1, weight: 1 + 0.5 * Float(min(max(plays - 1, 0), 4)), gate: gate, signal: .completion)
+        case .replayed:
+            learn(features, target: 1, weight: 1.5, gate: gate, signal: .replay)
+        case .saved:
+            learn(features, target: 1, weight: 3, gate: gate, signal: .save)
+        case .queued:
+            learn(features, target: 1, weight: 1.5, gate: gate, signal: .queue)
         case .skipped(let fraction, let heard):
             guard heard else { return }
             let target = Float(2 * min(max(fraction, 0), 1) - 1)

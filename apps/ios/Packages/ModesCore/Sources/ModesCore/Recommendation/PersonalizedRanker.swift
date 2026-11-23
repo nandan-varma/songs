@@ -54,6 +54,8 @@ public struct RankOptions: Sendable {
 public enum PersonalizedRanker {
     public static func rank<G: RandomNumberGenerator>(_ candidates: [RankedCandidate], profile: PersonalizedProfile,
                                                       options: RankOptions, using generator: inout G) -> [RankedSong] {
+        var learner = profile.learner
+        learner.fit(unlabeled: candidates.map(\.features))
         let banned = Set(profile.banned)
         let recent = Set(profile.recent.suffix(300))
         let previousArtist = options.previousArtist.lowercased()
@@ -63,7 +65,7 @@ public enum PersonalizedRanker {
             let song = candidate.song
             guard !banned.contains(song.id), !recent.contains(song.id), !options.excluded.contains(song.id) else { continue }
             if !options.languages.isEmpty, !options.languages.contains(song.language.lowercased()) { continue }
-            let score = profile.learner.sampleScore(candidate.features, temperature: options.explore, using: &generator)
+            let score = learner.sampleScore(candidate.features, temperature: options.explore, using: &generator)
                 + SuggestionPrior.bonus(ranks: candidate.suggestionRanks)
             scored.append((candidate, score, position))
         }
@@ -87,7 +89,7 @@ public enum PersonalizedRanker {
             guard duplicateKeys.insert(duplicateKey).inserted else { continue }
 
             selected.append(RankedSong(song: song, score: entry.score,
-                                       why: profile.learner.explanation(for: entry.candidate.features) ?? "Based on what you play",
+                                       why: learner.explanation(for: entry.candidate.features) ?? "Based on what you play",
                                        source: entry.candidate.source))
             artistCounts[artist, default: 0] += 1
             lastArtist = artist

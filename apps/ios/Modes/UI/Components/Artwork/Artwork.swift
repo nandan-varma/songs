@@ -6,6 +6,12 @@ struct Artwork: View {
     var radius: CGFloat = 8
     @State private var image: UIImage?
 
+    init(url: URL?, radius: CGFloat = 8) {
+        self.url = url
+        self.radius = radius
+        _image = State(initialValue: ImagePipeline.shared.cached(url))
+    }
+
     var body: some View {
         Color(.secondarySystemFill)
             .overlay { Image(systemName: "music.note").font(.title3).foregroundStyle(.tertiary) }
@@ -19,10 +25,10 @@ struct Artwork: View {
             }
             .clipShape(.rect(cornerRadius: radius, style: .continuous))
             .aspectRatio(1, contentMode: .fit)
-            .animation(.easeInOut(duration: 0.18), value: image != nil)
+            .animation(.easeOut(duration: 0.16), value: image != nil)
             .task(id: url) {
-                image = ImagePipeline.shared.cached(url)
-                guard image == nil, let url else { return }
+                if let hit = ImagePipeline.shared.cached(url) { image = hit; return }
+                guard let url else { image = nil; return }
                 image = await ImagePipeline.shared.image(for: url)
             }
     }

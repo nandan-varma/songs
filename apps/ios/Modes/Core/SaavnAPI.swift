@@ -3,7 +3,7 @@ import Foundation
 enum SaavnAPI {
     static let baseURL = "https://saavn-api.nandanvarma.com"
 
-    private enum TTL {
+    enum TTL {
         static let collection: TimeInterval = 30 * 60
         static let ephemeral: TimeInterval = 10 * 60
     }
@@ -12,7 +12,7 @@ enum SaavnAPI {
     private static let playlistPageSize = 100
     private static let playlistPageCap = 5
 
-    private static func get<T: Decodable>(_ path: String, _ query: [URLQueryItem] = []) async throws -> T? {
+    static func get<T: Decodable>(_ path: String, _ query: [URLQueryItem] = []) async throws -> T? {
         guard var components = URLComponents(string: baseURL + path) else { throw URLError(.badURL) }
         if !query.isEmpty { components.queryItems = query }
         guard let url = components.url else { throw URLError(.badURL) }
@@ -25,7 +25,7 @@ enum SaavnAPI {
         return try JSONDecoder().decode(Envelope<T>.self, from: data).data
     }
 
-    private static func cachedGet<Payload: Decodable, Value: Sendable>(
+    static func cachedGet<Payload: Decodable, Value: Sendable>(
         _ path: String, _ query: [URLQueryItem] = [], delivery: Delivery, ttl: TimeInterval,
         as payload: Payload.Type, map: (Payload?) throws -> Value
     ) async throws -> Value {
@@ -36,7 +36,7 @@ enum SaavnAPI {
         return value
     }
 
-    private static func required<T>(_ value: T?) throws -> T {
+    static func required<T>(_ value: T?) throws -> T {
         guard let value else { throw URLError(.resourceUnavailable) }
         return value
     }

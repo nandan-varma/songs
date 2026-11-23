@@ -14,7 +14,7 @@ extension AppModel {
             }
             activateSession()
             player.play()
-        } else { player.pause() }
+        } else { player.pause(); tally.paused() }
         isPlaying = on
         syncNowPlaying()
     }
@@ -24,6 +24,7 @@ extension AppModel {
     func seek(toSeconds seconds: Double) {
         guard duration > 0 else { return }
         let t = min(max(0, seconds), duration)
+        tally.seeked(from: progress, to: t)
         player.seek(to: CMTime(seconds: t, preferredTimescale: 600))
         progress = t
         syncNowPlaying()
@@ -103,6 +104,7 @@ extension AppModel {
         failures = 0
         if picked { learn(item, .picked) }
         duration = audio.duration
+        tally.begin(features(for: item), source: item.source, duration: audio.duration)
         currentHasLyrics = audio.hasLyrics
         currentBitrate = audio.bitrate
         recordRecent(item, resolved: audio)
@@ -156,16 +158,21 @@ extension AppModel {
         let id = cur.id
         let frac = duration > 0 ? min(1, progress / duration) : 0
         let heard = playback.wasHeard
+        let priorPlays = listening.plays(of: id)
+        let rewound = tally.seekedBack
+        let record = tally.finish(Self.outcome(reason))
+        if let record { listening.add(record); scheduleListeningSave() }
+        if rewound, heard, reason != .rejected { learn(cur, .replayed) }
         switch reason {
         case .completed:
-            learn(cur, .completed)
-            log("completed", frac: 1, item: cur)
+            learn(cur, .completed(plays: priorPlays + 1))
+            log("completed", frac: 1, item: cur, record: record)
         case .skipped where heard:
             learn(cur, .skipped(fraction: frac, heard: true))
-            log("skipped", frac: frac, item: cur)
+            log("skipped", frac: frac, item: cur, record: record)
         case .skipped: log("skipped_unheard", item: cur)
         case .rejected: break
-        case .switched: log("switched_away", song: id, frac: frac)
+        case .switched: log("switched_away", song: id, frac: frac, record: record)
         }
         if reason == .completed || reason == .skipped { history.append(cur); if history.count > 30 { history.removeFirst() } }
         profile.recent.append(id)
@@ -185,7 +192,17 @@ extension AppModel {
         flash("Sleep timer ended")
     }
 
+    func refreshUpNext() async {
+        await rebuildUpNext()
+        flash("Up Next refreshed")
+    }
+
     func songEnded() {
+        if repeatSong, let cur = current, playback.closeOnce() {
+            closeCurrent(.completed)
+            Task { await start(cur) }
+            return
+        }
         guard sleep.consumeEndOfSong() else { advance(.completed); return }
         guard current != nil, playback.closeOnce() else { return }
         closeCurrent(.completed)

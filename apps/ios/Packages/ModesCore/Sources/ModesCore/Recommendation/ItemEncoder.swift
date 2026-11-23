@@ -75,6 +75,14 @@ public struct SongEncoder: Sendable {
             values.append(value)
             labels.append("")
         }
+        indices.append(Int32(SparseLearner.popularityIndex))
+        values.append(Self.popularity(song.playCount))
+        labels.append("")
         return SparseFeatures(indices: indices, values: values, labels: labels)
+    }
+
+    static func popularity(_ playCount: Int) -> Float {
+        let z = (log(Float(max(playCount, 0)) + 1) - 12.5) / 2.98
+        return min(max(z, -3), 3)
     }
 }

@@ -53,25 +53,19 @@ struct SearchResultsList: View {
         switch scope {
         case .songs:
             SearchPager(query: query, load: { try await SaavnAPI.searchSongs($0, page: $1, delivery: $2) }) { hit, all in
-                SongListRow(source: .hit(hit), context: all.map { .hit($0) })
+                SongListRow(source: .hit(hit), context: all.map { .hit($0) }, detail: "Song")
             }
         case .albums:
             SearchPager(query: query, load: { try await SaavnAPI.searchAlbums($0, page: $1, delivery: $2) }) { album, _ in
-                NavigationLink(value: MusicRoute.album(album.id)) {
-                    CollectionRow(imageURL: album.image, title: album.name, subtitle: album.subtitle ?? "")
-                }
+                LinkRow(route: MusicRoute.album(album.id), imageURL: album.image, title: album.name, subtitle: kindLine("Album", album.subtitle))
             }
         case .artists:
             SearchPager(query: query, load: { try await SaavnAPI.searchArtists($0, page: $1, delivery: $2) }) { artist, _ in
-                NavigationLink(value: MusicRoute.artist(artist.id)) {
-                    CollectionRow(imageURL: artist.image, title: artist.name, subtitle: artist.roles.first ?? "", round: true)
-                }
+                LinkRow(route: MusicRoute.artist(artist.id), imageURL: artist.image, title: artist.name, subtitle: "Artist", round: true)
             }
         case .playlists:
             SearchPager(query: query, load: { try await SaavnAPI.searchPlaylists($0, page: $1, delivery: $2) }) { playlist, _ in
-                NavigationLink(value: MusicRoute.playlist(playlist.id)) {
-                    CollectionRow(imageURL: playlist.image, title: playlist.name, subtitle: playlist.subtitle ?? "")
-                }
+                LinkRow(route: MusicRoute.playlist(playlist.id), imageURL: playlist.image, title: playlist.name, subtitle: kindLine("Playlist", playlist.subtitle))
             }
         case .all:
             EmptyView()

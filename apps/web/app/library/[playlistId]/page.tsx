@@ -3,8 +3,8 @@
 import { Trash2, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { PlayButtons } from "@/components/play-buttons";
-import { EmptyState } from "@/components/section";
-import { TrackList } from "@/components/track-list";
+import { SongList } from "@/components/song-list";
+import { EmptyState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { useLibrary, useLibraryHydrated } from "@/lib/stores/library";
 
@@ -19,10 +19,10 @@ export default function LocalPlaylistPage() {
 	const removeFromPlaylist = useLibrary((s) => s.removeFromPlaylist);
 
 	if (!hydrated) return null;
-	if (!playlist) return <EmptyState>Playlist not found.</EmptyState>;
+	if (!playlist) return <EmptyState title="Playlist not found" />;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-8">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 className="text-2xl font-bold">{playlist.name}</h1>
@@ -46,9 +46,12 @@ export default function LocalPlaylistPage() {
 				</div>
 			</div>
 			{playlist.tracks.length === 0 ? (
-				<EmptyState>Add songs from any song menu.</EmptyState>
+				<EmptyState
+					title="This playlist is empty"
+					hint="Add songs from any song menu."
+				/>
 			) : (
-				<TrackList
+				<SongList
 					tracks={playlist.tracks}
 					trailing={(track) => (
 						<Button

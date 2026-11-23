@@ -69,10 +69,26 @@ const params = z.object({
 	limit: count(10),
 });
 
+const searchCalls = {
+	songs: ["search.getResults", songList("search songs")],
+	albums: [
+		"search.getAlbumResults",
+		lenientArray(searchAlbumSchema, "search albums"),
+	],
+	artists: [
+		"search.getArtistResults",
+		lenientArray(creditSchema, "search artists"),
+	],
+	playlists: [
+		"search.getPlaylistResults",
+		lenientArray(searchPlaylistSchema, "search playlists"),
+	],
+} as const;
+
 async function searchPage<S extends z.ZodType>(
 	call: string,
 	results: S,
-	q: z.output<typeof params>,
+	q: { query: string; page: number; limit: number },
 ) {
 	const data = await jiosaavn(call, { q: q.query, p: q.page + 1, n: q.limit });
 	const page = parseUpstream(
@@ -81,49 +97,106 @@ async function searchPage<S extends z.ZodType>(
 		call,
 	);
 	return {
-		success: true as const,
-		data: {
-			total: page.total,
-			start: q.page * q.limit,
-			results: parseUpstream(results, page.results, call),
-		},
+		total: page.total,
+		start: q.page * q.limit,
+		results: parseUpstream(results, page.results, call),
 	};
 }
 
-export const search = new Hono()
-	.get("/songs", query(params), async (c) =>
-		c.json(
-			await searchPage(
-				"search.getResults",
-				songList("search songs"),
-				c.req.valid("query"),
+const topResultSchema = z
+	.object({
+		topquery: z.object({
+			data: lenientArray(
+				z.object({
+					id: z.string(),
+					title: text,
+					type: z.enum(["song", "album", "artist", "playlist"]),
+					description: maybe(text),
+					image: z.string(),
+				}),
+				"autocomplete topquery",
 			),
-		),
+		}),
+	})
+	.transform(({ topquery }) => {
+		const [top] = topquery.data;
+		return top
+			? {
+					type: top.type,
+					id: top.id,
+					name: top.title,
+					subtitle: top.description,
+					image: imageLinks(top.image),
+				}
+			: null;
+	});
+
+const combinedParams = z.object({
+	query: z.string().min(1),
+	limit: count(6).pipe(z.number().min(1).max(20)),
+});
+
+export const search = new Hono()
+	.get("/", query(combinedParams), async (c) => {
+		const { query: term, limit } = c.req.valid("query");
+		const request = { query: term, page: 0, limit };
+		const autocomplete = "autocomplete.get";
+		const [top, songs, albums, artists, playlists] = await Promise.all([
+			jiosaavn(autocomplete, { query: term, n: 1 }),
+			searchPage(...searchCalls.songs, request),
+			searchPage(...searchCalls.albums, request),
+			searchPage(...searchCalls.artists, request),
+			searchPage(...searchCalls.playlists, request),
+		]);
+		const named = (card: { name: string }) =>
+			card.name.toLowerCase() === term.toLowerCase();
+		const exact = [
+			...songs.results.map((card) => ({ type: "song" as const, card })),
+			...albums.results.map((card) => ({ type: "album" as const, card })),
+			...artists.results.map((card) => ({ type: "artist" as const, card })),
+			...playlists.results.map((card) => ({ type: "playlist" as const, card })),
+		].find((entry) => named(entry.card));
+		const topResult =
+			parseUpstream(topResultSchema, top, autocomplete) ??
+			(exact && {
+				type: exact.type,
+				id: exact.card.id,
+				name: exact.card.name,
+				subtitle: null,
+				image: exact.card.image,
+			});
+		return c.json({
+			success: true as const,
+			data: {
+				topResult: topResult || null,
+				songs: songs.results.slice(0, limit),
+				albums: albums.results.slice(0, limit),
+				artists: artists.results.slice(0, limit),
+				playlists: playlists.results.slice(0, limit),
+			},
+		});
+	})
+	.get("/songs", query(params), async (c) =>
+		c.json({
+			success: true as const,
+			data: await searchPage(...searchCalls.songs, c.req.valid("query")),
+		}),
 	)
 	.get("/albums", query(params), async (c) =>
-		c.json(
-			await searchPage(
-				"search.getAlbumResults",
-				lenientArray(searchAlbumSchema, "search albums"),
-				c.req.valid("query"),
-			),
-		),
+		c.json({
+			success: true as const,
+			data: await searchPage(...searchCalls.albums, c.req.valid("query")),
+		}),
 	)
 	.get("/artists", query(params), async (c) =>
-		c.json(
-			await searchPage(
-				"search.getArtistResults",
-				lenientArray(creditSchema, "search artists"),
-				c.req.valid("query"),
-			),
-		),
+		c.json({
+			success: true as const,
+			data: await searchPage(...searchCalls.artists, c.req.valid("query")),
+		}),
 	)
 	.get("/playlists", query(params), async (c) =>
-		c.json(
-			await searchPage(
-				"search.getPlaylistResults",
-				lenientArray(searchPlaylistSchema, "search playlists"),
-				c.req.valid("query"),
-			),
-		),
+		c.json({
+			success: true as const,
+			data: await searchPage(...searchCalls.playlists, c.req.valid("query")),
+		}),
 	);

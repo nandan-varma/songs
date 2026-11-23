@@ -1,5 +1,5 @@
 import { CollectionHeader } from "@/components/collection-header";
-import { TrackList } from "@/components/track-list";
+import { SongList } from "@/components/song-list";
 import { getAlbum } from "@/lib/api/data";
 
 export default async function AlbumPage({
@@ -12,7 +12,7 @@ export default async function AlbumPage({
 	return (
 		<div className="space-y-8">
 			<CollectionHeader {...album} />
-			<TrackList tracks={album.tracks} />
+			<SongList tracks={album.tracks} />
 		</div>
 	);
 }

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { CardGrid } from "@/components/media-card";
+import { CollectionGrid } from "@/components/collection-card";
 import { Section } from "@/components/section";
-import { TrackList } from "@/components/track-list";
+import { SongList } from "@/components/song-list";
+import { Button } from "@/components/ui/button";
 import { getHome } from "@/lib/api/data";
 import { DEFAULT_LANGUAGE, isLanguage, LANGUAGES } from "@/lib/languages";
-import { cn } from "@/lib/utils";
 
 export default async function HomePage({
 	searchParams,
@@ -16,32 +16,37 @@ export default async function HomePage({
 	const home = await getHome(language);
 
 	return (
-		<div className="space-y-10">
-			<nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Language">
+		<div className="space-y-8">
+			<nav aria-label="Language" className="flex gap-2 overflow-x-auto">
 				{LANGUAGES.map((name) => (
-					<Link
+					<Button
 						key={name}
-						href={name === DEFAULT_LANGUAGE ? "/" : `/?lang=${name}`}
-						className={cn(
-							"rounded-full bg-secondary px-3 py-1 text-sm capitalize whitespace-nowrap",
-							name === language && "bg-primary text-primary-foreground",
-						)}
+						asChild
+						variant="chip"
+						size="sm"
+						className="capitalize"
 					>
-						{name}
-					</Link>
+						<Link
+							href={name === DEFAULT_LANGUAGE ? "/" : `/?lang=${name}`}
+							data-active={name === language}
+							aria-current={name === language ? "true" : undefined}
+						>
+							{name}
+						</Link>
+					</Button>
 				))}
 			</nav>
 			<Section title="Trending songs">
-				<TrackList tracks={home.songs} />
+				<SongList tracks={home.songs} />
 			</Section>
 			<Section title="Trending albums">
-				<CardGrid cards={home.albums} />
+				<CollectionGrid cards={home.albums} />
 			</Section>
 			<Section title="Featured playlists">
-				<CardGrid cards={home.playlists} />
+				<CollectionGrid cards={home.playlists} />
 			</Section>
 			<Section title="Charts">
-				<CardGrid cards={home.charts} />
+				<CollectionGrid cards={home.charts} />
 			</Section>
 		</div>
 	);

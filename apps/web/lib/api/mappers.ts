@@ -6,24 +6,13 @@ type Data<E extends { $get: (...args: never[]) => unknown }> = Payload<
 	InferResponseType<E["$get"]>
 >;
 
-export type SongWire = Data<(typeof api.songs)[":id"]>[number];
-export type AlbumWire = Data<typeof api.albums>;
-export type PlaylistWire = Data<typeof api.playlists>;
-
-export type TrendingItem = Data<typeof api.trending>[number];
-
-export const isSong = (item: TrendingItem): item is SongWire =>
-	"downloadUrl" in item;
-export const isAlbum = (item: TrendingItem): item is AlbumWire =>
-	"songs" in item && "primary" in item.artists;
-export const isPlaylist = (item: TrendingItem): item is PlaylistWire =>
-	"songs" in item && Array.isArray(item.artists);
+type SongWire = Data<(typeof api.songs)[":id"]>[number];
 
 interface Link {
 	url: string;
 }
 
-const best = (links: Link[]) => links.at(-1)?.url ?? "";
+export const best = (links: Link[]) => links.at(-1)?.url ?? "";
 
 const joinNames = (people: { name: string }[]) =>
 	people.map((person) => person.name).join(", ");
@@ -37,7 +26,7 @@ export function toTrack(song: SongWire): Track | null {
 	return {
 		id: song.id,
 		title: song.name,
-		artists: credits.map(({ id, name }) => ({ id, name })),
+		artists: uniqueById(credits.map(({ id, name }) => ({ id, name }))),
 		album:
 			song.album.id && song.album.name
 				? { id: song.album.id, name: song.album.name }
@@ -48,8 +37,12 @@ export function toTrack(song: SongWire): Track | null {
 	};
 }
 
+export function uniqueById<T extends { id: string }>(items: T[]): T[] {
+	return [...new Map(items.map((item) => [item.id, item])).values()];
+}
+
 export function toTracks(songs: SongWire[] | null | undefined): Track[] {
-	return (songs ?? []).flatMap((song) => toTrack(song) ?? []);
+	return uniqueById((songs ?? []).flatMap((song) => toTrack(song) ?? []));
 }
 
 export function albumCard(album: {

@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { BottomNav, DesktopNav } from "@/components/nav";
 import { MiniPlayer } from "@/components/player/mini-player";
 import { Providers } from "@/components/providers";
+import { SearchBox } from "@/components/search-box";
 import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
@@ -32,11 +34,17 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<body className="flex min-h-dvh flex-col">
 				<Providers>
-					<header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur">
-						<Link href="/" className="text-lg font-semibold">
+					<header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background px-4 md:gap-4">
+						<Link
+							href="/"
+							className="flex h-11 items-center text-lg font-semibold"
+						>
 							Songs
 						</Link>
 						<DesktopNav />
+						<Suspense fallback={<div className="flex-1" />}>
+							<SearchBox />
+						</Suspense>
 						<div className="ml-auto">
 							<ThemeToggle />
 						</div>

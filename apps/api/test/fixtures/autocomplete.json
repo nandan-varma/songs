@@ -1,0 +1,20 @@
+{
+	"topquery": {
+		"data": [
+			{
+				"id": "459320",
+				"title": "Arijit Singh",
+				"image": "https://c.saavncdn.com/artists/Arijit_Singh_004_20241118063717_50x50.jpg",
+				"extra": "primary",
+				"type": "artist",
+				"mini_obj": true,
+				"isRadioPresent": true,
+				"ctr": 34674,
+				"entity": 1,
+				"description": "Artist",
+				"position": 1
+			}
+		],
+		"position": 0
+	}
+}

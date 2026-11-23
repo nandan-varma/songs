@@ -1,14 +1,13 @@
-import type { Card, Track } from "@/lib/models";
+import type { Card, TopResult, Track } from "@/lib/models";
 import { api, unwrap } from "./client";
 import {
 	albumCard,
 	artistCard,
-	isAlbum,
-	isPlaylist,
-	isSong,
+	best,
 	playlistCard,
 	toTrack,
 	toTracks,
+	uniqueById,
 } from "./mappers";
 
 const SEARCH_PAGE_SIZE = 20;
@@ -29,19 +28,26 @@ const countLabel = (count: number | null, noun: string) =>
 const joinMeta = (...parts: (string | null | undefined)[]) =>
 	parts.filter(Boolean).join(" · ") || undefined;
 
-export async function getHome(language: string) {
-	const [songs, albums, playlists, charts] = await Promise.all([
-		unwrap(api.trending.$get({ query: { type: "song", language } })),
-		unwrap(api.trending.$get({ query: { type: "album", language } })),
-		unwrap(api.trending.$get({ query: { type: "playlist", language } })),
-		unwrap(api.charts.$get()),
+export async function getTrending(language: string) {
+	const query = { language };
+	const [songs, albums, playlists] = await Promise.all([
+		unwrap(api.trending.songs.$get({ query })),
+		unwrap(api.trending.albums.$get({ query })),
+		unwrap(api.trending.playlists.$get({ query })),
 	]);
 	return {
-		songs: toTracks(songs.filter(isSong)),
-		albums: albums.filter(isAlbum).map(albumCard),
-		playlists: playlists.filter(isPlaylist).map(playlistCard),
-		charts: charts.map(playlistCard),
+		songs: toTracks(songs),
+		albums: uniqueById(albums.map(albumCard)),
+		playlists: uniqueById(playlists.map(playlistCard)),
 	};
+}
+
+export async function getHome(language: string) {
+	const [trending, charts] = await Promise.all([
+		getTrending(language),
+		unwrap(api.charts.$get()),
+	]);
+	return { ...trending, charts: uniqueById(charts.map(playlistCard)) };
 }
 
 export async function getAlbum(id: string): Promise<Collection> {
@@ -53,7 +59,7 @@ export async function getAlbum(id: string): Promise<Collection> {
 			album.year?.toString(),
 			countLabel(album.songCount, "songs"),
 		),
-		image: album.image.at(-1)?.url ?? "",
+		image: best(album.image),
 		tracks: toTracks(album.songs),
 	};
 }
@@ -77,7 +83,7 @@ export async function getPlaylist(id: string): Promise<Collection> {
 		title: first.name,
 		subtitle: first.description ?? undefined,
 		meta: countLabel(first.songCount, "songs"),
-		image: first.image.at(-1)?.url ?? "",
+		image: best(first.image),
 		tracks: toTracks(songs),
 	};
 }
@@ -96,10 +102,10 @@ export async function getArtist(id: string) {
 		meta: artist.followerCount
 			? `${compact.format(artist.followerCount)} followers`
 			: undefined,
-		image: artist.image.at(-1)?.url ?? "",
+		image: best(artist.image),
 		songs: toTracks(artist.topSongs),
-		albums: artist.topAlbums.map(albumCard),
-		similar: artist.similarArtists.map(artistCard),
+		albums: uniqueById(artist.topAlbums.map(albumCard)),
+		similar: uniqueById(artist.similarArtists.map(artistCard)),
 	};
 }
 
@@ -131,19 +137,13 @@ export async function getLyrics(lyricsId: string) {
 	return { text: lyrics.lyrics, copyright: lyrics.copyright };
 }
 
-export type SearchKind = "songs" | "albums" | "artists" | "playlists";
+type SearchKind = "songs" | "albums" | "artists" | "playlists";
 export type CardSearchKind = Exclude<SearchKind, "songs">;
 
 export interface Page<T> {
 	items: T[];
 	hasMore: boolean;
 }
-
-const searchParams = (query: string, page: number) => ({
-	query,
-	page: String(page),
-	limit: String(SEARCH_PAGE_SIZE),
-});
 
 const pageOf = <T>(
 	items: T[],
@@ -153,9 +153,22 @@ const pageOf = <T>(
 	hasMore: result.start + items.length < result.total,
 });
 
-export async function searchSongs(query: string, page: number) {
+const pagedQuery = (query: string, page: number) => ({
+	query,
+	page: String(page),
+	limit: String(SEARCH_PAGE_SIZE),
+});
+
+export async function searchSongs(
+	query: string,
+	page: number,
+	signal: AbortSignal,
+) {
 	const result = await unwrap(
-		api.search.songs.$get({ query: searchParams(query, page) }),
+		api.search.songs.$get(
+			{ query: pagedQuery(query, page) },
+			{ init: { signal } },
+		),
 	);
 	return pageOf(toTracks(result.results), result);
 }
@@ -164,20 +177,55 @@ export async function searchCards(
 	kind: CardSearchKind,
 	query: string,
 	page: number,
+	signal: AbortSignal,
 ): Promise<Page<Card>> {
-	const params = { query: searchParams(query, page) };
+	const args = [
+		{ query: pagedQuery(query, page) },
+		{ init: { signal } },
+	] as const;
 	switch (kind) {
 		case "albums": {
-			const result = await unwrap(api.search.albums.$get(params));
-			return pageOf(result.results.map(albumCard), result);
+			const result = await unwrap(api.search.albums.$get(...args));
+			return pageOf(uniqueById(result.results.map(albumCard)), result);
 		}
 		case "artists": {
-			const result = await unwrap(api.search.artists.$get(params));
-			return pageOf(result.results.map(artistCard), result);
+			const result = await unwrap(api.search.artists.$get(...args));
+			return pageOf(uniqueById(result.results.map(artistCard)), result);
 		}
 		case "playlists": {
-			const result = await unwrap(api.search.playlists.$get(params));
-			return pageOf(result.results.map(playlistCard), result);
+			const result = await unwrap(api.search.playlists.$get(...args));
+			return pageOf(uniqueById(result.results.map(playlistCard)), result);
 		}
 	}
+}
+
+export interface SearchOverview {
+	top: TopResult | null;
+	songs: Track[];
+	albums: Card[];
+	artists: Card[];
+	playlists: Card[];
+}
+
+export async function searchOverview(
+	query: string,
+	signal: AbortSignal,
+): Promise<SearchOverview> {
+	const result = await unwrap(
+		api.search.$get({ query: { query, limit: "6" } }, { init: { signal } }),
+	);
+	const { topResult } = result;
+	return {
+		top: topResult && {
+			id: topResult.id,
+			kind: topResult.type,
+			title: topResult.name,
+			subtitle: topResult.subtitle ?? undefined,
+			image: best(topResult.image),
+		},
+		songs: toTracks(result.songs),
+		albums: uniqueById(result.albums.map(albumCard)),
+		artists: uniqueById(result.artists.map(artistCard)),
+		playlists: uniqueById(result.playlists.map(playlistCard)),
+	};
 }

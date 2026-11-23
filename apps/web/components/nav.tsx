@@ -18,15 +18,13 @@ function isActive(pathname: string, href: string) {
 export function DesktopNav() {
 	const pathname = usePathname();
 	return (
-		<nav className="hidden gap-1 md:flex">
-			{LINKS.map(({ href, label }) => (
+		<nav aria-label="Main" className="hidden gap-1 md:flex">
+			{LINKS.filter(({ href }) => href !== "/search").map(({ href, label }) => (
 				<Link
 					key={href}
 					href={href}
-					className={cn(
-						"rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground",
-						isActive(pathname, href) && "bg-accent text-foreground",
-					)}
+					aria-current={isActive(pathname, href) ? "page" : undefined}
+					className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground aria-[current=page]:text-foreground"
 				>
 					{label}
 				</Link>
@@ -38,14 +36,17 @@ export function DesktopNav() {
 export function BottomNav() {
 	const pathname = usePathname();
 	return (
-		<nav className="grid grid-cols-3 border-t bg-background md:hidden">
+		<nav
+			aria-label="Main"
+			className="grid grid-cols-3 border-t bg-background md:hidden"
+		>
 			{LINKS.map(({ href, label, icon: Icon }) => (
 				<Link
 					key={href}
 					href={href}
+					aria-current={isActive(pathname, href) ? "page" : undefined}
 					className={cn(
-						"flex flex-col items-center gap-0.5 py-2 text-xs text-muted-foreground",
-						isActive(pathname, href) && "text-foreground",
+						"flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs text-muted-foreground aria-[current=page]:text-primary",
 					)}
 				>
 					<Icon className="size-5" />

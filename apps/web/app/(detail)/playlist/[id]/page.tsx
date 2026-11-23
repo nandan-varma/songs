@@ -1,5 +1,5 @@
 import { CollectionHeader } from "@/components/collection-header";
-import { TrackList } from "@/components/track-list";
+import { SongList } from "@/components/song-list";
 import { getPlaylist } from "@/lib/api/data";
 
 export default async function PlaylistPage({
@@ -12,7 +12,7 @@ export default async function PlaylistPage({
 	return (
 		<div className="space-y-8">
 			<CollectionHeader {...playlist} />
-			<TrackList tracks={playlist.tracks} />
+			<SongList tracks={playlist.tracks} />
 		</div>
 	);
 }

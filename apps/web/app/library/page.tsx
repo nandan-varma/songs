@@ -4,11 +4,10 @@ import { ListMusic, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { CreatePlaylistDialog } from "@/components/create-playlist-dialog";
-import { EmptyState } from "@/components/section";
-import { TrackList } from "@/components/track-list";
+import { SongList } from "@/components/song-list";
+import { EmptyState } from "@/components/states";
 import { Button } from "@/components/ui/button";
 import { useLibrary } from "@/lib/stores/library";
-import { cn } from "@/lib/utils";
 
 const TABS = ["Favorites", "Playlists", "History"] as const;
 type Tab = (typeof TABS)[number];
@@ -17,21 +16,22 @@ export default function LibraryPage() {
 	const [tab, setTab] = useState<Tab>("Favorites");
 
 	return (
-		<div className="space-y-6">
-			<div role="tablist" className="flex gap-2">
+		<div className="space-y-8">
+			<fieldset className="flex min-w-0 gap-2 overflow-x-auto">
+				<legend className="sr-only">Library section</legend>
 				{TABS.map((name) => (
 					<Button
 						key={name}
-						role="tab"
-						aria-selected={tab === name}
-						variant={tab === name ? "default" : "secondary"}
+						variant="chip"
 						size="sm"
+						data-active={tab === name}
+						aria-pressed={tab === name}
 						onClick={() => setTab(name)}
 					>
 						{name}
 					</Button>
 				))}
-			</div>
+			</fieldset>
 			{tab === "Favorites" && <Favorites />}
 			{tab === "Playlists" && <Playlists />}
 			{tab === "History" && <History />}
@@ -42,23 +42,33 @@ export default function LibraryPage() {
 function Favorites() {
 	const favorites = useLibrary((s) => s.favorites);
 	if (favorites.length === 0) {
-		return <EmptyState>Songs you favorite will show up here.</EmptyState>;
+		return (
+			<EmptyState
+				title="No favorites yet"
+				hint="Tap the heart on any song to keep it here."
+			/>
+		);
 	}
-	return <TrackList tracks={favorites} />;
+	return <SongList tracks={favorites} />;
 }
 
 function History() {
 	const history = useLibrary((s) => s.history);
 	const clearHistory = useLibrary((s) => s.clearHistory);
 	if (history.length === 0) {
-		return <EmptyState>Songs you play will show up here.</EmptyState>;
+		return (
+			<EmptyState
+				title="Nothing played yet"
+				hint="Songs you play will show up here."
+			/>
+		);
 	}
 	return (
 		<div className="space-y-2">
 			<Button variant="ghost" size="sm" onClick={clearHistory}>
 				<Trash2 /> Clear history
 			</Button>
-			<TrackList tracks={history} />
+			<SongList tracks={history} />
 		</div>
 	);
 }
@@ -73,16 +83,17 @@ function Playlists() {
 			</Button>
 			<CreatePlaylistDialog open={creating} onOpenChange={setCreating} />
 			{playlists.length === 0 ? (
-				<EmptyState>No playlists yet.</EmptyState>
+				<EmptyState
+					title="No playlists yet"
+					hint="Create one, then add songs from any song menu."
+				/>
 			) : (
 				<ul className="grid gap-2 sm:grid-cols-2">
 					{playlists.map((playlist) => (
 						<li key={playlist.id}>
 							<Link
 								href={`/library/${playlist.id}`}
-								className={cn(
-									"flex items-center gap-3 rounded-lg border bg-card p-3 hover:bg-accent",
-								)}
+								className="flex min-h-14 items-center gap-3 rounded-md border bg-card p-3 transition-colors duration-150 hover:bg-accent"
 							>
 								<ListMusic className="size-5 text-muted-foreground" />
 								<span className="min-w-0">

@@ -13,7 +13,7 @@ export default async function SongPage({
 	const { id } = await params;
 	const { track, meta, lyricsId } = await getSong(id);
 	return (
-		<div className="space-y-10">
+		<div className="space-y-8">
 			<CollectionHeader
 				title={track.title}
 				subtitle={track.artists.map((artist) => artist.name).join(", ")}

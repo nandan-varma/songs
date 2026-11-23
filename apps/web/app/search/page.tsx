@@ -1,12 +1,13 @@
 import { Suspense } from "react";
-import { SearchView } from "@/components/search-view";
+import { SearchResults } from "@/components/search-results";
+import { SongListSkeleton } from "@/components/skeletons";
 
 export const metadata = { title: "Search" };
 
 export default function SearchPage() {
 	return (
-		<Suspense>
-			<SearchView />
+		<Suspense fallback={<SongListSkeleton />}>
+			<SearchResults />
 		</Suspense>
 	);
 }

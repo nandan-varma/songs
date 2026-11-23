@@ -8,12 +8,6 @@ import { query } from "./lib/validate.js";
 import { playlistSchema } from "./playlists.js";
 import { songList } from "./songs.js";
 
-const trendingSchemas = {
-	song: songList("trending songs"),
-	album: lenientArray(albumSchema, "trending albums"),
-	playlist: lenientArray(playlistSchema, "trending playlists"),
-};
-
 const chartSchema = z
 	.object({
 		id: z.string(),
@@ -34,27 +28,48 @@ const chartSchema = z
 		language: chart.language,
 	}));
 
+const trendingQuery = query(z.object({ language: z.string().min(1) }));
+
+async function trending<S extends z.ZodType>(
+	entityType: string,
+	schema: S,
+	language: string,
+) {
+	const call = "content.getTrending";
+	const data = await jiosaavn(call, {
+		entity_type: entityType,
+		entity_language: language,
+	});
+	return { success: true as const, data: parseUpstream(schema, data, call) };
+}
+
 export const browse = new Hono()
-	.get(
-		"/trending",
-		query(
-			z.object({
-				type: z.enum(["song", "album", "playlist"]),
-				language: z.string().min(1),
-			}),
+	.get("/trending/songs", trendingQuery, async (c) =>
+		c.json(
+			await trending(
+				"song",
+				songList("trending songs"),
+				c.req.valid("query").language,
+			),
 		),
-		async (c) => {
-			const { type, language } = c.req.valid("query");
-			const call = "content.getTrending";
-			const data = await jiosaavn(call, {
-				entity_type: type,
-				entity_language: language,
-			});
-			return c.json({
-				success: true as const,
-				data: parseUpstream(trendingSchemas[type], data, call),
-			});
-		},
+	)
+	.get("/trending/albums", trendingQuery, async (c) =>
+		c.json(
+			await trending(
+				"album",
+				lenientArray(albumSchema, "trending albums"),
+				c.req.valid("query").language,
+			),
+		),
+	)
+	.get("/trending/playlists", trendingQuery, async (c) =>
+		c.json(
+			await trending(
+				"playlist",
+				lenientArray(playlistSchema, "trending playlists"),
+				c.req.valid("query").language,
+			),
+		),
 	)
 	.get("/charts", async (c) => {
 		const call = "content.getCharts";

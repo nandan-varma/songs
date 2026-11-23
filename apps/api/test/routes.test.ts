@@ -365,30 +365,30 @@ describe("search", () => {
 });
 
 describe("trending and charts", () => {
-	it("returns trending entities of the requested type", async () => {
+	it("returns a plain list per entity kind", async () => {
 		const requests = mockUpstream({
 			"content.getTrending": fixture("trending-songs"),
 		});
-		const songs = await get("/api/trending?type=song&language=hindi");
+		const songs = await get("/api/trending/songs?language=hindi");
 		expect(songs.body.data).toHaveLength(2);
 		expect(requests[0]?.searchParams.get("entity_type")).toBe("song");
 		expect(requests[0]?.searchParams.get("entity_language")).toBe("hindi");
 
 		mockUpstream({ "content.getTrending": fixture("trending-albums") });
-		const albums = await get("/api/trending?type=album&language=hindi");
+		const albums = await get("/api/trending/albums?language=hindi");
 		expect(albums.body.data).toHaveLength(1);
 
 		mockUpstream({ "content.getTrending": fixture("trending-playlists") });
-		const playlists = await get("/api/trending?type=playlist&language=hindi");
+		const playlists = await get("/api/trending/playlists?language=hindi");
 		expect(playlists.body.data).toHaveLength(1);
 	});
 
-	it("rejects an unknown trending type or a missing language", async () => {
+	it("requires a language and no longer serves the union route", async () => {
 		mockUpstream({});
-		expect((await get("/api/trending?type=radio&language=hindi")).status).toBe(
-			400,
+		expect((await get("/api/trending/songs")).status).toBe(400);
+		expect((await get("/api/trending?type=song&language=hindi")).status).toBe(
+			404,
 		);
-		expect((await get("/api/trending?type=song")).status).toBe(400);
 	});
 
 	it("lists charts", async () => {
@@ -407,6 +407,67 @@ describe("trending and charts", () => {
 				{ name: "India Superhits Top 50" },
 			],
 		});
+	});
+});
+
+describe("combined search", () => {
+	const upstream = () =>
+		mockUpstream({
+			"autocomplete.get": fixture("autocomplete"),
+			"search.getResults": fixture("search-songs"),
+			"search.getAlbumResults": fixture("search-albums"),
+			"search.getArtistResults": fixture("search-artists"),
+			"search.getPlaylistResults": fixture("search-playlists"),
+		});
+
+	it("merges the typed searches, with the typed card shapes, and a top result", async () => {
+		const requests = upstream();
+
+		const combined = await get("/api/search?query=dua&limit=1");
+		const songs = await get("/api/search/songs?query=dua");
+
+		const data = combined.body.data as Record<string, unknown[]>;
+		expect(combined.body.data).toMatchObject({
+			topResult: {
+				type: "artist",
+				id: "459320",
+				name: "Arijit Singh",
+				subtitle: "Artist",
+			},
+		});
+		expect(data.songs).toHaveLength(1);
+		expect(data.songs?.[0]).toEqual(
+			(songs.body.data as { results: unknown[] }).results[0],
+		);
+		expect(data.albums).toHaveLength(1);
+		expect(data.artists).toHaveLength(1);
+		expect(data.playlists).toHaveLength(1);
+		expect(requests[0]?.searchParams.get("__call")).toBe("autocomplete.get");
+	});
+
+	it("falls back to an exact name match, then to null", async () => {
+		mockUpstream({
+			"autocomplete.get": { topquery: { data: [] } },
+			"search.getResults": { total: 0, start: 0, results: [] },
+			"search.getAlbumResults": { total: 0, start: 0, results: [] },
+			"search.getArtistResults": fixture("search-artists"),
+			"search.getPlaylistResults": { total: 0, start: 0, results: [] },
+		});
+
+		const exact = await get("/api/search?query=dua%20lipa");
+		const none = await get("/api/search?query=nobody");
+
+		expect(exact.body.data).toMatchObject({
+			topResult: { type: "artist", id: "1274170", name: "Dua Lipa" },
+		});
+		expect(none.body.data).toMatchObject({ topResult: null });
+	});
+
+	it("validates query and limit", async () => {
+		upstream();
+		expect((await get("/api/search")).status).toBe(400);
+		expect((await get("/api/search?query=a&limit=21")).status).toBe(400);
+		expect((await get("/api/search?query=a&limit=0")).status).toBe(400);
 	});
 });
 

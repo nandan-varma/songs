@@ -4,6 +4,7 @@ import { Pause, Play } from "lucide-react";
 import Link from "next/link";
 import { Cover } from "@/components/cover";
 import { FavoriteButton } from "@/components/favorite-button";
+import { Highlight } from "@/components/highlight";
 import { TrackMenu } from "@/components/track-menu";
 import type { Track } from "@/lib/models";
 import { selectCurrentTrack, usePlayer } from "@/lib/stores/player";
@@ -30,32 +31,37 @@ export function ArtistLinks({
 	);
 }
 
-interface TrackListProps {
+interface SongListProps {
 	tracks: Track[];
+	highlight?: string;
 	trailing?: (track: Track) => React.ReactNode;
 }
 
-export function TrackList({ tracks, trailing }: TrackListProps) {
+export function SongList({ tracks, highlight, trailing }: SongListProps) {
 	const currentId = usePlayer((s) => selectCurrentTrack(s)?.id);
 	const playing = usePlayer((s) => s.playing);
 	const { play, toggle } = usePlayer.getState();
 
 	return (
-		<ul className="divide-y divide-border/50">
+		<ul className="divide-y divide-border">
 			{tracks.map((track, index) => {
 				const active = track.id === currentId;
 				return (
-					<li key={track.id} className="flex items-center gap-1 py-2">
+					<li
+						key={track.id}
+						className="flex h-[4.5rem] items-center gap-1 rounded-md has-[[data-active=true]]:bg-accent"
+					>
 						<button
 							type="button"
+							data-result
 							onClick={() => (active ? toggle() : play(tracks, index))}
 							aria-label={`${active && playing ? "Pause" : "Play"} ${track.title}`}
-							className="group relative size-12 shrink-0"
+							className="group relative size-12 shrink-0 rounded-md"
 						>
 							<Cover src={track.image} alt="" sizes="48px" />
 							<span
 								className={cn(
-									"absolute inset-0 flex items-center justify-center rounded-md bg-black/50 text-white opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100",
+									"absolute inset-0 flex items-center justify-center rounded-md bg-black/55 text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100",
 									active && "opacity-100",
 								)}
 							>
@@ -73,7 +79,7 @@ export function TrackList({ tracks, trailing }: TrackListProps) {
 									active && "text-primary",
 								)}
 							>
-								{track.title}
+								<Highlight text={track.title} query={highlight} />
 							</p>
 							<ArtistLinks
 								artists={track.artists}

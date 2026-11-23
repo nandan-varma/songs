@@ -22,3 +22,11 @@ export interface Card {
 	subtitle?: string;
 	image: string;
 }
+
+export interface TopResult {
+	id: string;
+	kind: "song" | CardKind;
+	title: string;
+	subtitle?: string;
+	image: string;
+}

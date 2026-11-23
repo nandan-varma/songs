@@ -1,22 +1,19 @@
 export function Section({
 	title,
+	action,
 	children,
 }: {
 	title: string;
+	action?: React.ReactNode;
 	children: React.ReactNode;
 }) {
 	return (
 		<section className="space-y-3">
-			<h2 className="text-xl font-semibold">{title}</h2>
+			<div className="flex min-h-11 items-center justify-between gap-2">
+				<h2 className="text-xl font-semibold">{title}</h2>
+				{action}
+			</div>
 			{children}
 		</section>
-	);
-}
-
-export function EmptyState({ children }: { children: React.ReactNode }) {
-	return (
-		<p className="py-12 text-center text-sm text-muted-foreground">
-			{children}
-		</p>
 	);
 }

@@ -1,7 +1,7 @@
+import { CollectionGrid } from "@/components/collection-card";
 import { CollectionHeader } from "@/components/collection-header";
-import { CardGrid } from "@/components/media-card";
 import { Section } from "@/components/section";
-import { TrackList } from "@/components/track-list";
+import { SongList } from "@/components/song-list";
 import { getArtist } from "@/lib/api/data";
 
 export default async function ArtistPage({
@@ -12,7 +12,7 @@ export default async function ArtistPage({
 	const { id } = await params;
 	const artist = await getArtist(id);
 	return (
-		<div className="space-y-10">
+		<div className="space-y-8">
 			<CollectionHeader
 				title={artist.title}
 				meta={artist.meta}
@@ -22,17 +22,17 @@ export default async function ArtistPage({
 			/>
 			{artist.songs.length > 0 && (
 				<Section title="Top songs">
-					<TrackList tracks={artist.songs} />
+					<SongList tracks={artist.songs} />
 				</Section>
 			)}
 			{artist.albums.length > 0 && (
 				<Section title="Albums">
-					<CardGrid cards={artist.albums} />
+					<CollectionGrid cards={artist.albums} />
 				</Section>
 			)}
 			{artist.similar.length > 0 && (
 				<Section title="Similar artists">
-					<CardGrid cards={artist.similar} />
+					<CollectionGrid cards={artist.similar} />
 				</Section>
 			)}
 		</div>

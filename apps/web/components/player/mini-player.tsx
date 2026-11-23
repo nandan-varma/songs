@@ -13,7 +13,7 @@ export function MiniPlayer() {
 	if (!track) return null;
 
 	return (
-		<div className="border-t bg-background/95 backdrop-blur">
+		<div className="border-t bg-background">
 			<ProgressLine />
 			<div className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-2">
 				<button

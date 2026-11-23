@@ -9,7 +9,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { PlaybackControls } from "@/components/player/controls";
 import { QueueList } from "@/components/player/queue-list";
 import { SeekBar } from "@/components/player/seek-bar";
-import { ArtistLinks } from "@/components/track-list";
+import { ArtistLinks } from "@/components/song-list";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

@@ -7,7 +7,16 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/.agents"]
+		"includes": [
+			"apps/api/**",
+			"apps/web/**",
+			"tools/**",
+			"!**/node_modules",
+			"!**/.next",
+			"!apps/ios",
+			"!research",
+			"!**/dist"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -67,7 +76,9 @@
 	},
 	"overrides": [
 		{
-			"includes": ["components/ui/**"],
+			"includes": [
+				"components/ui/**"
+			],
 			"linter": {
 				"enabled": false
 			},

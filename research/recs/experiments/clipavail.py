@@ -17,7 +17,6 @@ for s in D:
             b=urllib.request.urlopen(urllib.request.Request(v,headers=UA),timeout=30).read(); vl.append((len(b),time.time()-t))
         except Exception: vl.append((0,0))
     else: vl.append(None)
-    # Range request of 96kbps full-track
     dl={d['quality']:d['url'] for d in s['downloadUrl']}
     time.sleep(0.3);t=time.time()
     try:

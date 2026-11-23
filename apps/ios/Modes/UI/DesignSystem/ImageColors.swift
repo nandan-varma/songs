@@ -3,7 +3,6 @@ import SwiftUI
 extension UIImage {
     private static let colorContext = CIContext(options: [.workingColorSpace: NSNull()])
 
-    /// The average colour of the whole image (Core Image area average).
     var averageColor: UIColor? {
         guard let input = CIImage(image: self), let filter = CIFilter(name: "CIAreaAverage", parameters: [kCIInputImageKey: input, kCIInputExtentKey: CIVector(cgRect: input.extent)]),
               let output = filter.outputImage else { return nil }
@@ -12,7 +11,6 @@ extension UIImage {
         return UIColor(red: CGFloat(px[0]) / 255, green: CGFloat(px[1]) / 255, blue: CGFloat(px[2]) / 255, alpha: 1)
     }
 
-    /// The colour darkened and saturated for use as a backdrop behind white text.
     static func backdrop(from color: UIColor, brightness cap: CGFloat) -> Color {
         var h: CGFloat = 0, sat: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         color.getHue(&h, saturation: &sat, brightness: &b, alpha: &a)

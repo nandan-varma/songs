@@ -1,6 +1,5 @@
 import Foundation
 
-/// One rule for what a favorite means, shared by every screen and by the model's liked set.
 public enum FavoriteAction {
     @discardableResult
     public static func set(_ favorite: Bool, item: LibraryItem, song: SongFeatures?,

@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Turn an iOS .ips crash report (JSON header line + JSON body) into a short readable summary."""
 import argparse
 import json
 import sys
-
 
 def load(path):
     with open(path, encoding="utf-8", errors="replace") as f:
@@ -12,7 +10,6 @@ def load(path):
     header = json.loads(head)
     body = json.loads(rest) if rest.strip() else {}
     return header, body
-
 
 def frame_text(fr, images):
     idx = fr.get("imageIndex")
@@ -23,7 +20,6 @@ def frame_text(fr, images):
         loc = fr.get("symbolLocation")
         return f"{name}  {sym}" + (f" + {loc}" if loc is not None else "")
     return f"{name}  +{fr.get('imageOffset', '?')}"
-
 
 def summarize(header, body, top=12):
     out = []
@@ -41,7 +37,7 @@ def summarize(header, body, top=12):
         add(f"terminated: namespace={term.get('namespace')} code={term.get('code')} indicator={term.get('indicator', '')}")
         for r in reasons:
             add(f"  reason:   {r}")
-    if body.get("asi"):  # application-specific info, where dyld puts "Library missing" messages
+    if body.get("asi"):
         for lib, msgs in body["asi"].items():
             for m in (msgs if isinstance(msgs, list) else [msgs]):
                 add(f"  asi[{lib}]: {m}")
@@ -63,9 +59,8 @@ def summarize(header, body, top=12):
             add(f"  {i:2d} {frame_text(fr, images)}")
     return "\n".join(out)
 
-
 def main():
-    ap = argparse.ArgumentParser(description=__doc__)
+    ap = argparse.ArgumentParser(description="Turn an iOS .ips crash report into a short readable summary.")
     ap.add_argument("ips", help="path to a .ips file")
     ap.add_argument("--top", type=int, default=12, help="frames to show (default 12)")
     a = ap.parse_args()
@@ -74,7 +69,6 @@ def main():
     except (OSError, json.JSONDecodeError) as e:
         sys.exit(f"error: cannot read {a.ips}: {e}")
     print(summarize(h, b, a.top))
-
 
 if __name__ == "__main__":
     main()

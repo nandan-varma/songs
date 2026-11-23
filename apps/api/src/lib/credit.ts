@@ -2,7 +2,6 @@ import { z } from "zod";
 import { imageLinks } from "./media";
 import { text } from "./schema";
 
-/** An artist as credited on a song, album or playlist, and the shape artist search returns. */
 export const creditSchema = z
 	.object({
 		id: z.string(),
@@ -21,7 +20,6 @@ export const creditSchema = z
 		url: artist.perma_url,
 	}));
 
-/** `artistMap` as JioSaavn embeds it in songs and albums. */
 export const artistMapSchema = z.object({
 	primary_artists: z.array(creditSchema).default([]),
 	featured_artists: z.array(creditSchema).default([]),

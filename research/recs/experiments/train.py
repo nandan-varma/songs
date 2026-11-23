@@ -4,7 +4,7 @@ torch.set_num_threads(3); torch.manual_seed(0)
 from common import *; import net
 size=sys.argv[1]; EPOCHS=int(sys.argv[2]); CROP=300; BS=64
 ids,keep,Y,E=targets(); idx=np.where(keep)[0]; fo=folds(len(ids))
-mel=torch.from_numpy(np.load(O+'/mel.npy',mmap_mode='r')[:]) # float16 (N,64,469)
+mel=torch.from_numpy(np.load(O+'/mel.npy',mmap_mode='r')[:])
 gp=PCA(64,random_state=0).fit(E[idx]); gmu,gcomps=gp.mean_,gp.components_
 os.makedirs(O+'/models',exist_ok=True)
 P=np.full_like(Y,np.nan); EP=np.zeros_like(E); P300=np.full_like(Y,np.nan); EP300=np.zeros_like(E)
@@ -36,7 +36,7 @@ for k in range(3):
         m.train(); perm=torch.from_numpy(np.random.default_rng(100*k+ep).permutation(len(tr))); tl=0;nb=0
         for a in range(0,len(perm)-BS+1,BS):
             b=perm[a:a+BS]; s=np.random.randint(0,mel.shape[2]-CROP+1)
-            x=mel[torch.from_numpy(tr)[b]][:,:,s:s+CROP].float()+(torch.rand(len(b),1,1)*1.0-0.5)   # gain +-0.5 nat (~+-2 dB amplitude)... in log-power
+            x=mel[torch.from_numpy(tr)[b]][:,:,s:s+CROP].float()+(torch.rand(len(b),1,1)*1.0-0.5)
             x=((x-mu)/sd)[:,None]; l=loss(m(x),Ttr[b]); opt.zero_grad(); l.backward(); opt.step(); sch.step(); tl+=l.item(); nb+=1
         pv=predict(m,va,mu,sd); vl=loss(torch.from_numpy(pv),Tva).item()
         print(f'{size} f{k} ep{ep} train {tl/nb:.4f} val {vl:.4f} t={time.time()-t0:.0f}s',flush=True)

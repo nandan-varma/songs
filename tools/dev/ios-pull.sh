@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Pull everything needed to debug a bug report or crash from the connected iPhone (read-only; never touches the app).
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
@@ -38,7 +37,6 @@ mkdir -p "$DEST"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 echo "device $UDID -> $DEST"
 
-# 1. list the app container, decide what to copy
 xcrun devicectl device info files --device "$UDID" --domain-type appDataContainer --domain-identifier "$BUNDLE_ID" \
   --json-output "$TMP/files.json" >/dev/null 2>&1 || die "cannot list the app container (is the app installed? is the phone unlocked?)"
 
@@ -54,7 +52,7 @@ for f in files:
         print(p)
 PY
 
-copy_one() {  # $1 domain args via env; $2 relative path
+copy_one() {
   local rel="$1" out="$DEST/$2"
   mkdir -p "$(dirname "$out")"
   xcrun devicectl device copy from --device "$UDID" --domain-type appDataContainer --domain-identifier "$BUNDLE_ID" \
@@ -79,7 +77,6 @@ wait
 [[ -d "$DEST/logs" ]] || echo "  note: no Documents/logs on the phone yet (build predates logging v2)"
 [[ -f "$DEST/events.jsonl" ]] || echo "  note: no events.jsonl"
 
-# 2. crash logs
 xcrun devicectl device info files --device "$UDID" --domain-type systemCrashLogs --json-output "$TMP/crash.json" >/dev/null 2>&1 \
   || echo "  note: could not list crash logs" >&2
 if [[ -f "$TMP/crash.json" ]]; then

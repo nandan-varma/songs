@@ -2,7 +2,6 @@ import AVFoundation
 import ModesCore
 import UIKit
 
-/// The audio session, system notifications and the observers of the current `AVPlayerItem`.
 extension AppModel {
     func configureSession() {
         do { try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default) }
@@ -17,7 +16,7 @@ extension AppModel {
 
     func observeSystem() {
         let nc = NotificationCenter.default
-        // All of these are delivered on the main queue, so assuming main-actor isolation is sound.
+
         nc.addObserver(forName: AVAudioSession.interruptionNotification, object: nil, queue: .main) { [weak self] note in
             let type = (note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt).flatMap(AVAudioSession.InterruptionType.init)
             let options = (note.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt).map(AVAudioSession.InterruptionOptions.init) ?? []
@@ -36,7 +35,7 @@ extension AppModel {
             }
         }
         nc.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.saveNow() }      // playback must keep going in the background
+            MainActor.assumeIsolated { self?.saveNow() }
         }
     }
 
@@ -44,7 +43,7 @@ extension AppModel {
         switch type {
         case .began:
             AppLog.info("audio", "interruption began (playing \(isPlaying))")
-            sessionActive = false                            // the system deactivated it; activate again before resuming
+            sessionActive = false
             player.pause(); isPlaying = false; syncNowPlaying()
         case .ended:
             AppLog.info("audio", "interruption ended, shouldResume \(shouldResume)")
@@ -57,10 +56,8 @@ extension AppModel {
     private func handleRouteChange(_ reason: AVAudioSession.RouteChangeReason?) {
         guard let reason else { return }
         AppLog.info("audio", "route change \(reason.rawValue) → \(AVAudioSession.sharedInstance().currentRoute.outputs.map(\.portType.rawValue))")
-        if reason == .oldDeviceUnavailable, isPlaying { setPlaying(false) }      // headphones unplugged / Bluetooth gone
+        if reason == .oldDeviceUnavailable, isPlaying { setPlaying(false) }
     }
-
-    // MARK: Current item
 
     func observeItem(_ item: AVPlayerItem, generation g: Int) {
         removeItemObservers()
@@ -75,7 +72,7 @@ extension AppModel {
         stallToken = nc.addObserver(forName: .AVPlayerItemPlaybackStalled, object: item, queue: .main) { _ in
             MainActor.assumeIsolated { AppLog.error("audio", "playback stalled #\(g); the player waits and resumes by itself") }
         }
-        // A stream that never starts (bad URL, 403) only reports through the item's status, not the notifications above.
+
         statusObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
             guard item.status == .failed else { return }
             let why = item.error?.localizedDescription ?? "unknown"
@@ -89,7 +86,6 @@ extension AppModel {
         statusObservation?.invalidate(); statusObservation = nil
     }
 
-    /// Something went wrong with the current stream. Moves on through the normal close path, which guards against double-closing.
     private func handleItemFailure(generation g: Int, why: String) {
         guard playback.isCurrent(g), current != nil, !playback.closed else { return }
         AppLog.error("playback", "stream failed #\(g) at \(Int(progress))s: \(why)")
@@ -104,7 +100,6 @@ extension AppModel {
         }
     }
 
-    /// Pushes elapsed time and rate to the lock screen. Only call on play, pause, seek and song change; the system extrapolates.
     func syncNowPlaying() {
         guard current != nil else { return }
         nowPlaying.sync(elapsed: progress, duration: duration, playing: isPlaying)

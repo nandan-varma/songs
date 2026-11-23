@@ -9,7 +9,6 @@ interface CoverProps {
 	priority?: boolean;
 }
 
-/** A square, lazily loaded cover image sized by its container. */
 export function Cover({ src, alt, sizes, className, priority }: CoverProps) {
 	return (
 		<div

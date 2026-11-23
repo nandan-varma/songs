@@ -1,6 +1,5 @@
 import Foundation
 
-/// A listener-made playlist. Editorial playlists come from the API and are not stored here.
 public struct LocalPlaylist: Codable, Identifiable, Hashable, Sendable {
     public var id: UUID
     public var name: String

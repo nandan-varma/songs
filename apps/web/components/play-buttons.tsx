@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import type { Track } from "@/lib/models";
 import { usePlayer } from "@/lib/stores/player";
 
-/** Fisher-Yates over a copy, so the source list keeps its order. */
 function shuffled<T>(items: T[]): T[] {
 	const copy = [...items];
 	for (let i = copy.length - 1; i > 0; i--) {

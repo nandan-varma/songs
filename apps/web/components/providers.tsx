@@ -16,8 +16,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			}),
 	);
 
-	// Persisted stores skip automatic hydration so server and first client
-	// render agree; restore them here, then bind the audio engine.
 	useEffect(() => {
 		void usePlayer.persist.rehydrate();
 		void useLibrary.persist.rehydrate();

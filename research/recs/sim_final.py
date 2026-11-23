@@ -3,7 +3,7 @@ from build_feats import *
 F,songs,ids,P=load(); ix={s:i for i,s in enumerate(ids)}; N=len(ids)
 rng0=random.Random(3); PLall=[p for p in P if len(p)>=20]; rng0.shuffle(PLall); PLev=PLall[:150]; evset={tuple(p) for p in PLev}
 Ptrain=[p for p in P if tuple(p) not in evset]
-B=build(F,songs,ids,Ptrain)  # CF + all fitted parts see NO evaluation playlist
+B=build(F,songs,ids,Ptrain)
 print('train playlists',len(Ptrain),'eval',len(PLev))
 print('catalog',N,'playlists',len(P))
 def design(wZ=1,wE=1,wA=0,wT=0):

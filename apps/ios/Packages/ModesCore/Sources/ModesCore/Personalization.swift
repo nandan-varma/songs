@@ -1,6 +1,5 @@
 import Foundation
 
-/// Signals that change the learned profile.
 public enum LearningSignal: String, Codable, Sendable, CaseIterable {
     case completion, partialListen, skip, rejection, favorite, manualPick
 }

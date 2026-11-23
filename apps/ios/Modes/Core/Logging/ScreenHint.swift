@@ -1,7 +1,6 @@
 import UIKit
 import LNPopupUI
 
-/// Cheap "where is the user" description, read from the UIKit hierarchy so no UI file needs to cooperate.
 @MainActor
 enum ScreenHint {
     struct Snapshot: Sendable, Equatable {

@@ -6,7 +6,6 @@ struct ListenerQueueTests {
         QueueItem(song: SongFeatures(id: "\(id)", title: "T\(id)", artist: "A"), why: why)
     }
 
-
     @Test func explicitPicksSurviveRefreshWithoutDuplicates() {
         var queue = ListenerQueue()
         queue.prepend(song(3, why: "Queued"))

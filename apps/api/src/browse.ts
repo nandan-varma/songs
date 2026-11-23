@@ -14,7 +14,6 @@ const trendingSchemas = {
 	playlist: lenientArray(playlistSchema, "trending playlists"),
 };
 
-/** Charts are curated playlists: fetch their songs with `GET /playlists?id={id}`. */
 const chartSchema = z
 	.object({
 		id: z.string(),
@@ -41,7 +40,6 @@ export const browse = new Hono()
 		query(
 			z.object({
 				type: z.enum(["song", "album", "playlist"]),
-				// Upstream silently returns nothing for an empty language.
 				language: z.string().min(1),
 			}),
 		),

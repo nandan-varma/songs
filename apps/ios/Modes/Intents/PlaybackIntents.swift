@@ -9,7 +9,6 @@ enum ModesIntentError: Error, CustomLocalizedStringResourceConvertible {
     }
 }
 
-/// Transport intents for the Action Button and Shortcuts. All run on the main actor because they touch the model.
 struct TogglePlaybackIntent: AudioPlaybackIntent {
     static let title: LocalizedStringResource = "Play or Pause"
     static let description = IntentDescription("Toggles playback.", categoryName: "Playback")

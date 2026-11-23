@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Run every check in parallel and print one line per check, plus the output of failing ones.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 

@@ -1,7 +1,6 @@
 import UIKit
 import SwiftUI
 
-/// Cover art with a quiet placeholder, served from the shared memory + disk image pipeline.
 struct Artwork: View {
     let url: URL?
     var radius: CGFloat = 8

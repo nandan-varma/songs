@@ -1,7 +1,6 @@
-# Downstream check: replicate sim_final.py (leak-free playlist split, sequential ridge learner) with swapped attribute sources.
 import sys,random,json,numpy as np,warnings; warnings.filterwarnings('ignore')
 import os; _HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,os.path.join(_HERE,'..')); sys.path.insert(0,_HERE)
-from build_feats import *      # cwd must be the scratch dir (RECS_WORK; data/ relative paths)
+from build_feats import *
 from sklearn.preprocessing import normalize
 from common import *
 from scipy.stats import spearmanr
@@ -13,7 +12,6 @@ sids,keep,Y,E=targets(); sx={s:i for i,s in enumerate(sids)}
 def load_src(path):
     d=np.load(path,allow_pickle=True).item(); return d
 def attrs_from_arrays(P_,EP_,gmu,gcomps):
-    """P_: (n,11) raw units (voice..electronic, arousal, valence, bpm); returns {sid:{attr:..}} in build_feats scale"""
     out={}
     for i,s in enumerate(sids):
         if not keep[i] or np.isnan(P_[i,0]): continue
@@ -25,12 +23,11 @@ from sklearn.decomposition import PCA
 idx=np.where(keep)[0]; gp=PCA(64,random_state=0).fit(E[idx]); gmu,gcomps=gp.mean_,gp.components_
 T=np.zeros_like(Y); T[:]=Y
 teacher=attrs_from_arrays(Y,E,gmu,gcomps)
-for s in teacher:                # teacher arousal/valence/bpm stay NaN-free only where present
+for s in teacher:
     pass
 stu=np.load(O+f'/oof_{BEST}.npy',allow_pickle=True).item(); student=attrs_from_arrays(stu['P'],stu['EP'],gmu,gcomps)
 dsp=np.load(O+'/dsp_ridge_oof.npy',allow_pickle=True).item(); dsp_a=attrs_from_arrays(dsp['P'],dsp['EP'],gmu,gcomps)
 np.save(O+'/student_attrs.npy',student,allow_pickle=True); np.save(O+'/dsp_attrs.npy',dsp_a,allow_pickle=True)
-# noisy: independent gaussian noise at student RMSE (1x) and 2x, on each attr and emb_pca
 rm=np.sqrt(np.nanmean((stu['P']-Y)**2,0)); rng=np.random.default_rng(7)
 Zt=(stu['EP']-gmu)@gcomps.T-((E-gmu)@gcomps.T); erm=np.sqrt((Zt[idx]**2).mean(0))
 def noisy(mult):
@@ -38,7 +35,6 @@ def noisy(mult):
     return attrs_from_arrays(Pn,En,gmu,gcomps)
 noisy1=noisy(1.0); noisy2=noisy(2.0)
 def variant(src,Fbase=F):
-    """swap attributes in F-like dict; arousal/valence/bpm only where teacher has them (identical coverage)"""
     G={}
     for s in ids:
         f=dict(Fbase[s]); a=src[s]; v=a['voice']; 
@@ -76,14 +72,13 @@ def run(Fm,pl,seed,rounds=10,slate=5,lam=3.0):
     return hist
 REPS=3; rows={}; per={}
 def ev(name,Fm):
-    m=np.array([[np.mean(run(Fm,p,i+1000*r)) for i,p in enumerate(PLev)] for r in range(REPS)]).mean(0)   # per-playlist, avg over seeds
-    m0=np.array([np.mean(run(Fm,p,i)) for i,p in enumerate(PLev)])                                          # harness-identical seeds
+    m=np.array([[np.mean(run(Fm,p,i+1000*r)) for i,p in enumerate(PLev)] for r in range(REPS)]).mean(0)
+    m0=np.array([np.mean(run(Fm,p,i)) for i,p in enumerate(PLev)])
     per[name]=m; rows[name]=(m0.mean(),m0.std()/np.sqrt(len(m0)),m.mean(),m.std()/np.sqrt(len(m))); print(f'{name:44s} harness-seed {m0.mean():.4f}±{m0.std()/np.sqrt(len(m0)):.4f} | 3-seed avg {m.mean():.4f}±{m.std()/np.sqrt(len(m)):.4f}',flush=True)
 ev('NO audio (content+CF+metadata only)',design(Bs['teacher']))
 for wA,wT in ((0.5,0.5),(0.5,1.0),(0.5,0.0),(0.0,0.5)):
     for nm in ('teacher','student','dsp','noisy1x','noisy2x'):
         ev(f'{nm:8s} wA={wA} wT={wT}',design(Bs[nm],wA,wT))
-# mixes: where does the loss come from (A vs attrs)
 ev('student A + teacher attrs (0.5,0.5)',design(Bs['teacher'],0.5,0.5,Aover=Bs['student']['A']))
 ev('teacher A + student attrs (0.5,0.5)',design(Bs['teacher'],0.5,0.5,Tover=Bs['student']['ATTz']))
 base=per['NO audio (content+CF+metadata only)']; tch=per['teacher  wA=0.5 wT=0.5']
@@ -93,7 +88,6 @@ for nm in per:
     d=per[nm]-tch; paired[nm]=(d.mean(),d.std()/np.sqrt(len(d))); 
     print(f'  {nm:44s} {d.mean():+.4f}±{d.std()/np.sqrt(len(d)):.4f}')
 json.dump({'rows':rows,'paired':paired},open(O+'/sim_results.json','w'),indent=1)
-# ---- steering
 def steer(src,name):
     out={}
     s_ids=[s for s in ids if s in src and s in teacher]

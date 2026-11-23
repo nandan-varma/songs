@@ -8,7 +8,6 @@ public enum PlaybackSignal: Sendable {
     case picked
 }
 
-/// The one learned profile. There are no modes; every surface reads the same evidence.
 public struct PersonalizedProfile: Codable, Sendable {
     public var learner: SparseLearner
     public var banned: [String] = []

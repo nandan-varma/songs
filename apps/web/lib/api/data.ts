@@ -11,13 +11,10 @@ import {
 	toTracks,
 } from "./mappers";
 
-/** Page size for search results. */
 const SEARCH_PAGE_SIZE = 20;
-/** Upstream caps a playlist page at 50 songs. */
 const PLAYLIST_PAGE_SIZE = 50;
 const PLAYLIST_MAX_PAGES = 10;
 
-/** What a collection page (album, playlist, artist, song) needs to render. */
 export interface Collection {
 	title: string;
 	subtitle?: string;

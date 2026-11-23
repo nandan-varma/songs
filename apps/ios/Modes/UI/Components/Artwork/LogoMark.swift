@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// The app mark: five bars tracing an "M" waveform with a small dot above the middle one, white on the brand gradient.
 struct LogoMark: View {
     var size: CGFloat = 88
 
@@ -18,7 +17,6 @@ struct LogoMark: View {
                 }
             }
             .overlay {
-                // Middle bar is 0.20 tall, so its top sits 0.10 above centre; the dot floats one gap above that.
                 Circle().fill(.white).frame(width: size * 0.075, height: size * 0.075)
                     .offset(y: -size * (0.10 + 0.056 + 0.0375))
             }

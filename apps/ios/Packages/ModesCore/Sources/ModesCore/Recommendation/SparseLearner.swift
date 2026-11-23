@@ -1,7 +1,5 @@
 import Foundation
 
-/// Diagonal-precision Bayesian linear model over sparse hashed features.
-/// One score is a sparse dot product; uncertainty is a sparse sum, so Thompson sampling is exact and cheap.
 public struct SparseLearner: Codable, Sendable {
     public static let dimension = FeatureHasher.dimension
 
@@ -50,7 +48,6 @@ public struct SparseLearner: Codable, Sendable {
         return total
     }
 
-    /// Gaussian posterior over the score: mean and variance from the diagonal precision.
     public func moments(_ features: SparseFeatures) -> (mean: Float, variance: Float) {
         var mean: Float = 0
         var variance: Float = 0
@@ -72,7 +69,6 @@ public struct SparseLearner: Codable, Sendable {
         return mean + temperature * variance.squareRoot() * gaussian
     }
 
-    /// Positive contribution that best explains a recommendation, for the UI.
     public func explanation(for features: SparseFeatures) -> String? {
         var best: (contribution: Float, label: String)?
         for position in features.indices.indices {

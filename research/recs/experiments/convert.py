@@ -6,7 +6,7 @@ class W(torch.nn.Module):
     def __init__(s,m):
         super().__init__(); s.m=m; s.register_buffer('mu',ck['mu']); s.register_buffer('sd',ck['sd_in'])
         s.register_buffer('ym',torch.tensor(np.r_[ck['ym'],np.zeros(64)],dtype=torch.float32)); s.register_buffer('ys',torch.tensor(np.r_[ck['ys'],np.full(64,ck['zs'])],dtype=torch.float32))
-    def forward(s,x): return s.m(((x[:,0]-s.mu)/s.sd)[:,None])*s.ys+s.ym     # (1,75): 11 attrs (teacher units) + 64 PCA coords (fold-0 basis)
+    def forward(s,x): return s.m(((x[:,0]-s.mu)/s.sd)[:,None])*s.ys+s.ym
 m=net.make(size); m.load_state_dict(ck['sd']); w=W(m).eval()
 mel=np.load(O+'/mel.npy',mmap_mode='r'); x=torch.from_numpy(np.array(mel[:50]).astype(np.float32))[:,None]
 tr=torch.jit.trace(w,x[:1])

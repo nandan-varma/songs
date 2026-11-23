@@ -5,7 +5,7 @@ from sklearn.decomposition import TruncatedSVD,PCA
 from sklearn.utils.extmath import randomized_svd
 def load():
     F={}
-    for pat in ('data/feat_*.npy','data/feat2_*.npy','data/feat3_*.npy'):          # feat2 adds arousal/valence/bpm and wins when both exist
+    for pat in ('data/feat_*.npy','data/feat2_*.npy','data/feat3_*.npy'):
         for f in glob.glob(pat): F.update(np.load(f,allow_pickle=True).item())
     pls=[json.loads(l) for fn in ('data/playlists.jsonl','data/playlists_instr.jsonl','data/playlists_fresh.jsonl') if os.path.exists(fn) for l in open(fn)]
     songs={}
@@ -64,7 +64,7 @@ def build(F,songs,ids,P,k=64):
         return [m.get('_hot',0.0),recent]+[1.0 if (m.get('lang') or '')==l else 0.0 for l in LANGS]
     names+=['hot','recent']+['lang:'+l for l in LANGS]
     ATT=np.array([g(s)+extra(s) for s in ids],dtype=np.float64)
-    have_av=np.array([('arousal' in F[s]) for s in ids])        # songs analysed before arousal existed stay neutral on those columns
+    have_av=np.array([('arousal' in F[s]) for s in ids])
     mu=ATT.mean(0); sd=ATT.std(0)+1e-9
     if have_av.any():
         for c in (8,9,10): mu[c]=ATT[have_av,c].mean(); sd[c]=ATT[have_av,c].std()+1e-9

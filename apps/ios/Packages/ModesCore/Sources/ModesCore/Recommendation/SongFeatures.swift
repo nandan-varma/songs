@@ -1,6 +1,5 @@
 import Foundation
 
-/// Everything the on-device model knows about one song before it is played.
 public struct SongFeatures: Codable, Hashable, Sendable {
     public var id: String
     public var title: String
@@ -37,7 +36,6 @@ public struct SongFeatures: Codable, Hashable, Sendable {
         self.image = image
     }
 
-    /// First credited artist, used for the no-repeat-artist rule.
     public var primaryArtist: String {
         artist.split(separator: ",").first.map { $0.trimmingCharacters(in: .whitespaces) } ?? artist
     }

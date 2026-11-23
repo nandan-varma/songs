@@ -1,9 +1,8 @@
-"""Shared machinery for the stateless-feature experiment (offline, headless)."""
 import zlib, os, sys, math, json, random, collections, re, pickle, time, numpy as np, scipy.sparse as sp
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
-S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))
 os.makedirs(S, exist_ok=True)
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')); sys.path.insert(0, os.path.dirname(__file__))
 os.chdir(S)
@@ -14,7 +13,7 @@ OUT = S + '/exp1'
 F, songs, ids, P = bf.load(); N = len(ids); ix = {s: i for i, s in enumerate(ids)}
 PI = [[ix[s] for s in p] for p in P]
 _rng = random.Random(11); _perm = list(range(len(P))); _rng.shuffle(_perm)
-FOLD = {pi: k % 4 for k, pi in enumerate(_perm)}            # fold 0 = dev, 1..3 = eval reps
+FOLD = {pi: k % 4 for k, pi in enumerate(_perm)}
 S_ = [songs[i] for i in ids]
 LANG = [s.get('lang') or '' for s in S_]
 ART = [[a for a, _ in s['artists'] + s['feat']] for s in S_]
@@ -58,7 +57,6 @@ def make_ctx(fold, scen, seed=None):
     c.ATTz_nohot = c.ATTz.copy(); c.ATTz_nohot[:, 11] = 0
     c.Cw = C
     c.hasher = hf.Hasher()
-    # eval playlists
     c.ev = [k for k in range(len(PI)) if FOLD[k] == fold]
     return c
 
@@ -66,14 +64,13 @@ def lang_of(pl):
     cnt = collections.Counter(LANG[i] for i in pl); l, n = cnt.most_common(1)[0]
     return l if n >= 0.5 * len(pl) else 'mixed'
 
-# ---------- design builders
 def nrm(X): return X / np.maximum(np.linalg.norm(X, axis=1, keepdims=True), 1e-9)
 AUDIO = list(range(0, 11)); NONAUD = list(range(11, 25)); ALLC = list(range(25))
 def att_block(c, cols, wT, noise=0.0, seed=0, nohot=False):
     Z = (c.ATTz_nohot if nohot else c.ATTz)[:, cols].copy()
     if noise:
         rng = np.random.default_rng(seed); au = [j for j, cc in enumerate(cols) if cc < 11]
-        Z[:, au] += noise * rng.standard_normal((N, len(au))); Z = np.clip(Z, -3, 3)   # attrs are z-scored, so std=1
+        Z[:, au] += noise * rng.standard_normal((N, len(au))); Z = np.clip(Z, -3, 3)
     return wT / 5.0 * Z
 
 def dense_design(c, wZ=0, wE=0, wA=0, hashed=None, att=None):
@@ -98,7 +95,6 @@ def hashed_dense(c, cfg, idf=True):
     Xs = hashed_sparse(c, cfg, idf)
     return hf.dense_features(Xs, cfg)
 
-# ---------- items
 def p1_items(c, variant, draws=2, seedn=5, minT=3, cap=None):
     items = []
     for k in c.ev:
@@ -117,7 +113,7 @@ def p1_items(c, variant, draws=2, seedn=5, minT=3, cap=None):
             if variant == 'all': tg = [i for i in pl if not ex[i]]
             else:
                 tg = [i for i in pl if c.cold[i] and not ex[i]]
-                ex = ex | np.isin(np.arange(N), [i for i in pl if c.warm[i]])   # other warm members: ignored
+                ex = ex | np.isin(np.arange(N), [i for i in pl if c.warm[i]])
             if len(tg) < minT: continue
             items.append(dict(sd=sd, ex=ex, tg=np.array(tg), lang=lang_of(pl), k=k))
     if cap and len(items) > cap: items = random.Random(5).sample(items, cap)
@@ -182,7 +178,6 @@ def p2_run(X, it, seed, lam=3.0, kind='dense', rounds=10, slate=5, tau=0.0):
     return np.mean(hist), np.mean(hist[5:])
 
 def p2_eval(designs, items, seed0=0):
-    """designs: {name:(kind,X,lam[,tau])}. Returns {name:(mean_arr,late_arr)}."""
     res = {n: ([], []) for n in designs}
     for j, it in enumerate(items):
         for n, d in designs.items():

@@ -6,10 +6,8 @@ const USER_AGENT =
 
 type Params = Record<string, string | number>;
 
-/** `android` exposes a few calls the web context lacks (song recommendations). */
 type Context = "web6dot0" | "android";
 
-/** Calls JioSaavn's private `api.php` and returns the parsed JSON. Callers validate its shape. */
 export async function jiosaavn(
 	call: string,
 	params: Params = {},

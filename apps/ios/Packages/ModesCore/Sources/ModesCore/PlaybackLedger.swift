@@ -1,6 +1,5 @@
 import Foundation
 
-/// Playback accounting: one generation owns a song, it closes once, and only started audio counts as heard.
 public struct PlaybackLedger: Sendable, Equatable {
     public private(set) var generation = 0
     public private(set) var closed = true

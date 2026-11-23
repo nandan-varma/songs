@@ -32,7 +32,6 @@ const songSchema = z
 			label: maybe(text),
 			duration: numeric,
 			release_date: maybe(z.string()),
-			// Absent on the leaner song shape embedded in an artist's `singles`.
 			has_lyrics: z.string().default("false"),
 			lyrics_id: maybe(z.string()),
 			copyright_text: maybe(text),
@@ -77,7 +76,6 @@ const songSchema = z
 		};
 	});
 
-/** A list of songs in which a malformed entry is skipped instead of failing the whole list. */
 export const songList = (resource: string) =>
 	lenientArray(songSchema, resource);
 
@@ -128,7 +126,6 @@ export const songs = new Hono()
 	.get("/:id/suggestions", query(z.object({ limit: count(10) })), async (c) => {
 		const id = c.req.param("id");
 		const { limit } = c.req.valid("query");
-		// `reco.getreco` is android-only and keyed by the requested song id; it is often empty.
 		const data = await jiosaavn("reco.getreco", { pid: id }, "android");
 		const recommended = parseUpstream(
 			z.record(z.string(), songList("reco.getreco")),

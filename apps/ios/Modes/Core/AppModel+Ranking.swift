@@ -1,7 +1,6 @@
 import Foundation
 import ModesCore
 
-/// Candidates, the For You slate and the automatic part of the queue. Ranking runs on `RankingWorker`, off the main actor.
 extension AppModel {
     func invalidateRanking() {
         noteTasteChange()
@@ -16,9 +15,6 @@ extension AppModel {
         homeVersion += 1
     }
 
-    // MARK: Candidates
-
-    /// Live songs: trending in the chosen languages plus songs similar to what was recently played or liked.
     private func candidates() async -> [RankedCandidate] {
         if !pool.isEmpty, Date().timeIntervalSince(poolAt) < 300 { return pool }
         var seeds: [String] = []
@@ -42,8 +38,6 @@ extension AppModel {
     }
 
     private func queueItem(_ ranked: RankedSong) -> QueueItem { QueueItem(song: ranked.song, why: ranked.why) }
-
-    // MARK: For You
 
     func loadHomeSlate() async {
         guard homeCachedTaste != tasteRevision else { return }
@@ -70,7 +64,6 @@ extension AppModel {
         await homeTask?.value
     }
 
-    /// Pull to refresh and the retry button: fetches fresh candidates and re-ranks For You.
     func refreshHome() async {
         homeCachedTaste = -1
         poolAt = .distantPast
@@ -91,8 +84,6 @@ extension AppModel {
         guard snapshot.learner.observations == profile.learner.observations else { return }
         modelStats = stats
     }
-
-    // MARK: Up next
 
     private func upNextRequest(count: Int, excluded: Set<String>, previousArtist: String,
                                candidates: [RankedCandidate]) -> PersonalizedRankingRequest {
@@ -124,7 +115,6 @@ extension AppModel {
         await work.value
     }
 
-    /// Tops the automatic part of the queue back up to six songs.
     func refill() async {
         let appendedIDs = Set(listenerQueue.appended.map(\.id))
         let auto = upNext.filter { !appendedIDs.contains($0.id) }

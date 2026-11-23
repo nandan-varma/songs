@@ -1,7 +1,6 @@
 import ModesCore
 import SwiftUI
 
-/// Language-aware hot songs, shown before the listener types a query.
 struct SearchBrowseView: View {
     @Environment(AppModel.self) private var model
     @State private var sections: [HotSection] = []

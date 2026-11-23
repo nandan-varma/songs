@@ -1,5 +1,3 @@
-/** Client-side models: the slice of API data the UI renders and persists. */
-
 interface ArtistRef {
 	id: string;
 	name: string;

@@ -1,11 +1,3 @@
-/**
- * DES-ECB decryption with PKCS#7 padding.
- *
- * Needed only for JioSaavn's media URLs. Node's OpenSSL 3 ships DES in the legacy provider, which is not
- * loadable on Vercel (`createDecipheriv("des-ecb")` throws "unsupported"), so this is a minimal bit-level
- * implementation. Speed is irrelevant: it decrypts a ~100 byte URL per song.
- */
-
 type Bits = readonly number[];
 
 const IP = [
@@ -143,7 +135,6 @@ function decryptBlock(
 	return toBytes(permute([...right, ...left], FP));
 }
 
-/** Decrypts DES-ECB ciphertext and strips PKCS#7 padding. Throws if the input is malformed. */
 export function desEcbDecrypt(
 	key: Uint8Array,
 	ciphertext: Uint8Array,

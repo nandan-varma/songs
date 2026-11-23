@@ -2,7 +2,6 @@ import { toast } from "sonner";
 import { useLibrary } from "@/lib/stores/library";
 import { selectCurrentTrack, useClock, usePlayer } from "@/lib/stores/player";
 
-/** Within this many seconds of the start, "previous" goes to the prior track instead of restarting. */
 const RESTART_THRESHOLD = 3;
 const SEEK_STEP = 10;
 
@@ -20,11 +19,6 @@ export function skipPrevious() {
 	usePlayer.getState().previous();
 }
 
-/**
- * Binds one HTMLAudioElement to the player store and the Media Session API.
- * The store holds intent (queue, playing); the element is driven from it, and
- * element events (ended, OS media keys, errors) write back into the store.
- */
 export function startEngine(): () => void {
 	const element = new Audio();
 	element.preload = "metadata";

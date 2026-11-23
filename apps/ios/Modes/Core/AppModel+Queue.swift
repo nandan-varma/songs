@@ -1,7 +1,6 @@
 import Foundation
 import ModesCore
 
-/// Picking songs from lists and shaping the queue: play now, play next, play last.
 extension AppModel {
     func playSong(_ source: SongReference, in context: [SongReference] = []) {
         let item = songItem(for: source)
@@ -20,7 +19,6 @@ extension AppModel {
         Task { await start(item, picked: true) }
     }
 
-    /// The songs of `context` that follow `item`, which is what a tapped list keeps playing.
     private func queueItems(after item: QueueItem, in context: [SongReference]) -> [QueueItem] {
         var seen = Set([item.id])
         var reached = false
@@ -34,7 +32,6 @@ extension AppModel {
         return out
     }
 
-    /// Resolves a song before it replaces what is playing, so a network failure leaves the current song alone.
     private func resolveThenPlay(_ item: QueueItem, after context: [SongReference]) {
         AppLog.info("library", "resolve then play \(item.id)")
         Task {
@@ -95,7 +92,6 @@ extension AppModel {
         AppLog.info("queue", "listener queued \(queued.id), last \(last)")
     }
 
-    /// Resolves the streams of the next few songs and warms their artwork so a skip starts at once.
     func prefetch() {
         warmArt(for: upNext.first); warmArt(for: history.last)
         let ids = upNext.prefix(3).map(\.id).filter { resolved[$0] == nil && !resolvingIDs.contains($0) }
@@ -104,7 +100,7 @@ extension AppModel {
         Task {
             defer { resolvingIDs.subtract(ids) }
             let highQuality = settings.highQuality
-            // One id at a time, so a dead song cannot stop the others from being prepared.
+
             await withTaskGroup(of: [String: Resolved].self) { group in
                 for id in ids {
                     group.addTask {

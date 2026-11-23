@@ -2,16 +2,10 @@ import Foundation
 import OSLog
 import ModesCore
 
-/// One place for diagnostics.
-///
-/// Every record goes to (1) the unified log (subsystem `com.nandanvarma.modes`), (2) `Documents/logs/*.jsonl` as one JSON
-/// object per line (see `LogWriter` and apps/ios/README.md "Dev loop"), and (3) stdout when the process is launched with
-/// `MODES_LOG_STDOUT=1`, so `devicectl ... launch --console` shows everything live. `debug` records are only produced when
-/// `MODES_LOG_DEBUG=1` or in DEBUG builds. Calls never block: file IO happens on one background queue.
 enum AppLog {
     static let subsystem = "com.nandanvarma.modes"
     static let writer = LogWriter()
-    /// Spans are also signposts (category "perf"), so they appear as intervals in Instruments' os_signpost / Points of Interest tracks.
+
     static let signposter = OSSignposter(subsystem: subsystem, category: "perf")
 
     private static let echo = ProcessInfo.processInfo.environment["MODES_LOG_STDOUT"] != nil
@@ -34,7 +28,6 @@ enum AppLog {
     static func warn(_ cat: String, _ msg: @autoclosure () -> String, _ kv: [String: any Sendable]? = nil) { emit(.warn, cat, msg(), kv) }
     static func error(_ cat: String, _ msg: @autoclosure () -> String, _ kv: [String: any Sendable]? = nil) { emit(.error, cat, msg(), kv) }
 
-    /// A numeric measurement (timing, counter). Written with level "metric": msg is the name, kv has value/unit/tags.
     static func metric(_ name: String, _ value: Double, unit: String? = nil, tags: [String: String]? = nil) {
         var kv: [String: any Sendable] = ["value": value]
         if let unit { kv["unit"] = unit }
@@ -42,7 +35,6 @@ enum AppLog {
         emit(.metric, "metric", name, kv)
     }
 
-    /// Starts a timer; `end()` logs a metric `<name>` in milliseconds. Cheap value type, safe to capture anywhere.
     static func span(_ name: String, tags: [String: String]? = nil) -> Span { Span(name: name, tags: tags) }
 
     struct Span: Sendable {
@@ -57,7 +49,6 @@ enum AppLog {
             signpost = AppLog.signposter.beginInterval("span", id: AppLog.signposter.makeSignpostID(), "\(name, privacy: .public)")
         }
 
-        /// Milliseconds since the span started, without logging.
         var elapsedMs: Double {
             let d = ContinuousClock.now - start
             return Double(d.components.seconds) * 1000 + Double(d.components.attoseconds) / 1e15

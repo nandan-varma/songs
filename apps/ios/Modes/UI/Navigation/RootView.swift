@@ -16,8 +16,7 @@ struct MainTabs: View {
     @Environment(AppModel.self) private var model
     @State private var tab: AppTab = .home
     @State private var open = false
-    /// The bar is presented once the first real song exists, not when the session flips on. Presenting earlier shows a bar
-    /// whose button hosting is still being created, and the bar can lay it out before it has a size.
+
     @State private var barShown = false
 
     var body: some View {
@@ -35,7 +34,7 @@ struct MainTabs: View {
         .popupBarProgressViewStyle(.none)
         .popupBarMarqueeScrollEnabled()
         .onChange(of: model.hasSession, initial: true) { _, active in barShown = active && model.current != nil }
-        .onChange(of: model.current?.id) { if model.hasSession, model.current != nil { barShown = true } }   // a brief nil keeps the bar
+        .onChange(of: model.current?.id) { if model.hasSession, model.current != nil { barShown = true } }
         .overlay(alignment: .bottom) { ToastView(text: open ? nil : model.toast, allowsUndo: !open).padding(.bottom, 150) }
     }
 }

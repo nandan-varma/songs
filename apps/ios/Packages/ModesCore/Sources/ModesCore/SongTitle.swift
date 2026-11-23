@@ -1,13 +1,8 @@
 import Foundation
 
-/// A song title split into what to show as the title and, separately, the film or album it belongs to.
-///
-/// JioSaavn titles carry marketing noise: `Naacho Naacho (From "Rrr")`, `Kesariya (From &quot;Brahmastra&quot;)`,
-/// `... - Original Motion Picture Soundtrack`. That noise is removed from the title and the film name is kept as
-/// `context`. Meaningful suffixes such as `(Remix)`, `(Lo-fi)`, `(feat. X)` or `- Slowed` stay.
 public struct SongTitle: Equatable, Sendable {
     public let title: String
-    /// The film or album, when it adds information (nil when it only repeats the title).
+
     public let context: String?
 
     public init(title: String, context: String? = nil) {
@@ -15,8 +10,6 @@ public struct SongTitle: Equatable, Sendable {
         self.context = context
     }
 
-    /// Parses a raw title. `album` is the fallback source of `context` when the title does not name a film.
-    /// The result's title is never empty and never longer than `raw`.
     public static func parse(_ raw: String, album: String? = nil) -> SongTitle {
         let cleanedRaw = DisplayText.clean(raw)
         let stripped = strip(cleanedRaw)
@@ -32,8 +25,6 @@ public struct SongTitle: Equatable, Sendable {
         }
         return SongTitle(title: DisplayText.typographic(title), context: context.map(DisplayText.typographic))
     }
-
-    // MARK: Stripping
 
     private struct Stripped { var text: String; var film: String? }
 
@@ -51,11 +42,11 @@ public struct SongTitle: Equatable, Sendable {
                 switch classify(inner) {
                 case .from(let name, let rest):
                     if film == nil { film = name }
-                    if !rest.isEmpty { out += " (\(rest))" }       // `(From “X” / Sad Version)` keeps "(Sad Version)"
+                    if !rest.isEmpty { out += " (\(rest))" }
                 case .noise:
                     break
                 case .keep:
-                    // A kept group may still hold a from-clause: `(Telugu (From "U Turn"))`.
+
                     let nested = strip(inner)
                     if film == nil { film = nested.film }
                     let text = tidy(nested.text)
@@ -69,7 +60,6 @@ public struct SongTitle: Equatable, Sendable {
         }
         out = out.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " ")
 
-        // Trailing " - From "X"" and " - Original Motion Picture Soundtrack", innermost-last, until neither applies.
         while let range = out.range(of: " - ", options: .backwards) ?? out.range(of: " – ", options: .backwards) ?? out.range(of: " — ", options: .backwards) {
             let tail = out[range.upperBound...].trimmingCharacters(in: .whitespaces)
             if isSoundtrackNoise(tail) {
@@ -84,7 +74,6 @@ public struct SongTitle: Equatable, Sendable {
         return Stripped(text: out, film: film)
     }
 
-    /// Index of the bracket that closes the one at `start`, counting nesting, or nil when unbalanced.
     private static func closing(_ chars: [Character], from start: Int) -> Int? {
         var depth = 0
         for i in start..<chars.count {
@@ -105,8 +94,6 @@ public struct SongTitle: Equatable, Sendable {
         return .keep
     }
 
-    /// `From "X"`, `From “X”`, `From 'X'`, `From X`, `From the film X`: the film name plus anything after its closing quote
-    /// (`/ Sad Version`), or nil when `s` is not a from-clause. Doubled and mismatched quotes from bad metadata are tolerated.
     private static func fromName(_ s: String) -> (name: String, rest: String)? {
         let normalized = straightQuotes(s)
         let lower = normalized.lowercased()
@@ -146,9 +133,6 @@ public struct SongTitle: Equatable, Sendable {
         return out
     }
 
-    // MARK: Tidying
-
-    /// Removes separators left dangling by the removed pieces and empty brackets.
     private static func tidy(_ s: String) -> String {
         var t = s.replacingOccurrences(of: "()", with: "").replacingOccurrences(of: "[]", with: "")
         t = t.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " ")
@@ -156,7 +140,6 @@ public struct SongTitle: Equatable, Sendable {
         return t.trimmingCharacters(in: junk)
     }
 
-    /// A film name made presentable: noise suffixes removed, quotes tidied, nil when nothing is left.
     private static func normalizedContext(_ name: String) -> String? {
         let inner = strip(DisplayText.clean(name))
         let result = tidy(inner.text)
@@ -169,7 +152,7 @@ public struct SongTitle: Equatable, Sendable {
         guard candidate.count >= 2 else { return nil }
         let a = DisplayText.fold(candidate), t = DisplayText.fold(title)
         if a == t { return nil }
-        if a.count >= 3, t.count >= 3, a.contains(t) || t.contains(a) { return nil }   // "Song - Singer" albums just repeat the title
+        if a.count >= 3, t.count >= 3, a.contains(t) || t.contains(a) { return nil }
         return candidate
     }
 }

@@ -42,7 +42,6 @@ export const playlistSchema = z
 		playCount: playlist.play_count,
 		language: playlist.language,
 		explicitContent: playlist.explicit_content,
-		// The playlist's real total, independent of which page of songs came back.
 		songCount: playlist.list_count,
 		url: playlist.perma_url,
 		image: imageLinks(playlist.image),
@@ -60,7 +59,6 @@ export const playlists = new Hono().get(
 	),
 	async (c) => {
 		const q = c.req.valid("query");
-		// Upstream pages are 1-indexed; ours are 0-indexed like every other list here.
 		const paging = { n: q.limit, p: q.page + 1 };
 		const call = "id" in q ? "playlist.getDetails" : "webapi.get";
 		const data = await jiosaavn(

@@ -1,7 +1,6 @@
 import ModesCore
 import SwiftUI
 
-/// "Sleep Timer" submenu for the player's "…" menu. The checkmark follows `model.sleepTimer`.
 struct SleepTimerMenu: View {
     @Environment(AppModel.self) private var model
 
@@ -22,8 +21,6 @@ struct SleepTimerMenu: View {
     }
 }
 
-/// A quiet moon and remaining time beside "Playing from". Its own view with a 30 s timeline, so the clock never
-/// invalidates the rest of the player; minutes are rounded up, so "1 min" shows until the very end.
 struct SleepTimerBadge: View {
     @Environment(AppModel.self) private var model
 

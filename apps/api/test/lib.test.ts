@@ -20,7 +20,6 @@ describe("audioLinks", () => {
 			"160kbps",
 			"320kbps",
 		]);
-		// Verified against the live CDN: this url served audio.
 		expect(links[3]?.url).toBe(
 			"https://aac.saavncdn.com/665/7790c3b9097592113008eaf1031d6e57_160.mp4",
 		);

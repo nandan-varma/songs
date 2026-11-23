@@ -22,10 +22,8 @@ p('## 1. Main grid: random 25% of songs cold (3 folds)')
 T=main_table('rand0.25','full',title='All configurations')
 main=['F0 full [Z,E,.75A,ATT]','F1 Z only (fit on warm)','F2 Z+ATT (no E)','F3s sparse diag b15','F4 F3s+ATT teacher audio','F5 F3s+nonaudio(recent,lang)','F6 F3s+ATT noisy audio 0.5sd','F4h F3s+ATT (hot leak)','F5h F3s+nonaudio (hot leak)','F0h full (hot leak)']
 ret_table(T,main[1:],main[0],'Retention vs F0 (no-hot-leak F0)')
-# extras
 p('\n## 2. Hybrid / learner check (rand 25%)')
 main_table('rand0.25','extra',title='Hybrid designs (not stateless: contain Z/E)')
-# scenarios
 p('\n## 3. Cold share / new-release scenarios (lite grid, 3 folds)')
 sel=['F0 full [Z,E,.75A,ATT]','F1 Z only (fit on warm)','F2 Z+ATT (no E)','F3s sparse diag b15','F4 F3s+ATT teacher audio','F5 F3s+nonaudio(recent,lang)','F6 F3s+ATT noisy audio 0.5sd']
 import numpy as np
@@ -33,7 +31,6 @@ sys.path.insert(0,'.')
 for sc,desc in [('rand0.1','10% of songs cold'),('rand0.25','25% cold'),('rand0.5','50% cold'),('rand0.75','75% cold'),('recent12','songs released in the last 12 months are cold (1503 songs, 15%)'),('recent24','last 24 months cold (2257, 22%)'),('newartist0.25','25% of songs cold, ALL songs of the chosen artists (debut artists)')]:
     lv='full' if sc=='rand0.25' else 'lite'
     main_table(sc,lv,names=sel,title=desc)
-# language
 p('\n## 4. Per-language (playlists whose majority language is X; rand 25%)')
 for lang in ('hindi','english','telugu','tamil','punjabi'):
     rows=[]

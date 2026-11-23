@@ -2,10 +2,6 @@ import Foundation
 import QuartzCore
 import UIKit
 
-/// Frame-pacing monitor for performance work. Runs only when `MODES_LOG_DEBUG=1` or `MODES_CAPTURE=1`, so shipping builds
-/// pay nothing. A `CADisplayLink` on the main run loop (common modes, so scrolling is measured) compares successive
-/// frame timestamps; a gap over 33 ms is a hitch and is logged as metric `hitch_ms` tagged with the visible screen.
-/// Every 30 s a `frame_summary` record gives frames, hitches over 33 ms and 100 ms, and the worst gap.
 @MainActor
 final class HitchMonitor: NSObject {
     static let shared = HitchMonitor()
@@ -27,7 +23,6 @@ final class HitchMonitor: NSObject {
         link = l
     }
 
-    /// Frames stop while the app is inactive; the first gap afterwards is not a hitch.
     func reset() { lastTimestamp = 0 }
 
     @objc private func tick(_ l: CADisplayLink) {

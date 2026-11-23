@@ -1,7 +1,6 @@
 import ModesCore
 import SwiftUI
 
-/// One row and one action set for discovery, search, editorial categories, Library and Up Next.
 struct SongListRow: View {
     @Environment(AppModel.self) private var model
     @Environment(\.layoutDirection) private var layoutDirection
@@ -13,7 +12,7 @@ struct SongListRow: View {
     @State private var addingToPlaylist = false
 
     let source: SongReference
-    /// The list this row belongs to; a tap continues through it.
+
     var context: [SongReference] = []
     var number: Int? = nil
     var detail: String? = nil

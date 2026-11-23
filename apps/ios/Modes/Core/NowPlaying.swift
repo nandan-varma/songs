@@ -1,8 +1,6 @@
 import MediaPlayer
 import UIKit
 
-/// Owns everything the system shows outside the app: lock screen, Control Center, headphones, CarPlay.
-/// Remote command handlers are registered exactly once and hop to the main actor, because the system may call them on any thread.
 @MainActor
 final class NowPlaying {
     struct Actions {
@@ -26,7 +24,6 @@ final class NowPlaying {
     private var info: [String: Any] = [:]
     private var artwork: MPMediaItemArtwork?
 
-    /// Registers the remote commands. Calling it again is a no-op, so handlers never stack up.
     func install(_ actions: Actions) {
         guard !installed else { return }
         installed = true
@@ -69,7 +66,6 @@ final class NowPlaying {
         setActive(false)
     }
 
-    /// A new song: replaces the whole info dictionary so the previous cover and timings never linger.
     func begin(_ track: Track, duration: Double) {
         artwork = nil
         info = [
@@ -87,7 +83,6 @@ final class NowPlaying {
         setActive(true)
     }
 
-    /// Call on play, pause, seek and when the duration becomes known. The system extrapolates between calls.
     func sync(elapsed: Double, duration: Double, playing: Bool) {
         guard !info.isEmpty else { return }
         info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = max(0, elapsed)
@@ -97,7 +92,6 @@ final class NowPlaying {
         publish(state: playing ? .playing : .paused)
     }
 
-    /// The cover loads after the song starts, so it is attached whenever it arrives.
     func setArtwork(_ image: UIImage?) {
         guard !info.isEmpty else { return }
         if let image {
@@ -132,15 +126,13 @@ final class NowPlaying {
         rc.playCommand.isEnabled = on
         rc.pauseCommand.isEnabled = on
         rc.togglePlayPauseCommand.isEnabled = on
-        rc.nextTrackCommand.isEnabled = on          // there is always another song: the recommender refills the queue
-        rc.previousTrackCommand.isEnabled = on      // restarts the song when there is no history
+        rc.nextTrackCommand.isEnabled = on
+        rc.previousTrackCommand.isEnabled = on
         rc.likeCommand.isEnabled = on
         rc.dislikeCommand.isEnabled = on
         if !on { rc.changePlaybackPositionCommand.isEnabled = false }
     }
 
-    // Built in a nonisolated context: the system calls this handler on a background queue, and a closure that
-    // inherits main-actor isolation would trap there.
     nonisolated private static func makeArtwork(_ image: UIImage) -> MPMediaItemArtwork {
         MPMediaItemArtwork(boundsSize: image.size) { _ in image }
     }

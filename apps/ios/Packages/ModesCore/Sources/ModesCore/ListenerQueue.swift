@@ -1,12 +1,11 @@
 import Foundation
 
-/// Explicit listener picks survive recommendation refreshes until they start playing.
 public struct ListenerQueue: Sendable {
     public private(set) var items: [QueueItem] = []
-    /// Songs the listener put after the recommendations.
+
     public private(set) var appended: [QueueItem] = []
     public private(set) var revision = 0
-    /// Bumped only when the whole queue is replaced, so async resolves survive unrelated queue edits.
+
     public private(set) var clearGeneration = 0
     private var nextPosition = 0
     private var positions: [String: Int] = [:]
@@ -48,7 +47,6 @@ public struct ListenerQueue: Sendable {
         items.removeAll { $0.id == id }
         appended.removeAll { $0.id == id }
         revision += 1
-        // Retain the last request position until clear(), so an older network response cannot reinsert a played song.
     }
 
     public mutating func clear() {
@@ -59,7 +57,6 @@ public struct ListenerQueue: Sendable {
         clearGeneration += 1
     }
 
-    /// Replaces the pinned list in order. Later Play next picks reserve higher positions.
     public mutating func replacePins(with newItems: [QueueItem]) {
         items = []
         appended = []

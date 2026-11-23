@@ -1,4 +1,3 @@
-"""Prioritised, single-threaded audio analysis: hot songs first, then other fresh songs, then instrumental picks."""
 import os, sys, json, glob
 for k in ('TF_NUM_INTRAOP_THREADS', 'TF_NUM_INTEROP_THREADS', 'OMP_NUM_THREADS'): os.environ[k] = '1'
 import numpy as np

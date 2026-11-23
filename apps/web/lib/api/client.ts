@@ -7,7 +7,6 @@ const API_URL =
 		? "https://saavn-api.nandanvarma.com"
 		: "http://localhost:3001");
 
-/** Upstream data changes slowly; let Next reuse server-side responses for a few minutes. */
 const REVALIDATE_SECONDS = 300;
 
 export const api = hc<AppType>(API_URL, {
@@ -31,10 +30,8 @@ type Envelope =
 
 type Request = { status: number; json(): Promise<Envelope> };
 
-/** The `data` payload of a successful response. */
 export type Payload<T> = T extends { success: true; data: infer D } ? D : never;
 
-/** Unwraps the `{ success, data }` envelope, throwing an `ApiError` on failure. */
 export async function unwrap<R extends Request>(
 	request: Promise<R>,
 ): Promise<Payload<Awaited<ReturnType<R["json"]>>>> {

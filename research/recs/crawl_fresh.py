@@ -1,4 +1,3 @@
-"""What people are listening to right now: current charts, trending, new releases and top playlists per language."""
 import json, os, time, urllib.request, urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/134.0.0.0 Safari/537.36"

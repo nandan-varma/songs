@@ -10,7 +10,6 @@ export type SongWire = Data<(typeof api.songs)[":id"]>[number];
 export type AlbumWire = Data<typeof api.albums>;
 export type PlaylistWire = Data<typeof api.playlists>;
 
-/** `/trending` answers with one of three list shapes depending on `type`. */
 export type TrendingItem = Data<typeof api.trending>[number];
 
 export const isSong = (item: TrendingItem): item is SongWire =>
@@ -24,13 +23,11 @@ interface Link {
 	url: string;
 }
 
-/** Links come ordered from smallest to largest, so the last is the best. */
 const best = (links: Link[]) => links.at(-1)?.url ?? "";
 
 const joinNames = (people: { name: string }[]) =>
 	people.map((person) => person.name).join(", ");
 
-/** A song without an audio link cannot be played, so it has no track. */
 export function toTrack(song: SongWire): Track | null {
 	const audioUrl = best(song.downloadUrl);
 	if (!audioUrl) return null;

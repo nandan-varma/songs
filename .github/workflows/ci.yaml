@@ -17,7 +17,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      # Version comes from the "packageManager" field in package.json.
       - name: Set up pnpm
         uses: pnpm/action-setup@v6
 

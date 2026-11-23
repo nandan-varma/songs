@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Presentation preferences live in UserDefaults, separate from the learned profile state.
 enum SongSwipeAction: String, CaseIterable, Identifiable {
     case favorite, playNext, playNow, none
     var id: Self { self }

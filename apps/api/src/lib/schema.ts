@@ -2,26 +2,18 @@ import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { decodeEntities } from "./html";
 
-/** A string with HTML entities decoded, so clients never need to. */
 export const text = z.string().transform(decodeEntities);
 
-/** Upstream omits fields or sends `null` interchangeably; clients see `null` either way. */
 export const maybe = <S extends z.ZodType>(schema: S) =>
 	schema.nullish().transform((value): z.output<S> | null => value ?? null);
 
-/** JioSaavn sends numbers as strings. */
 export const numeric = z
 	.string()
 	.nullish()
 	.transform((value) => (value ? Number(value) : null));
 
-/** JioSaavn sends booleans as `"1"` / `"0"`. */
 export const flag = z.string().transform((value) => value === "1");
 
-/**
- * Parses each entry on its own and drops the ones that fail, so one malformed song never fails a batch.
- * Upstream sends `""` (or omits the key) for an empty list, which also yields `[]`.
- */
 export const lenientArray = <S extends z.ZodType>(item: S, resource: string) =>
 	z
 		.unknown()
@@ -48,7 +40,6 @@ function describe(error: z.ZodError): string {
 		.join("; ");
 }
 
-/** Validates a whole upstream payload. A shape mismatch is a 502: the upstream changed, not the caller. */
 export function parseUpstream<S extends z.ZodType>(
 	schema: S,
 	data: unknown,

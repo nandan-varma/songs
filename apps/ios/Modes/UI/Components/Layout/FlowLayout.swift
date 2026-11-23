@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Wraps its children onto as many lines as needed.
 struct FlowLayout: Layout {
     var spacing: CGFloat = 10
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {

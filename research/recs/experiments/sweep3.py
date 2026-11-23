@@ -9,7 +9,6 @@ def score(cfg,idf=True,lam=.3):
 w2=json.load(open(OUT+'/best_w2.json'))
 for lam in (.03,.1,.3):
     print('idf lam',lam,np.round(score(mk(w2),True,lam),4),flush=True)
-# no-idf search
 w=dict(a=.5,m=.25,lb=.25,lg=.5,y=.25,d=.5,al=.5,x=0,w=.25); best=sum(score(mk(w),False)); print('noidf start',best,flush=True)
 for rnd in range(2):
   for t in ['a','m','al','lb','lg','y','d','x','w']:

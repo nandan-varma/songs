@@ -1,8 +1,6 @@
 import Foundation
 import ModesCore
 
-/// Raw shapes returned by the API, as little of them as the app reads. Only genuinely nullable fields are optional.
-/// Each payload maps itself into the value types in `APIModels.swift`.
 extension SaavnAPI {
     struct Envelope<T: Decodable>: Decodable { let data: T? }
     struct Results<T: Decodable>: Decodable { let results: [T]? }
@@ -80,15 +78,11 @@ extension SaavnAPI {
     }
 }
 
-// MARK: - Mapping
-
 private extension [SaavnAPI.LinkPayload] {
-    /// The largest image the API lists.
     var artwork: URL? { last.flatMap { URL(string: $0.url) } }
 }
 
 extension SaavnAPI.SongPayload {
-    /// `nil` when the API lists no stream for the song, which makes it unplayable.
     func hit(highQuality: Bool) -> SaavnAPI.Hit? {
         let links = downloadUrl ?? []
         let wanted = highQuality ? "320kbps" : "160kbps"
@@ -105,8 +99,6 @@ extension SaavnAPI.SongPayload {
         return SaavnAPI.Hit(song: song, resolved: Resolved(id: id, url: stream, image: artwork, duration: length))
     }
 
-    /// The "name, name" line the lists show. Some songs credit no primary artist, so fall back to featured credits
-    /// and then to credited singers (the API's `all` list also holds lyricists and film cast).
     private var artistLine: String {
         let primary = artists?.primary ?? []
         let featured = artists?.featured ?? []
@@ -125,7 +117,6 @@ extension SaavnAPI.AlbumPayload {
 }
 
 extension SaavnAPI.PlaylistPayload {
-    /// `songs` overrides the payload's single page when the caller has collected the whole playlist.
     func playlist(highQuality: Bool, songs collected: [SaavnAPI.SongPayload]? = nil) -> SaavnAPI.Playlist {
         SaavnAPI.Playlist(id: id, name: (name ?? "").htmlDecoded, subtitle: description?.cleanedSubtitle,
                           image: image?.artwork,
@@ -157,7 +148,6 @@ extension String {
             .replacingOccurrences(of: "&lt;", with: "<").replacingOccurrences(of: "&gt;", with: ">")
     }
 
-    /// Playlist descriptions arrive padded with long runs of whitespace; empty means "no subtitle".
     fileprivate var cleanedSubtitle: String? {
         let collapsed = split(whereSeparator: \.isWhitespace).joined(separator: " ")
         return collapsed.isEmpty ? nil : collapsed.htmlDecoded

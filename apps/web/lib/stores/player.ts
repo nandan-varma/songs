@@ -10,7 +10,6 @@ interface PlayerState {
 	playing: boolean;
 	repeat: RepeatMode;
 	volume: number;
-	/** Replaces the queue and starts playing at `startIndex`. */
 	play: (tracks: Track[], startIndex?: number) => void;
 	playNext: (track: Track) => void;
 	enqueue: (track: Track) => void;
@@ -98,7 +97,6 @@ export const usePlayer = create<PlayerState>()(
 export const selectCurrentTrack = (state: PlayerState): Track | undefined =>
 	state.queue[state.index];
 
-/** Playback position, kept apart from the persisted store because it ticks several times a second. */
 interface ClockState {
 	currentTime: number;
 	duration: number;

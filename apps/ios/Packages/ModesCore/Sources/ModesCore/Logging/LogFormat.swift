@@ -1,28 +1,22 @@
 import Foundation
 
-/// Severity of a structured log record. `metric` records carry a numeric `value` in `kv`.
 public enum LogLevel: String, Sendable, CaseIterable {
     case debug, info, warn, error, metric
 
-    /// Records at or above this level are flushed to disk immediately instead of waiting for the buffer.
     public var flushesImmediately: Bool { self == .warn || self == .error }
 }
 
-/// Pure formatting for the JSON-lines log. No UIKit, no file IO, so it is unit-testable on the command line.
 public enum LogFormat {
-    /// `2026-11-22T10:15:30.123Z` (UTC, millisecond precision).
     public static func iso8601(_ date: Date) -> String {
         let c = components(date)
         return String(format: "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", c.year, c.month, c.day, c.hour, c.minute, c.second, c.millis)
     }
 
-    /// `20261122-101530-123`, for file names that sort chronologically.
     public static func fileStamp(_ date: Date) -> String {
         let c = components(date)
         return String(format: "%04d%02d%02d-%02d%02d%02d-%03d", c.year, c.month, c.day, c.hour, c.minute, c.second, c.millis)
     }
 
-    /// One record as a single JSON line, keys in a fixed, readable order: ts, level, cat, msg, session, seq, kv.
     public static func line(ts: Date, level: LogLevel, cat: String, msg: String, session: String, seq: Int,
                             kv: [String: any Sendable]? = nil) -> String {
         var out = "{\"ts\":\(quote(iso8601(ts)))"
@@ -32,7 +26,6 @@ public enum LogFormat {
         return out + "}"
     }
 
-    /// Compact `{"a":1,"b":"x"}` rendering of an arbitrary value, with keys sorted. Non-JSON values fall back to their description.
     public static func json(_ value: Any) -> String {
         let safe = sanitize(value)
         guard JSONSerialization.isValidJSONObject(safe) || safe is String || safe is NSNumber || safe is NSNull,
@@ -67,7 +60,7 @@ public enum LogFormat {
     private static func components(_ date: Date) -> Parts {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        let totalMs = Int64((date.timeIntervalSince1970 * 1000).rounded())   // round, so .123 does not become .122
+        let totalMs = Int64((date.timeIntervalSince1970 * 1000).rounded())
         let whole = Date(timeIntervalSince1970: Double(totalMs.floorDiv(1000)))
         let c = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: whole)
         let ms = Int(totalMs - totalMs.floorDiv(1000) * 1000)
@@ -76,7 +69,6 @@ public enum LogFormat {
     }
 }
 
-/// Which files to delete so that only the newest `keep` remain. Names must sort chronologically (they embed a UTC stamp).
 public enum LogRetention {
     public static func excess(_ names: [String], keep: Int) -> [String] {
         let sorted = names.sorted()

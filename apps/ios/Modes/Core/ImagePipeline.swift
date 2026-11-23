@@ -1,6 +1,5 @@
 import UIKit
 
-/// Small shared image pipeline: memory cache, disk-backed URL cache, in-flight deduplication and off-main decoding.
 final class ImagePipeline: @unchecked Sendable {
     static let shared = ImagePipeline()
 

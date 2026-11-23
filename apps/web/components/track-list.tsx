@@ -32,11 +32,9 @@ export function ArtistLinks({
 
 interface TrackListProps {
 	tracks: Track[];
-	/** Rendered in place of the favorite button, e.g. a remove action. */
 	trailing?: (track: Track) => React.ReactNode;
 }
 
-/** Clicking a row plays the whole list starting there. */
 export function TrackList({ tracks, trailing }: TrackListProps) {
 	const currentId = usePlayer((s) => selectCurrentTrack(s)?.id);
 	const playing = usePlayer((s) => s.playing);

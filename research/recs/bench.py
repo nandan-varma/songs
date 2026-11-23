@@ -23,7 +23,6 @@ def mat(PL):
 X=mat(TR); cnt=np.asarray(X.sum(0)).ravel()
 print('warm songs',int((cnt>0).sum()),'of',N, '| cold share in val/test targets:',
       round(np.mean([cnt[ix[s]]==0 for p in VA+TE for s in p]),3))
-# ---- content features
 def toks(s):
     t=[]
     for aid,_ in s['artists']+s['feat']: t.append('a'+aid)
@@ -52,8 +51,7 @@ def excl_idx(seed,mode):
             for a in art[j]: e.update(art_to[a])
     return e
 pop=np.log1p(cnt); plays=np.array([math.log1p(float(songs[s].get('plays') or 0)) for s in ids])
-# ---- collaborative models
-Xn=normalize(X,axis=0)  # item-item cosine
+Xn=normalize(X,axis=0)
 S_knn=(Xn.T@Xn).tocsr(); S_knn.setdiag(0); S_knn.eliminate_zeros()
 def ppmi_svd(k=64):
     Cc=(X.T@X).tocsr().astype(np.float32); Cc.setdiag(0); Cc.eliminate_zeros()
@@ -66,7 +64,6 @@ def ease(lam,maxn=7000):
     top=np.argsort(-cnt)[:maxn]; top=top[cnt[top]>=2]; Xs=X[:,top].toarray()
     G=Xs.T@Xs; G[np.diag_indices_from(G)]+=lam; Pm=np.linalg.inv(G); B=Pm/(-np.diag(Pm)); B[np.diag_indices_from(B)]=0
     return top,B.astype(np.float32)
-# ---- scorers: seed idx list -> score vector (N)
 def sc_pop(seed): return pop+0.0
 def sc_plays(seed): return plays.copy()
 def sc_content(seed): 
@@ -104,13 +101,11 @@ if __name__=='__main__':
     for name,f in [('popularity(in-train count)',sc_pop),('jiosaavn play_count',sc_plays),('content TF-IDF',sc_content),('ItemKNN cosine',sc_knn),('PPMI+SVD emb',sc_emb)]:
         res[name]=evaluate(TE,f)
     res['EASE (test)']=evaluate(TE,sc_ease(bl))
-    # learned hybrid: logistic regression on rank-normalised scores, trained on VAL, applied on TE
     def feats(seed):
         cols=[sc_content(seed),sc_knn(seed),sc_emb(seed),sc_ease(bl)(seed),pop,plays]
         F=[]
         for c in cols:
             c=c.astype(np.float64); r=np.argsort(np.argsort(-c)); F.append(1/np.log2(r+2)); 
-        # same-language-share with seeds
         lg=collections.Counter(songs[ids[s]]['lang'] for s in seed); tot=sum(lg.values())
         F.append(np.array([lg.get(songs[i]['lang'],0)/tot for i in ids]))
         return np.vstack(F).T, cols

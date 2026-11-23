@@ -53,7 +53,6 @@ export const albums = new Hono().get(
 			"id" in q ? { albumid: q.id } : { token: q.link, type: "album" },
 		);
 		const album = parseUpstream(albumSchema, data, call);
-		// An unknown id comes back as a 200 with every field blank.
 		if (!album.id) throw new HTTPException(404, { message: "album not found" });
 		return c.json({ success: true as const, data: album });
 	},

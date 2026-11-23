@@ -9,7 +9,6 @@ enum Feedback: String {
     }
 }
 
-/// Favorites, explicit feedback, undo and resetting what the profile knows.
 extension AppModel {
     func feedback(_ f: Feedback) {
         guard let cur = current else { AppLog.info("feedback", "\(f.rawValue) ignored: nothing playing"); return }
@@ -24,7 +23,7 @@ extension AppModel {
             setFavorite(cur, true, heard: true)
             flash("Added to Favorites")
         case .suggestLess:
-            // An explicit instruction, so it applies while learning is paused.
+
             learn(cur, .rejected)
             log("suggest_less", song: cur.id); flash("You’ll hear less like this")
             advance(.rejected)
@@ -44,7 +43,6 @@ extension AppModel {
         }
     }
 
-    /// The one place a favorite changes the library, the model's liked set and its evidence.
     @discardableResult
     private func setFavorite(_ item: QueueItem, _ favorite: Bool, heard: Bool) -> Bool {
         let changed = FavoriteAction.set(favorite, item: libraryItem(for: item), song: heard ? features(for: item) : nil,
@@ -57,7 +55,6 @@ extension AppModel {
         return true
     }
 
-    /// Makes the model's liked ids match the library.
     func reconcileLikes() {
         profile.liked = []
         for item in library.favorites.reversed() { profile.setLiked(item.id, true) }
@@ -68,14 +65,11 @@ extension AppModel {
         AppLog.info("library", "cleared recents"); scheduleSave()
     }
 
-    // MARK: Undo
-
     private func recordUndo(_ name: String, rejected: QueueItem?) {
         undoStack.push(UndoEntry(label: "Undo \(name)", snapshot: PersonalizedSnapshot(profile),
                                  favorites: library.favorites, rejected: rejected))
     }
 
-    /// Reverts the last learning action if it is still within its window.
     func undo() {
         guard let entry = undoStack.take() else { return }
         entry.snapshot.restore(into: &profile)
@@ -90,9 +84,6 @@ extension AppModel {
         flash("Undone"); scheduleSave()
     }
 
-    // MARK: Resetting
-
-    /// Starts the profile over; favorites are the first evidence again, learned from their saved metadata.
     func resetProfile() {
         profile = PersonalizedProfile()
         for item in library.favorites.reversed() {
@@ -105,7 +96,6 @@ extension AppModel {
         if current != nil { Task { await rebuildUpNext() } }
     }
 
-    /// Erases library and history, then starts a profile from the chosen languages.
     func resetEverything() {
         stopPlayback()
         library = LibraryState()

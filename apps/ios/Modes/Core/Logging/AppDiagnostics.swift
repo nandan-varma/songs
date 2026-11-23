@@ -3,8 +3,6 @@ import MetricKit
 import UIKit
 import ModesCore
 
-/// Session records, lifecycle logging, system-condition changes and MetricKit delivery. `start()` is called once from
-/// `ModesApp.init`; everything else is observers.
 @MainActor
 enum AppDiagnostics {
     private static var started = false
@@ -23,14 +21,11 @@ enum AppDiagnostics {
         HitchMonitor.shared.startIfEnabled()
     }
 
-    /// Called from the first view's `onAppear`: the nearest cheap proxy for "first frame is on screen".
     static func firstContentAppeared() {
         guard !firstContentLogged else { return }
         firstContentLogged = true
         if let ms = msSinceProcessStart() { AppLog.metric("launch_to_first_frame_ms", ms, unit: "ms") }
     }
-
-    // MARK: Session record
 
     private static func environment() -> [String: any Sendable] {
         let info = Bundle.main.infoDictionary
@@ -77,8 +72,6 @@ enum AppDiagnostics {
         return ((Date().timeIntervalSince1970 - started) * 1000).rounded()
     }
 
-    // MARK: Observers
-
     private static func observe() {
         let nc = NotificationCenter.default
         func on(_ name: Notification.Name, _ body: @escaping @MainActor () -> Void) {
@@ -97,7 +90,7 @@ enum AppDiagnostics {
         }
         on(UIApplication.didEnterBackgroundNotification) {
             AppLog.info("lifecycle", "background")
-            // Ask for a moment of background time so the flush finishes before the process is suspended.
+
             let id = UIApplication.shared.beginBackgroundTask(withName: "log-flush")
             AppLog.writer.logSessionEnd(["reason": "background"]) {
                 DispatchQueue.main.async { UIApplication.shared.endBackgroundTask(id) }
@@ -122,8 +115,6 @@ enum AppDiagnostics {
     private static var activeLogged = false
 }
 
-/// MetricKit delivers yesterday's metrics and any crash/hang/CPU/disk-write diagnostics at the next launch, on an arbitrary
-/// queue. Each payload is written as-is to `Documents/logs/diagnostics/` and summarised with one log record.
 final class MetricKitReceiver: NSObject, MXMetricManagerSubscriber, @unchecked Sendable {
     func didReceive(_ payloads: [MXMetricPayload]) {
         for p in payloads {

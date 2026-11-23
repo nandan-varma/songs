@@ -1,6 +1,5 @@
 import Foundation
 
-/// One song's sparse hashed features. Labels are kept parallel to indices for explanations.
 public struct SparseFeatures: Equatable, Sendable {
     public let indices: [Int32]
     public let values: [Float]
@@ -15,8 +14,6 @@ public struct SparseFeatures: Equatable, Sendable {
     public var isEmpty: Bool { indices.isEmpty }
 }
 
-/// Stateless metadata featurisation: no per-song index, no server artefact.
-/// Signed FNV-1a hashing into 2^15 buckets, weights from the offline cold-start experiment.
 public enum FeatureHasher {
     public static let dimension = 1 << 15
 

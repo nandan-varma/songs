@@ -1,20 +1,18 @@
-# Step 1+3a: decode clips (essentia MonoLoader 16k, same as teacher), log-mel memmap + handcrafted DSP features.
 import os,sys,glob,numpy as np,warnings; warnings.filterwarnings('ignore')
 os.environ['OMP_NUM_THREADS']='1'
 import essentia; essentia.log.infoActive=False; essentia.log.warningActive=False
 import essentia.standard as es, librosa
 from multiprocessing import Pool
-S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))
 os.makedirs(S, exist_ok=True)
 OUT=S+'/exp2'; T=469; NM=64; SR=16000
 MEL=librosa.filters.mel(sr=SR,n_fft=1024,n_mels=NM,fmin=30,fmax=8000).astype(np.float32)
 def work(f):
     a=es.MonoLoader(filename=f,sampleRate=SR,resampleQuality=4)()
     n=15*SR; a=a[:n] if len(a)>=n else np.pad(a,(0,n-len(a)))
-    Sg=np.abs(librosa.stft(a,n_fft=1024,hop_length=512,center=True))**2   # (513,T)
+    Sg=np.abs(librosa.stft(a,n_fft=1024,hop_length=512,center=True))**2
     Sg=Sg[:,:T]
     mel=MEL@Sg; lm=np.log(mel+1e-6).astype(np.float32)
-    # ---- handcrafted DSP
     fr=np.fft.rfftfreq(1024,1/SR)
     rms=librosa.feature.rms(S=np.sqrt(Sg),frame_length=1024)[0]; db=20*np.log10(rms+1e-6)
     P=Sg+1e-10; Pn=P/P.sum(0,keepdims=True)
@@ -32,7 +30,6 @@ def work(f):
     acs=ac[m]; best=lags[m][acs.argmax()]; bpm=60*fps/best
     ac_bins=np.interp(np.linspace(60,200,16),bpm_lag[m][::-1],ac[m][::-1])
     mf=librosa.feature.mfcc(S=lm.T.T*10/np.log(10),n_mfcc=20); mfd=librosa.feature.delta(mf)
-    # chroma-ish tonality from stft
     ch=librosa.feature.chroma_stft(S=Sg,sr=SR); chm=ch.mean(1); tonal=chm.max()/(chm.mean()+1e-9)
     flat=librosa.feature.spectral_flatness(S=np.sqrt(Sg))[0]
     ctr=librosa.feature.spectral_contrast(S=np.sqrt(Sg),sr=SR,n_bands=4,fmin=100)

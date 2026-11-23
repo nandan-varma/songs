@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""Summarise a folder produced by ios-pull.sh: sessions, crashes, warnings/errors, metrics, hitches, listening events.
-
-Usage: ios-summary.py [DIR|latest]      (default: latest = dev-out/pull/latest)
-Plain text, no colour, aimed at under 80 lines.
-"""
 import argparse
 import collections
 import glob
@@ -13,18 +8,13 @@ import os
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-# Metric names the app emits today (apps/ios/Modes/Core/Logging/AppDiagnostics.swift, HitchMonitor.swift). Reported
-# first, even when empty. hitch_ms is summarised separately below.
 KNOWN_METRICS = ["launch_to_first_frame_ms", "launch_to_active_ms"]
-# Old builds (before the catalogue was removed) still log these; they are not shown.
 RETIRED_METRICS = {"catalog_load_ms"}
 SLOW_MS = 1000
 
-
 def pct(vals, p):
     s = sorted(vals)
-    return s[min(len(s) - 1, max(0, math.ceil(p / 100 * len(s)) - 1))]  # nearest rank
-
+    return s[min(len(s) - 1, max(0, math.ceil(p / 100 * len(s)) - 1))]
 
 def read_jsonl(path):
     out = []
@@ -36,15 +26,13 @@ def read_jsonl(path):
                     try:
                         out.append(json.loads(line))
                     except json.JSONDecodeError:
-                        pass  # a line cut by rotation or a crash
+                        pass
     except OSError:
         pass
     return out
 
-
 def hms(ts):
     return ts[11:23] if isinstance(ts, str) and len(ts) >= 23 else str(ts)
-
 
 def fmt_line(r, width=150):
     kv = r.get("kv")
@@ -56,14 +44,12 @@ def fmt_line(r, width=150):
     s = f"{hms(r.get('ts'))} {r.get('level', '?')[:1].upper()} {r.get('cat')} {r.get('msg')}{extra}"
     return s if len(s) <= width else s[: width - 1] + "…"
 
-
 def parse_ts(ts):
     from datetime import datetime
     try:
         return datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
     except (TypeError, ValueError):
         return None
-
 
 def sessions_section(recs, out):
     by = collections.OrderedDict()
@@ -91,7 +77,6 @@ def sessions_section(recs, out):
             except json.JSONDecodeError:
                 out.append("    " + line[:130])
 
-
 def problems_section(recs, out):
     wl = [r for r in recs if r.get("level") in ("warn", "error")]
     out.append(f"== warnings/errors ({len(wl)}) ==")
@@ -105,7 +90,6 @@ def problems_section(recs, out):
     common = collections.Counter((r["level"], r["cat"], r["msg"][:90]) for r in wl).most_common(5)
     for (lvl, cat, msg), n in common:
         out.append(f"  {n:>3}x {lvl} [{cat}] {msg}")
-
 
 def metrics_section(recs, out):
     ms = collections.defaultdict(list)
@@ -144,14 +128,12 @@ def metrics_section(recs, out):
     if slow:
         out.append(f"slow spans (>= {SLOW_MS} ms): " + "; ".join(f"{n} {v:.0f}ms @{hms(t)}" for v, n, t in slow))
 
-
 def playback_section(recs, out):
     fails = [r for r in recs if r.get("level") in ("warn", "error")
              and (r.get("cat") in ("player", "playback", "resolve", "audio") or "fail" in r.get("msg", "").lower())]
     out.append(f"== playback failures ({len(fails)}) ==")
     for r in fails[-4:]:
         out.append("  " + fmt_line(r, 140))
-
 
 def context_section(recs, out):
     errs = [i for i, r in enumerate(recs) if r.get("level") == "error"]
@@ -162,7 +144,6 @@ def context_section(recs, out):
     for r in recs[max(0, i - 30): i + 1]:
         out.append(fmt_line(r))
 
-
 def events_section(path, out):
     ev = read_jsonl(path)
     out.append(f"== listening events ({len(ev)}) ==")
@@ -171,8 +152,7 @@ def events_section(path, out):
         return
     types = collections.Counter(e.get("type") for e in ev)
     out.append("types: " + ", ".join(f"{t}={n}" for t, n in types.most_common(12)))
-    # One listener profile, so one group. Records: EventRecord in apps/ios/Modes/Core/Models.swift (type, song, frac, note).
-    outcomes = []  # in time order; True = skipped
+    outcomes = []
     for e in sorted(ev, key=lambda e: e.get("t") or ""):
         t = e.get("type")
         if t == "completed":
@@ -185,9 +165,8 @@ def events_section(path, out):
                f" picked={types.get('picked', 0)} suggest_less={types.get('suggest_less', 0)}"
                f" unfavorite={types.get('unfavorite', 0)} profile_reset={types.get('profile_reset', 0)}")
 
-
 def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(description="Summarise a pull folder from ios-pull.sh.")
     ap.add_argument("dir", nargs="?", default="latest", help="pull folder, or 'latest'")
     a = ap.parse_args()
     d = os.path.join(ROOT, "dev-out", "pull", "latest") if a.dir == "latest" else a.dir
@@ -218,7 +197,6 @@ def main():
     if recs:
         context_section(recs, out)
     print("\n".join(out))
-
 
 if __name__ == "__main__":
     main()

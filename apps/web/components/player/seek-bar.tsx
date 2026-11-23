@@ -25,7 +25,6 @@ export function SeekBar() {
 	);
 }
 
-/** A thin non-interactive progress line for the mini player. */
 export function ProgressLine() {
 	const fraction = useClock((s) =>
 		s.duration > 0 ? s.currentTime / s.duration : 0,

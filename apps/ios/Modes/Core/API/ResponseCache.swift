@@ -1,6 +1,5 @@
 import Foundation
 
-/// Bounded in-memory cache for collection and search responses. Entries expire on read; errors are never stored.
 actor ResponseCache {
     static let shared = ResponseCache()
 

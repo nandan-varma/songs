@@ -8,7 +8,6 @@ export function fixture(name: string): unknown {
 	);
 }
 
-/** Replaces `fetch` with canned upstream responses keyed by JioSaavn `__call`. Returns the requests seen. */
 export function mockUpstream(responses: Record<string, unknown>) {
 	const requests: URL[] = [];
 	vi.stubGlobal(
@@ -24,7 +23,6 @@ export function mockUpstream(responses: Record<string, unknown>) {
 	return requests;
 }
 
-/** Requests `path` from the app and returns the status and JSON body. */
 export async function get(path: string) {
 	const response = await app.request(path);
 	return {

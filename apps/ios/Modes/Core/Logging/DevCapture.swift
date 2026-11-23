@@ -3,18 +3,6 @@ import Foundation
 import ModesCore
 import UIKit
 
-/// Developer-only screenshots, so an engineer can look at the real UI on the device without a simulator or a cable.
-///
-/// Enabled ONLY when the process is launched with `MODES_CAPTURE=1` (see tools/dev/ios-run.sh --capture); otherwise every
-/// entry point returns immediately. While enabled and the app is active, about every 1.5 s the visible windows of the
-/// foreground scene are composited with `drawHierarchy`, and a JPEG is saved to `Documents/shots/<UTC stamp>.jpg` only when
-/// the frame differs from the previous one (32×32 gray signature, see `FrameSignature`). The newest 80 files are kept.
-///
-/// The popup player (LNPopupUI) is a subview of the tab controller's view in the same window, so it is part of the
-/// key window's hierarchy; all visible windows are still drawn in window-level order so keyboards or alerts that live
-/// in their own window are included as well.
-///
-/// The timer runs in the default run-loop mode only, so it does not fire while a scroll view is tracking a finger.
 @MainActor
 enum DevCapture {
     static let isEnabled = ProcessInfo.processInfo.environment["MODES_CAPTURE"] == "1"
@@ -37,7 +25,6 @@ enum DevCapture {
         }
     }
 
-    /// Saves a named capture right now (e.g. `DevCapture.snap("after-skip")`), even if the frame did not change.
     static func snap(_ name: String) {
         guard isEnabled, UIApplication.shared.applicationState == .active, let image = render() else { return }
         save(image, name: name)
@@ -52,18 +39,15 @@ enum DevCapture {
         save(image, name: nil)
     }
 
-    // MARK: Rendering
-
     private static func render() -> UIImage? {
         let windows = ScreenHint.foregroundWindows()
         guard let base = windows.first(where: \.isKeyWindow) ?? windows.first, let screen = base.windowScene?.screen else { return nil }
         let bounds = screen.bounds
         let format = UIGraphicsImageRendererFormat.preferred()
-        format.scale = screen.scale / 2          // half of native resolution keeps a frame at ~150-300 KB
+        format.scale = screen.scale / 2
         format.opaque = true
         return UIGraphicsImageRenderer(bounds: bounds, format: format).image { _ in
             for w in windows {
-                // afterScreenUpdates: false renders what is already committed instead of forcing a layout pass on the main thread.
                 w.drawHierarchy(in: w.frame, afterScreenUpdates: false)
             }
         }
@@ -82,8 +66,6 @@ enum DevCapture {
         }
         return ok ? FrameSignature(pixels: px) : nil
     }
-
-    // MARK: Saving
 
     private static func save(_ image: UIImage, name: String?) {
         let now = Date()

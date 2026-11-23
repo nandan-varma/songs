@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Build (Release, device SDK), install and launch the app on the connected iPhone with the console attached.
-# WARNING: this restarts the app on the phone (--terminate-existing). Do not run it while someone is testing.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 

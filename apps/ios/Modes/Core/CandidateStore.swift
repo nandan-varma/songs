@@ -7,12 +7,10 @@ struct CandidateHit: Sendable {
 
 struct CandidateBatch: Sendable {
     var hits: [CandidateHit] = []
-    /// Every request failed, so the server could not be reached; an empty `hits` then means offline, not "nothing to play".
+
     var failed = false
 }
 
-/// Bounded live candidate supply: trending songs per language and songs similar to a few seeds.
-/// The API client owns the response cache.
 enum CandidateSource {
     static func fetch(languages: [String], seeds: [String], highQuality: Bool) async -> CandidateBatch {
         await withTaskGroup(of: [CandidateHit]?.self) { group in

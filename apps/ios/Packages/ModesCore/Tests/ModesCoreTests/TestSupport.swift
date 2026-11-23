@@ -1,7 +1,6 @@
 import Foundation
 @testable import ModesCore
 
-/// splitmix64: a tiny seedable generator so ranking tests are deterministic.
 struct SeededGenerator: RandomNumberGenerator {
     var state: UInt64
     init(seed: UInt64) { state = seed }

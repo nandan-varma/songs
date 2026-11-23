@@ -9,7 +9,7 @@ def run(pl,method,rounds=10,slate=5,seed_rng=0,P=dict(),other=None):
     rng=np.random.default_rng(seed_rng); pi=[ix[s] for s in pl]; tgt=set(pi)
     seed=pi[int(rng.integers(len(pi)))]; seen={seed}; L=[seed]; Dn=[]
     A=P.get('lam',1.0)*np.eye(D); b=np.zeros(D); x=F[seed]; A+=np.outer(x,x); b+=x
-    if other is not None:  # global model: also absorbs another mode's feedback each round
+    if other is not None:
         oi=[ix[s] for s in other]
     hist=[]
     for r in range(rounds):
@@ -26,8 +26,8 @@ def run(pl,method,rounds=10,slate=5,seed_rng=0,P=dict(),other=None):
         for t in top:
             seen.add(t)
             if t in tgt: L.append(t); hit+=1; x=F[t]; A+=np.outer(x,x); b+=x
-            elif rng.random()<0.6: Dn.append(t); x=F[t]; A+=np.outer(x,x)  # explicit skip => y=0
-        if method=='global-ts' and other is not None:  # other mode's likes pollute the shared model
+            elif rng.random()<0.6: Dn.append(t); x=F[t]; A+=np.outer(x,x)
+        if method=='global-ts' and other is not None:
             for t in rng.choice(oi,slate,replace=False): x=F[t]; A+=np.outer(x,x); b+=x
         hist.append(hit/slate)
     return hist
@@ -35,7 +35,6 @@ pls=[p for p in TE+VA if len(p)>=25]; va=[p for p in VA if len(p)>=25][:60]; te=
 def avg(method,PL,P=dict(),pair=False):
     H=[run(p,method,seed_rng=i,P=P,other=(PL[(i+1)%len(PL)] if pair else None)) for i,p in enumerate(PL)]
     return np.mean(H,0), np.std(np.mean(H,1))/np.sqrt(len(H))
-# tune TS on validation only
 best=None
 for lam in (0.3,1,3):
     for sig in (0,0.05,0.15,0.4):

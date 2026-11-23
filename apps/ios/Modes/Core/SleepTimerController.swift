@@ -2,21 +2,18 @@ import Foundation
 import ModesCore
 import Observation
 
-/// Runs the sleep timer: a repeating task that compares a Date deadline with the clock, so it stays correct when the app
-/// is backgrounded or suspended. The decisions themselves live in `SleepTimerLogic`; this type only schedules and applies them.
 @MainActor @Observable
 final class SleepTimerController {
     private static let tick: Duration = .milliseconds(500)
 
     private(set) var kind: SleepTimer = .off
-    /// Set for `.minutes` only.
+
     private(set) var deadline: Date?
 
     @ObservationIgnored private var loop: Task<Void, Never>?
     @ObservationIgnored private let setVolume: @MainActor (Float) -> Void
     @ObservationIgnored private let onFire: @MainActor () -> Void
 
-    /// `setVolume` receives 0…1 while fading and 1 when the timer ends or is cancelled; `onFire` pauses playback.
     init(setVolume: @escaping @MainActor (Float) -> Void, onFire: @escaping @MainActor () -> Void) {
         self.setVolume = setVolume; self.onFire = onFire
     }
@@ -38,10 +35,8 @@ final class SleepTimerController {
         }
     }
 
-    /// Stops everything and restores the volume (used when playback stops).
     func cancel() { if kind != .off { set(.off) } }
 
-    /// Called when a song finishes. True means the timer was waiting for exactly this, and playback should stop here.
     func consumeEndOfSong() -> Bool {
         guard kind == .endOfSong else { return false }
         AppLog.info("sleep", "timer fired: end of song")

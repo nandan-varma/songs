@@ -1,17 +1,15 @@
 import os,pickle,glob,sys,collections,numpy as np
-S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))
 os.makedirs(S, exist_ok=True)
 OUT=S+'/exp1'
 def load(sc,level='full'):
     R=[pickle.load(open(f,'rb')) for f in sorted(glob.glob(f'{OUT}/res_{sc}_{level}_f*.pkl'))]
     return R
 def cluster(vals,keys,folds):
-    """average items within (fold,playlist) cluster -> array of cluster means"""
     g=collections.defaultdict(list)
     for v,k,f in zip(vals,keys,folds): g[(f,k)].append(v)
     return np.array([np.mean(x) for x in g.values()]),list(g.keys())
 def table(sc,var,proto,metric,level='full',lang=None):
-    """returns {cfg:(mean,se,clusterarray)} aligned cluster order across cfgs"""
     R=load(sc,level); out={}
     names=list(R[0][var][proto].keys())
     for n in names:

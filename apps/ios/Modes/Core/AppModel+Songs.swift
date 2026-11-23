@@ -2,7 +2,6 @@ import Foundation
 import ModesCore
 
 extension AppModel {
-    /// The queue entry for any row, with the best metadata known for it.
     func songItem(for source: SongReference) -> QueueItem {
         switch source {
         case .queued(let item):
@@ -15,7 +14,6 @@ extension AppModel {
         }
     }
 
-    /// Remembers the metadata and stream a live hit already carries, so playing it needs no extra request.
     func adopt(_ source: SongReference) {
         guard case .hit(let hit) = source else { return }
         knownSongs[hit.song.id] = hit.song
@@ -31,6 +29,5 @@ extension AppModel {
         return library.isFavorite(item.id)
     }
 
-    /// Everything the model knows about a song: the live metadata when seen this session, else what the queue entry carries.
     func features(for item: QueueItem) -> SongFeatures { knownSongs[item.id] ?? item.song }
 }

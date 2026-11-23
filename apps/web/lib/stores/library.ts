@@ -76,7 +76,6 @@ export const useLibrary = create<LibraryState>()(
 	),
 );
 
-/** False until the persisted library has been restored from localStorage. */
 export function useLibraryHydrated(): boolean {
 	return useSyncExternalStore(
 		(onChange) => useLibrary.persist.onFinishHydration(onChange),

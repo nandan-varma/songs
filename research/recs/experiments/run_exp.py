@@ -1,4 +1,3 @@
-"""usage: run_exp.py FOLD SCEN(rand0.25|recent12|newartist0.25...) LEVEL(full|lite) CAP"""
 import sys
 from exp_lib import *
 fold=int(sys.argv[1]); sc=sys.argv[2]; level=sys.argv[3]; cap=int(sys.argv[4])
@@ -40,7 +39,6 @@ if level=='full':
     dn('F4d dense k256 +ATT',dense_design(c,hashed=hashed_dense(c,cfgb(15,k=256),False),att=att_block(c,ALLC,1.0,nohot=True)))
     dn('F4d dense k1024 +ATT',dense_design(c,hashed=hashed_dense(c,cfgb(15,k=1024),False),att=att_block(c,ALLC,1.0,nohot=True)))
     sd_('F3s TS tau0.02',X15,.3,0.02)
-    # token ablations of F3s
     for nm,drop in (('-album',['al']),('-title words',['w']),('-artistxlang',['x']),('-artist',['a']),('-composer',['m']),('-label',['lb']),('-year',['y','d']),('-lang',['lg'])):
         w=dict(W); [w.__setitem__(t,0) for t in drop]; sd_('F3s abl '+nm,hashed_sparse(c,cfgb(15,w),False),.3)
     w=dict(W); w.update(x=0,w=0); sd_('F3s abl base(a,m,lb,lg,y,d,al)',hashed_sparse(c,cfgb(15,w),False),.3)

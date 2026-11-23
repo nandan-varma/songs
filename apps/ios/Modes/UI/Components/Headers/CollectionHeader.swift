@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Compact artwork and content header shared by editorial collection pages.
 struct CollectionHeader<ArtworkContent: View, Content: View>: View {
     @ViewBuilder var artwork: ArtworkContent
     @ViewBuilder var content: Content

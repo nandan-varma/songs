@@ -1,9 +1,7 @@
-"""Generates the Modes app icon (light, dark and tinted variants) into the asset catalog. Needs Pillow."""
 import sys
 from PIL import Image, ImageDraw, ImageFilter
-S = 1024; SS = 3   # supersample for smooth edges
+S = 1024; SS = 3
 out = sys.argv[1]
-# bar heights trace an "M": tall, mid, valley, mid, tall
 H = [0.52, 0.34, 0.20, 0.34, 0.52]
 def gradient(c1, c2, size):
     g = Image.new('RGB', (size, size)); px = g.load()
@@ -15,7 +13,6 @@ def bars(draw, size, fill):
     bw, gap = size * 0.092, size * 0.056; total = 5 * bw + 4 * gap; x0 = (size - total) / 2
     for i, h in enumerate(H):
         hh = size * h; x = x0 + i * (bw + gap); cy = size * 0.5
-        # the valley bar carries a dot above it: the "mode" marker
         draw.rounded_rectangle([x, cy - hh / 2, x + bw, cy + hh / 2], radius=bw / 2, fill=fill)
     d = size * 0.075; cx = x0 + 2 * (bw + gap) + bw / 2; cy = size * 0.5 - size * H[2] / 2 - size * 0.075
     draw.ellipse([cx - d / 2, cy - d / 2, cx + d / 2, cy + d / 2], fill=fill)

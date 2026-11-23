@@ -1,6 +1,6 @@
 import glob,os,numpy as np
 from scipy.stats import pearsonr,spearmanr
-S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))
 os.makedirs(S, exist_ok=True)
 O=S+'/exp2'
 TN=['voice','danceable','happy','sad','relaxed','party','acoustic','electronic','arousal','valence','bpm']
@@ -30,7 +30,6 @@ def metrics(Yt,Yp):
         out[nm]=(r2,pearsonr(a,b)[0],spearmanr(a,b)[0],int(m.sum()))
     return out
 def emb_metrics(Et,Ep,pca_mu,comps):
-    # compare in the global 64-d PCA basis
     T=(Et-pca_mu)@comps.T; P=(Ep-pca_mu)@comps.T
     cos=(T*P).sum(1)/(np.linalg.norm(T,axis=1)*np.linalg.norm(P,axis=1)+1e-9)
     r2=1-((T-P)**2).sum()/((T-T.mean(0))**2).sum()

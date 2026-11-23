@@ -1,10 +1,6 @@
 import Foundation
 
-/// Small, pure text clean-up used by everything the app shows: HTML entities, whitespace and typographic quotes.
 public enum DisplayText {
-    /// Decodes HTML entities (`&quot;`, `&amp;`, `&#039;`, `&#x27;`, `&lt;`, `&gt;`, `&nbsp;`), folds every run of whitespace
-    /// (including non-breaking spaces and newlines) into one space and trims the ends. Zero-width joiners are kept, because
-    /// Indic scripts need them.
     public static func clean(_ input: String) -> String {
         let decoded = decodeEntities(input)
         let scalars = decoded.unicodeScalars.filter { $0.value != 0x200B && $0.value != 0xFEFF }
@@ -12,7 +8,6 @@ public enum DisplayText {
         return text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 
-    /// Decodes entities, repeating once for double-encoded text such as `&amp;quot;`.
     public static func decodeEntities(_ input: String) -> String {
         var s = input
         for _ in 0..<2 {
@@ -53,7 +48,6 @@ public enum DisplayText {
         return Character(scalar)
     }
 
-    /// Straight quotes become typographic ones: “double”, ‘single’ and apostrophes (don’t, ’90s).
     public static func typographic(_ s: String) -> String {
         guard s.contains(where: { $0 == "\"" || $0 == "'" }) else { return s }
         let chars = Array(s)
@@ -67,7 +61,7 @@ public enum DisplayText {
             case "'":
                 if opensQuote(after: prev) {
                     let next: Character? = i + 1 < chars.count ? chars[i + 1] : nil
-                    out.append(next?.isNumber == true ? "’" : "‘")   // ’90s is an apostrophe, ‘Tis a quote
+                    out.append(next?.isNumber == true ? "’" : "‘")
                 } else {
                     out.append("’")
                 }
@@ -83,7 +77,6 @@ public enum DisplayText {
         return previous.isWhitespace || "([{–—“‘".contains(previous)
     }
 
-    /// Case, accent and width insensitive form for comparing two titles.
     static func fold(_ s: String) -> String {
         s.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil)
     }

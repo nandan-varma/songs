@@ -22,8 +22,7 @@ export function QueueList() {
 			<ul>
 				{queue.map((track, i) => (
 					<li
-						// The same song can be queued twice, so position is part of the key.
-						// biome-ignore lint/suspicious/noArrayIndexKey: see above
+						// biome-ignore lint/suspicious/noArrayIndexKey: the same song can be queued twice
 						key={`${track.id}:${i}`}
 						className="flex items-center gap-1"
 					>

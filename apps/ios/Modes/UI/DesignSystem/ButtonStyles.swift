@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// A scale-on-press button style, so transport controls feel physical.
 struct PressableStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 

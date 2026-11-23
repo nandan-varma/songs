@@ -73,7 +73,7 @@ struct LoggingTests {
     @Test func frameSignatureThreshold() throws {
         let n = FrameSignature.side * FrameSignature.side
         let base = try #require(FrameSignature(pixels: [UInt8](repeating: 100, count: n)))
-        var tick = [UInt8](repeating: 100, count: n); for i in 0..<4 { tick[i] = 255 }   // a thin progress bar
+        var tick = [UInt8](repeating: 100, count: n); for i in 0..<4 { tick[i] = 255 }
         let small = try #require(FrameSignature(pixels: tick))
         let other = try #require(FrameSignature(pixels: [UInt8](repeating: 160, count: n)))
         #expect(FrameSignature.isNew(base, since: nil))

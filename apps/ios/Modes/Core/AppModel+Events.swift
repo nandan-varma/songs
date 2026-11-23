@@ -1,6 +1,5 @@
 import Foundation
 
-/// The listening log (`Documents/events.jsonl`) and the toast.
 extension AppModel {
     static let logQueue = DispatchQueue(label: "modes.eventlog", qos: .utility)
 

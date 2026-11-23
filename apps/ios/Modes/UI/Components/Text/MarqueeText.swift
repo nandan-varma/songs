@@ -1,16 +1,8 @@
 import SwiftUI
 
-/// One line of text that scrolls when it is wider than its container, like the title in Apple Music.
-///
-/// * Fits: a plain `Text`, nothing else.
-/// * Too wide: after a short pause the text scrolls slowly, loops with a gap, and fades at the edges.
-/// * Reduce Motion: tail truncation, no scrolling.
-/// The view never widens its parent: the container is a flexible-width `Text` that truncates, the natural width is measured
-/// from an invisible copy in `.background` (which takes no part in layout), and the scrolling copy is an overlay that is masked.
-/// Font and colour come from the environment, so style it with `.font(...)` and `.foregroundStyle(...)` from outside.
 struct MarqueeText: View {
     let text: String
-    /// Scrolling stops (and resets) while this is false, for example when playback is paused.
+
     var isActive = true
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -21,7 +13,7 @@ struct MarqueeText: View {
 
     private static let gap: CGFloat = 40
     private static let pause: Duration = .seconds(2.2)
-    /// Points per second: slow enough to read.
+
     private static let speed: CGFloat = 30
     private static let fade: CGFloat = 18
 
@@ -41,7 +33,7 @@ struct MarqueeText: View {
             .truncationMode(.tail)
             .opacity(scrolls ? 0 : 1)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)                       // room for tall ascenders and descenders; the mask never clips glyphs
+            .padding(.vertical, 4)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { containerWidth = $0 }
             .background(alignment: .leading) {
                 Text(text).fixedSize().opacity(0).accessibilityHidden(true)
@@ -64,7 +56,6 @@ struct MarqueeText: View {
             .accessibilityLabel(text)
     }
 
-    /// Soft edges: the trailing edge always, the leading edge only once the text has moved.
     private var edgeMask: some View {
         let f = min(0.2, Self.fade / max(containerWidth, 1))
         return LinearGradient(stops: [

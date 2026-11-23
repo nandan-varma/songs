@@ -1,10 +1,8 @@
 import Foundation
 
-/// Client for the JioSaavn API in `apps/api`. Songs without a stream are dropped, so every `Hit` is playable.
 enum SaavnAPI {
     static let baseURL = "https://saavn-api.nandanvarma.com"
 
-    /// Collections and search results change slowly; trending and charts are refreshed hourly by the API.
     private enum TTL {
         static let collection: TimeInterval = 30 * 60
         static let ephemeral: TimeInterval = 10 * 60
@@ -14,9 +12,6 @@ enum SaavnAPI {
     private static let playlistPageSize = 100
     private static let playlistPageCap = 5
 
-    // MARK: - Transport
-
-    /// The `data` member of the API's envelope, or `nil` when it is absent.
     private static func get<T: Decodable>(_ path: String, _ query: [URLQueryItem] = []) async throws -> T? {
         guard var components = URLComponents(string: baseURL + path) else { throw URLError(.badURL) }
         if !query.isEmpty { components.queryItems = query }
@@ -30,7 +25,6 @@ enum SaavnAPI {
         return try JSONDecoder().decode(Envelope<T>.self, from: data).data
     }
 
-    /// `get`, mapped, and remembered for `ttl`. The key covers path, query and quality because mapping depends on all three.
     private static func cachedGet<Payload: Decodable, Value: Sendable>(
         _ path: String, _ query: [URLQueryItem] = [], highQuality: Bool, ttl: TimeInterval,
         as payload: Payload.Type, map: (Payload?) throws -> Value
@@ -47,9 +41,6 @@ enum SaavnAPI {
         return value
     }
 
-    // MARK: - Playback
-
-    /// Stream and artwork for the given songs; ids the API does not know are absent from the result.
     static func resolve(ids: [String], highQuality: Bool) async throws -> [String: Resolved] {
         guard !ids.isEmpty else { return [:] }
         let payloads: [SongPayload]? = try await get("/api/songs", [URLQueryItem(name: "ids", value: ids.joined(separator: ","))])
@@ -57,8 +48,6 @@ enum SaavnAPI {
         for hit in (payloads ?? []).compactMap({ $0.hit(highQuality: highQuality) }) { out[hit.song.id] = hit.resolved }
         return out
     }
-
-    // MARK: - Collections
 
     static func album(id: String, highQuality: Bool) async throws -> Album {
         try await cachedGet("/api/albums", [URLQueryItem(name: "id", value: id)], highQuality: highQuality,
@@ -70,7 +59,7 @@ enum SaavnAPI {
         if let hit = await ResponseCache.shared.value(for: key, as: Playlist.self) { return hit }
         var first: PlaylistPayload?
         var songs: [SongPayload] = []
-        // The endpoint returns one page at a time; walk pages until the playlist is complete.
+
         for page in 0..<playlistPageCap {
             let query = [URLQueryItem(name: "id", value: id), URLQueryItem(name: "page", value: String(page)),
                          URLQueryItem(name: "limit", value: String(playlistPageSize))]
@@ -95,14 +84,11 @@ enum SaavnAPI {
                             as: [ChartPayload].self) { ($0 ?? []).map { $0.chart() } }
     }
 
-    /// A chart is a playlist, so its songs come from the playlist endpoint.
     static func chart(id: String, highQuality: Bool) async throws -> Chart {
         guard let entry = try await charts().first(where: { $0.id == id }) else { throw URLError(.resourceUnavailable) }
         let songs = try await playlist(id: id, highQuality: highQuality).songs
         return Chart(id: entry.id, name: entry.name, image: entry.image, songCount: entry.songCount, songs: songs)
     }
-
-    // MARK: - Discovery
 
     static func trending(language: String, highQuality: Bool) async throws -> [Hit] {
         try await cachedGet("/api/trending", [URLQueryItem(name: "type", value: "song"),
@@ -119,9 +105,6 @@ enum SaavnAPI {
         }
     }
 
-    // MARK: - Search
-
-    /// The API has one search endpoint per kind; the four run in parallel and merge into one result.
     static func search(_ query: String, highQuality: Bool) async throws -> SearchResults {
         async let songs = search("songs", query, highQuality: highQuality) { (p: SongPayload) in p.hit(highQuality: highQuality) }
         async let albums = search("albums", query, highQuality: highQuality) { (p: AlbumPayload) in p.album(highQuality: highQuality) }

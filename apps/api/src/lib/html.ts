@@ -7,7 +7,6 @@ const NAMED: Record<string, string> = {
 	nbsp: " ",
 };
 
-/** Decodes the HTML entities JioSaavn leaves in titles (`&quot;`, `&amp;`, `&#039;`, `&#x27;`). */
 export function decodeEntities(value: string): string {
 	if (!value.includes("&")) return value;
 	return value.replace(

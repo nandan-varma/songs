@@ -12,7 +12,6 @@ interface CollectionHeaderProps {
 	round?: boolean;
 }
 
-/** Cover, titles and play actions shared by album, playlist, artist and song pages. */
 export function CollectionHeader({
 	title,
 	subtitle,

@@ -2,9 +2,6 @@ import LNPopupUI
 import ModesCore
 import SwiftUI
 
-/// The expanded player, laid out like Apple Music: cover, title row, scrubber, transport, volume, and a small row of
-/// labeled controls. The learning controls live alongside AirPlay and Up Next, and in the
-/// "…" menu (Suggest less, sleep timer, share).
 struct PlayerView: View {
     @Environment(AppModel.self) private var model
     @State private var showQueue = false
@@ -24,9 +21,6 @@ struct PlayerView: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        // Same structure as LNPopupUI's own Apple Music demo: one GeometryReader, content pinned to the top, and the
-        // backdrop in `.background` so a large blurred image can never take part in layout (it used to widen the whole
-        // player to ~780 pt and push the title and buttons off-screen).
         GeometryReader { geo in
             let height = geo.size.height
             let side = max(120, min(geo.size.width - 48, height * 0.44))
@@ -59,8 +53,6 @@ struct PlayerView: View {
         }
     }()
 
-    // MARK: Layout
-
     private func column(side: CGFloat, gap: CGFloat) -> some View {
         let item = model.current
         return VStack(spacing: 0) {
@@ -89,8 +81,8 @@ struct PlayerView: View {
                 .transition(slide)
         }
         .frame(width: side, height: side)
-        .popupTransitionTarget()                                              // the cover morphs from the mini bar, like Apple Music
-        .scaleEffect(model.isPlaying ? 1 : 0.84)                              // and relaxes when paused
+        .popupTransitionTarget()
+        .scaleEffect(model.isPlaying ? 1 : 0.84)
         .overlay(alignment: .bottom) { if showHint { swipeHint.padding(.bottom, 10).transition(.opacity) } }
         .frame(maxWidth: .infinity)
         .animation(.spring(duration: 0.5, bounce: 0.3), value: model.isPlaying)
@@ -124,7 +116,7 @@ struct PlayerView: View {
         switch action {
         case .like:
             likedBySwipe = true
-            if !model.isFavorite(model.current) { favoriteTick += 1; model.feedback(.favorite) }   // never un-favorite by swiping
+            if !model.isFavorite(model.current) { favoriteTick += 1; model.feedback(.favorite) }
         case .dislike:
             dislikedBySwipe = true
             model.feedback(.suggestLess)
@@ -220,9 +212,6 @@ struct PlayerView: View {
     private func favorite() { favoriteTick += 1; model.feedback(.favorite) }
 }
 
-// MARK: - Pieces
-
-/// The cover, sized by its parent. Everything is explicitly clipped so a large image can never widen the layout.
 private struct CoverTile: View {
     let image: UIImage?
     let loading: Bool
@@ -239,14 +228,10 @@ private struct CoverTile: View {
     }
 }
 
-/// The backdrop: the cover, heavily blurred, over a gradient in its average colour. It is only ever used inside
-/// `.background`, which keeps its (large) image size out of the player's layout.
 private struct PlayerBackground: View {
     @Environment(AppModel.self) private var model
     let reveal: SwipeReveal
 
-    /// How much black goes over the blurred cover: 0.42 for a dark cover up to 0.65 for a white one, so secondary text keeps
-    /// at least 4.5 : 1 on the lightest possible backdrop (the arithmetic is in `ShapeStyle.playerSecondary`).
     static func dimming(forAverage color: UIColor?) -> Double {
         guard let color else { return 0.5 }
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -279,7 +264,6 @@ private struct PlayerBackground: View {
     }
 }
 
-/// The only part of the player that reads playback progress.
 private struct PlayerScrubber: View {
     @Environment(AppModel.self) private var model
     let why: String?

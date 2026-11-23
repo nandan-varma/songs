@@ -1,7 +1,6 @@
 import ModesCore
 import SwiftUI
 
-/// Favorites and Recently Played share one list area, with a compact selector that stacks at accessibility sizes.
 struct LibraryView: View {
     @Environment(AppModel.self) private var model
     @State private var segment: Segment = .favorites

@@ -1,6 +1,5 @@
 import AppIntents
 
-/// Transport shortcuts for Siri, Shortcuts and the Action Button.
 struct ModesShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(

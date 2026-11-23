@@ -15,7 +15,6 @@ it("exposes typed routes through hono's RPC client", async () => {
 	});
 	const body = await response.json();
 
-	// `body.data[0].name` only type-checks if the route's response type was inferred.
 	if (!("data" in body)) throw new Error("expected a success envelope");
 	expect(body.data[0]?.name).toBe("Levitating");
 });

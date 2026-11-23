@@ -14,7 +14,6 @@ import { jiosaavn } from "./lib/upstream";
 import { count, query } from "./lib/validate";
 import { songList } from "./songs";
 
-/** Search results omit an album's songs, so they get their own, smaller shape. */
 const searchAlbumSchema = z
 	.object({
 		id: z.string(),
@@ -75,7 +74,6 @@ async function searchPage<S extends z.ZodType>(
 	results: S,
 	q: z.output<typeof params>,
 ) {
-	// Upstream pages are 1-indexed; ours are 0-indexed like every other list here.
 	const data = await jiosaavn(call, { q: q.query, p: q.page + 1, n: q.limit });
 	const page = parseUpstream(
 		z.object({ total: z.number(), results: z.unknown() }),

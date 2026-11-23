@@ -15,8 +15,8 @@ class Student(nn.Module):
         ci=w[0]
         for i,c in enumerate(w[1:]): L.append(Blk(ci,c,sep,pool=(i<len(w)-2) )); ci=c
         s.body=nn.Sequential(*L); s.head=nn.Sequential(nn.Dropout(0.2),nn.Linear(2*ci,NOUT))
-    def forward(s,x):                       # x: (B,1,64,T) normalised log-mel
-        h=s.body(x).mean(2)                 # mean over freq -> (B,C,T')
+    def forward(s,x):
+        h=s.body(x).mean(2)
         h=torch.cat([h.mean(2),h.amax(2)],1)
         return s.head(h)
 CFG={'small':dict(w=[16,32,48,80,112]),'large':dict(w=[32,64,96,160,256])}

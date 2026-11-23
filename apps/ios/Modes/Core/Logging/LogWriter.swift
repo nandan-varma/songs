@@ -1,11 +1,6 @@
 import Foundation
 import ModesCore
 
-/// Buffered, rotating JSON-lines writer. Every mutable property is confined to `queue`, so the class is safe to share
-/// even though the compiler cannot see that. Callers never block: they enqueue and return.
-///
-/// Files live in `Documents/logs/modes-<UTC stamp>.jsonl`. A new launch appends to the newest file until it reaches
-/// `maxFileBytes`, then rotates; only the newest `keepFiles` files are kept, so roughly the last 3 MB of history survive.
 final class LogWriter: @unchecked Sendable {
     static let maxFileBytes = 1_000_000
     static let keepFiles = 3
@@ -22,7 +17,7 @@ final class LogWriter: @unchecked Sendable {
     private var handle: FileHandle?
     private var fileSize = 0
     private var seq = 0
-    /// nil until the bootstrap block has run; true when no previous session exists.
+
     private var previousEndedCleanly: Bool?
 
     init() {
@@ -33,19 +28,14 @@ final class LogWriter: @unchecked Sendable {
         queue.async { [self] in bootstrap() }
     }
 
-    // MARK: Producer API (any thread)
-
     func write(_ level: LogLevel, _ cat: String, _ msg: String, _ kv: [String: any Sendable]?, at ts: Date = Date()) {
         queue.async { [self] in append(level, cat, msg, kv, ts) }
     }
 
-    /// Asynchronous flush (used when the app goes to the background).
     func flush() { queue.async { [self] in flushBuffer() } }
 
-    /// Synchronous flush for the last moments of a process (uncaught exception, willTerminate).
     func flushAndWait() { queue.sync { flushBuffer() } }
 
-    /// `session_start`, queued behind the bootstrap so it can say whether the previous session ended cleanly.
     func logSessionStart(_ kv: [String: any Sendable]) {
         queue.async { [self] in
             var k = kv
@@ -54,7 +44,6 @@ final class LogWriter: @unchecked Sendable {
         }
     }
 
-    /// `session_end`, flushed straight away. `completion` runs on the log queue once the bytes are in the file.
     func logSessionEnd(_ kv: [String: any Sendable], completion: (@Sendable () -> Void)? = nil) {
         queue.async { [self] in
             append(.info, "session", SessionForensics.endMessage, kv, Date())
@@ -70,9 +59,6 @@ final class LogWriter: @unchecked Sendable {
         }
     }
 
-    // MARK: Queue-confined work
-
-    /// Reads the previous session's tail, then makes sure there is a file to append to.
     private func bootstrap() {
         let fm = FileManager.default
         try? fm.createDirectory(at: diagnosticsDirectory, withIntermediateDirectories: true)
@@ -117,7 +103,7 @@ final class LogWriter: @unchecked Sendable {
             try handle?.write(contentsOf: data)
             fileSize += data.count
         } catch {
-            handle = nil   // reopen on next flush; logging must never throw into the app
+            handle = nil
         }
     }
 
@@ -156,9 +142,6 @@ final class LogWriter: @unchecked Sendable {
         return String(decoding: data, as: UTF8.self).split(separator: "\n").map(String.init)
     }
 
-    // MARK: Diagnostics files (MetricKit)
-
-    /// Saves one MetricKit payload as `diagnostics/<stamp>-<kind>.json`, keeping the newest 40.
     func saveDiagnostic(_ json: Data, kind: String) {
         queue.async { [self] in
             let url = diagnosticsDirectory.appendingPathComponent("\(LogFormat.fileStamp(Date()))-\(kind).json")

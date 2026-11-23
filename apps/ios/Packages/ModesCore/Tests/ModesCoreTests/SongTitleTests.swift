@@ -12,38 +12,38 @@ struct TitleCase: Sendable, CustomTestStringConvertible {
 
 @Suite struct SongTitleTests {
     static let cases: [TitleCase] = [
-        // Hindi
+
         .init(raw: "Kesariya (From \"Brahmastra\")", title: "Kesariya", context: "Brahmastra"),
         .init(raw: "Satranga (From \"ANIMAL\")", title: "Satranga", context: "ANIMAL"),
         .init(raw: "Deewaniyat (From \"Ek Deewane Ki Deewaniyat\") (Original Motion Picture Soundtrack)", title: "Deewaniyat", context: "Ek Deewane Ki Deewaniyat"),
         .init(raw: "Jadu Prajapati (From \"Baba\") - Original Motion Picture Soundtrack", title: "Jadu Prajapati", context: "Baba"),
         .init(raw: "Shyamameghame ( From \"Adhipan\") (Original Motion Picture Soundtrack)", title: "Shyamameghame", context: "Adhipan"),
-        // Telugu / Tamil
+
         .init(raw: "Naacho Naacho (From \"Rrr\")", title: "Naacho Naacho", context: "Rrr"),
         .init(raw: "Whistle Podu (From \"The Greatest Of All Time\")", title: "Whistle Podu", context: "The Greatest Of All Time"),
         .init(raw: "Enna Solla (The New Life of Tamizh)", title: "Enna Solla (The New Life of Tamizh)", context: nil),
-        // Malayalam dash form
+
         .init(raw: "Kannil Pettole - From \"Thallumaala\"", title: "Kannil Pettole", context: "Thallumaala"),
         .init(raw: "Grudge Song - From “Thallumaala” - Original Motion Picture Soundtrack", title: "Grudge Song", context: "Thallumaala"),
-        // Entities
+
         .init(raw: "Dada Dhamaka (From &quot;Dada&quot;)", title: "Dada Dhamaka", context: "Dada"),
         .init(raw: "Tum Hi Ho (From &#039;Aashiqui 2&#039;)", title: "Tum Hi Ho", context: "Aashiqui 2"),
         .init(raw: "Rock &amp; Roll", title: "Rock & Roll", context: nil),
         .init(raw: "Love &lt;3 &gt; Hate", title: "Love <3 > Hate", context: nil),
         .init(raw: "Jack &amp;amp; Jill", title: "Jack & Jill", context: nil),
-        // Typographic quote variants
+
         .init(raw: "Naacho Naacho (From “Rrr”)", title: "Naacho Naacho", context: "Rrr"),
         .init(raw: "Heeriye (From „Race“)", title: "Heeriye", context: "Race"),
-        // Square brackets
+
         .init(raw: "Soul of Doctor (Theme) [From \"Doctor\"]", title: "Soul of Doctor (Theme)", context: "Doctor"),
-        // Nested parentheses
+
         .init(raw: "Tera Ban Jaunga (From \"Kabir Singh (Hindi)\")", title: "Tera Ban Jaunga", context: "Kabir Singh (Hindi)"),
         .init(raw: "Lo-fi Mix (Slow (Reverb))", title: "Lo-fi Mix (Slow (Reverb))", context: nil),
-        // Soundtrack noise without a film
+
         .init(raw: "Heege Doora (Original Motion Picture Soundtrack)", title: "Heege Doora", context: nil),
         .init(raw: "Theme Music - OST", title: "Theme Music", context: nil),
         .init(raw: "Bgm (OST)", title: "Bgm", context: nil),
-        // Meaningful suffixes survive
+
         .init(raw: "Apna Bana Le (Remix) (From \"Bhediya\")", title: "Apna Bana Le (Remix)", context: "Bhediya"),
         .init(raw: "Naanaadada Maathellava (Lofi)", title: "Naanaadada Maathellava (Lofi)", context: nil),
         .init(raw: "Raghu Pinjryat Ala (feat. Daisy Shah)", title: "Raghu Pinjryat Ala (feat. Daisy Shah)", context: nil),
@@ -51,19 +51,19 @@ struct TitleCase: Sendable, CustomTestStringConvertible {
         .init(raw: "Chamkeela Angeelesi - Rainy Lofi", title: "Chamkeela Angeelesi - Rainy Lofi", context: nil),
         .init(raw: "Mothura | Coke Studio Bangla", title: "Mothura | Coke Studio Bangla", context: nil),
         .init(raw: "Naatu (Lo-fi) - From \"Rrr\"", title: "Naatu (Lo-fi)", context: "Rrr"),
-        // Whitespace
+
         .init(raw: "  Chaleya   (From   \"Jawan\")  ", title: "Chaleya", context: "Jawan"),
         .init(raw: "Tera\u{00A0}Yaar\n(From \"Dhurandhar\")", title: "Tera Yaar", context: "Dhurandhar"),
-        // Typographic quotes in kept text
+
         .init(raw: "Don't Stop \"Believin'\"", title: "Don’t Stop “Believin’”", context: nil),
-        // Context from the album when the title names no film
+
         .init(raw: "Kesariya", title: "Kesariya", context: "Brahmastra", album: "Brahmastra (Original Motion Picture Soundtrack)"),
         .init(raw: "Naatu", title: "Naatu", context: "Rrr", album: "Rrr (From \"Rrr\")"),
         .init(raw: "Ranihaar", title: "Ranihaar", context: nil, album: "Ranihaar"),
         .init(raw: "Ek Din Pakhi Ure Jabe", title: "Ek Din Pakhi Ure Jabe", context: nil, album: "Ek Din Pakhi Ure Jabe - Kishore Kumar"),
         .init(raw: "Valayapatti", title: "Valayapatti", context: "Azagiya Tamil Magan", album: "Azagiya Tamil Magan"),
         .init(raw: "Bhool Bhulaiyaa (From \"Bhool Bhulaiyaa\")", title: "Bhool Bhulaiyaa", context: nil, album: "Bhool Bhulaiyaa"),
-        // Film named in the title wins over the album
+
         .init(raw: "Heeriye (From \"Race\")", title: "Heeriye", context: "Race", album: "Hits 2024"),
     ]
 

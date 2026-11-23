@@ -1,6 +1,5 @@
 import Foundation
 
-/// A saved or recently played song. `id` is the JioSaavn song id.
 public struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     public let id: String
     public var title: String
@@ -13,7 +12,6 @@ public struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
-/// Favorites (newest first) and recently played songs (newest first, de-duplicated, capped). Pure value; persisted as part of the app state.
 public struct LibraryState: Codable, Equatable, Sendable {
     public static let recentLimit = 50
 
@@ -26,7 +24,6 @@ public struct LibraryState: Codable, Equatable, Sendable {
 
     public func isFavorite(_ id: String) -> Bool { favorites.contains { $0.id == id } }
 
-    /// Adds (or moves to the front) a favorite.
     public mutating func addFavorite(_ item: LibraryItem) {
         favorites.removeAll { $0.id == item.id }
         favorites.insert(item, at: 0)
@@ -39,7 +36,6 @@ public struct LibraryState: Codable, Equatable, Sendable {
         return favorites.count != before
     }
 
-    /// Records a song that really started playing: moves it to the front, drops duplicates, keeps the newest `recentLimit`.
     public mutating func recordPlay(_ item: LibraryItem) {
         recents.removeAll { $0.id == item.id }
         recents.insert(item, at: 0)

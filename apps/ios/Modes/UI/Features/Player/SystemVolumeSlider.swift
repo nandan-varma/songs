@@ -1,7 +1,6 @@
 import MediaPlayer
 import SwiftUI
 
-/// The system volume slider, so hardware buttons, Control Centre and this slider stay in sync.
 struct SystemVolumeSlider: UIViewRepresentable {
     func makeUIView(context: Context) -> MPVolumeView {
         let v = MPVolumeView(frame: .zero)

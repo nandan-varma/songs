@@ -36,7 +36,7 @@ import Testing
 @Suite struct DisplayTextTests {
     @Test func decodesEntities() {
         #expect(DisplayText.clean("&quot;Hi&quot; &amp; &#039;bye&#039; &#x27;x&#x27; &lt;b&gt;") == "\"Hi\" & 'bye' 'x' <b>")
-        #expect(DisplayText.clean("AT&T rocks") == "AT&T rocks")        // not an entity
+        #expect(DisplayText.clean("AT&T rocks") == "AT&T rocks")
         #expect(DisplayText.clean("&bogus; &#0; ok") == "&bogus; &#0; ok")
     }
 

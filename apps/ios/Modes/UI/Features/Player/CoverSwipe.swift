@@ -2,8 +2,6 @@ import Observation
 import SwiftUI
 import UIKit
 
-/// Signed swipe progress, -1 (dislike, committed) ... +1 (like, committed). A tiny observable so only the views that read
-/// it (the backdrop and the dimmed rows) re-render while the finger moves, not the whole player.
 @Observable
 final class SwipeReveal {
     var progress: CGFloat = 0
@@ -11,11 +9,6 @@ final class SwipeReveal {
 
 enum SwipeAction { case like, dislike }
 
-/// A horizontal-only pan on the cover, backed by a `UIPanGestureRecognizer` that refuses to begin for vertical drags, so
-/// those fall through to LNPopupUI's own interactive close (cover morphing into the mini bar, velocity-based completion).
-/// - The recognizer begins only when the initial velocity is predominantly horizontal (|vx| > 1.2 |vy|).
-/// - The cover follows the finger and tilts like a card; the backdrop reveals LIKE (right) or DISLIKE (left).
-///   The commit threshold is 110 pt. One haptic tick fires when the threshold is crossed (and again when dragging back).
 struct CoverSwipe: ViewModifier {
     static let threshold: CGFloat = 110
     private static let flyDistance: CGFloat = 560
@@ -54,7 +47,6 @@ struct CoverSwipe: ViewModifier {
         if crossed != wasCrossed { wasCrossed = crossed; crossTick += 1 }
     }
 
-    /// `width` is the final translation, or 0 when the gesture was cancelled.
     private func ended(_ width: CGFloat) {
         guard !awaitingNext else { return }
         wasCrossed = false
@@ -83,13 +75,12 @@ struct CoverSwipe: ViewModifier {
                 try? await Task.sleep(for: .milliseconds(300))
                 onCommit(.dislike)
                 withAnimation(.easeOut(duration: 0.4)) { reveal.progress = 0 }
-                try? await Task.sleep(for: .milliseconds(1500))   // the next cover normally arrives well before this
+                try? await Task.sleep(for: .milliseconds(1500))
                 settle()
             }
         }
     }
 
-    /// The next cover is in: bring it in from the opposite (leading) edge, tilted, and spring it into place.
     private func settle() {
         guard awaitingNext else { return }
         awaitingNext = false
@@ -108,7 +99,6 @@ extension View {
         modifier(CoverSwipe(reveal: reveal, itemID: itemID, onBegin: onBegin, onWillDislike: onWillDislike, onCommit: onCommit))
     }
 
-    /// Dims a row slightly while a swipe reveal is active so the backdrop reads clearly.
     func dimmedByReveal(_ reveal: SwipeReveal) -> some View { modifier(RevealDim(reveal: reveal)) }
 }
 
@@ -117,8 +107,6 @@ private struct RevealDim: ViewModifier {
     func body(content: Content) -> some View { content.opacity(1 - 0.4 * min(1, abs(reveal.progress))) }
 }
 
-/// The player backdrop's reveal: an action-coloured gradient that grows in from the edge the finger moves toward, with a
-/// large glyph and label. Hue, icon and label all differ, so it never relies on red versus green.
 struct SwipeBackdrop: View {
     let reveal: SwipeReveal
 
@@ -159,7 +147,6 @@ struct SwipeBackdrop: View {
     }
 }
 
-/// A heart that pops and scatters smaller hearts over the cover. Reduce Motion gets a single fading heart.
 private struct HeartBurst: View {
     let reduceMotion: Bool
     @State private var go = false
@@ -185,8 +172,6 @@ private struct HeartBurst: View {
     }
 }
 
-/// Wraps a pan recognizer that only begins for horizontal drags. It is not required to wait for, or to fail before, any
-/// other recognizer, and it does not cancel touches, so LNPopupUI's pan and the double-tap are never delayed.
 private struct HorizontalPan: UIGestureRecognizerRepresentable {
     let onBegan: () -> Void
     let onChanged: (CGFloat) -> Void

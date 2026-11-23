@@ -20,7 +20,6 @@ const bioEntrySchema = z.object({
 	sequence: z.number().nullable(),
 });
 
-/** `bio` is a JSON-encoded string when present and `[]` when there is none. */
 function parseBio(bio: string | unknown[]) {
 	if (typeof bio !== "string" || !bio) return null;
 	try {
@@ -102,7 +101,6 @@ const sorting = (order: "asc" | "desc") => ({
 	sortOrder: z.enum(["asc", "desc"]).default(order),
 });
 
-/** Upstream names: `category` is the sort key, `sort_order` its direction. */
 const sortParams = (q: {
 	sortBy: string;
 	sortOrder: string;
@@ -133,7 +131,6 @@ async function getArtist(
 		...sortParams(options),
 	});
 	const artist = parseUpstream(artistSchema, data, call);
-	// An unknown id comes back as a 200 with every field blank.
 	if (!artist.name) {
 		throw new HTTPException(404, { message: "artist not found" });
 	}

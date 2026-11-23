@@ -1,7 +1,6 @@
 import Foundation
 import ModesCore
 
-/// Everything that survives a relaunch. Versioned; a file of another version is set aside, never read and never overwritten.
 private struct PersistedState: Codable {
     static let currentVersion = 3
 
@@ -31,7 +30,6 @@ extension AppModel {
             library = state.library
             playlists = state.playlists
         } catch {
-            // Move the unreadable file aside so the next save cannot overwrite it; if that fails, stop saving.
             let aside = Self.stateURL.deletingLastPathComponent()
                 .appendingPathComponent("listener-v3.unreadable-\(Int(Date().timeIntervalSince1970)).plist")
             AppLog.error("persistence", "state unreadable, moving it aside: \(error)")

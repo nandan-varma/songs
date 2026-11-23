@@ -7,7 +7,6 @@ for pid,p in raw.items(): bytitle[tuple(s['id'] for s in p['songs'] if s['id'] i
 def title_of(pl): return html.unescape(bytitle[tuple(pl)]['title']) if tuple(pl) in bytitle else ''
 def pid_of(pl): return bytitle[tuple(pl)]['id']
 clean=lambda t: re.sub(r'[^a-z0-9 ]',' ',html.unescape(t or '').lower())
-# collapse P entries back to playlist records
 TRr=[bytitle[tuple(p)] for p in TR if tuple(p) in bytitle]; TEr=[bytitle[tuple(p)] for p in TE if tuple(p) in bytitle]
 tv=TfidfVectorizer(ngram_range=(1,2),sublinear_tf=True,min_df=1); Pm=tv.fit_transform([clean(p['title']) for p in TRr])
 sv=TfidfVectorizer(sublinear_tf=True); Sm=sv.fit_transform([clean(' '.join([s['title'] or '',s['album'] or '',' '.join(n for _,n in s['artists']),s['lang'] or ''])) for s in (songs[i] for i in ids)])

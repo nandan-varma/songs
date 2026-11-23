@@ -14,7 +14,7 @@ def get(path,**q):
 CAT_PATH = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("CATALOG_JSON")
 if not CAT_PATH:
     sys.exit("usage: supply.py <catalog.json>   (or set CATALOG_JSON). The catalogue is in the archive bundle, not in the repo.")
-S = os.environ.get("SUPPLY_DIR", ".")  # working dir: data/ (playlists) in, exp3/ (outputs) out
+S = os.environ.get("SUPPLY_DIR", ".")
 cat = {i[0] for i in json.load(open(CAT_PATH))["items"]}
 shipped=set(cat)
 for p in glob.glob(f"{S}/data/playlists*.jsonl"):
@@ -22,8 +22,8 @@ for p in glob.glob(f"{S}/data/playlists*.jsonl"):
         for s in json.loads(l)['songs']: shipped.add(s['id'])
 print("catalog",len(cat),"catalog+playlists",len(shipped))
 LANGS="hindi english punjabi tamil telugu bengali marathi kannada malayalam gujarati".split()
-songs={}  # id -> song dict (first seen)
-src=collections.defaultdict(lambda: collections.defaultdict(set))  # lang -> source -> ids
+songs={}
+src=collections.defaultdict(lambda: collections.defaultdict(set))
 def addsongs(lang,source,items):
     for s in items or []:
         if s.get('type')!='song': continue
@@ -36,13 +36,11 @@ for L in LANGS:
     for a in al[:3]:
         d=get("/api/albums",id=a['id'])
         if d: addsongs(L,'new_album_top3',d.get('songs') or [])
-# charts
 charts=get("/api/charts") or []
 for c in charts:
     if c['id'] in ('1134543272','110858205','946682072'):
         d=get("/api/playlists",id=c['id'],limit=100)
         if d: addsongs('hindi','chart:'+c['name'],d.get('songs') or [])
-# channels
 chs=get("/api/channels") or []
 print("channels",len(chs))
 for c in chs[:6]:
@@ -61,19 +59,15 @@ for L in LANGS:
         **{k:len(v) for k,v in src[L].items()})
     rows.append(row); print(row)
 alls=set(songs); print("ALL distinct",len(alls),"not in catalog",len(alls-cat),"not in any playlist",len(alls-shipped))
-# langs of songs overall
 print(collections.Counter(s.get('language') for s in songs.values()).most_common(12))
 print("req so far",N)
-# year / release-date dist of new songs
 rel=[s.get('releaseDate') for i,s in songs.items() if i not in cat]
 print("new songs releaseDate>=2026-11-01:",sum(1 for r in rel if r and r>='2026-11-01'),"of",len(rel))
 json.dump({"songs":songs,"rows":rows},open(f"{S}/exp3/B_supply.json","w"))
-# overlap with older fresh crawl (day-over-day churn proxy)
 old=set()
 for l in open(f"{S}/data/playlists_fresh.jsonl"):
     for s in json.loads(l)['songs']: old.add(s['id'])
 print("old fresh crawl",len(old),"overlap with now",len(old&alls),"of now",len(alls))
-# (2) suggestions
 random.seed(3)
 pool=sorted(cat); samp=random.sample(pool,150)
 ok=0;newc=0;tot=0;cnts=[];newsug={}

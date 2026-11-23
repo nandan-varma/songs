@@ -2,7 +2,6 @@ import Foundation
 import ModesCore
 import Observation
 
-/// One undoable learning action: what to put back, and the song to bring back if it was rejected.
 struct UndoEntry {
     let label: String
     let snapshot: PersonalizedSnapshot
@@ -10,12 +9,10 @@ struct UndoEntry {
     let rejected: QueueItem?
 }
 
-/// Single-level undo that expires on its own. Holds at most one entry; pushing replaces it.
 @MainActor @Observable
 final class UndoStack {
     static let window: Duration = .seconds(6)
 
-    /// "Undo Less vocals" while an entry is available, otherwise nil.
     private(set) var label: String?
     var isAvailable: Bool { label != nil }
 
@@ -34,7 +31,6 @@ final class UndoStack {
         }
     }
 
-    /// Hands out the entry (once) and empties the stack.
     func take() -> UndoEntry? {
         defer { clear() }
         return entry

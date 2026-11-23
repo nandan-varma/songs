@@ -1,9 +1,8 @@
-import type { Card, TopResult, Track } from "@/lib/models";
+import type { Card, ImageLink, TopResult, Track } from "@/lib/models";
 import { api, unwrap } from "./client";
 import {
 	albumCard,
 	artistCard,
-	best,
 	playlistCard,
 	toTrack,
 	toTracks,
@@ -18,7 +17,7 @@ export interface Collection {
 	title: string;
 	subtitle?: string;
 	meta?: string;
-	image: string;
+	image: ImageLink[];
 	tracks: Track[];
 }
 
@@ -59,7 +58,7 @@ export async function getAlbum(id: string): Promise<Collection> {
 			album.year?.toString(),
 			countLabel(album.songCount, "songs"),
 		),
-		image: best(album.image),
+		image: album.image,
 		tracks: toTracks(album.songs),
 	};
 }
@@ -83,7 +82,7 @@ export async function getPlaylist(id: string): Promise<Collection> {
 		title: first.name,
 		subtitle: first.description ?? undefined,
 		meta: countLabel(first.songCount, "songs"),
-		image: best(first.image),
+		image: first.image,
 		tracks: toTracks(songs),
 	};
 }
@@ -102,7 +101,7 @@ export async function getArtist(id: string) {
 		meta: artist.followerCount
 			? `${compact.format(artist.followerCount)} followers`
 			: undefined,
-		image: best(artist.image),
+		image: artist.image,
 		songs: toTracks(artist.topSongs),
 		albums: uniqueById(artist.topAlbums.map(albumCard)),
 		similar: uniqueById(artist.similarArtists.map(artistCard)),
@@ -221,7 +220,7 @@ export async function searchOverview(
 			kind: topResult.type,
 			title: topResult.name,
 			subtitle: topResult.subtitle ?? undefined,
-			image: best(topResult.image),
+			image: topResult.image,
 		},
 		songs: toTracks(result.songs),
 		albums: uniqueById(result.albums.map(albumCard)),

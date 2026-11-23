@@ -1,3 +1,8 @@
+export interface ImageLink {
+	quality: string;
+	url: string;
+}
+
 interface ArtistRef {
 	id: string;
 	name: string;
@@ -8,7 +13,7 @@ export interface Track {
 	title: string;
 	artists: ArtistRef[];
 	album: { id: string; name: string } | null;
-	image: string;
+	image: ImageLink[];
 	audioUrl: string;
 	duration: number;
 }
@@ -20,7 +25,7 @@ export interface Card {
 	kind: CardKind;
 	title: string;
 	subtitle?: string;
-	image: string;
+	image: ImageLink[];
 }
 
 export interface TopResult {
@@ -28,5 +33,5 @@ export interface TopResult {
 	kind: "song" | CardKind;
 	title: string;
 	subtitle?: string;
-	image: string;
+	image: ImageLink[];
 }

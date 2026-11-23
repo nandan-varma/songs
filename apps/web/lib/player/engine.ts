@@ -37,7 +37,10 @@ export function startEngine(): () => void {
 			title: track.title,
 			artist: track.artists.map((a) => a.name).join(", "),
 			album: track.album?.name ?? "",
-			artwork: [{ src: track.image }],
+			artwork: track.image.map(({ quality, url }) => ({
+				src: url,
+				sizes: quality,
+			})),
 		});
 	};
 

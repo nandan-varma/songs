@@ -193,3 +193,31 @@ grapheme-count of at least 2. Everything was re-run with the app's exact rules (
 
 D alone: 0.202 (cold song), 0.191 (warm, +0.045 ± 0.008). Runtime co-occurrence C still adds nothing on top of A + D (0.212). Conclusions unchanged.
 Thompson 0.04 costs -0.009 ± 0.005. Shipped export: 17,022 tokens (album tokens included, no composer tokens), 2.18 MB fp16 table, 0.31 MB vocab.
+
+## Round 3: language stereotype personas (synthetic, status: closed until real usage data)
+
+Question: given a few seeded likes, does the learner keep recommending songs that fit a taste stereotype, and can the model be improved?
+
+Setup (`personas.py`, `plib.py`, `run_personas.py`, `build_personas.py`, `build_arch.py`, `diag_ceiling.py`):
+- A persona is a language plus a theme. Themes are regexes over playlist titles (retro, romance, sad, party, hip-hop, devotional, folk, new, millennial, chill, plus composites lovelorn = romance+sad and throwback = retro+millennial). Its songs are those of that language in the matching playlists. Five themes per language were chosen greedily by size with Jaccard overlap below 0.45, giving 55 personas over 11 languages. English has too few playlists (189 songs) and got none.
+- Behaviour: a member song is liked with p 0.9, a non-member with p 0.03. Reactions follow `sessions.py` (finish +1, 12 % early skip, 35 % "suggest less" on dislikes).
+- Held-out encoder: for each persona the encoder is retrained on all playlists except the persona's own, so ground truth is never in training.
+- Protocol: seed 1, 3, 5, 10 or 20 liked songs, then 15 rounds of 5-song slates drawn from the persona's language. Metric is the share of the slate that belongs to the persona's set ("fit"); lift is fit over the base rate (0.19 on average). 28 personas were used for tuning and 27 for validation. Differences under about 0.02 are noise.
+
+| Learner | Tune (28) | Validation (27) | All 55 | Lift |
+|---|---|---|---|---|
+| Shipped (diagonal ridge on hashed + 0.5·dense, Thompson 0.04, artist cap 2, no consecutive artist) | 0.60 | 0.536 | 0.568 | 3.4x |
+| Logistic regression on hashed + dense + log play count, 100 random pool songs as weak negatives (weight 0.3), cap 5, no consecutive rule | 0.67 | 0.585 | 0.628 | 3.75x |
+
+The logistic learner beat the shipped one on 41 of 55 personas (+0.060 ± 0.011). Most of the gain is the first slates: after one seed song 0.47 vs 0.37 on validation. Every language improved or tied (Bengali tied); haryanvi (0.50) and punjabi (0.56) are weakest, hindi (0.71) strongest. By lift: chill 6.3x, hip-hop 5.8x, devotional 5.3x, millennial 5.2x, romance 2.5x, party 2.7x.
+
+What did not help (all within noise of 0.66 on the tuning set):
+- Encoder variants: 128 dims, MLP hidden 256, 4000 steps, dropout 0.4, temperature 0.03.
+- Stereotype library: per-language and cross-language theme classifiers (themes held out for the persona) fed as features. 0.616 to 0.671 against 0.667, worse at higher weight.
+- Fixed versus resampled pseudo-negatives, 400 or 5000 negatives, regularisation C 0.3 to 3, Thompson noise on the logistic score, centroid blending, widening the dense part.
+- Removing the artist cap or the consecutive-artist rule: +0.01, within noise.
+- Play-count prior: about +0.02 to +0.04, borderline; it assumes the API returns plays for every song.
+
+Why it plateaus: fit is about 0.75 at round 5 and about 0.6 at round 15, because the model runs out of songs it can confidently identify. A supervised logistic model given 100 randomly labelled songs reaches only 0.67 to 0.74 precision at depth 100 (hashed 0.67, dense 0.68, both 0.74), versus 0.29 for play count alone and 0.18 for random. The metadata features, not the online learner or the encoder, are the limit.
+
+Not verified: real people, English, whether a Swift logistic refit each round fits the time budget, play counts at runtime. Personas are playlist-title themes, not measured taste. Nothing here was ported to the app; the shipped learner is unchanged. Decision: wait for real listening (skip rate by `model` and `source`) before porting.

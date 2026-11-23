@@ -8,6 +8,7 @@ struct SearchView: View {
     @State private var settled: String?
     @State private var overview = OverviewSearch()
     @State private var attempt = 0
+    @Namespace private var zoom
 
     var body: some View {
         NavigationStack {
@@ -21,6 +22,7 @@ struct SearchView: View {
                 .searchSuggestions { recents }
                 .onSubmit(of: .search) { model.rememberSearch(query) }
                 .toolbar { ToolbarItem(placement: .topBarTrailing) { SettingsButton() } }
+                .environment(\.zoomNamespace, zoom)
                 .musicRoutes()
                 .task(id: query) {
                     guard let text = SearchQuery.normalized(query) else { settled = nil; return }
@@ -86,33 +88,27 @@ private struct OverviewList: View {
                 Section("Top result") { TopResultRow(top: top, songs: results.songs, context: context) }
             }
             if !results.songs.isEmpty {
-                Section { ForEach(results.songs) { SongListRow(source: .hit($0), context: context) } }
+                Section { ForEach(results.songs) { SongListRow(source: .hit($0), context: context, detail: "Song") } }
                     header: { header("Songs", .songs, results.songs.count) }
             }
             if !results.albums.isEmpty {
                 Section {
                     ForEach(results.albums) { album in
-                        NavigationLink(value: MusicRoute.album(album.id)) {
-                            CollectionRow(imageURL: album.image, title: album.name, subtitle: album.subtitle ?? "")
-                        }
+                        LinkRow(route: MusicRoute.album(album.id), imageURL: album.image, title: album.name, subtitle: kindLine("Album", album.subtitle))
                     }
                 } header: { header("Albums", .albums, results.albums.count) }
             }
             if !results.artists.isEmpty {
                 Section {
                     ForEach(results.artists) { artist in
-                        NavigationLink(value: MusicRoute.artist(artist.id)) {
-                            CollectionRow(imageURL: artist.image, title: artist.name, subtitle: artist.roles.first ?? "", round: true)
-                        }
+                        LinkRow(route: MusicRoute.artist(artist.id), imageURL: artist.image, title: artist.name, subtitle: "Artist", round: true)
                     }
                 } header: { header("Artists", .artists, results.artists.count) }
             }
             if !results.playlists.isEmpty {
                 Section {
                     ForEach(results.playlists) { playlist in
-                        NavigationLink(value: MusicRoute.playlist(playlist.id)) {
-                            CollectionRow(imageURL: playlist.image, title: playlist.name, subtitle: playlist.subtitle ?? "")
-                        }
+                        LinkRow(route: MusicRoute.playlist(playlist.id), imageURL: playlist.image, title: playlist.name, subtitle: kindLine("Playlist", playlist.subtitle))
                     }
                 } header: { header("Playlists", .playlists, results.playlists.count) }
             }
@@ -140,13 +136,10 @@ private struct TopResultRow: View {
 
     var body: some View {
         if top.kind == .song, let hit = songs.first(where: { $0.song.id == top.id }) {
-            SongListRow(source: .hit(hit), context: context)
+            SongListRow(source: .hit(hit), context: context, detail: "Song")
         } else if let route {
-            NavigationLink(value: route) {
-                CollectionRow(imageURL: top.image, title: top.name,
-                              subtitle: [top.kind.rawValue.capitalized, top.subtitle].compactMap { $0 }.joined(separator: " · "),
-                              round: top.kind == .artist)
-            }
+            LinkRow(route: route, imageURL: top.image, title: top.name,
+                    subtitle: kindLine(top.kind.rawValue.capitalized, top.subtitle), round: top.kind == .artist)
         }
     }
 

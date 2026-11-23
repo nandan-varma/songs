@@ -5,9 +5,10 @@ public struct LocalPlaylist: Codable, Identifiable, Hashable, Sendable {
     public var name: String
     public var songs: [LibraryItem]
     public var created: Date
+    public var cover: Int?
 
-    public init(id: UUID = UUID(), name: String, songs: [LibraryItem] = [], created: Date = Date()) {
-        self.id = id; self.name = name; self.songs = songs; self.created = created
+    public init(id: UUID = UUID(), name: String, songs: [LibraryItem] = [], created: Date = Date(), cover: Int? = nil) {
+        self.id = id; self.name = name; self.songs = songs; self.created = created; self.cover = cover
     }
 
     @discardableResult

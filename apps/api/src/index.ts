@@ -4,6 +4,8 @@ import { HTTPException } from "hono/http-exception";
 import { albums } from "./albums.js";
 import { artists } from "./artists.js";
 import { browse } from "./browse.js";
+import { launch } from "./launch.js";
+import { lyrics } from "./lyrics.js";
 import { playlists } from "./playlists.js";
 import { search } from "./search.js";
 import { songs } from "./songs.js";
@@ -28,7 +30,9 @@ const app = new Hono()
 	.route("/artists", artists)
 	.route("/playlists", playlists)
 	.route("/search", search)
-	.route("/", browse);
+	.route("/", browse)
+	.route("/", launch)
+	.route("/", lyrics);
 
 app.notFound((c) =>
 	c.json({ success: false as const, message: "route not found" }, 404),

@@ -43,6 +43,7 @@ final class AppModel {
     var currentBitrate: Int?
 
     var hasSession = false
+    var repeatSong = false
 
     var lastMoveForward = true
     var toast: String?
@@ -60,6 +61,9 @@ final class AppModel {
     var homeReady = false
 
     var homeFailed = false
+    var launch: SaavnAPI.Launch?
+    var listening = ListeningStats()
+    var launchFailed = false
     var homeVersion = 0
     var modelStats: PersonalizedStats?
     var modelStatsLoading = false
@@ -97,6 +101,12 @@ final class AppModel {
     @ObservationIgnored var knownSongs: [String: SongFeatures] = [:]
     @ObservationIgnored var displayCache: [String: SongDisplay] = [:]
     @ObservationIgnored var lyricsCache: [String: String] = [:]
+    @ObservationIgnored var syncedCache: [String: SaavnAPI.SyncedLyrics] = [:]
+    @ObservationIgnored var launchLanguages: [String] = []
+    @ObservationIgnored var tally = ListeningTally()
+    @ObservationIgnored var lastTick: Date?
+    @ObservationIgnored var listeningSaveTask: Task<Void, Never>?
+    @ObservationIgnored var listeningBlocked = false
     @ObservationIgnored var recentSearchesBlocked = false
 
     @ObservationIgnored var failures = 0
@@ -124,6 +134,7 @@ final class AppModel {
 
     init() {
         loadState()
+        loadListening()
         loadRecentSearches()
         reconcileLikes()
         AppLog.info("launch", "profile dim \(SparseLearner.dimension), observations \(profile.learner.observations), "
@@ -167,7 +178,12 @@ final class AppModel {
             duration = d; syncNowPlaying()
         }
 
-        if player.timeControlStatus == .playing, player.currentItem != nil, !playback.closed { playback.markStarted() }
+        let now = Date()
+        if player.timeControlStatus == .playing, player.currentItem != nil, !playback.closed {
+            playback.markStarted()
+            if let lastTick { tally.advance(by: now.timeIntervalSince(lastTick)) }
+            lastTick = now
+        } else { lastTick = nil }
         let playing = player.timeControlStatus != .paused
         if playing != isPlaying, player.currentItem != nil { isPlaying = playing; syncNowPlaying() }
     }

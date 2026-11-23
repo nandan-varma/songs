@@ -1,7 +1,7 @@
 import Foundation
 
 public enum LearningSignal: String, Codable, Sendable, CaseIterable {
-    case completion, partialListen, skip, rejection, favorite, manualPick
+    case completion, partialListen, skip, rejection, favorite, manualPick, replay, save, queue
 }
 
 public struct LearningGate: Hashable, Sendable {

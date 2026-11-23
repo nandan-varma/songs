@@ -4,8 +4,9 @@ import SwiftUI
 
 struct PlayerView: View {
     @Environment(AppModel.self) private var model
-    @State private var showQueue = false
-    @State private var showLyrics = false
+    @State private var pane = PlayerPane.artwork
+    @Namespace private var morph
+    @State private var queueWarm = false
     @State private var favoriteTick = 0
     @State private var feedbackTick = 0
     @State private var reveal = SwipeReveal()
@@ -36,8 +37,6 @@ struct PlayerView: View {
         .environment(\.colorScheme, .dark)
         .tint(.white)
         .foregroundStyle(.white)
-        .sheet(isPresented: $showQueue) { UpNextView().presentationDetents([.medium, .large]) }
-        .sheet(isPresented: $showLyrics) { LyricsView().presentationDetents([.medium, .large]) }
         .haptic(.success, trigger: favoriteTick)
         .haptic(.impact(weight: .medium), trigger: feedbackTick)
         .modifier(PlayerPopupBar())
@@ -67,22 +66,74 @@ struct PlayerView: View {
         }
         return ZStack(alignment: .topLeading) {
             SleepTimerBadge().frame(maxWidth: .infinity)
-            place((PlayerLayout.artTop + PlayerLayout.artBottom) / 2, width: w) { artworkStage(item, side: side) }
-            place(PlayerLayout.titleCenter, x: PlayerLayout.margin + titleWidth / 2 / w, width: titleWidth) { titleRow(item) }
+            if pane == .artwork {
+                place((PlayerLayout.artTop + PlayerLayout.artBottom) / 2, width: w) { artworkStage(item, side: side) }
+                place(PlayerLayout.titleCenter, x: PlayerLayout.margin + titleWidth / 2 / w, width: titleWidth) { titleRow(item) }
+                    .transition(.opacity.animation(.easeOut(duration: 0.14)))
+            } else {
+                place(0.149, width: content) { compactHeader(item) }
+                    .transition(.opacity.animation(.easeOut(duration: 0.2).delay(0.08)))
+            }
+            queueLayer.frame(width: content, height: (0.645 - 0.215) * screen)
+                .position(x: w / 2, y: (0.215 + 0.645) / 2 * screen - inset.top)
+            if pane == .lyrics {
+                LyricsPane().frame(width: content, height: (0.645 - 0.215) * screen)
+                    .position(x: w / 2, y: (0.215 + 0.645) / 2 * screen - inset.top)
+                    .transition(.opacity.animation(.easeOut(duration: 0.22).delay(0.1)))
+            }
             place(PlayerLayout.progressCenter, width: content) { PlayerScrubber() }
             place(PlayerLayout.transportCenter, width: w) { transport(width: w) }
             place(PlayerLayout.volumeCenter, width: w) { volume(width: w) }
             place(PlayerLayout.bottomCenter, width: w) { bottomRow(width: w) }
         }
         .frame(width: w, height: geo.size.height, alignment: .topLeading)
+        .animation(reduceMotion ? nil : .smooth(duration: 0.36), value: pane)
+        .task { try? await Task.sleep(for: .milliseconds(700)); queueWarm = true }
+    }
+
+    @ViewBuilder private var queueLayer: some View {
+        if queueWarm || pane == .queue {
+            QueuePane()
+                .opacity(pane == .queue ? 1 : 0)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.24).delay(pane == .queue ? 0.1 : 0), value: pane)
+                .allowsHitTesting(pane == .queue)
+                .accessibilityHidden(pane != .queue)
+        }
+    }
+
+    @ViewBuilder private var paneContent: some View {
+        switch pane {
+        case .lyrics: LyricsPane()
+        case .queue: QueuePane()
+        case .artwork: EmptyView()
+        }
+    }
+
+    private func compactHeader(_ item: QueueItem?) -> some View {
+        let fav = model.isFavorite(item)
+        return CompactHeader(item: item, morph: morph) {
+            Button { favorite() } label: {
+                Image(systemName: fav ? "star.fill" : "star").font(.title3).frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize)
+            }
+            .buttonStyle(PressableStyle()).accessibilityLabel("Favorite")
+            Menu { PlayerMenuItems(item: item) { feedbackTick += 1 } } label: {
+                Image(systemName: "ellipsis").font(.title3).frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize)
+            }
+            .accessibilityLabel("More")
+        }
     }
 
     private func column(side: CGFloat, gap: CGFloat, top: CGFloat) -> some View {
         let item = model.current
         return VStack(spacing: 0) {
             SleepTimerBadge()
-            artworkStage(item, side: side).padding(.top, top)
-            titleRow(item).padding(.top, gap * 1.5)
+            if pane == .artwork {
+                artworkStage(item, side: side).padding(.top, top)
+                titleRow(item).padding(.top, gap * 1.5)
+            } else {
+                compactHeader(item).padding(.top, top)
+                paneContent.frame(height: 360).padding(.top, gap)
+            }
             PlayerScrubber().padding(.top, gap)
             transport(width: UIScreen.main.bounds.width).padding(.top, gap * 0.6)
             volume(width: UIScreen.main.bounds.width).padding(.top, gap * 0.6)
@@ -101,6 +152,8 @@ struct PlayerView: View {
                           removal: .move(edge: forward ? .leading : .trailing).combined(with: .opacity))
         return ZStack {
             CoverTile(image: model.currentArt, loading: model.loading)
+                .drawingGroup()
+                .matchedGeometryEffect(id: "art", in: morph)
                 .id(item?.id ?? "none")
                 .transition(slide)
         }
@@ -109,7 +162,7 @@ struct PlayerView: View {
         .scaleEffect(model.isPlaying || reduceMotion ? 1 : PlayerLayout.pausedScale)
         .overlay(alignment: .bottom) { if showHint { swipeHint.padding(.bottom, 10).transition(.opacity) } }
         .frame(maxWidth: .infinity)
-        .animation(reduceMotion ? nil : .spring(duration: 0.5, bounce: 0.25), value: model.isPlaying)
+        .animation(reduceMotion ? nil : .spring(duration: 0.4, bounce: 0.15), value: model.isPlaying)
         .animation(reduceMotion ? nil : .spring(duration: 0.45, bounce: 0.12), value: item?.id)
         .coverSwipe(reveal: reveal, itemID: item?.id ?? "none",
                     onBegin: { withAnimation(.easeOut(duration: 0.25)) { hintDismissed = true } },
@@ -215,11 +268,11 @@ struct PlayerView: View {
     private func bottomRow(width: CGFloat) -> some View {
         let cell = width * PlayerLayout.bottomSpread
         return HStack(spacing: 0) {
-            rowButton("Lyrics", "quote.bubble", active: showLyrics, enabled: model.currentHasLyrics) { showLyrics = true }
+            rowButton("Lyrics", "quote.bubble", active: pane == .lyrics, enabled: true) { toggle(.lyrics) }
                 .frame(width: cell)
             AirPlayButton().frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize).frame(width: cell)
                 .accessibilityLabel("AirPlay")
-            rowButton("Up next", "list.bullet", active: showQueue, enabled: true) { showQueue = true }
+            rowButton("Up next", "list.bullet", active: pane == .queue, enabled: true) { toggle(.queue) }
                 .frame(width: cell)
         }
         .dimmedByReveal(reveal)
@@ -229,6 +282,7 @@ struct PlayerView: View {
                            _ action: @escaping () -> Void) -> some View {
         Button { feedbackTick += 1; action() } label: {
             Image(systemName: icon).font(.system(size: rowIcon)).frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize)
+                .background(active ? Color.white.opacity(0.28) : .clear, in: .circle)
         }
         .buttonStyle(PressableStyle())
         .foregroundStyle(active ? Color.white : .playerSecondary)
@@ -238,6 +292,8 @@ struct PlayerView: View {
     }
 
     private func favorite() { favoriteTick += 1; model.feedback(.favorite) }
+
+    private func toggle(_ target: PlayerPane) { pane = pane == target ? .artwork : target }
 }
 
 private struct CoverTile: View {

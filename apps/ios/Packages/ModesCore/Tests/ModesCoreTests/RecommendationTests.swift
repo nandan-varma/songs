@@ -8,6 +8,13 @@ struct RecommendationTests {
         SongFeatures(id: id, title: title, artist: artist, album: album, language: language, year: year)
     }
 
+    private func fitted(_ profile: PersonalizedProfile) -> SparseLearner {
+        var learner = profile.learner
+        let background = (0..<20).map { TestEncoder.encoder.features(for: song("bg\($0)", title: "Filler \($0)", artist: "Other \($0)", album: "Album \($0)", language: "tamil")) }
+        learner.fit(unlabeled: background)
+        return learner
+    }
+
     @Test func hashingIsStableAndNormalised() {
         let first = FeatureHasher.vector(for: song("1", title: "Love Story", artist: "Arijit Singh"))
         let second = FeatureHasher.vector(for: song("1", title: "Love Story", artist: "Arijit Singh"))
@@ -28,14 +35,14 @@ struct RecommendationTests {
         let unrelated = song("3", title: "Heavy Metal", artist: "Someone Else")
 
         profile.learn(seed, signal: .picked, encoder: TestEncoder.encoder)
-        let seedScore = profile.learner.mean(TestEncoder.encoder.features(for: seed))
-        let similarScore = profile.learner.mean(TestEncoder.encoder.features(for: similar))
-        let unrelatedScore = profile.learner.mean(TestEncoder.encoder.features(for: unrelated))
-        #expect(seedScore > 0)
+        let seedScore = fitted(profile).score(TestEncoder.encoder.features(for: seed))
+        let similarScore = fitted(profile).score(TestEncoder.encoder.features(for: similar))
+        let unrelatedScore = fitted(profile).score(TestEncoder.encoder.features(for: unrelated))
+        #expect(seedScore > unrelatedScore)
         #expect(similarScore > unrelatedScore)
 
         profile.learn(unrelated, signal: .rejected, encoder: TestEncoder.encoder)
-        #expect(profile.learner.mean(TestEncoder.encoder.features(for: unrelated)) < 0)
+        #expect(fitted(profile).score(TestEncoder.encoder.features(for: unrelated)) < 0)
         #expect(profile.banned == ["3"])
     }
 
@@ -57,7 +64,7 @@ struct RecommendationTests {
         #expect(profile.learner.observations == 0)
         profile.learn(song("1"), signal: .skipped(fraction: 0, heard: true), encoder: TestEncoder.encoder)
         #expect(profile.learner.observations == 1)
-        #expect(profile.learner.mean(TestEncoder.encoder.features(for: song("1"))) < 0)
+        #expect(fitted(profile).score(TestEncoder.encoder.features(for: song("1"))) < 0)
     }
 
     @Test func rankingFiltersExclusionsRecentAndLanguages() {
@@ -101,7 +108,7 @@ struct RecommendationTests {
         var profile = PersonalizedProfile()
         let target = song("1", title: "Love Story", artist: "Arijit Singh")
         profile.learn(target, signal: .favorite, encoder: TestEncoder.encoder)
-        let explanation = profile.learner.explanation(for: TestEncoder.encoder.features(for: target))
+        let explanation = fitted(profile).explanation(for: TestEncoder.encoder.features(for: target))
         #expect(explanation != nil)
         #expect(explanation?.isEmpty == false)
     }
@@ -114,7 +121,7 @@ struct RecommendationTests {
         let decoded = try PropertyListDecoder().decode(PersonalizedProfile.self, from: data)
         #expect(decoded.learner.observations == 1)
         #expect(decoded.banned == ["2"])
-        #expect(decoded.learner.mean(TestEncoder.encoder.features(for: song("1"))) > 0)
+        #expect(fitted(decoded).score(TestEncoder.encoder.features(for: song("1"))) > 0)
     }
 }
 

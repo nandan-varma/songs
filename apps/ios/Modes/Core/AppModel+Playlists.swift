@@ -3,9 +3,9 @@ import ModesCore
 
 extension AppModel {
     @discardableResult
-    func createPlaylist(named name: String) -> UUID {
+    func createPlaylist(named name: String, cover: Int? = nil) -> UUID {
         let title = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let playlist = LocalPlaylist(name: title.isEmpty ? "New Playlist" : title)
+        let playlist = LocalPlaylist(name: title.isEmpty ? "New Playlist" : title, cover: cover ?? Int.random(in: 0..<PlaylistCover.palettes.count))
         playlists.insert(playlist, at: 0)
         scheduleSave()
         return playlist.id
@@ -30,6 +30,8 @@ extension AppModel {
             return
         }
         flash("Added to \(playlists[index].name)")
+        learn(songItem(for: source), .saved)
+        noteTasteChange()
         scheduleSave()
     }
 
@@ -37,5 +39,23 @@ extension AppModel {
         guard let index = playlists.firstIndex(where: { $0.id == playlistID }) else { return }
         guard playlists[index].remove(songID: songID) else { return }
         scheduleSave()
+    }
+
+    func rejectSong(_ source: SongReference) {
+        let item = songItem(for: source)
+        learn(item, .rejected)
+        unplayable.insert(item.id)
+        upNext.removeAll { $0.id == item.id }
+        noteTasteChange()
+        scheduleSave()
+        flash("You’ll hear less like this")
+    }
+
+    func startStation(for source: SongReference) {
+        let item = songItem(for: source)
+        let name = display(item).compactArtist.split(separator: ",").first.map { String($0).trimmingCharacters(in: .whitespaces) } ?? item.song.artist
+        let tile = SaavnAPI.Tile(id: item.id, kind: .radioStation, name: "\(name) Radio", subtitle: nil, image: item.song.image,
+                                 language: item.song.language, color: nil, stationKind: "artist", stationQuery: name)
+        Task { await playStation(tile) }
     }
 }

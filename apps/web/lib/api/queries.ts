@@ -10,6 +10,7 @@ import {
 	type CardSearchKind,
 	getLyrics,
 	getSuggestions,
+	getSyncedLyrics,
 	getTrending,
 	type Page,
 	searchCards,
@@ -85,6 +86,18 @@ export const useSuggestions = (songId: string) =>
 	useQuery({
 		queryKey: ["suggestions", songId],
 		queryFn: () => getSuggestions(songId),
+	});
+
+export const useSyncedLyrics = (
+	title: string,
+	artist: string,
+	duration: number,
+) =>
+	useQuery({
+		queryKey: ["synced-lyrics", title, artist],
+		queryFn: () => getSyncedLyrics(title, artist, duration),
+		retry: false,
+		staleTime: Number.POSITIVE_INFINITY,
 	});
 
 export const useLyrics = (lyricsId: string) =>

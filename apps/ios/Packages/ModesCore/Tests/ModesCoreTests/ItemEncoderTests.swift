@@ -53,7 +53,7 @@ struct ItemEncoderTests {
     @Test func denseDimsAreAppendedAfterTheHashedRange() throws {
         let song = try #require(try golden().songs.first?.song)
         let features = TestEncoder.encoder.features(for: song)
-        let dense = zip(features.indices, features.values).filter { Int($0.0) >= FeatureHasher.dimension }
+        let dense = zip(features.indices, features.values).filter { Int($0.0) >= FeatureHasher.dimension && Int($0.0) < SparseLearner.popularityIndex }
         #expect(!dense.isEmpty)
         #expect(features.indices.allSatisfy { Int($0) < SparseLearner.dimension })
         let norm = dense.reduce(Float(0)) { $0 + $1.1 * $1.1 }.squareRoot()

@@ -56,6 +56,7 @@ extension AppModel {
     private func queueSong(_ source: SongReference, last: Bool) {
         let item = songItem(for: source)
         guard current != nil, hasSession else { playSong(source); return }
+        learn(item, .queued)
         let position = last ? nil : listenerQueue.reservePosition(for: item.id)
         adopt(source)
         guard resolved[item.id] == nil else { enqueue(item, position: position, last: last); return }
@@ -90,6 +91,23 @@ extension AppModel {
         prefetch()
         flash(last ? "Added to play last" : "Playing next")
         AppLog.info("queue", "listener queued \(queued.id), last \(last)")
+    }
+
+    func moveUpNext(from offsets: IndexSet, to destination: Int) {
+        var ordered = upNext
+        ordered.move(fromOffsets: offsets, toOffset: destination)
+        listenerQueue.replacePins(with: ordered)
+        upNext = listenerQueue.combining([], excluding: current?.id)
+        prefetch()
+        AppLog.info("queue", "reordered up next")
+    }
+
+    func removeFromUpNext(_ id: String) {
+        listenerQueue.consume(id: id)
+        unplayable.insert(id)
+        upNext.removeAll { $0.id == id }
+        prefetch()
+        Task { await refill() }
     }
 
     func prefetch() {

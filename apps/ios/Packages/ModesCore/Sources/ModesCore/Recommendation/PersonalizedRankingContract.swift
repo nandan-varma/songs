@@ -41,8 +41,8 @@ public struct PersonalizedStats: Sendable {
         liked = profile.liked.count
         recent = profile.recent.count
         dimension = SparseLearner.dimension
-        var active = 0
-        for precision in profile.learner.precision where precision > profile.learner.prior + 0.0001 { active += 1 }
-        activeFeatures = active
+        var fitted = profile.learner
+        fitted.fit(unlabeled: [])
+        activeFeatures = max(fitted.activeFeatureCount, profile.learner.activeFeatureCount)
     }
 }

@@ -7,7 +7,8 @@ struct SystemVolumeSlider: UIViewRepresentable {
 }
 
 final class ThinVolumeView: MPVolumeView {
-    private static let touchThumb = UIGraphicsImageRenderer(size: CGSize(width: 28, height: 28)).image { _ in }
+    private static let thumbSide: CGFloat = 28
+    private static let touchThumb = UIGraphicsImageRenderer(size: CGSize(width: thumbSide, height: thumbSide)).image { _ in }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -16,6 +17,10 @@ final class ThinVolumeView: MPVolumeView {
 
     required init?(coder: NSCoder) { nil }
 
+    override func volumeSliderRect(forBounds bounds: CGRect) -> CGRect {
+        CGRect(x: bounds.minX, y: bounds.midY - Self.thumbSide / 2, width: bounds.width, height: Self.thumbSide)
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         guard let slider = subviews.compactMap({ $0 as? UISlider }).first else { return }
@@ -23,5 +28,6 @@ final class ThinVolumeView: MPVolumeView {
         slider.setThumbImage(Self.touchThumb, for: .highlighted)
         slider.minimumTrackTintColor = UIColor.white.withAlphaComponent(0.7)
         slider.maximumTrackTintColor = UIColor.white.withAlphaComponent(0.25)
+        slider.frame = volumeSliderRect(forBounds: bounds)
     }
 }

@@ -14,19 +14,20 @@ struct PlayerView: View {
     @AppStorage("hint.swipedLike") private var likedBySwipe = false
     @AppStorage("hint.swipedDislike") private var dislikedBySwipe = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
     @ScaledMetric(relativeTo: .title) private var sideIcon = 34
     @ScaledMetric(relativeTo: .title) private var playIcon = 60
     @ScaledMetric(relativeTo: .body) private var rowIcon = 22
 
     var body: some View {
         GeometryReader { geo in
-            let side = max(120, geo.size.width * 0.64)
-            let gap = max(12, geo.size.height * 0.024)
-            ViewThatFits(in: .vertical) {
-                column(side: side, gap: gap, top: geo.size.height * 0.04)
-                    .fixedSize(horizontal: false, vertical: true)
-                ScrollView { column(side: side, gap: 18, top: 8) }
-                    .scrollBounceBehavior(.basedOnSize)
+            Group {
+                if typeSize.isAccessibilitySize {
+                    ScrollView { column(side: geo.size.width * 0.64, gap: 18, top: 8) }
+                        .scrollBounceBehavior(.basedOnSize)
+                } else {
+                    proportional(geo)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background { PlayerBackground(reveal: reveal) }
@@ -51,6 +52,37 @@ struct PlayerView: View {
                 .draw(at: CGPoint(x: 36, y: 34))
         }
     }()
+
+    private enum Slot {
+        static let artwork = 0.3155
+        static let title = 0.586
+        static let progress = 0.679
+        static let transport = 0.773
+        static let volume = 0.877
+        static let bottom = 0.938
+        static let artworkHeight = 0.299
+    }
+
+    private func proportional(_ geo: GeometryProxy) -> some View {
+        let item = model.current
+        let inset = geo.safeAreaInsets
+        let screen = geo.size.height + inset.top + inset.bottom
+        let width = geo.size.width - 48
+        let side = min(geo.size.width * 0.64, screen * Slot.artworkHeight)
+        func place<Content: View>(_ slot: Double, @ViewBuilder _ content: () -> Content) -> some View {
+            content().frame(width: width).position(x: geo.size.width / 2, y: slot * screen - inset.top)
+        }
+        return ZStack(alignment: .topLeading) {
+            SleepTimerBadge().frame(maxWidth: .infinity)
+            artworkStage(item, side: side).frame(width: geo.size.width).position(x: geo.size.width / 2, y: Slot.artwork * screen - inset.top)
+            place(Slot.title) { titleRow(item) }
+            place(Slot.progress) { PlayerScrubber() }
+            place(Slot.transport) { transport }
+            place(Slot.volume) { volume }
+            place(Slot.bottom) { bottomRow }
+        }
+        .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+    }
 
     private func column(side: CGFloat, gap: CGFloat, top: CGFloat) -> some View {
         let item = model.current

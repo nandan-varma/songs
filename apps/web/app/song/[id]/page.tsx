@@ -1,4 +1,5 @@
 import { CollectionHeader } from "@/components/collection-header";
+import { DownloadButton } from "@/components/download-button";
 import { Lyrics } from "@/components/lyrics";
 import { Section } from "@/components/section";
 import { Suggestions } from "@/components/suggestions";
@@ -19,7 +20,9 @@ export default async function SongPage({
 				meta={meta}
 				image={track.image}
 				tracks={[track]}
-			/>
+			>
+				<DownloadButton track={track} />
+			</CollectionHeader>
 			{lyricsId && (
 				<Section title="Lyrics">
 					<Lyrics lyricsId={lyricsId} />

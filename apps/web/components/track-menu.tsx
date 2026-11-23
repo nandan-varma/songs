@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	Download,
 	ListEnd,
 	ListPlus,
 	ListStart,
@@ -22,6 +23,7 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { downloadHref } from "@/lib/download";
 import type { Track } from "@/lib/models";
 import { useLibrary } from "@/lib/stores/library";
 import { usePlayer } from "@/lib/stores/player";
@@ -86,6 +88,11 @@ export function TrackMenu({ track }: { track: Track }) {
 							</DropdownMenuItem>
 						</>
 					)}
+					<DropdownMenuItem asChild>
+						<a href={downloadHref(track)} download>
+							<Download /> Download
+						</a>
+					</DropdownMenuItem>
 					<DropdownMenuItem asChild>
 						<Link href={`/song/${track.id}`}>Song details</Link>
 					</DropdownMenuItem>

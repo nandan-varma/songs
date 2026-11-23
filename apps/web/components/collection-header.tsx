@@ -10,6 +10,7 @@ interface CollectionHeaderProps {
 	image: string;
 	tracks: Track[];
 	round?: boolean;
+	children?: React.ReactNode;
 }
 
 export function CollectionHeader({
@@ -19,6 +20,7 @@ export function CollectionHeader({
 	image,
 	tracks,
 	round,
+	children,
 }: CollectionHeaderProps) {
 	return (
 		<header className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-end sm:text-left">
@@ -33,7 +35,10 @@ export function CollectionHeader({
 				<h1 className="text-2xl font-bold sm:text-4xl">{title}</h1>
 				{subtitle && <p className="text-muted-foreground">{subtitle}</p>}
 				{meta && <p className="text-sm text-muted-foreground">{meta}</p>}
-				<PlayButtons tracks={tracks} />
+				<div className="flex items-center gap-2">
+					<PlayButtons tracks={tracks} />
+					{children}
+				</div>
 			</div>
 		</header>
 	);

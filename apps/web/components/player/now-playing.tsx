@@ -4,6 +4,7 @@ import { ChevronDown, ListMusic, Volume2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Cover } from "@/components/cover";
+import { DownloadButton } from "@/components/download-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import { PlaybackControls } from "@/components/player/controls";
 import { QueueList } from "@/components/player/queue-list";
@@ -80,6 +81,7 @@ export function NowPlaying({ track, open, onOpenChange }: NowPlayingProps) {
 										className="block text-muted-foreground"
 									/>
 								</div>
+								<DownloadButton track={track} />
 								<FavoriteButton track={track} />
 							</div>
 							<SeekBar />

@@ -1,16 +1,20 @@
 packages:
-  - .
+  - apps/api
+  - apps/web
+
+catalog:
+  hono: ^4.13.0
+  zod: ^4.6.7
+  typescript: ^7.0.2
+  "@types/node": ^26.6.6
+  vitest: ^4.1.11
+
 allowBuilds:
   esbuild: true
   sharp: true
+
 minimumReleaseAgeExclude:
-  - "@next/env@16.4.3"
-  - "@next/swc-darwin-arm64@16.4.3"
-  - "@next/swc-darwin-x64@16.4.3"
-  - "@next/swc-linux-arm64-gnu@16.4.3"
-  - "@next/swc-linux-arm64-musl@16.4.3"
-  - "@next/swc-linux-x64-gnu@16.4.3"
-  - "@next/swc-linux-x64-musl@16.4.3"
-  - "@next/swc-win32-arm64-msvc@16.4.3"
-  - "@next/swc-win32-x64-msvc@16.4.3"
-  - next@16.4.3
+  - "@tanstack/query-core@5.108.3"
+  - "@tanstack/react-query@5.108.3"
+  - knip@6.48.0
+  - lucide-react@1.78.0

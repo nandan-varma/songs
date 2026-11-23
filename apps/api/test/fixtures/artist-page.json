@@ -1,0 +1,643 @@
+{
+	"artistId": "464932",
+	"name": "Neha Kakkar",
+	"subtitle": "Artist • 2216879 Listeners",
+	"image": "https://c.saavncdn.com/artists/Neha_Kakkar_007_20241212115832_150x150.jpg",
+	"follower_count": "24028403",
+	"type": "artist",
+	"isVerified": true,
+	"dominantLanguage": "hindi",
+	"dominantType": "singer",
+	"topSongs": [
+		{
+			"id": "t4_PwAYp",
+			"title": "Aa To Sahii",
+			"subtitle": "Meet Bros, Neha Kakkar ft. Roach Killa - Judwaa 2",
+			"header_desc": "",
+			"type": "song",
+			"perma_url": "https://www.jiosaavn.com/song/aa-to-sahii/BFw0YQNxbkM",
+			"image": "https://c.saavncdn.com/825/Judwaa-2-Hindi-2017-20170912113219-150x150.jpg",
+			"language": "hindi",
+			"year": "2017",
+			"play_count": "",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"music": "Meet Bros",
+				"album_id": "11400495",
+				"album": "Judwaa 2",
+				"label": "T-Series",
+				"label_id": null,
+				"origin": "song",
+				"is_dolby_content": false,
+				"320kbps": "true",
+				"encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyZIj0mqIu0EdoWoQrxxFyICK3LgWLDPPj4pvddMg/UQy3z+4FwCfYbRw7tS9a8Gtq",
+				"encrypted_cache_url": "",
+				"encrypted_drm_cache_url": "",
+				"encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8CpvuwykZBf7lxRx/stLLgHTBlly8JI+mvVKBD87QutwtzTIvZoGoao92mytrdt3FDnQW0nglPS4=",
+				"album_url": "https://www.jiosaavn.com/album/judwaa-2/IkNqmDvJQJ8_",
+				"duration": "221",
+				"rights": {
+					"code": "1",
+					"cacheable": "true",
+					"delete_cached_object": "false",
+					"reason": "Pro Only"
+				},
+				"cache_state": "false",
+				"has_lyrics": "true",
+				"lyrics_snippet": "Lyrics",
+				"has_trivia": "false",
+				"trivia": [],
+				"starred": "false",
+				"copyright_text": "©  2017 T-Series",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "890048",
+							"name": "Meet Bros",
+							"role": "primary_artists",
+							"image": "https://c.saavncdn.com/artists/Meet_Bros_20180306113844_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/meet-bros-songs/sUhZsB99Ezg_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "primary_artists",
+							"image": "https://c.saavncdn.com/artists/Neha_Kakkar_007_20241212115832_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						}
+					],
+					"featured_artists": [
+						{
+							"id": "479910",
+							"name": "Roach Killa",
+							"role": "featured_artists",
+							"image": "https://c.saavncdn.com/345/Lahore-Punjabi-2017-150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/roach-killa-songs/LxRW,Grb-58_"
+						}
+					],
+					"artists": [
+						{
+							"id": "890048",
+							"name": "Meet Bros",
+							"role": "music",
+							"image": "https://c.saavncdn.com/artists/Meet_Bros_20180306113844_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/meet-bros-songs/sUhZsB99Ezg_"
+						},
+						{
+							"id": "890048",
+							"name": "Meet Bros",
+							"role": "singer",
+							"image": "https://c.saavncdn.com/artists/Meet_Bros_20180306113844_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/meet-bros-songs/sUhZsB99Ezg_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "singer",
+							"image": "https://c.saavncdn.com/artists/Neha_Kakkar_007_20241212115832_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						},
+						{
+							"id": "479910",
+							"name": "Roach Killa",
+							"role": "singer",
+							"image": "https://c.saavncdn.com/345/Lahore-Punjabi-2017-150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/roach-killa-songs/LxRW,Grb-58_"
+						},
+						{
+							"id": "833324",
+							"name": "Sonu Saggu",
+							"role": "lyricist",
+							"image": "https://c.saavncdn.com/artists/Sonu_Saggu_000_20250225064112_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sonu-saggu-songs/yA0i676yXqQ_"
+						},
+						{
+							"id": "511656",
+							"name": "Varun Dhawan",
+							"role": "starring",
+							"image": "https://c.saavncdn.com/artists/Varun_Dhawan_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/varun-dhawan-songs/nPLp3EdUdaA_"
+						},
+						{
+							"id": "480380",
+							"name": "Jacqueline Fernandez",
+							"role": "starring",
+							"image": "https://c.saavncdn.com/artists/Jacqueline_Fernandez_002_20240318080639_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/jacqueline-fernandez-songs/yBC0pNDjJf8_"
+						},
+						{
+							"id": "675262",
+							"name": "Taapsee Pannu",
+							"role": "starring",
+							"image": "https://c.saavncdn.com/artists/Taapsee_Pannu_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/taapsee-pannu-songs/n3EBFVeZm2Q_"
+						}
+					]
+				},
+				"release_date": null,
+				"label_url": "/label/t-series-albums/",
+				"vcode": "010910090708704",
+				"vlink": "https://jiotunepreview.jio.com/content/Converted/010910090670388.mp3",
+				"triller_available": false,
+				"request_jiotune_flag": false,
+				"webp": "false",
+				"lyrics_id": ""
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		},
+		{
+			"id": "tXCHZyXM",
+			"title": "Aashiq Banaya Aapne",
+			"subtitle": "Himesh Reshammiya, Neha Kakkar - Hate Story IV",
+			"header_desc": "",
+			"type": "song",
+			"perma_url": "https://www.jiosaavn.com/song/aashiq-banaya-aapne/BDAoeS5Jb34",
+			"image": "https://c.saavncdn.com/111/Hate-Story-IV-Hindi-2018-20180223-150x150.jpg",
+			"language": "hindi",
+			"year": "2018",
+			"play_count": "",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"music": "Tanishk Bagchi, Himesh Reshammiya",
+				"album_id": "12180103",
+				"album": "Hate Story IV",
+				"label": "T-Series",
+				"label_id": null,
+				"origin": "song",
+				"is_dolby_content": false,
+				"320kbps": "true",
+				"encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyULSf5dOd68uye6xZ6RsptQDQkvrd8q+YBB1aB6VsQTNjAxG/OaFCNxw7tS9a8Gtq",
+				"encrypted_cache_url": "",
+				"encrypted_drm_cache_url": "",
+				"encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8a/1OdGX01ptkxkODaqzmJtMjAbCqK2q3+1EmX+gEWmfsReVCD44U/I92mytrdt3FDnQW0nglPS4=",
+				"album_url": "https://www.jiosaavn.com/album/hate-story-iv/yNelPKxPj4Y_",
+				"duration": "222",
+				"rights": {
+					"code": "1",
+					"cacheable": "true",
+					"delete_cached_object": "false",
+					"reason": "Pro Only"
+				},
+				"cache_state": "false",
+				"has_lyrics": "true",
+				"lyrics_snippet": "Lyrics",
+				"has_trivia": "false",
+				"trivia": [],
+				"starred": "false",
+				"copyright_text": "Super Cassettes Industries Private Limited, Womad Music Ltd.",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "455132",
+							"name": "Himesh Reshammiya",
+							"role": "primary_artists",
+							"image": "https://c.saavncdn.com/artists/Himesh_Reshammiya_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/himesh-reshammiya-songs/N,m6H0-rqiY_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "primary_artists",
+							"image": "https://c.saavncdn.com/artists/Neha_Kakkar_007_20241212115832_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "1595701",
+							"name": "Tanishk Bagchi",
+							"role": "music",
+							"image": "https://c.saavncdn.com/artists/Tanishk_Bagchi_003_20260106115039_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/tanishk-bagchi-songs/Y-5m-phldpg_"
+						},
+						{
+							"id": "455132",
+							"name": "Himesh Reshammiya",
+							"role": "music",
+							"image": "https://c.saavncdn.com/artists/Himesh_Reshammiya_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/himesh-reshammiya-songs/N,m6H0-rqiY_"
+						},
+						{
+							"id": "455132",
+							"name": "Himesh Reshammiya",
+							"role": "singer",
+							"image": "https://c.saavncdn.com/artists/Himesh_Reshammiya_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/himesh-reshammiya-songs/N,m6H0-rqiY_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "singer",
+							"image": "https://c.saavncdn.com/artists/Neha_Kakkar_007_20241212115832_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						},
+						{
+							"id": "473441",
+							"name": "Manoj Muntashir",
+							"role": "lyricist",
+							"image": "https://c.saavncdn.com/artists/Manoj_Muntashir_000_20251222093541_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/manoj-muntashir-songs/eaiDjU0BhyA_"
+						},
+						{
+							"id": "455415",
+							"name": "Sameer",
+							"role": "lyricist",
+							"image": "https://c.saavncdn.com/artists/Sameer_002_20260619094151_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sameer-songs/zbXOIZIhW-8_"
+						},
+						{
+							"id": "679274",
+							"name": "Urvashi Rautela",
+							"role": "starring",
+							"image": "https://c.saavncdn.com/artists/Urvashi_Rautela_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/urvashi-rautela-songs/GcTwpCvBIMs_"
+						},
+						{
+							"id": "4486469",
+							"name": "Karan Wahi",
+							"role": "starring",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/karan-wahi-songs/DwhzykCDClQ_"
+						},
+						{
+							"id": "4402010",
+							"name": "Vivan Bhathena",
+							"role": "starring",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/vivan-bhathena-songs/y0LWPC4Og0o_"
+						},
+						{
+							"id": "4402011",
+							"name": "Ihana Dhillon",
+							"role": "starring",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/ihana-dhillon-songs/7veZLPENY5Y_"
+						},
+						{
+							"id": "455347",
+							"name": "Gulshan Grover",
+							"role": "starring",
+							"image": "https://c.saavncdn.com/artists/Gulshan_Grover_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/gulshan-grover-songs/Udp7iR6B68E_"
+						},
+						{
+							"id": "4490438",
+							"name": "James Abbey",
+							"role": "starring",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/james-abbey-songs/ACkl4hCP4FI_"
+						}
+					]
+				},
+				"release_date": null,
+				"label_url": "/label/t-series-albums/",
+				"vcode": "010910090750816",
+				"vlink": "https://jiotunepreview.jio.com/content/Converted/010910090708292.mp3",
+				"triller_available": false,
+				"request_jiotune_flag": false,
+				"webp": "true",
+				"lyrics_id": ""
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		}
+	],
+	"topAlbums": [
+		{
+			"id": "10660301",
+			"title": "Raabta",
+			"subtitle": "Kaushik-Aakash-Guddu (KAG) for JAM8, Sourav Roy, Sohrabuddin",
+			"header_desc": "",
+			"type": "album",
+			"perma_url": "https://www.jiosaavn.com/album/raabta/CKUSdZyuX0E_",
+			"image": "https://c.saavncdn.com/023/Raabta-Hindi-2017-150x150.jpg",
+			"language": "hindi",
+			"year": "2017",
+			"play_count": "",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"query": "Raabta",
+				"text": "Raabta",
+				"music": "Pritam, Sourav Roy, Sohrabuddin, Kaushik-Aakash-Guddu (KAG) for JAM8",
+				"song_count": "6",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "2663500",
+							"name": "Kaushik-Aakash-Guddu (KAG) for JAM8",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/kaushik-aakash-guddu-kag-for-jam8-songs/JAdIelXlNlQ_"
+						},
+						{
+							"id": "3401411",
+							"name": "Sourav Roy",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sourav-roy-songs/SRYIGlKlQi0_"
+						},
+						{
+							"id": "3401412",
+							"name": "Sohrabuddin",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sohrabuddin-songs/vGYRFo3CfzU_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "456323",
+							"name": "Pritam",
+							"role": "music",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/pritam-songs/OaFg9HPZgq8_"
+						},
+						{
+							"id": "3401411",
+							"name": "Sourav Roy",
+							"role": "music",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sourav-roy-songs/SRYIGlKlQi0_"
+						},
+						{
+							"id": "3401412",
+							"name": "Sohrabuddin",
+							"role": "music",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sohrabuddin-songs/vGYRFo3CfzU_"
+						},
+						{
+							"id": "2663500",
+							"name": "Kaushik-Aakash-Guddu (KAG) for JAM8",
+							"role": "music",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/kaushik-aakash-guddu-kag-for-jam8-songs/JAdIelXlNlQ_"
+						},
+						{
+							"id": "459320",
+							"name": "Arijit Singh",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/arijit-singh-songs/LlRWpHzy3Hk_"
+						},
+						{
+							"id": "745460",
+							"name": "Nikhita Gandhi",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/nikhita-gandhi-songs/PP1RAOLWPAM_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						},
+						{
+							"id": "468245",
+							"name": "Diljit Dosanjh",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/diljit-dosanjh-songs/oIVHdWIO5F8_"
+						},
+						{
+							"id": "2378899",
+							"name": "Pardeep Singh Sran",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/pardeep-singh-sran-songs/NIfiZRCrYQA_"
+						},
+						{
+							"id": "458918",
+							"name": "Raftaar",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/raftaar-songs/ZYd,kDiZhJg_"
+						},
+						{
+							"id": "881158",
+							"name": "Jubin Nautiyal",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/jubin-nautiyal-songs/uGdfg6zGf4s_"
+						}
+					]
+				}
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		}
+	],
+	"singles": [
+		{
+			"id": "14075973",
+			"title": "Nikle Currant",
+			"subtitle": "Jassie Gill, Neha Kakkar, Sukh-E Muzical Doctorz",
+			"header_desc": "",
+			"type": "album",
+			"perma_url": "https://www.jiosaavn.com/album/nikle-currant/5wSREq6ZnXY_",
+			"image": "https://c.saavncdn.com/373/Nikle-Currant-Punjabi-2018-20181011231550-150x150.jpg",
+			"language": "punjabi",
+			"year": "2018",
+			"play_count": "",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"query": "Nikle Currant",
+				"text": "Nikle Currant",
+				"music": null,
+				"song_count": "1",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "2861360",
+							"name": "Jassie Gill",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/jassie-gill-songs/yIKT1I0z97E_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						},
+						{
+							"id": "911626",
+							"name": "Sukh-E Muzical Doctorz",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sukh-e-muzical-doctorz-songs/nwuVSuMGHi8_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "2861360",
+							"name": "Jassie Gill",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/jassie-gill-songs/yIKT1I0z97E_"
+						},
+						{
+							"id": "464932",
+							"name": "Neha Kakkar",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+						},
+						{
+							"id": "911626",
+							"name": "Sukh-E Muzical Doctorz",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https://www.jiosaavn.com/artist/sukh-e-muzical-doctorz-songs/nwuVSuMGHi8_"
+						}
+					]
+				}
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		}
+	],
+	"similarArtists": [
+		{
+			"_id": "459320",
+			"similar": "null",
+			"languages": "{\"haryanvi\": \"1\", \"spanish\": \"16\", \"kannada\": \"8\", \"hebrew\": \"2\", \"urdu\": \"19\", \"telugu\": \"190\", \"turkish\": \"1\", \"marathi\": \"12\", \"gujarati\": \"1\", \"hindi\": \"9803\", \"somali\": \"4\", \"tamil\": \"33\", \"sindhi\": \"2\", \"indonesian\": \"3\", \"english\": \"319\", \"french\": \"3\", \"instrumental\": \"11\", \"odia\": \"1\", \"bengali\": \"860\", \"sanskrit\": \"3\", \"assamese\": \"9\", \"kazakh\": \"1\", \"punjabi\": \"40\", \"romanian\": \"2\", \"unknown\": \"382\", \"malayalam\": \"6\", \"bhojpuri\": \"1\"}",
+			"isVerified": "true",
+			"image_url": "https://c.saavncdn.com/artists/Arijit_Singh_004_20241118063717_150x150.jpg",
+			"wiki": "http://en.wikipedia.org/wiki/Arijit_Singh",
+			"roles": "{\"\": \"109\", \"producer\": \"52\", \"lyricist\": \"257\", \"primary\": \"5963\", \"sitar\": \"11\", \"backing vocals\": \"11\", \"author\": \"4\", \"vocal effects\": \"2\", \"voice editor\": \"11\", \"writer\": \"12\", \"actor\": \"202\", \"music director\": \"2211\", \"featuring\": \"150\", \"banjo\": \"11\", \"leadvocalist\": \"17\", \"remixer\": \"4\", \"director\": \"4\", \"playbacksinger\": \"24\", \"filmdirector\": \"2\", \"musicpublisher\": \"25\", \"vocalist\": \"88\", \"publisher\": \"6\", \"singer\": \"3564\", \"recordlabel\": \"1\", \"artist\": \"6\", \"keyboards\": \"1\", \"mixer\": \"1\", \"arranger\": \"19\", \"associatedperformer\": \"850\", \"vocals\": \"49\", \"groupbackgroundvocalists\": \"1\"}",
+			"combine_artist_pages": 0,
+			"webp": true,
+			"search_keywords": "Arjit Singh\r\n\r\nArijith Singh\r\n\r\nArijeet Singh\r\n\r\nArjit Singh\r\n\r\nArijit\r\n\r\nArijeet\r\n\r\nArijeet Singh\r\n\r\nArijit Saha\r\n\r\nArjit Singh\r\n\r\nArijeet Singh\r\n\r\nArjit Singh\r\n\r\nArjit Singh\r\n\r\nArijit Singh\r\n\r\nArjit Singh\r\n  ",
+			"replace_with_primary_artists": 0,
+			"twitter": "",
+			"aka": "",
+			"dob": "25-04-1987",
+			"name": "Arijit Singh",
+			"primary_artist_id": "",
+			"id": "459320",
+			"fb": "",
+			"perma_url": "https://www.jiosaavn.com/artist/arijit-singh-songs/LlRWpHzy3Hk_",
+			"type": "artist",
+			"mini_obj": true,
+			"isRadioPresent": true,
+			"dominantType": "primary"
+		},
+		{
+			"_id": "464656",
+			"similar": "null",
+			"languages": "{\"malayalam\": \"16\", \"haryanvi\": \"104\", \"telugu\": \"476\", \"marathi\": \"12\", \"punjabi\": \"24\", \"unknown\": \"50\", \"kannada\": \"825\", \"instrumental\": \"4\", \"gujarati\": \"7\", \"konkani\": \"1\", \"hindi\": \"1315\", \"english\": \"73\", \"urdu\": \"8\", \"bhojpuri\": \"5\", \"tamil\": \"126\", \"bengali\": \"218\"}",
+			"isVerified": "true",
+			"image_url": "https://c.saavncdn.com/artists/Armaan_Malik_006_20260813132832_150x150.jpg",
+			"wiki": "",
+			"roles": "{\"\": \"40\", \"Guest\": \"1\", \"producer\": \"26\", \"lyricist\": \"35\", \"primary\": \"1586\", \"background vocal\": \"1\", \"recording engineer\": \"1\", \"programmer\": \"1\", \"alto (voice)\": \"2\", \"author\": \"21\", \"vocal effects\": \"30\", \"actor\": \"104\", \"all instruments\": \"1\", \"music director\": \"361\", \"featuring\": \"47\", \"additional vocal recording engineer\": \"2\", \"leadvocalist\": \"20\", \"dj\": \"1\", \"compiled by\": \"2\", \"userdefined\": \"3\", \"guitar\": \"2\", \"playbacksinger\": \"31\", \"recordingengineer\": \"2\", \"filmdirector\": \"2\", \"vocalist\": \"20\", \"director\": \"1\", \"singer\": \"1470\", \"vocal\": \"2\", \"arranger\": \"3\", \"associatedperformer\": \"83\", \"vocals\": \"63\", \"videowriter\": \"1\"}",
+			"combine_artist_pages": 0,
+			"webp": true,
+			"search_keywords": "Arma Mallik\r\n\r\nArman Mallik\r\n\nArmaaan Malik\n\nArmaan Malick\n  \nArman Mallik\n\nArman Malkei\n\nArman Malkei\n",
+			"replace_with_primary_artists": 0,
+			"twitter": "http://www.twitter.com/armaanmalikmusic",
+			"dob": "22-07-1995",
+			"aka": "",
+			"name": "Armaan Malik",
+			"primary_artist_id": "",
+			"id": "464656",
+			"fb": "http://www.facebook.com/armaanmalikmusic",
+			"perma_url": "https://www.jiosaavn.com/artist/armaan-malik-songs/1iZ7Gi0bi1Y_",
+			"type": "artist",
+			"mini_obj": true,
+			"isRadioPresent": true,
+			"dominantType": "primary"
+		}
+	],
+	"isRadioPresent": true,
+	"bio": "[]",
+	"dob": "06-06-1988",
+	"fb": "",
+	"twitter": "",
+	"wiki": "http://en.wikipedia.org/wiki/Neha_Kakkar",
+	"urls": {
+		"albums": "https://www.jiosaavn.com/artist/neha-kakkar-albums/EkEBV7JAU-I_",
+		"bio": "/artist/neha-kakkar-bio/EkEBV7JAU-I_",
+		"comments": "https://www.jiosaavn.com/artist/neha-kakkar-comments/EkEBV7JAU-I_",
+		"songs": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_",
+		"overview": "https://www.jiosaavn.com/artist/neha-kakkar/EkEBV7JAU-I_"
+	},
+	"availableLanguages": [
+		"hindi",
+		"punjabi",
+		"bengali",
+		"marathi",
+		"telugu",
+		"unknown",
+		"bhojpuri",
+		"kannada",
+		"malayalam",
+		"tamil"
+	],
+	"fan_count": "2216879",
+	"is_followed": false
+}

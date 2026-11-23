@@ -1,40 +1,20 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env*.local
+node_modules/
+.next/
+dist/
+.vercel/
 .env
-
-# vercel
-.vercel
-
-# typescript
+.env.*
+!.env.example
 *.tsbuildinfo
-next-env.d.ts
-
-# build metadata - generated at build time
-/public/build-info.json
+.DS_Store
+dev-out/
+# iOS
+apps/ios/Modes.xcodeproj/xcuserdata/
+apps/ios/Packages/**/.build/
+apps/ios/Packages/**/.swiftpm/
+*.xcuserstate
+# research
+research/**/__pycache__/
+research/recs/data/
+.vercel
 .env*

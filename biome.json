@@ -7,7 +7,15 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/.agents"]
+		"includes": [
+			"apps/api/**",
+			"apps/web/**",
+			"!**/*.md",
+			"!**/node_modules",
+			"!**/.next",
+			"!**/dist",
+			"!**/next-env.d.ts"
+		]
 	},
 	"formatter": {
 		"enabled": true,

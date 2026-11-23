@@ -1,0 +1,132 @@
+{
+	"total": 4315,
+	"start": 1,
+	"results": [
+		{
+			"id": "78143559",
+			"title": "Dua",
+			"subtitle": "Krish Mondal, Kishore Mondal, Shafaat Ali, A.M. Turaz",
+			"header_desc": "",
+			"type": "album",
+			"perma_url": "https:\/\/www.jiosaavn.com\/album\/dua\/RAlaocUoUPI_",
+			"image": "https:\/\/c.saavncdn.com\/706\/Dua-Hindi-2026-20260717085405-150x150.jpg",
+			"language": "hindi",
+			"year": "2026",
+			"play_count": "",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"query": "Dua",
+				"text": "Dua",
+				"music": "Shafaat Ali",
+				"song_count": "1",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "22084941",
+							"name": "Krish Mondal",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/krish-mondal-songs\/I9Jy,UTXl2U_"
+						},
+						{
+							"id": "20697086",
+							"name": "Kishore Mondal",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/kishore-mondal-songs\/cRtH7Uqz-nY_"
+						},
+						{
+							"id": "8585325",
+							"name": "Shafaat Ali",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/shafaat-ali-songs\/xwy0IapIGTE_"
+						},
+						{
+							"id": "469703",
+							"name": "A.M. Turaz",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/a.m.-turaz-songs\/3MHSTgRWdQA_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "8585325",
+							"name": "Shafaat Ali",
+							"role": "music",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/shafaat-ali-songs\/xwy0IapIGTE_"
+						}
+					]
+				}
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		},
+		{
+			"id": "38376545",
+			"title": "Dua",
+			"subtitle": "Manan Bhardwaj",
+			"header_desc": "",
+			"type": "album",
+			"perma_url": "https:\/\/www.jiosaavn.com\/album\/dua\/utkjFXxCj4U_",
+			"image": "https:\/\/c.saavncdn.com\/252\/Dua-Hindi-2022-20220920151001-150x150.jpg",
+			"language": "hindi",
+			"year": "2022",
+			"play_count": "",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"query": "Dua",
+				"text": "Dua",
+				"music": "Manan Bhardwaj",
+				"song_count": "1",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "746774",
+							"name": "Manan Bhardwaj",
+							"role": "primary_artists",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/manan-bhardwaj-songs\/PHyqUR9DoKY_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "746774",
+							"name": "Manan Bhardwaj",
+							"role": "music",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/manan-bhardwaj-songs\/PHyqUR9DoKY_"
+						},
+						{
+							"id": "746774",
+							"name": "Manan Bhardwaj",
+							"role": "singers",
+							"image": "",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/manan-bhardwaj-songs\/PHyqUR9DoKY_"
+						}
+					]
+				}
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		}
+	]
+}

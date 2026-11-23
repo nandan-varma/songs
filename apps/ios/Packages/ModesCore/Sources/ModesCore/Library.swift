@@ -1,0 +1,46 @@
+import Foundation
+
+public struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
+    public let id: String
+    public var title: String
+    public var artist: String
+    public var imageURL: URL?
+    public var addedAt: Date
+
+    public init(id: String, title: String, artist: String, imageURL: URL? = nil, addedAt: Date = Date()) {
+        self.id = id; self.title = title; self.artist = artist; self.imageURL = imageURL; self.addedAt = addedAt
+    }
+}
+
+public struct LibraryState: Codable, Equatable, Sendable {
+    public static let recentLimit = 50
+
+    public var favorites: [LibraryItem] = []
+    public var recents: [LibraryItem] = []
+
+    public init(favorites: [LibraryItem] = [], recents: [LibraryItem] = []) {
+        self.favorites = favorites; self.recents = recents
+    }
+
+    public func isFavorite(_ id: String) -> Bool { favorites.contains { $0.id == id } }
+
+    public mutating func addFavorite(_ item: LibraryItem) {
+        favorites.removeAll { $0.id == item.id }
+        favorites.insert(item, at: 0)
+    }
+
+    @discardableResult
+    public mutating func removeFavorite(_ id: String) -> Bool {
+        let before = favorites.count
+        favorites.removeAll { $0.id == id }
+        return favorites.count != before
+    }
+
+    public mutating func recordPlay(_ item: LibraryItem) {
+        recents.removeAll { $0.id == item.id }
+        recents.insert(item, at: 0)
+        if recents.count > Self.recentLimit { recents.removeLast(recents.count - Self.recentLimit) }
+    }
+
+    public mutating func clearRecents() { recents = [] }
+}

@@ -1,0 +1,265 @@
+{
+	"total": 7503,
+	"start": 1,
+	"results": [
+		{
+			"id": "_SwJRVpR",
+			"title": "Duaa",
+			"subtitle": "Vishal &amp; Shekhar, Nandini Srikar, Arijit Singh - Shanghai",
+			"header_desc": "",
+			"type": "song",
+			"perma_url": "https:\/\/www.jiosaavn.com\/song\/duaa\/LzsceyZmR2E",
+			"image": "https:\/\/c.saavncdn.com\/211\/Shanghai-Hindi-2012-20241205142514-150x150.jpg",
+			"language": "hindi",
+			"year": "2012",
+			"play_count": "49687760",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"music": "Vishal &amp; Shekhar",
+				"album_id": "1070167",
+				"album": "Shanghai",
+				"label": "T-Series",
+				"label_id": null,
+				"origin": "search",
+				"is_dolby_content": false,
+				"320kbps": "true",
+				"encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyiaM6AAviDwA2UL5Grdu\/10hwkppyc\/SyxdfzzwSX7UGTUSKdS7IcYhw7tS9a8Gtq",
+				"encrypted_cache_url": "",
+				"encrypted_drm_cache_url": "",
+				"encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8pY2asOCWvh\/UGdThIzmPIqKwUjmu\/DYaYAuxQ3KhHHHBjLDpWs5TMY92mytrdt3FDnQW0nglPS4=",
+				"album_url": "https:\/\/www.jiosaavn.com\/album\/shanghai\/hVlg998vFiI_",
+				"duration": "260",
+				"rights": {
+					"code": "1",
+					"cacheable": "true",
+					"delete_cached_object": "false",
+					"reason": "Pro Only"
+				},
+				"cache_state": "false",
+				"has_lyrics": "true",
+				"lyrics_snippet": "Lyrics",
+				"has_trivia": "false",
+				"trivia": [],
+				"starred": "false",
+				"copyright_text": "\u2117 2012 Super Cassettes Industries Private Limited",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "459880",
+							"name": "Vishal &amp; Shekhar",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Vishal-Shekhar_20191130071357_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/vishal-shekhar-songs\/8swM0KpGBus_"
+						},
+						{
+							"id": "465308",
+							"name": "Nandini Srikar",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/501\/Aaoge-Jab-Tum-Jag-Soona-Soona-From-T-Series-Mixtape-Season-2--Hindi-2019-20190516024538-150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/nandini-srikar-songs\/OhKMp3wdQyo_"
+						},
+						{
+							"id": "459320",
+							"name": "Arijit Singh",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Arijit_Singh_004_20241118063717_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/arijit-singh-songs\/LlRWpHzy3Hk_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "459880",
+							"name": "Vishal &amp; Shekhar",
+							"role": "music",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Vishal-Shekhar_20191130071357_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/vishal-shekhar-songs\/8swM0KpGBus_"
+						},
+						{
+							"id": "459880",
+							"name": "Vishal &amp; Shekhar",
+							"role": "singer",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Vishal-Shekhar_20191130071357_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/vishal-shekhar-songs\/8swM0KpGBus_"
+						},
+						{
+							"id": "465308",
+							"name": "Nandini Srikar",
+							"role": "singer",
+							"image": "https:\/\/c.saavncdn.com\/501\/Aaoge-Jab-Tum-Jag-Soona-Soona-From-T-Series-Mixtape-Season-2--Hindi-2019-20190516024538-150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/nandini-srikar-songs\/OhKMp3wdQyo_"
+						},
+						{
+							"id": "459320",
+							"name": "Arijit Singh",
+							"role": "singer",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Arijit_Singh_004_20241118063717_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/arijit-singh-songs\/LlRWpHzy3Hk_"
+						},
+						{
+							"id": "455665",
+							"name": "Kumaar",
+							"role": "lyricist",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Kumaar_001_20240516094915_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/kumaar-songs\/jXhf,IMIGGs_"
+						},
+						{
+							"id": "458251",
+							"name": "Emraan Hashmi",
+							"role": "starring",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Emraan_Hashmi_002_20230228120108_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/emraan-hashmi-songs\/M4ByRDEAbdI_"
+						},
+						{
+							"id": "459471",
+							"name": "Abhay Deol",
+							"role": "starring",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Abhay_Deol_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/abhay-deol-songs\/zZ2b00GzpH4_"
+						},
+						{
+							"id": "467880",
+							"name": "Kalki Koechlin",
+							"role": "starring",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Kalki_Koechlin_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/kalki-koechlin-songs\/vBtoKX5XJWg_"
+						}
+					]
+				},
+				"release_date": null,
+				"label_url": "\/label\/t-series-albums\/",
+				"vcode": "010910090157682",
+				"vlink": "https:\/\/jiotunepreview.jio.com\/content\/Converted\/010910090170423.mp3",
+				"triller_available": false,
+				"request_jiotune_flag": false,
+				"webp": "true",
+				"lyrics_id": ""
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		},
+		{
+			"id": "pjdcCSz0",
+			"title": "Dua",
+			"subtitle": "Krish Mondal, Kishore Mondal, Shafaat Ali, A.M. Turaz - Dua",
+			"header_desc": "",
+			"type": "song",
+			"perma_url": "https:\/\/www.jiosaavn.com\/song\/dua\/AAIPUjdjTQM",
+			"image": "https:\/\/c.saavncdn.com\/706\/Dua-Hindi-2026-20260717085405-150x150.jpg",
+			"language": "hindi",
+			"year": "2026",
+			"play_count": "246402",
+			"explicit_content": "0",
+			"list_count": "0",
+			"list_type": "",
+			"list": "",
+			"more_info": {
+				"music": "Shafaat Ali",
+				"album_id": "78143559",
+				"album": "Dua",
+				"label": "Koo Koo TV Entertainment Pvt. Ltd.",
+				"label_id": null,
+				"origin": "search",
+				"is_dolby_content": false,
+				"320kbps": "true",
+				"encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDywKkkiRGjK+lRfLKE5prMS\/zDlgOlLrO7LumEO261yuwMULkd99c9NBw7tS9a8Gtq",
+				"encrypted_cache_url": "",
+				"encrypted_drm_cache_url": "",
+				"encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8+d+7Yw0cp19ghC2AlaEuMRbvuy4qMmy6TkoaBCVCmNbkfVhXCytIM492mytrdt3FDnQW0nglPS4=",
+				"album_url": "https:\/\/www.jiosaavn.com\/album\/dua\/RAlaocUoUPI_",
+				"duration": "206",
+				"rights": {
+					"code": "1",
+					"cacheable": "true",
+					"delete_cached_object": "false",
+					"reason": "Pro Only"
+				},
+				"cache_state": "false",
+				"has_lyrics": "false",
+				"lyrics_snippet": "",
+				"has_trivia": "false",
+				"trivia": [],
+				"starred": "false",
+				"copyright_text": "\u00a9 2026 Koo Koo TV Entertainment Pvt. Ltd.",
+				"artistMap": {
+					"primary_artists": [
+						{
+							"id": "22084941",
+							"name": "Krish Mondal",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Krish_Mondal_001_20260731064210_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/krish-mondal-songs\/I9Jy,UTXl2U_"
+						},
+						{
+							"id": "20697086",
+							"name": "Kishore Mondal",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Kishore_Mondal_003_20260731064044_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/kishore-mondal-songs\/cRtH7Uqz-nY_"
+						},
+						{
+							"id": "8585325",
+							"name": "Shafaat Ali",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Shafaat_Ali_000_20261004073011_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/shafaat-ali-songs\/xwy0IapIGTE_"
+						},
+						{
+							"id": "469703",
+							"name": "A.M. Turaz",
+							"role": "primary_artists",
+							"image": "https:\/\/c.saavncdn.com\/artists\/A_M__Turaz_000_20261004072934_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/a.m.-turaz-songs\/3MHSTgRWdQA_"
+						}
+					],
+					"featured_artists": [],
+					"artists": [
+						{
+							"id": "8585325",
+							"name": "Shafaat Ali",
+							"role": "music",
+							"image": "https:\/\/c.saavncdn.com\/artists\/Shafaat_Ali_000_20261004073011_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/shafaat-ali-songs\/xwy0IapIGTE_"
+						},
+						{
+							"id": "469703",
+							"name": "A.M. Turaz",
+							"role": "lyricist",
+							"image": "https:\/\/c.saavncdn.com\/artists\/A_M__Turaz_000_20261004072934_150x150.jpg",
+							"type": "artist",
+							"perma_url": "https:\/\/www.jiosaavn.com\/artist\/a.m.-turaz-songs\/3MHSTgRWdQA_"
+						}
+					]
+				},
+				"release_date": null,
+				"label_url": "\/label\/koo-koo-tv-entertainment-pvt.-ltd.-albums\/",
+				"vcode": "010911263786311",
+				"vlink": "https:\/\/jiotunepreview.jio.com\/content\/Converted\/010911263742174.mp3",
+				"triller_available": false,
+				"request_jiotune_flag": false,
+				"webp": "true"
+			},
+			"button_tooltip_info": [],
+			"pro_hva_campaigns": []
+		}
+	]
+}

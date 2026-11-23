@@ -16,3 +16,5 @@ apps/ios/Packages/**/.swiftpm/
 # research
 research/**/__pycache__/
 research/recs/data/
+.vercel
+.env*

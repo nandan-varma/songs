@@ -7,8 +7,8 @@ usage() {
   cat <<'USAGE'
 Usage: tools/dev/check.sh
 
-Runs in parallel: swift test (ModesCore), bunx vitest run (API), bunx eslint src, and the device-SDK app build
-(into dev-out/derived). Prints PASS/FAIL per check and the output of failures.
+Runs in parallel: swift test (apps/ios/Packages/ModesCore), pnpm lint (biome), pnpm typecheck, pnpm test, and the
+device-SDK app build (into dev-out/derived). Prints PASS/FAIL per check and the output of failures.
 Exit status is non-zero if anything failed.
 USAGE
 }
@@ -16,11 +16,12 @@ case "${1:-}" in -h|--help) usage; exit 0 ;; "") ;; *) usage >&2; die "unknown o
 
 START=$SECONDS
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
-NAMES=(swift-test vitest eslint ios-build)
+NAMES=(swift-test lint typecheck test ios-build)
 CMDS=(
   "cd '$IOS_DIR/Packages/ModesCore' && swift test"
-  "cd '$DEV_ROOT' && bunx vitest run"
-  "cd '$DEV_ROOT' && bunx eslint src"
+  "cd '$DEV_ROOT' && pnpm lint"
+  "cd '$DEV_ROOT' && pnpm typecheck"
+  "cd '$DEV_ROOT' && pnpm test"
   "helpers xcode build '$IOS_DIR' --opts '{\"scheme\":\"Modes\",\"destination\":\"device\",\"derivedData\":\"$OUT_DIR/derived\"}'"
 )
 for i in "${!NAMES[@]}"; do

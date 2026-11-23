@@ -1,7 +1,7 @@
 # Shared helpers for tools/dev scripts (sourced, not executed).
 BUNDLE_ID="com.nandanvarma.modes"
 DEV_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-IOS_DIR="$DEV_ROOT/ios/Modes"
+IOS_DIR="$DEV_ROOT/apps/ios"
 OUT_DIR="$DEV_ROOT/dev-out"
 
 die() { echo "error: $*" >&2; exit 1; }

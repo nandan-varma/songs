@@ -13,7 +13,7 @@ import os
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-# Stable metric names the app emits (documented in ios/Modes/README.md). Reported first, even when empty.
+# Stable metric names the app emits (documented in apps/ios/README.md). Reported first, even when empty.
 KNOWN_METRICS = ["ttfa_ms", "skip_latency_ms", "resolve_ms", "rank_ms", "learn_ms",
                  "launch_to_first_frame_ms", "model_ready_ms", "save_state_ms", "catalog_load_ms"]
 SLOW_MS = 1000

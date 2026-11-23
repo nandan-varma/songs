@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { albumSchema } from "./albums";
-import { imageLinks } from "./lib/media";
-import { lenientArray, maybe, parseUpstream, text } from "./lib/schema";
-import { jiosaavn } from "./lib/upstream";
-import { query } from "./lib/validate";
-import { playlistSchema } from "./playlists";
-import { songList } from "./songs";
+import { albumSchema } from "./albums.js";
+import { imageLinks } from "./lib/media.js";
+import { lenientArray, maybe, parseUpstream, text } from "./lib/schema.js";
+import { jiosaavn } from "./lib/upstream.js";
+import { query } from "./lib/validate.js";
+import { playlistSchema } from "./playlists.js";
+import { songList } from "./songs.js";
 
 const trendingSchemas = {
 	song: songList("trending songs"),

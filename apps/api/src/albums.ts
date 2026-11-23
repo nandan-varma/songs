@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { artistMapSchema, toCredits } from "./lib/credit";
-import { imageLinks } from "./lib/media";
-import { flag, maybe, numeric, parseUpstream, text } from "./lib/schema";
-import { jiosaavn } from "./lib/upstream";
-import { byIdOrLink, query } from "./lib/validate";
-import { songList } from "./songs";
+import { artistMapSchema, toCredits } from "./lib/credit.js";
+import { imageLinks } from "./lib/media.js";
+import { flag, maybe, numeric, parseUpstream, text } from "./lib/schema.js";
+import { jiosaavn } from "./lib/upstream.js";
+import { byIdOrLink, query } from "./lib/validate.js";
+import { songList } from "./songs.js";
 
 export const albumSchema = z
 	.object({

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { imageLinks } from "./media";
-import { text } from "./schema";
+import { imageLinks } from "./media.js";
+import { text } from "./schema.js";
 
 export const creditSchema = z
 	.object({

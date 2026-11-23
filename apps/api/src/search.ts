@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { artistMapSchema, creditSchema, toCredits } from "./lib/credit";
-import { imageLinks } from "./lib/media";
+import { artistMapSchema, creditSchema, toCredits } from "./lib/credit.js";
+import { imageLinks } from "./lib/media.js";
 import {
 	flag,
 	lenientArray,
@@ -9,10 +9,10 @@ import {
 	numeric,
 	parseUpstream,
 	text,
-} from "./lib/schema";
-import { jiosaavn } from "./lib/upstream";
-import { count, query } from "./lib/validate";
-import { songList } from "./songs";
+} from "./lib/schema.js";
+import { jiosaavn } from "./lib/upstream.js";
+import { count, query } from "./lib/validate.js";
+import { songList } from "./songs.js";
 
 const searchAlbumSchema = z
 	.object({

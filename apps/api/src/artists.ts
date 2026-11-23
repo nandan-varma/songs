@@ -1,18 +1,18 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { albumSchema } from "./albums";
-import { imageLinks } from "./lib/media";
+import { albumSchema } from "./albums.js";
+import { imageLinks } from "./lib/media.js";
 import {
 	lenientArray,
 	maybe,
 	numeric,
 	parseUpstream,
 	text,
-} from "./lib/schema";
-import { jiosaavn } from "./lib/upstream";
-import { byIdOrLink, count, query } from "./lib/validate";
-import { songList } from "./songs";
+} from "./lib/schema.js";
+import { jiosaavn } from "./lib/upstream.js";
+import { byIdOrLink, count, query } from "./lib/validate.js";
+import { songList } from "./songs.js";
 
 const bioEntrySchema = z.object({
 	text: z.string().nullable(),

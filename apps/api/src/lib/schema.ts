@@ -1,6 +1,6 @@
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { decodeEntities } from "./html";
+import { decodeEntities } from "./html.js";
 
 export const text = z.string().transform(decodeEntities);
 

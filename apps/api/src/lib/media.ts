@@ -1,4 +1,4 @@
-import { desEcbDecrypt } from "./des";
+import { desEcbDecrypt } from "./des.js";
 
 export interface Link {
 	quality: string;

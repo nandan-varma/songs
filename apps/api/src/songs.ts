@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { artistMapSchema, toCredits } from "./lib/credit";
-import { audioLinks, imageLinks } from "./lib/media";
+import { artistMapSchema, toCredits } from "./lib/credit.js";
+import { audioLinks, imageLinks } from "./lib/media.js";
 import {
 	flag,
 	lenientArray,
@@ -10,9 +10,9 @@ import {
 	numeric,
 	parseUpstream,
 	text,
-} from "./lib/schema";
-import { jiosaavn } from "./lib/upstream";
-import { count, linkQuery, query } from "./lib/validate";
+} from "./lib/schema.js";
+import { jiosaavn } from "./lib/upstream.js";
+import { count, linkQuery, query } from "./lib/validate.js";
 
 const songSchema = z
 	.object({

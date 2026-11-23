@@ -11,14 +11,12 @@ public enum FavoriteAction {
             library.addFavorite(item)
             if let song {
                 profile.learn(song, signal: .favorite, gate: gate)
-            } else if let id = item.catalogSongID ?? item.externalSongID {
-                profile.setLiked(id, true)
+            } else {
+                profile.setLiked(item.id, true)
             }
         } else {
             library.removeFavorite(item.id)
-            if let id = item.catalogSongID ?? item.externalSongID {
-                profile.setLiked(id, false)
-            }
+            profile.setLiked(item.id, false)
         }
         return true
     }

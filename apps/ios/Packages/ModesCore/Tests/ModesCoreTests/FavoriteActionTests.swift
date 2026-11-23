@@ -4,7 +4,7 @@ import Testing
 
 struct FavoriteActionTests {
     private func item() -> LibraryItem {
-        LibraryItem(id: LibraryItem.catalogID("song"), title: "Song", artist: "Artist")
+        LibraryItem(id: "song", title: "Song", artist: "Artist")
     }
 
     private func song() -> SongFeatures {

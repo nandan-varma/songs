@@ -131,7 +131,7 @@ class DiagBayes:
     def score(self, X, tau=0.0, rng=None):  # X: CSR candidates
         return X @ self.weights(tau, rng).astype(np.float32)
 
-if __name__ == '__main__':      # smoke test on the playlist crawl (needs scratchpad data)
+if __name__ == '__main__':      # smoke test on the playlist crawl (needs RECS_WORK data)
     import json, sys
     songs = [s for l in open(sys.argv[1] if len(sys.argv) > 1 else 'data/playlists.jsonl') for s in json.loads(l)['songs']][:2000]
     X = sparse_features(songs); m = DiagBayes(X.shape[1]); m.update(X[0], 1)

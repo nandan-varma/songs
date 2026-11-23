@@ -1,6 +1,6 @@
 # Stateless song features vs the full model — offline experiment
 
-All numbers: mean ± s.e. (s.e. is over playlist clusters, i.e. the 2 P1 draws of one playlist are averaged first; 3 folds pooled). Code: `tools/recs/experiments/{exp_lib,run_exp,aggregate,gen_report}.py`; feature builder: `tools/recs/experiments/hashed_features.py`. Raw per-item results: `exp1/res_*.pkl`. Headless, `nice -n 15`, 1 thread x 3 processes.
+All numbers: mean ± s.e. (s.e. is over playlist clusters, i.e. the 2 P1 draws of one playlist are averaged first; 3 folds pooled). Code: `research/recs/experiments/{exp_lib,run_exp,aggregate,gen_report}.py`; feature builder: `research/recs/experiments/hashed_features.py`. Raw per-item results: `exp1/res_*.pkl`. Headless, `nice -n 15`, 1 thread x 3 processes.
 
 ## 0. Protocol (what was actually run)
 

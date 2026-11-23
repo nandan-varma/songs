@@ -1,7 +1,7 @@
 # Experiments toward a learned song encoder
 
 Offline experiments run to decide how the app should score songs that are not in its fixed catalog, without hosting
-anything that grows. Scripts are in `tools/recs/experiments/`. Numbers come from playlist-based proxies (a playlist stands in
+anything that grows. Scripts are in `research/recs/experiments/`. Numbers come from playlist-based proxies (a playlist stands in
 for a listener's taste), not real listening, so they rank approaches rather than predict product metrics.
 
 | # | Question | File |
@@ -14,4 +14,4 @@ Reading guide: experiment 1's "F4" (hashed sparse metadata + a low-weighted audi
 has to beat, especially on cold songs. Experiment 3's licence notes concern shipping Essentia-derived labels; they do not
 limit running experiments.
 
-`tools/recs/experiments/artifacts/student.mlpackage` is the 312 KB Core ML student from experiment 2 (fold 0, trained on Essentia-derived labels, so treat it as an educational artefact; the shipped model would be retrained on everything).
+`research/recs/experiments/artifacts/student.mlpackage` is the 312 KB Core ML student from experiment 2 (fold 0, trained on Essentia-derived labels, so treat it as an educational artefact; the shipped model would be retrained on everything).

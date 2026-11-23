@@ -1,6 +1,6 @@
 # Exp3 results: on-device handling of new songs (no hosted, growing catalog)
 
-Date of measurements: 2026-11-22. Machine: Apple M4 Mac, headless, no simulator. Scripts (uncommitted): `/Users/nandan/dev/web/music/music-api/tools/recs/experiments/` (snd.swift, supply.py, supply2.py, clipavail.py, coreml_bench.py). Analysis: `exp3/anA.py`, raw output `exp3/A_out.txt`.
+Date of measurements: 2026-11-22. Machine: Apple M4 Mac, headless, no simulator. Scripts (uncommitted): `research/recs/experiments/` (snd.swift, supply.py, supply2.py, clipavail.py, coreml_bench.py). Analysis: `exp3/anA.py`, raw output `exp3/A_out.txt`.
 
 ## A. Apple SoundAnalysis built-in classifier vs. Essentia teacher
 

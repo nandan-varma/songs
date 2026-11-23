@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The app's only account surface: a plain Settings sheet, like the Music app's account row.
+/// Opens the Settings sheet from the toolbar, like the Music app's account row.
 struct SettingsButton: View {
     @State private var showSettings = false
 

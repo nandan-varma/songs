@@ -1,0 +1,252 @@
+[
+	{
+		"id": "RqJ9WdNn",
+		"title": "Sahiba",
+		"subtitle": "Jasleen Royal, Stebin Ben, Vijay Deverakonda, Radhikka Madan, Priya Saraiya, Aditya Sharma - Sahiba",
+		"header_desc": "",
+		"type": "song",
+		"perma_url": "https://www.jiosaavn.com/song/sahiba/IhkhCCNUeV0",
+		"image": "https://c.saavncdn.com/485/Sahiba-Hindi-2024-20241112165036-150x150.jpg",
+		"language": "hindi",
+		"year": "2024",
+		"play_count": "6919135",
+		"explicit_content": "0",
+		"list_count": "0",
+		"list_type": "",
+		"list": "",
+		"more_info": {
+			"music": "Jasleen Royal, Stebin Ben, Vijay Deverakonda, Radhikka Madan, Priya Saraiya, Aditya Sharma",
+			"album_id": "RqJ9WdNn",
+			"album": "Sahiba",
+			"label": "Warner Music India",
+			"label_id": "3755783",
+			"origin": "none",
+			"is_dolby_content": false,
+			"320kbps": "true",
+			"encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyF34pRFsVZybCvIGv0SHRng6M9jRioLUVJvbbbGDXoZpqj91H4mLZrxw7tS9a8Gtq",
+			"encrypted_cache_url": "",
+			"encrypted_drm_cache_url": "",
+			"encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8IFtFYI3urcaTkWsvWwLcS99YAllV3wZpSuxDYWEqhjkOOdqu0hugwI92mytrdt3FDnQW0nglPS4=",
+			"album_url": "https://www.jiosaavn.com/album/sahiba/H2mHAAqOsVo_",
+			"duration": "217",
+			"rights": {
+				"code": "0",
+				"cacheable": "true",
+				"delete_cached_object": "false",
+				"reason": ""
+			},
+			"cache_state": "false",
+			"has_lyrics": "false",
+			"lyrics_snippet": "",
+			"has_trivia": "false",
+			"trivia": [],
+			"starred": "false",
+			"copyright_text": "℗ 2024 Warner Music India",
+			"artistMap": {
+				"primary_artists": [
+					{
+						"id": "742789",
+						"name": "Jasleen Royal",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Jasleen_Royal_002_20230615091108_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/jasleen-royal-songs/6X7AcwXv2go_"
+					},
+					{
+						"id": "4670197",
+						"name": "Stebin Ben",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Stebin_Ben_005_20240124093234_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/stebin-ben-songs/cIgvj9lx6Dc_"
+					},
+					{
+						"id": "3536338",
+						"name": "Vijay Deverakonda",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Vijay_Deverakonda_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/vijay-deverakonda-songs/r,s1oqYlr4A_"
+					},
+					{
+						"id": "21026359",
+						"name": "Radhikka Madan",
+						"role": "",
+						"image": "",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/radhikka-madan-songs/LABvSovh,Y8_"
+					},
+					{
+						"id": "673160",
+						"name": "Priya Saraiya",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Priya_Saraiya_003_20211123104635_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/priya-saraiya-songs/DhHUFwiOfxE_"
+					},
+					{
+						"id": "742866",
+						"name": "Aditya Sharma",
+						"role": "",
+						"image": "https://c.saavncdn.com/822/Tu-Hai-Kahan-Hindi-2017-150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/aditya-sharma-songs/9gLjceLCnSQ_"
+					}
+				],
+				"featured_artists": [],
+				"artists": [
+					{
+						"id": "742789",
+						"name": "Jasleen Royal",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Jasleen_Royal_002_20230615091108_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/jasleen-royal-songs/6X7AcwXv2go_"
+					},
+					{
+						"id": "4670197",
+						"name": "Stebin Ben",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Stebin_Ben_005_20240124093234_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/stebin-ben-songs/cIgvj9lx6Dc_"
+					},
+					{
+						"id": "3536338",
+						"name": "Vijay Deverakonda",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Vijay_Deverakonda_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/vijay-deverakonda-songs/r,s1oqYlr4A_"
+					},
+					{
+						"id": "21026359",
+						"name": "Radhikka Madan",
+						"role": "",
+						"image": "",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/radhikka-madan-songs/LABvSovh,Y8_"
+					},
+					{
+						"id": "673160",
+						"name": "Priya Saraiya",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Priya_Saraiya_003_20211123104635_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/priya-saraiya-songs/DhHUFwiOfxE_"
+					},
+					{
+						"id": "742866",
+						"name": "Aditya Sharma",
+						"role": "",
+						"image": "https://c.saavncdn.com/822/Tu-Hai-Kahan-Hindi-2017-150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/aditya-sharma-songs/9gLjceLCnSQ_"
+					}
+				]
+			},
+			"release_date": "2024-05-09",
+			"label_url": "/label/warner-music-india-albums/4j6ISMnao78_",
+			"vcode": "010912582769468",
+			"vlink": "https://jiotunepreview.jio.com/content/Converted/010912582725844.mp3",
+			"triller_available": false,
+			"request_jiotune_flag": false,
+			"webp": "true"
+		},
+		"button_tooltip_info": [],
+		"pro_hva_campaigns": []
+	},
+	{
+		"id": "QbnFCsec",
+		"title": "Finding Her",
+		"subtitle": "Kushagra, Saaheal - Finding Her",
+		"header_desc": "",
+		"type": "song",
+		"perma_url": "https://www.jiosaavn.com/song/finding-her/IQoFdzdDUlA",
+		"image": "https://c.saavncdn.com/067/Finding-Her-Hindi-2025-20250104190643-150x150.jpg",
+		"language": "hindi",
+		"year": "2025",
+		"play_count": "3195467",
+		"explicit_content": "0",
+		"list_count": "0",
+		"list_type": "",
+		"list": "",
+		"more_info": {
+			"music": "Kushagra, Bharath, Saaheal",
+			"album_id": "QbnFCsec",
+			"album": "Finding Her",
+			"label": "EYP Creations",
+			"label_id": "5449088",
+			"origin": "none",
+			"is_dolby_content": false,
+			"320kbps": "true",
+			"encrypted_media_url": "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDytVhvnraGHdPdDb/FVUuGC6I/HJwp/AScOEzUtYnGYMYUb3utTsYvQRw7tS9a8Gtq",
+			"encrypted_cache_url": "",
+			"encrypted_drm_cache_url": "",
+			"encrypted_drm_media_url": "ID2ieOjCrwdjlkMElYlzWCptgNdUpWD8dt9nf2KK4+Y2HO5eU/ikfhA4pL7pq4hbF+d6ZEfsUaAfGdLegnSrRI92mytrdt3FDnQW0nglPS4=",
+			"album_url": "https://www.jiosaavn.com/album/finding-her/UxOgMNk0DMA_",
+			"duration": "207",
+			"rights": {
+				"code": "0",
+				"cacheable": "true",
+				"delete_cached_object": "false",
+				"reason": ""
+			},
+			"cache_state": "false",
+			"has_lyrics": "false",
+			"lyrics_snippet": "",
+			"has_trivia": "false",
+			"trivia": [],
+			"starred": "false",
+			"copyright_text": "℗ 2025 UR Debut under exclusive license to Warner Music India",
+			"artistMap": {
+				"primary_artists": [
+					{
+						"id": "4189702",
+						"name": "Kushagra",
+						"role": "singer",
+						"image": "https://c.saavncdn.com/artists/Kushagra_000_20250409070059_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/kushagra-songs/rNvWe66fGTQ_"
+					},
+					{
+						"id": "21000078",
+						"name": "Saaheal",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Saaheal_000_20260703092020_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/saaheal-songs/qX5sRLBUIZo_"
+					}
+				],
+				"featured_artists": [],
+				"artists": [
+					{
+						"id": "4189702",
+						"name": "Kushagra",
+						"role": "singer",
+						"image": "https://c.saavncdn.com/artists/Kushagra_000_20250409070059_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/kushagra-songs/rNvWe66fGTQ_"
+					},
+					{
+						"id": "21000078",
+						"name": "Saaheal",
+						"role": "",
+						"image": "https://c.saavncdn.com/artists/Saaheal_000_20260703092020_150x150.jpg",
+						"type": "artist",
+						"perma_url": "https://www.jiosaavn.com/artist/saaheal-songs/qX5sRLBUIZo_"
+					}
+				]
+			},
+			"release_date": "2025-01-15",
+			"label_url": "/label/eyp-creations-albums/bb-9eG2Zdbc_",
+			"vcode": "010912582912356",
+			"vlink": "https://jiotunepreview.jio.com/content/Converted/010912582869875.mp3",
+			"triller_available": false,
+			"request_jiotune_flag": false,
+			"webp": "true"
+		},
+		"button_tooltip_info": [],
+		"pro_hva_campaigns": []
+	}
+]

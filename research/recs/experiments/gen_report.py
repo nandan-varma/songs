@@ -43,4 +43,4 @@ for lang in ('hindi','english','telugu','tamil','punjabi'):
     p(f'\n**{lang}** (clusters P1 all/cold, P2 all/cold = '+'/'.join(str(r[sel[0]][3]) if r else '0' for r in rows)+')\n')
     p('| config | P1 all | P1 cold | P2 all | P2 cold |'); p('|---|---|---|---|---|')
     for n in sel: p(f'| {n} | '+' | '.join((f(r,n) if r else '-') for r in rows)+' |')
-open('/private/tmp/claude-501/-Users-nandan-dev-web-music-music-api/0c615e2d-e85f-41eb-99bc-164d1e551c62/scratchpad/exp1/tables.md','w').write('\n'.join(L))
+open(OUT+'/tables.md','w').write('\n'.join(L))

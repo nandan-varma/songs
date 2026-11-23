@@ -13,9 +13,11 @@ import os
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-# Stable metric names the app emits (documented in apps/ios/README.md). Reported first, even when empty.
-KNOWN_METRICS = ["ttfa_ms", "skip_latency_ms", "resolve_ms", "rank_ms", "learn_ms",
-                 "launch_to_first_frame_ms", "model_ready_ms", "save_state_ms", "catalog_load_ms"]
+# Metric names the app emits today (apps/ios/Modes/Core/Logging/AppDiagnostics.swift, HitchMonitor.swift). Reported
+# first, even when empty. hitch_ms is summarised separately below.
+KNOWN_METRICS = ["launch_to_first_frame_ms", "launch_to_active_ms"]
+# Old builds (before the catalogue was removed) still log these; they are not shown.
+RETIRED_METRICS = {"catalog_load_ms"}
 SLOW_MS = 1000
 
 
@@ -111,7 +113,7 @@ def metrics_section(recs, out):
         if r.get("level") == "metric" and isinstance(r.get("kv", {}).get("value"), (int, float)):
             ms[r["msg"]].append(r["kv"]["value"])
     out.append("== metrics (n p50 p90 max) ==")
-    names = KNOWN_METRICS + sorted(n for n in ms if n not in KNOWN_METRICS and n != "hitch_ms")
+    names = KNOWN_METRICS + sorted(n for n in ms if n not in KNOWN_METRICS and n not in RETIRED_METRICS and n != "hitch_ms")
     shown = 0
     missing = []
     for n in names:
@@ -168,25 +170,20 @@ def events_section(path, out):
         out.append("none")
         return
     types = collections.Counter(e.get("type") for e in ev)
-    out.append("types: " + ", ".join(f"{t}={n}" for t, n in types.most_common(10)))
-    bymode = collections.defaultdict(list)
-    for e in sorted(ev, key=lambda e: e.get("t", "")):
-        bymode[e.get("mode", "?")].append(e)
-    for mode, es in bymode.items():
-        outcomes = []  # True = skipped
-        for e in es:
-            t = e.get("type")
-            if t == "completed":
-                outcomes.append(False)
-            elif t == "skipped" or (t == "switched_away" and (e.get("frac") or 0) < 0.5):
-                outcomes.append(True)
-        first, later = outcomes[:10], outcomes[10:]
-        f = lambda xs: f"{100 * sum(xs) / len(xs):.0f}% of {len(xs)}" if xs else "n/a"
-        fav = sum(1 for e in es if "fav" in e.get("type", "") or e.get("type") in ("liked", "like"))
-        dis = sum(1 for e in es if "dislike" in e.get("type", ""))
-        chips = collections.Counter(e.get("note") or e.get("type") for e in es if "chip" in e.get("type", ""))
-        out.append(f"{mode}: completed={outcomes.count(False)} skipped={outcomes.count(True)} skip-rate first10={f(first)} later={f(later)}"
-                   f" fav={fav} dislike={dis}" + (f" chips={dict(chips.most_common(4))}" if chips else ""))
+    out.append("types: " + ", ".join(f"{t}={n}" for t, n in types.most_common(12)))
+    # One listener profile, so one group. Records: EventRecord in apps/ios/Modes/Core/Models.swift (type, song, frac, note).
+    outcomes = []  # in time order; True = skipped
+    for e in sorted(ev, key=lambda e: e.get("t") or ""):
+        t = e.get("type")
+        if t == "completed":
+            outcomes.append(False)
+        elif t in ("skipped", "skipped_unheard") or (t == "switched_away" and (e.get("frac") or 0) < 0.5):
+            outcomes.append(True)
+    first, later = outcomes[:10], outcomes[10:]
+    f = lambda xs: f"{100 * sum(xs) / len(xs):.0f}% of {len(xs)}" if xs else "n/a"
+    out.append(f"completed={outcomes.count(False)} skipped={outcomes.count(True)} skip-rate first10={f(first)} later={f(later)}"
+               f" picked={types.get('picked', 0)} suggest_less={types.get('suggest_less', 0)}"
+               f" unfavorite={types.get('unfavorite', 0)} profile_reset={types.get('profile_reset', 0)}")
 
 
 def main():

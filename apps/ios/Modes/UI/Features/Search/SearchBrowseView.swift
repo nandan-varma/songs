@@ -55,13 +55,11 @@ struct SearchBrowseView: View {
         }
         .background(Color(.systemBackground))
         .musicRoutes()
-        .task(id: LoadKey(languages: model.settings.languages, baseURL: model.settings.baseURL,
-                          highQuality: model.settings.highQuality, retry: retry)) {
+        .task(id: LoadKey(languages: model.settings.languages, highQuality: model.settings.highQuality, retry: retry)) {
             await load()
         }
         .task(id: "charts") {
-            charts = (try? await SaavnAPI.charts(baseURL: model.settings.baseURL,
-                                                 highQuality: model.settings.highQuality)) ?? []
+            charts = (try? await SaavnAPI.charts()) ?? []
             ImagePipeline.shared.prefetch(charts.compactMap(\.image))
         }
     }
@@ -78,8 +76,7 @@ struct SearchBrowseView: View {
         var loaded: [HotSection] = []
         for language in languages {
             do {
-                let hits = try await SaavnAPI.trending(language: language, baseURL: model.settings.baseURL,
-                                                       highQuality: model.settings.highQuality)
+                let hits = try await SaavnAPI.trending(language: language, highQuality: model.settings.highQuality)
                 guard !Task.isCancelled else { return }
                 if !hits.isEmpty { loaded.append(HotSection(language: language, hits: Array(hits.prefix(20)))) }
             } catch {
@@ -95,7 +92,6 @@ struct SearchBrowseView: View {
 
     private struct LoadKey: Equatable {
         let languages: [String]
-        let baseURL: String
         let highQuality: Bool
         let retry: Int
     }

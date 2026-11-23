@@ -1,7 +1,10 @@
-import json,time,urllib.request,urllib.parse,random,collections,datetime,os,statistics
-S="/private/tmp/claude-501/-Users-nandan-dev-web-music-music-api/0c615e2d-e85f-41eb-99bc-164d1e551c62/scratchpad"
+import json,time,urllib.request,urllib.parse,random,collections,datetime,os,statistics,sys
 B="https://saavn-api.nandanvarma.com"
-cat={i[0] for i in json.load(open("/Users/nandan/dev/web/music/music-api/ios/Modes/Modes/Resources/catalog.json"))["items"]}
+CAT_PATH = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("CATALOG_JSON")
+if not CAT_PATH:
+    sys.exit("usage: supply2.py <catalog.json>   (or set CATALOG_JSON). The catalogue is in the archive bundle, not in the repo.")
+S = os.environ.get("SUPPLY_DIR", ".")  # working dir: data/ (playlists) in, exp3/ (outputs) out
+cat = {i[0] for i in json.load(open(CAT_PATH))["items"]}
 sup=json.load(open(f"{S}/exp3/B_supply.json")); sg=json.load(open(f"{S}/exp3/B_sugg.json"))
 songs=sup['songs']
 today=datetime.date(2026,11,22)

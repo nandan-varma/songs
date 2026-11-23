@@ -27,7 +27,7 @@ struct ModelStatsView: View {
                 } header: {
                     Text("Model")
                 } footer: {
-                    Text("Sparse hashed metadata. No catalog index and no per-song server artefact.")
+                    Text("Sparse hashed metadata. No song index and no per-song server artefact.")
                 }
 
                 if !model.favoriteItems.isEmpty {

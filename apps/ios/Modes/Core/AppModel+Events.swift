@@ -1,7 +1,9 @@
 import Foundation
-import ModesCore
 
+/// The listening log (`Documents/events.jsonl`) and the toast.
 extension AppModel {
+    static let logQueue = DispatchQueue(label: "modes.eventlog", qos: .utility)
+
     func flash(_ text: String) {
         toast = text
         toastTask?.cancel()
@@ -9,18 +11,20 @@ extension AppModel {
     }
 
     func log(_ type: String, song: String? = nil, frac: Double? = nil, note: String? = nil) {
-        let enc = JSONEncoder(); enc.dateEncodingStrategy = .iso8601
-        guard var line = try? enc.encode(EventRecord(profile: "listener", type: type, song: song, frac: frac, note: note)) else { return }
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        guard var line = try? encoder.encode(EventRecord(type: type, song: song, frac: frac, note: note)) else { return }
         line.append(10)
         let url = Self.eventsURL, data = line
         Self.logQueue.async {
             do {
                 if FileManager.default.fileExists(atPath: url.path) {
-                    let h = try FileHandle(forWritingTo: url); defer { try? h.close() }
-                    try h.seekToEnd(); try h.write(contentsOf: data)
+                    let handle = try FileHandle(forWritingTo: url)
+                    defer { try? handle.close() }
+                    try handle.seekToEnd()
+                    try handle.write(contentsOf: data)
                 } else { try data.write(to: url) }
             } catch {}
         }
     }
-
 }

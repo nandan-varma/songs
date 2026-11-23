@@ -1,7 +1,7 @@
 # Downstream check: replicate sim_final.py (leak-free playlist split, sequential ridge learner) with swapped attribute sources.
 import sys,random,json,numpy as np,warnings; warnings.filterwarnings('ignore')
-sys.path.insert(0,'/Users/nandan/dev/web/music/music-api/tools/recs'); sys.path.insert(0,'/Users/nandan/dev/web/music/music-api/tools/recs/experiments')
-from build_feats import *      # cwd must be scratchpad (data/ relative paths)
+import os; _HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,os.path.join(_HERE,'..')); sys.path.insert(0,_HERE)
+from build_feats import *      # cwd must be the scratch dir (RECS_WORK; data/ relative paths)
 from sklearn.preprocessing import normalize
 from common import *
 from scipy.stats import spearmanr

@@ -6,27 +6,11 @@ extension AppModel {
 
     func artistID(_ item: QueueItem) -> String? { features(for: item).artistIDs.first }
 
-    /// Makes the model's liked ids match the library, repairing state written before list favorites updated both.
-    func reconcileLikes() {
-        profile.liked = []
-        for item in library.favorites.reversed() {
-            if let id = item.catalogSongID ?? item.externalSongID { profile.setLiked(id, true) }
-        }
-    }
-
+    /// The title of a song id seen this session or saved as a favorite.
     func displayTitle(forSongID id: String) -> String? {
-        if let known = apiSongs[id] { return known.title }
-        if let index = catalog.indexByID[id] { return display(index: index).title }
-        return library.favorites.first { $0.catalogSongID == id || $0.externalSongID == id }?.title
+        if let known = knownSongs[id] { return display(title: known.title, artist: known.artist, album: known.album).title }
+        return library.favorites.first { $0.id == id }.map { display(title: $0.title, artist: $0.artist).title }
     }
-
-    func title(_ item: QueueItem) -> String { item.index >= 0 ? catalog.items[item.index].title : (item.ext?.title ?? "") }
-    func artist(_ item: QueueItem) -> String { item.index >= 0 ? catalog.items[item.index].artist : (item.ext?.artist ?? "") }
-
-    func album(_ item: QueueItem) -> String { item.index >= 0 ? catalog.items[item.index].album : (item.ext?.album ?? "") }
-
-    // MARK: Display text (additive: `title(_:)` and `artist(_:)` still return the raw catalog strings)
-
 
     /// Clean title, artist line and film/album for any song, cached because rows ask on every render.
     func display(title: String, artist: String, album: String = "") -> SongDisplay {
@@ -38,14 +22,11 @@ extension AppModel {
         return made
     }
 
-    func display(_ item: QueueItem) -> SongDisplay { display(title: title(item), artist: artist(item), album: album(item)) }
-    func display(index: Int) -> SongDisplay {
-        let catalogItem = catalog.items[index]
-        return display(title: catalogItem.title, artist: catalogItem.artist, album: catalogItem.album)
+    func display(_ item: QueueItem) -> SongDisplay {
+        display(title: item.song.title, artist: item.song.artist, album: item.song.album)
     }
     func displayTitle(_ item: QueueItem) -> String { display(item).title }
     func displayArtist(_ item: QueueItem) -> String { display(item).artist }
     /// The film or album, when it adds information beyond the title.
     func context(_ item: QueueItem) -> String? { display(item).context }
-
 }

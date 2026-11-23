@@ -1,36 +1,48 @@
-"use client";
+import Link from "next/link";
+import { CardGrid } from "@/components/media-card";
+import { Section } from "@/components/section";
+import { TrackList } from "@/components/track-list";
+import { getHome } from "@/lib/api/data";
+import { DEFAULT_LANGUAGE, isLanguage, LANGUAGES } from "@/lib/languages";
+import { cn } from "@/lib/utils";
 
-import { Loader2 } from "lucide-react";
-import { Suspense } from "react";
-import { ErrorBoundary } from "@/components/common/error-boundary";
-import { OfflineSongsList } from "@/components/offline/offline-songs-list";
-import SearchContent from "@/components/search-content";
-import { useIsOffline } from "@/hooks/network/use-is-offline";
-
-export default function Home() {
-	const isOffline = useIsOffline();
+export default async function HomePage({
+	searchParams,
+}: {
+	searchParams: Promise<{ lang?: string }>;
+}) {
+	const { lang } = await searchParams;
+	const language = isLanguage(lang) ? lang : DEFAULT_LANGUAGE;
+	const home = await getHome(language);
 
 	return (
-		<div className="min-h-screen bg-background">
-			{isOffline ? (
-				<ErrorBoundary context="OfflineSongsList">
-					<OfflineSongsList />
-				</ErrorBoundary>
-			) : (
-				<ErrorBoundary context="SearchContent">
-					<Suspense
-						fallback={
-							<div className="container mx-auto px-4 py-8">
-								<div className="flex justify-center py-12">
-									<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-								</div>
-							</div>
-						}
+		<div className="space-y-10">
+			<nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Language">
+				{LANGUAGES.map((name) => (
+					<Link
+						key={name}
+						href={name === DEFAULT_LANGUAGE ? "/" : `/?lang=${name}`}
+						className={cn(
+							"rounded-full bg-secondary px-3 py-1 text-sm capitalize whitespace-nowrap",
+							name === language && "bg-primary text-primary-foreground",
+						)}
 					>
-						<SearchContent />
-					</Suspense>
-				</ErrorBoundary>
-			)}
+						{name}
+					</Link>
+				))}
+			</nav>
+			<Section title="Trending songs">
+				<TrackList tracks={home.songs} />
+			</Section>
+			<Section title="Trending albums">
+				<CardGrid cards={home.albums} />
+			</Section>
+			<Section title="Featured playlists">
+				<CardGrid cards={home.playlists} />
+			</Section>
+			<Section title="Charts">
+				<CardGrid cards={home.charts} />
+			</Section>
 		</div>
 	);
 }

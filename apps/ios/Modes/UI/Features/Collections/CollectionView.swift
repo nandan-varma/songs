@@ -39,7 +39,7 @@ private struct CollectionDetail {
     let title: String
     let subtitle: String
     let imageURL: URL?
-    let songs: [SaavnAPI.Song]
+    let songs: [SaavnAPI.Hit]
     let albums: [SaavnAPI.Album]
     var round = false
 }
@@ -78,7 +78,7 @@ struct CollectionView: View {
                     }
 
                     Section("Songs") {
-                        let hits = detail.songs.compactMap(\.hit)
+                        let hits = detail.songs
                         if hits.isEmpty {
                             Text("No playable songs here.").foregroundStyle(.secondary)
                         } else {
@@ -109,29 +109,25 @@ struct CollectionView: View {
         do {
             switch route {
             case .album(let id):
-                let album = try await SaavnAPI.album(id: id, baseURL: model.settings.baseURL,
-                                                     highQuality: model.settings.highQuality)
+                let album = try await SaavnAPI.album(id: id, highQuality: model.settings.highQuality)
                 detail = CollectionDetail(title: album.name, subtitle: album.subtitle ?? "",
                                           imageURL: album.image, songs: album.songs, albums: [])
             case .playlist(let id):
-                let playlist = try await SaavnAPI.playlist(id: id, baseURL: model.settings.baseURL,
-                                                           highQuality: model.settings.highQuality)
+                let playlist = try await SaavnAPI.playlist(id: id, highQuality: model.settings.highQuality)
                 detail = CollectionDetail(title: playlist.name, subtitle: "\(playlist.songs.count) songs",
                                           imageURL: playlist.image, songs: playlist.songs, albums: [])
             case .artist(let id):
-                let artist = try await SaavnAPI.artist(id: id, baseURL: model.settings.baseURL,
-                                                       highQuality: model.settings.highQuality)
+                let artist = try await SaavnAPI.artist(id: id, highQuality: model.settings.highQuality)
                 detail = CollectionDetail(title: artist.name, subtitle: artist.roles.joined(separator: " · "),
                                           imageURL: artist.image, songs: artist.songs, albums: artist.albums,
                                           round: true)
             case .chart(let id):
-                let chart = try await SaavnAPI.chart(id: id, baseURL: model.settings.baseURL,
-                                                     highQuality: model.settings.highQuality)
+                let chart = try await SaavnAPI.chart(id: id, highQuality: model.settings.highQuality)
                 detail = CollectionDetail(title: chart.name, subtitle: "\(chart.songs.count) songs",
                                           imageURL: chart.image, songs: chart.songs, albums: [])
             }
             if let detail {
-                ImagePipeline.shared.prefetch(detail.songs.compactMap(\.image)
+                ImagePipeline.shared.prefetch(detail.songs.compactMap(\.song.image)
                     + detail.albums.compactMap(\.image) + [detail.imageURL].compactMap { $0 })
             }
         } catch {

@@ -13,15 +13,3 @@ struct SeededGenerator: RandomNumberGenerator {
         return z ^ (z >> 31)
     }
 }
-
-enum RealCatalog {
-    static let dir = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()   // Tests/ModesCoreTests -> Tests -> ModesCore
-        .deletingLastPathComponent().deletingLastPathComponent()                               // -> Packages -> ios/Modes
-        .appendingPathComponent("Modes/Resources")
-    static let jsonURL = dir.appendingPathComponent("catalog.json")
-    static let binURL = dir.appendingPathComponent("catalog.bin")
-    static let available = FileManager.default.fileExists(atPath: jsonURL.path) && FileManager.default.fileExists(atPath: binURL.path)
-    /// Loaded once; the catalog is immutable.
-    static let catalog: Catalog? = try? Catalog(jsonURL: jsonURL, binURL: binURL)
-}

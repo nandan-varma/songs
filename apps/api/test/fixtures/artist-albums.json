@@ -1,0 +1,160 @@
+{
+	"artistId": "464932",
+	"name": "Neha Kakkar",
+	"image": "https://c.saavncdn.com/artists/Neha_Kakkar_007_20241212115832_150x150.jpg",
+	"follower_count": "24028403",
+	"type": "artist",
+	"is_followed": false,
+	"isVerified": true,
+	"dominantLanguage": "hindi",
+	"dominantType": "singer",
+	"topAlbums": {
+		"albums": [
+			{
+				"id": "10660301",
+				"title": "Raabta",
+				"subtitle": "Kaushik-Aakash-Guddu (KAG) for JAM8, Sourav Roy, Sohrabuddin",
+				"header_desc": "",
+				"type": "album",
+				"perma_url": "https://www.jiosaavn.com/album/raabta/CKUSdZyuX0E_",
+				"image": "https://c.saavncdn.com/023/Raabta-Hindi-2017-150x150.jpg",
+				"language": "hindi",
+				"year": "2017",
+				"play_count": "",
+				"explicit_content": "0",
+				"list_count": "0",
+				"list_type": "",
+				"list": "",
+				"more_info": {
+					"query": "Raabta",
+					"text": "Raabta",
+					"music": "Pritam, Sourav Roy, Sohrabuddin, Kaushik-Aakash-Guddu (KAG) for JAM8",
+					"song_count": "6",
+					"artistMap": {
+						"primary_artists": [
+							{
+								"id": "2663500",
+								"name": "Kaushik-Aakash-Guddu (KAG) for JAM8",
+								"role": "primary_artists",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/kaushik-aakash-guddu-kag-for-jam8-songs/JAdIelXlNlQ_"
+							},
+							{
+								"id": "3401411",
+								"name": "Sourav Roy",
+								"role": "primary_artists",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/sourav-roy-songs/SRYIGlKlQi0_"
+							},
+							{
+								"id": "3401412",
+								"name": "Sohrabuddin",
+								"role": "primary_artists",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/sohrabuddin-songs/vGYRFo3CfzU_"
+							}
+						],
+						"featured_artists": [],
+						"artists": [
+							{
+								"id": "456323",
+								"name": "Pritam",
+								"role": "music",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/pritam-songs/OaFg9HPZgq8_"
+							},
+							{
+								"id": "3401411",
+								"name": "Sourav Roy",
+								"role": "music",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/sourav-roy-songs/SRYIGlKlQi0_"
+							},
+							{
+								"id": "3401412",
+								"name": "Sohrabuddin",
+								"role": "music",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/sohrabuddin-songs/vGYRFo3CfzU_"
+							},
+							{
+								"id": "2663500",
+								"name": "Kaushik-Aakash-Guddu (KAG) for JAM8",
+								"role": "music",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/kaushik-aakash-guddu-kag-for-jam8-songs/JAdIelXlNlQ_"
+							},
+							{
+								"id": "459320",
+								"name": "Arijit Singh",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/arijit-singh-songs/LlRWpHzy3Hk_"
+							},
+							{
+								"id": "745460",
+								"name": "Nikhita Gandhi",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/nikhita-gandhi-songs/PP1RAOLWPAM_"
+							},
+							{
+								"id": "464932",
+								"name": "Neha Kakkar",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/neha-kakkar-songs/EkEBV7JAU-I_"
+							},
+							{
+								"id": "468245",
+								"name": "Diljit Dosanjh",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/diljit-dosanjh-songs/oIVHdWIO5F8_"
+							},
+							{
+								"id": "2378899",
+								"name": "Pardeep Singh Sran",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/pardeep-singh-sran-songs/NIfiZRCrYQA_"
+							},
+							{
+								"id": "458918",
+								"name": "Raftaar",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/raftaar-songs/ZYd,kDiZhJg_"
+							},
+							{
+								"id": "881158",
+								"name": "Jubin Nautiyal",
+								"role": "singers",
+								"image": "",
+								"type": "artist",
+								"perma_url": "https://www.jiosaavn.com/artist/jubin-nautiyal-songs/uGdfg6zGf4s_"
+							}
+						]
+					}
+				},
+				"button_tooltip_info": [],
+				"pro_hva_campaigns": []
+			}
+		],
+		"total": 352,
+		"last_page": false
+	}
+}

@@ -1,5 +1,4 @@
-import json,time,urllib.request,urllib.parse,glob,collections,random,sys
-S="/private/tmp/claude-501/-Users-nandan-dev-web-music-music-api/0c615e2d-e85f-41eb-99bc-164d1e551c62/scratchpad"
+import json,time,urllib.request,urllib.parse,glob,collections,random,sys,os
 B="https://saavn-api.nandanvarma.com"
 N=0
 def get(path,**q):
@@ -12,7 +11,11 @@ def get(path,**q):
         except Exception as e:
             err=e; time.sleep(1)
     return None
-cat={i[0] for i in json.load(open("/Users/nandan/dev/web/music/music-api/ios/Modes/Modes/Resources/catalog.json"))["items"]}
+CAT_PATH = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("CATALOG_JSON")
+if not CAT_PATH:
+    sys.exit("usage: supply.py <catalog.json>   (or set CATALOG_JSON). The catalogue is in the archive bundle, not in the repo.")
+S = os.environ.get("SUPPLY_DIR", ".")  # working dir: data/ (playlists) in, exp3/ (outputs) out
+cat = {i[0] for i in json.load(open(CAT_PATH))["items"]}
 shipped=set(cat)
 for p in glob.glob(f"{S}/data/playlists*.jsonl"):
     for l in open(p):

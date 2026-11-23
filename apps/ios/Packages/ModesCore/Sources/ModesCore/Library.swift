@@ -1,6 +1,6 @@
 import Foundation
 
-/// A saved or recently played song. `id` is "c:<catalogID>" for catalog songs and "x:<jiosaavnID>" for external ones.
+/// A saved or recently played song. `id` is the JioSaavn song id.
 public struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     public let id: String
     public var title: String
@@ -11,14 +11,6 @@ public struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     public init(id: String, title: String, artist: String, imageURL: URL? = nil, addedAt: Date = Date()) {
         self.id = id; self.title = title; self.artist = artist; self.imageURL = imageURL; self.addedAt = addedAt
     }
-
-    public static func catalogID(_ id: String) -> String { "c:" + id }
-    public static func externalID(_ id: String) -> String { "x:" + id }
-
-    /// The raw catalog song id when this is a catalog item.
-    public var catalogSongID: String? { id.hasPrefix("c:") ? String(id.dropFirst(2)) : nil }
-    /// The raw JioSaavn id when this is an external item.
-    public var externalSongID: String? { id.hasPrefix("x:") ? String(id.dropFirst(2)) : nil }
 }
 
 /// Favorites (newest first) and recently played songs (newest first, de-duplicated, capped). Pure value; persisted as part of the app state.

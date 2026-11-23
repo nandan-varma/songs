@@ -37,28 +37,7 @@ public struct SongFeatures: Codable, Hashable, Sendable {
         self.image = image
     }
 
-    public init(catalogItem: CatalogItem) {
-        self.init(id: catalogItem.id, title: catalogItem.title, artist: catalogItem.artist,
-                  album: catalogItem.album, language: catalogItem.lang, year: catalogItem.year,
-                  image: URL(string: catalogItem.img))
-    }
-
-    public init(externalSong: ExternalSong) {
-        self.init(id: externalSong.id, title: externalSong.title, artist: externalSong.artist,
-                  album: externalSong.album, albumID: externalSong.albumID, label: externalSong.label,
-                  language: externalSong.language,
-                  year: externalSong.year, artistIDs: externalSong.artistIDs, composer: externalSong.composer,
-                  duration: externalSong.duration, playCount: externalSong.playCount, explicit: externalSong.explicit,
-                  image: externalSong.image)
-    }
-
     /// First credited artist, used for the no-repeat-artist rule.
-    public var externalSong: ExternalSong {
-        ExternalSong(id: id, title: title, artist: artist, image: image, album: album, albumID: albumID,
-                     label: label, language: language, year: year, artistIDs: artistIDs, composer: composer,
-                     duration: duration, playCount: playCount, explicit: explicit)
-    }
-
     public var primaryArtist: String {
         artist.split(separator: ",").first.map { $0.trimmingCharacters(in: .whitespaces) } ?? artist
     }

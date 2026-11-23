@@ -2,27 +2,35 @@ import Foundation
 import ModesCore
 
 extension AppModel {
-    func songItem(for source: SongReference) -> QueueItem? {
+    /// The queue entry for any row, with the best metadata known for it.
+    func songItem(for source: SongReference) -> QueueItem {
         switch source {
-        case .catalog(let index):
-            guard catalog.items.indices.contains(index) else { return nil }
-            return QueueItem(index: index, why: "You picked this")
-        case .queued(let item): return item
+        case .queued(let item):
+            return item
         case .hit(let hit):
-            if let index = catalog.indexByID[hit.song.id] { return QueueItem(index: index, why: "You picked this") }
-            return QueueItem(index: -1, ext: hit.song, why: "You picked this")
-        case .library(let item):
-            guard let raw = item.catalogSongID ?? item.externalSongID else { return nil }
-            if let index = catalog.indexByID[raw] { return QueueItem(index: index, why: "You picked this") }
-            return QueueItem(index: -1, ext: ExternalSong(id: raw, title: item.title, artist: item.artist, image: item.imageURL), why: "You picked this")
+            return QueueItem(song: hit.song, why: "You picked this")
+        case .library(let entry):
+            let song = knownSongs[entry.id] ?? SongFeatures(id: entry.id, title: entry.title, artist: entry.artist, image: entry.imageURL)
+            return QueueItem(song: song, why: "You picked this")
         }
     }
 
-    func libraryItem(for item: QueueItem) -> LibraryItem {
-        LibraryItem(id: libraryID(for: item), title: title(item), artist: artist(item), imageURL: artURL(item))
+    /// Remembers the metadata and stream a live hit already carries, so playing it needs no extra request.
+    func adopt(_ source: SongReference) {
+        guard case .hit(let hit) = source else { return }
+        knownSongs[hit.song.id] = hit.song
+        resolved[hit.song.id] = hit.resolved
     }
 
-    func libraryID(for item: QueueItem) -> String {
-        item.index >= 0 ? LibraryItem.catalogID(catalog.items[item.index].id) : LibraryItem.externalID(item.ext?.id ?? "")
+    func libraryItem(for item: QueueItem) -> LibraryItem {
+        LibraryItem(id: item.id, title: item.song.title, artist: item.song.artist, imageURL: artURL(item))
     }
+
+    func isFavorite(_ item: QueueItem?) -> Bool {
+        guard let item else { return false }
+        return library.isFavorite(item.id)
+    }
+
+    /// Everything the model knows about a song: the live metadata when seen this session, else what the queue entry carries.
+    func features(for item: QueueItem) -> SongFeatures { knownSongs[item.id] ?? item.song }
 }

@@ -19,7 +19,6 @@ struct UpNextView: View {
             .musicListStyle()
             .navigationTitle("Up next").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.fontWeight(.semibold) } }
-            .task(id: model.upNext.map(\.id)) { model.ensureArtwork(for: model.upNext.map(\.index).filter { $0 >= 0 }) }
         }
     }
 }

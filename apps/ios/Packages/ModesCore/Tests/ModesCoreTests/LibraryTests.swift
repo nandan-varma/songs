@@ -9,35 +9,29 @@ struct LibraryTests {
 
     @Test func favoritesAreNewestFirstAndUnique() {
         var lib = LibraryState()
-        lib.addFavorite(item("c:1")); lib.addFavorite(item("c:2")); lib.addFavorite(item("c:1"))
-        #expect(lib.favorites.map(\.id) == ["c:1", "c:2"])
-        #expect(lib.isFavorite("c:2"))
-        let removed = lib.removeFavorite("c:2")
-        let removedAgain = lib.removeFavorite("c:2")
+        lib.addFavorite(item("1")); lib.addFavorite(item("2")); lib.addFavorite(item("1"))
+        #expect(lib.favorites.map(\.id) == ["1", "2"])
+        #expect(lib.isFavorite("2"))
+        let removed = lib.removeFavorite("2")
+        let removedAgain = lib.removeFavorite("2")
         #expect(removed && !removedAgain)
-        #expect(!lib.isFavorite("c:2"))
+        #expect(!lib.isFavorite("2"))
     }
 
     @Test func recentsDedupeAndCap() {
         var lib = LibraryState()
-        for i in 0..<70 { lib.recordPlay(item("c:\(i)")) }
+        for i in 0..<70 { lib.recordPlay(item("\(i)")) }
         #expect(lib.recents.count == LibraryState.recentLimit)
-        #expect(lib.recents.first?.id == "c:69")
-        lib.recordPlay(item("c:30"))
-        #expect(lib.recents.first?.id == "c:30")
-        #expect(lib.recents.filter { $0.id == "c:30" }.count == 1)
+        #expect(lib.recents.first?.id == "69")
+        lib.recordPlay(item("30"))
+        #expect(lib.recents.first?.id == "30")
+        #expect(lib.recents.filter { $0.id == "30" }.count == 1)
         lib.clearRecents()
         #expect(lib.recents.isEmpty)
     }
 
-    @Test func idHelpers() {
-        #expect(item("c:abc").catalogSongID == "abc")
-        #expect(item("x:zz").externalSongID == "zz")
-        #expect(item("x:zz").catalogSongID == nil)
-    }
-
     @Test func stateRoundTrips() throws {
-        var lib = LibraryState(); lib.addFavorite(item("c:1")); lib.recordPlay(item("x:2"))
+        var lib = LibraryState(); lib.addFavorite(item("1")); lib.recordPlay(item("2"))
         let back = try PropertyListDecoder().decode(LibraryState.self, from: PropertyListEncoder().encode(lib))
         #expect(back == lib)
     }

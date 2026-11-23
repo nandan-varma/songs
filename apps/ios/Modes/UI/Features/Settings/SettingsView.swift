@@ -75,8 +75,7 @@ struct SettingsView: View {
 
                 Section("About Modes") {
                     LabeledContent("Version") { Text(version).monospacedDigit() }
-                    LabeledContent("Songs on device") { Text(model.catalog.count, format: .number).monospacedDigit() }
-                    Link("Source code", destination: URL(string: "https://github.com/nandan-varma/music-api")!)
+                    Link("Source code", destination: URL(string: "https://github.com/nandan-varma/songs")!)
                     NavigationLink("Acknowledgements") { AcknowledgementsView() }
                 }
             }
@@ -85,7 +84,7 @@ struct SettingsView: View {
             .confirmationDialog("Reset what it learned?", isPresented: $confirmReset, titleVisibility: .visible) {
                 Button("Reset", role: .destructive) { model.resetProfile() }
             } message: {
-                Text("The profile starts fresh and your catalog favorites are used again as likes. Favorites and history stay.")
+                Text("The profile starts fresh and your favorites are used again as likes. Favorites and history stay.")
             }
             .confirmationDialog("Erase favorites, history and log?", isPresented: $confirmErase, titleVisibility: .visible) {
                 Button("Erase", role: .destructive) { model.resetEverything(); dismiss() }

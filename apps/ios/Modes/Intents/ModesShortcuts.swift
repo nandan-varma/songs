@@ -1,6 +1,6 @@
 import AppIntents
 
-/// Transport shortcuts only. There is one listener profile, so there is no mode to choose.
+/// Transport shortcuts for Siri, Shortcuts and the Action Button.
 struct ModesShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(

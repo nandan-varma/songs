@@ -1,8 +1,8 @@
-import ModesCore
 import Foundation
 
+/// Client for the JioSaavn API in `apps/api`. Songs without a stream are dropped, so every `Hit` is playable.
 enum SaavnAPI {
-    struct Hit: Sendable { let song: ExternalSong; let resolved: Resolved }
+    static let baseURL = "https://saavn-api.nandanvarma.com"
 
     /// Collections and search results change slowly; trending and charts are refreshed hourly by the API.
     private enum TTL {
@@ -14,247 +14,129 @@ enum SaavnAPI {
     private static let playlistPageSize = 100
     private static let playlistPageCap = 5
 
-    // MARK: - Base
+    // MARK: - Transport
 
-    private static func get<T: Decodable>(path: String, query: [URLQueryItem], baseURL: String) async throws -> T {
-        guard var comps = URLComponents(string: baseURL + path) else { throw URLError(.badURL) }
-        comps.queryItems = query
-        guard let url = comps.url else { throw URLError(.badURL) }
+    /// The `data` member of the API's envelope, or `nil` when it is absent.
+    private static func get<T: Decodable>(_ path: String, _ query: [URLQueryItem] = []) async throws -> T? {
+        guard var components = URLComponents(string: baseURL + path) else { throw URLError(.badURL) }
+        if !query.isEmpty { components.queryItems = query }
+        guard let url = components.url else { throw URLError(.badURL) }
         var request = URLRequest(url: url)
         request.timeoutInterval = 12
         let (data, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
             throw URLError(.badServerResponse)
         }
-        return try JSONDecoder().decode(T.self, from: data)
+        return try JSONDecoder().decode(Envelope<T>.self, from: data).data
     }
 
-    private static func cached<T: Sendable>(_ key: String, ttl: TimeInterval,
-                                            _ load: () async throws -> T) async throws -> T {
-        if let hit = await ResponseCache.shared.value(for: key, as: T.self) { return hit }
-        let value = try await load()
+    /// `get`, mapped, and remembered for `ttl`. The key covers path, query and quality because mapping depends on all three.
+    private static func cachedGet<Payload: Decodable, Value: Sendable>(
+        _ path: String, _ query: [URLQueryItem] = [], highQuality: Bool, ttl: TimeInterval,
+        as payload: Payload.Type, map: (Payload?) throws -> Value
+    ) async throws -> Value {
+        let key = ([path] + query.map { "\($0.name)=\($0.value ?? "")" } + [highQuality ? "320" : "160"]).joined(separator: "|")
+        if let hit = await ResponseCache.shared.value(for: key, as: Value.self) { return hit }
+        let value = try map(try await get(path, query) as Payload?)
         await ResponseCache.shared.store(value, for: key, ttl: ttl)
         return value
     }
 
-    private static func key(_ endpoint: String, _ params: [String], baseURL: String, highQuality: Bool) -> String {
-        ([baseURL, endpoint] + params + [highQuality ? "320" : "160"]).joined(separator: "|")
-    }
-
-    private static func hit(_ song: Song) -> Hit? {
-        guard let resolved = song.resolved else { return nil }
-        return Hit(song: song.externalSong, resolved: resolved)
+    private static func required<T>(_ value: T?) throws -> T {
+        guard let value else { throw URLError(.resourceUnavailable) }
+        return value
     }
 
     // MARK: - Playback
 
-    static func resolve(ids: [String], baseURL: String, highQuality: Bool) async throws -> [String: Resolved] {
+    /// Stream and artwork for the given songs; ids the API does not know are absent from the result.
+    static func resolve(ids: [String], highQuality: Bool) async throws -> [String: Resolved] {
         guard !ids.isEmpty else { return [:] }
-        let envelope: Envelope<[SongPayload]> = try await get(path: "/api/songs",
-                                                               query: [URLQueryItem(name: "ids", value: ids.joined(separator: ","))],
-                                                               baseURL: baseURL)
+        let payloads: [SongPayload]? = try await get("/api/songs", [URLQueryItem(name: "ids", value: ids.joined(separator: ","))])
         var out: [String: Resolved] = [:]
-        for payload in envelope.data ?? [] {
-            let song = payload.song(highQuality: highQuality)
-            if let resolved = song.resolved { out[song.id] = resolved }
-        }
+        for hit in (payloads ?? []).compactMap({ $0.hit(highQuality: highQuality) }) { out[hit.song.id] = hit.resolved }
         return out
     }
 
     // MARK: - Collections
 
-    static func album(id: String, baseURL: String, highQuality: Bool) async throws -> Album {
-        try await cached(key("albums", [id], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<AlbumPayload> = try await get(path: "/api/albums",
-                                                                  query: [URLQueryItem(name: "id", value: id)],
-                                                                  baseURL: baseURL)
-            guard let payload = envelope.data else { throw URLError(.resourceUnavailable) }
-            return payload.album(highQuality: highQuality)
-        }
+    static func album(id: String, highQuality: Bool) async throws -> Album {
+        try await cachedGet("/api/albums", [URLQueryItem(name: "id", value: id)], highQuality: highQuality,
+                            ttl: TTL.collection, as: AlbumPayload.self) { try required($0).album(highQuality: highQuality) }
     }
 
-    static func playlist(id: String, baseURL: String, highQuality: Bool) async throws -> Playlist {
-        try await cached(key("playlists", [id], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            var payload: PlaylistPayload?
-            var songs: [SongPayload] = []
-            var page = 0
-            // The endpoint returns one page (default 10) at a time; walk pages until the playlist is complete.
-            while page < playlistPageCap {
-                let query = [URLQueryItem(name: "id", value: id),
-                             URLQueryItem(name: "page", value: String(page)),
-                             URLQueryItem(name: "limit", value: String(playlistPageSize))]
-                let envelope: Envelope<PlaylistPayload> = try await get(path: "/api/playlists", query: query, baseURL: baseURL)
-                guard let batch = envelope.data else { break }
-                payload = payload ?? batch
-                let added = batch.songs ?? []
-                songs.append(contentsOf: added)
-                if added.count < playlistPageSize || songs.count >= (batch.songCount ?? songs.count) { break }
-                page += 1
-            }
-            guard let payload else { throw URLError(.resourceUnavailable) }
-            return payload.playlist(highQuality: highQuality, songs: songs)
+    static func playlist(id: String, highQuality: Bool) async throws -> Playlist {
+        let key = "playlist|\(id)|\(highQuality ? "320" : "160")"
+        if let hit = await ResponseCache.shared.value(for: key, as: Playlist.self) { return hit }
+        var first: PlaylistPayload?
+        var songs: [SongPayload] = []
+        // The endpoint returns one page at a time; walk pages until the playlist is complete.
+        for page in 0..<playlistPageCap {
+            let query = [URLQueryItem(name: "id", value: id), URLQueryItem(name: "page", value: String(page)),
+                         URLQueryItem(name: "limit", value: String(playlistPageSize))]
+            guard let batch: PlaylistPayload = try await get("/api/playlists", query) else { break }
+            first = first ?? batch
+            let added = batch.songs ?? []
+            songs.append(contentsOf: added)
+            if added.count < playlistPageSize || songs.count >= (batch.songCount ?? songs.count) { break }
         }
+        let playlist = try required(first).playlist(highQuality: highQuality, songs: songs)
+        await ResponseCache.shared.store(playlist, for: key, ttl: TTL.collection)
+        return playlist
     }
 
-    static func artist(id: String, baseURL: String, highQuality: Bool) async throws -> Artist {
-        try await cached(key("artists", [id], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ArtistPayload> = try await get(path: "/api/artists/\(id)",
-                                                                   query: [], baseURL: baseURL)
-            guard let payload = envelope.data else { throw URLError(.resourceUnavailable) }
-            return payload.artist(highQuality: highQuality)
-        }
+    static func artist(id: String, highQuality: Bool) async throws -> Artist {
+        try await cachedGet("/api/artists/\(id)", highQuality: highQuality, ttl: TTL.collection,
+                            as: ArtistPayload.self) { try required($0).artist(highQuality: highQuality) }
     }
 
-    static func artistSongs(id: String, baseURL: String, highQuality: Bool) async throws -> [Song] {
-        try await cached(key("artists/songs", [id], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ArtistSongsPayload> = try await get(path: "/api/artists/\(id)/songs",
-                                                                        query: [], baseURL: baseURL)
-            return (envelope.data?.songs ?? []).map { $0.song(highQuality: highQuality) }
-        }
-    }
-
-    static func artistAlbums(id: String, baseURL: String, highQuality: Bool) async throws -> [Album] {
-        try await cached(key("artists/albums", [id], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ArtistAlbumsPayload> = try await get(path: "/api/artists/\(id)/albums",
-                                                                         query: [], baseURL: baseURL)
-            return (envelope.data?.albums ?? []).map { $0.album(highQuality: highQuality) }
-        }
-    }
-
-    static func charts(baseURL: String, highQuality: Bool) async throws -> [Chart] {
-        try await cached(key("charts", [], baseURL: baseURL, highQuality: highQuality), ttl: TTL.ephemeral) {
-            let envelope: Envelope<[ChartPayload]> = try await get(path: "/api/charts",
-                                                                    query: [], baseURL: baseURL)
-            return (envelope.data ?? []).map { $0.chart(highQuality: highQuality) }
-        }
+    static func charts() async throws -> [Chart] {
+        try await cachedGet("/api/charts", highQuality: false, ttl: TTL.ephemeral,
+                            as: [ChartPayload].self) { ($0 ?? []).map { $0.chart() } }
     }
 
     /// A chart is a playlist, so its songs come from the playlist endpoint.
-    static func chart(id: String, baseURL: String, highQuality: Bool) async throws -> Chart {
-        guard let entry = try await charts(baseURL: baseURL, highQuality: highQuality).first(where: { $0.id == id }) else {
-            throw URLError(.resourceUnavailable)
-        }
-        let songs = try await playlist(id: id, baseURL: baseURL, highQuality: highQuality).songs
+    static func chart(id: String, highQuality: Bool) async throws -> Chart {
+        guard let entry = try await charts().first(where: { $0.id == id }) else { throw URLError(.resourceUnavailable) }
+        let songs = try await playlist(id: id, highQuality: highQuality).songs
         return Chart(id: entry.id, name: entry.name, image: entry.image, songCount: entry.songCount, songs: songs)
     }
 
-    // MARK: - Trending
+    // MARK: - Discovery
 
-    static func trending(language: String, type: TrendingType, baseURL: String, highQuality: Bool) async throws -> Trending {
-        let cacheKey = key("trending", [type.rawValue, language], baseURL: baseURL, highQuality: highQuality)
-        let query = [URLQueryItem(name: "type", value: type.rawValue), URLQueryItem(name: "language", value: language)]
-        return try await cached(cacheKey, ttl: TTL.ephemeral) {
-            switch type {
-            case .song:
-                let envelope: Envelope<[SongPayload]> = try await get(path: "/api/trending",
-                                                                       query: query, baseURL: baseURL)
-                return .songs((envelope.data ?? []).map { $0.song(highQuality: highQuality) })
-            case .album:
-                let envelope: Envelope<[AlbumPayload]> = try await get(path: "/api/trending",
-                                                                        query: query, baseURL: baseURL)
-                return .albums((envelope.data ?? []).map { $0.album(highQuality: highQuality) })
-            case .playlist:
-                let envelope: Envelope<[PlaylistPayload]> = try await get(path: "/api/trending",
-                                                                           query: query, baseURL: baseURL)
-                return .playlists((envelope.data ?? []).map { $0.playlist(highQuality: highQuality) })
-            }
+    static func trending(language: String, highQuality: Bool) async throws -> [Hit] {
+        try await cachedGet("/api/trending", [URLQueryItem(name: "type", value: "song"),
+                                              URLQueryItem(name: "language", value: language)],
+                            highQuality: highQuality, ttl: TTL.ephemeral, as: [SongPayload].self) {
+            ($0 ?? []).compactMap { $0.hit(highQuality: highQuality) }
         }
     }
 
-    static func trending(language: String, baseURL: String, highQuality: Bool) async throws -> [Hit] {
-        guard case let .songs(songs) = try await trending(language: language, type: .song, baseURL: baseURL,
-                                                          highQuality: highQuality) else { return [] }
-        return songs.compactMap(hit)
+    static func suggestions(songID: String, limit: Int = 20, highQuality: Bool) async throws -> [Hit] {
+        try await cachedGet("/api/songs/\(songID)/suggestions", [URLQueryItem(name: "limit", value: String(limit))],
+                            highQuality: highQuality, ttl: TTL.collection, as: [SongPayload].self) {
+            ($0 ?? []).compactMap { $0.hit(highQuality: highQuality) }
+        }
     }
 
     // MARK: - Search
 
-    static func search(_ query: String, baseURL: String, highQuality: Bool) async throws -> [Hit] {
-        let songs = try await searchSongs(query: query, baseURL: baseURL, highQuality: highQuality)
-        return songs.compactMap(hit)
+    /// The API has one search endpoint per kind; the four run in parallel and merge into one result.
+    static func search(_ query: String, highQuality: Bool) async throws -> SearchResults {
+        async let songs = search("songs", query, highQuality: highQuality) { (p: SongPayload) in p.hit(highQuality: highQuality) }
+        async let albums = search("albums", query, highQuality: highQuality) { (p: AlbumPayload) in p.album(highQuality: highQuality) }
+        async let artists = search("artists", query, highQuality: highQuality) { (p: ArtistPayload) in p.artist(highQuality: highQuality) }
+        async let playlists = search("playlists", query, highQuality: highQuality) { (p: PlaylistPayload) in p.playlist(highQuality: highQuality) }
+        return try await SearchResults(songs: songs, albums: albums, artists: artists, playlists: playlists)
     }
 
-    /// `/api/search` returns a flat shape with no download links, so the four typed endpoints are merged instead.
-    static func searchAll(query: String, baseURL: String, highQuality: Bool) async throws -> SearchResults {
-        try await cached(key("search/all", [query], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            async let songs = searchSongs(query: query, baseURL: baseURL, highQuality: highQuality)
-            async let albums = searchAlbums(query: query, baseURL: baseURL, highQuality: highQuality)
-            async let artists = searchArtists(query: query, baseURL: baseURL, highQuality: highQuality)
-            async let playlists = searchPlaylists(query: query, baseURL: baseURL, highQuality: highQuality)
-            let songsFound = try await songs
-            let albumsFound = try await albums
-            let artistsFound = try await artists
-            let playlistsFound = try await playlists
-            return SearchResults(songs: songsFound, albums: albumsFound, artists: artistsFound, playlists: playlistsFound)
+    private static func search<P: Decodable, V: Sendable>(
+        _ kind: String, _ query: String, highQuality: Bool, map: @escaping @Sendable (P) -> V?
+    ) async throws -> [V] {
+        try await cachedGet("/api/search/\(kind)",
+                            [URLQueryItem(name: "query", value: query), URLQueryItem(name: "limit", value: String(searchLimit))],
+                            highQuality: highQuality, ttl: TTL.collection, as: Results<P>.self) {
+            ($0?.results ?? []).compactMap(map)
         }
-    }
-
-    /// Searches one kind; the other collections in the result are empty.
-    static func search(type: SearchType, query: String, baseURL: String, highQuality: Bool) async throws -> SearchResults {
-        switch type {
-        case .song: return SearchResults(songs: try await searchSongs(query: query, baseURL: baseURL, highQuality: highQuality))
-        case .album: return SearchResults(albums: try await searchAlbums(query: query, baseURL: baseURL, highQuality: highQuality))
-        case .artist: return SearchResults(artists: try await searchArtists(query: query, baseURL: baseURL, highQuality: highQuality))
-        case .playlist: return SearchResults(playlists: try await searchPlaylists(query: query, baseURL: baseURL, highQuality: highQuality))
-        }
-    }
-
-    private static func searchSongs(query: String, baseURL: String, highQuality: Bool) async throws -> [Song] {
-        try await cached(key("search/songs", [query], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ResultsPayload<SongPayload>> = try await get(path: "/api/search/songs",
-                                                                               query: searchQuery(query), baseURL: baseURL)
-            return (envelope.data?.results ?? []).map { $0.song(highQuality: highQuality) }
-        }
-    }
-
-    private static func searchAlbums(query: String, baseURL: String, highQuality: Bool) async throws -> [Album] {
-        try await cached(key("search/albums", [query], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ResultsPayload<AlbumPayload>> = try await get(path: "/api/search/albums",
-                                                                                query: searchQuery(query), baseURL: baseURL)
-            return (envelope.data?.results ?? []).map { $0.album(highQuality: highQuality) }
-        }
-    }
-
-    private static func searchArtists(query: String, baseURL: String, highQuality: Bool) async throws -> [Artist] {
-        try await cached(key("search/artists", [query], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ResultsPayload<ArtistPayload>> = try await get(path: "/api/search/artists",
-                                                                                 query: searchQuery(query), baseURL: baseURL)
-            return (envelope.data?.results ?? []).map { $0.artist(highQuality: highQuality) }
-        }
-    }
-
-    private static func searchPlaylists(query: String, baseURL: String, highQuality: Bool) async throws -> [Playlist] {
-        try await cached(key("search/playlists", [query], baseURL: baseURL, highQuality: highQuality), ttl: TTL.collection) {
-            let envelope: Envelope<ResultsPayload<PlaylistPayload>> = try await get(path: "/api/search/playlists",
-                                                                                   query: searchQuery(query), baseURL: baseURL)
-            return (envelope.data?.results ?? []).map { $0.playlist(highQuality: highQuality) }
-        }
-    }
-
-    private static func searchQuery(_ query: String) -> [URLQueryItem] {
-        [URLQueryItem(name: "query", value: query), URLQueryItem(name: "limit", value: String(searchLimit))]
-    }
-
-    // MARK: - Song suggestions
-
-    static func suggestions(songID: String, limit: Int = 10, baseURL: String, highQuality: Bool) async throws -> [Hit] {
-        try await suggestedSongs(songID: songID, limit: limit, baseURL: baseURL, highQuality: highQuality).compactMap(hit)
-    }
-
-    static func suggestedSongs(songID: String, limit: Int = 10, baseURL: String, highQuality: Bool) async throws -> [Song] {
-        try await cached(key("songs/suggestions", [songID, String(limit)], baseURL: baseURL, highQuality: highQuality),
-                         ttl: TTL.collection) {
-            let envelope: Envelope<[SongPayload]> = try await get(path: "/api/songs/\(songID)/suggestions",
-                                                                   query: [URLQueryItem(name: "limit", value: String(limit))],
-                                                                   baseURL: baseURL)
-            return (envelope.data ?? []).map { $0.song(highQuality: highQuality) }
-        }
-    }
-}
-
-extension String {
-    var htmlDecoded: String {
-        replacingOccurrences(of: "&quot;", with: "\"").replacingOccurrences(of: "&amp;", with: "&").replacingOccurrences(of: "&#039;", with: "'")
-            .replacingOccurrences(of: "&lt;", with: "<").replacingOccurrences(of: "&gt;", with: ">")
     }
 }

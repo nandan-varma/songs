@@ -3,8 +3,9 @@ import zlib, os, sys, math, json, random, collections, re, pickle, time, numpy a
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
-S = '/private/tmp/claude-501/-Users-nandan-dev-web-music-music-api/0c615e2d-e85f-41eb-99bc-164d1e551c62/scratchpad'
-sys.path.insert(0, '/Users/nandan/dev/web/music/music-api/tools/recs'); sys.path.insert(0, os.path.dirname(__file__))
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+os.makedirs(S, exist_ok=True)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')); sys.path.insert(0, os.path.dirname(__file__))
 os.chdir(S)
 import build_feats as bf
 import hashed_features as hf

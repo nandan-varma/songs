@@ -96,31 +96,6 @@ struct TitleCase: Sendable, CustomTestStringConvertible {
     }
 }
 
-@Suite(.enabled(if: RealCatalog.available, "bundled catalog not found")) struct SongTitleCatalogTests {
-    @Test func everyBundledTitleCleansUp() throws {
-        let catalog = try #require(RealCatalog.catalog)
-        var changed = 0
-        for item in catalog.items {
-            let r = SongTitle.parse(item.title, album: item.album)
-            #expect(!r.title.isEmpty, "empty title for \(item.title)")
-            #expect(!r.title.contains("&quot;"), "entity left in \(item.title)")
-            #expect(!r.title.contains("(From"), "(From left in \(item.title)")
-            #expect(!r.title.contains("Original Motion Picture"), "soundtrack left in \(item.title)")
-            #expect(r.title.count <= item.title.count, "longer than input: \(item.title)")
-            if let c = r.context { #expect(!c.isEmpty && !c.contains("&quot;") && !c.contains("(From"), "bad context \(c) for \(item.title)") }
-            if r.title != item.title { changed += 1 }
-        }
-        #expect(changed > 500)           // the clean-up really runs over the catalog
-    }
-
-    @Test func everyBundledArtistLineIsNonEmpty() throws {
-        let catalog = try #require(RealCatalog.catalog)
-        for item in catalog.items where !item.artist.isEmpty {
-            #expect(!ArtistLine.display(item.artist).isEmpty, "empty artist for \(item.title)")
-        }
-    }
-}
-
 @Suite struct SongTitleRealWorldTests {
     @Test(arguments: [
         TitleCase(raw: "O Meri Mehbooba (From 'Dharam Veer')", title: "O Meri Mehbooba", context: "Dharam Veer"),

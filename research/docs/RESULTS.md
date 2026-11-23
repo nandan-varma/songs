@@ -3,7 +3,7 @@
 Everything below was measured on real JioSaavn data (904 crawled playlists, 17,645 songs; 3,708 songs with audio
 analysis). Playlists stand in for a listener's taste: reveal a few songs as "likes", ask a method to find the rest.
 That is a proxy, not real listening behaviour — treat the numbers as a ranking of approaches, not as product metrics.
-Reproduce with the scripts in `tools/recs/`.
+Reproduce with the scripts in `research/recs/`.
 
 ## 1. Which signals predict taste (playlist continuation, 5 seed likes, nDCG@20 ± s.e.)
 

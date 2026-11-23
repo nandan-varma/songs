@@ -10,12 +10,11 @@
 		"includes": [
 			"apps/api/**",
 			"apps/web/**",
-			"tools/**",
+			"!**/*.md",
 			"!**/node_modules",
 			"!**/.next",
-			"!apps/ios",
-			"!research",
-			"!**/dist"
+			"!**/dist",
+			"!**/next-env.d.ts"
 		]
 	},
 	"formatter": {
@@ -76,9 +75,7 @@
 	},
 	"overrides": [
 		{
-			"includes": [
-				"components/ui/**"
-			],
+			"includes": ["components/ui/**"],
 			"linter": {
 				"enabled": false
 			},

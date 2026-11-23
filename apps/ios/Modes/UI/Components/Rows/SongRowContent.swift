@@ -2,7 +2,7 @@ import ModesCore
 import SwiftUI
 
 /// The shared look of a song row: artwork, title, then artist with the film as quieter trailing text, and an optional
-/// trailing accessory. Used for catalog, library, search and Up Next rows.
+/// trailing accessory. Used for search, library, search and Up Next rows.
 struct SongRowContent<Trailing: View>: View {
     let artworkURL: URL?
     let display: SongDisplay

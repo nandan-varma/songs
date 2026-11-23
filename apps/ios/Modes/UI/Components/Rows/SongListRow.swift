@@ -19,45 +19,44 @@ struct SongListRow: View {
     var detail: String? = nil
 
     var body: some View {
-        if let item = model.songItem(for: source) {
-            HStack(spacing: 8) {
-                Button { model.playSong(source, in: context) } label: {
-                    HStack(spacing: 10) {
-                        if let number {
-                            Text(number, format: .number).font(.caption.monospacedDigit())
-                                .foregroundStyle(.secondary).frame(minWidth: 18, alignment: .leading)
+        let item = model.songItem(for: source)
+        HStack(spacing: 8) {
+            Button { model.playSong(source, in: context) } label: {
+                HStack(spacing: 10) {
+                    if let number {
+                        Text(number, format: .number).font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary).frame(minWidth: 18, alignment: .leading)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        SongRowContent(artworkURL: model.artURL(item), display: model.display(item)) { EmptyView() }
+                        if let detail {
+                            Text(detail).font(.caption).foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true).padding(.leading, MusicLayout.rowArtwork + MusicLayout.rowSpacing)
                         }
-                        VStack(alignment: .leading, spacing: 4) {
-                            SongRowContent(artworkURL: model.artURL(item), display: model.display(item)) { EmptyView() }
-                            if let detail {
-                                Text(detail).font(.caption).foregroundStyle(.secondary)
-                                    .fixedSize(horizontal: false, vertical: true).padding(.leading, MusicLayout.rowArtwork + MusicLayout.rowSpacing)
-                            }
-                        }
-                    }.contentShape(.rect)
-                }
-                .buttonStyle(.plain)
-                .accessibilityHint("Plays this song")
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Menu("Song options", systemImage: "ellipsis") {
-                    menuActions(for: item)
-                }
-                .labelStyle(.iconOnly)
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .frame(width: 44, height: 44)
-                .accessibilityLabel("Options for \(model.display(item).title)")
+                    }
+                }.contentShape(.rect)
             }
-            .padding(.vertical, 4)
-            .swipeActions(edge: layoutDirection == .leftToRight ? .leading : .trailing, allowsFullSwipe: fullSwipe) { swipeButton(leading, item: item) }
-            .swipeActions(edge: layoutDirection == .leftToRight ? .trailing : .leading, allowsFullSwipe: fullSwipe) { swipeButton(trailing, item: item) }
-            .contextMenu { menuActions(for: item) }
-            .sheet(isPresented: $addingToPlaylist) { PlaylistPicker(source: source) }
-            .sensoryFeedback(.selection, trigger: actionTick)
-            .listRowBackground(Color.clear)
-            .listRowInsets(EdgeInsets(top: 2, leading: MusicLayout.pageInset, bottom: 2, trailing: 12))
+            .buttonStyle(.plain)
+            .accessibilityHint("Plays this song")
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Menu("Song options", systemImage: "ellipsis") {
+                menuActions(for: item)
+            }
+            .labelStyle(.iconOnly)
+            .font(.body.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .frame(width: 44, height: 44)
+            .accessibilityLabel("Options for \(model.display(item).title)")
         }
+        .padding(.vertical, 4)
+        .swipeActions(edge: layoutDirection == .leftToRight ? .leading : .trailing, allowsFullSwipe: fullSwipe) { swipeButton(leading, item: item) }
+        .swipeActions(edge: layoutDirection == .leftToRight ? .trailing : .leading, allowsFullSwipe: fullSwipe) { swipeButton(trailing, item: item) }
+        .contextMenu { menuActions(for: item) }
+        .sheet(isPresented: $addingToPlaylist) { PlaylistPicker(source: source) }
+        .sensoryFeedback(.selection, trigger: actionTick)
+        .listRowBackground(Color.clear)
+        .listRowInsets(EdgeInsets(top: 2, leading: MusicLayout.pageInset, bottom: 2, trailing: 12))
     }
 
     @ViewBuilder private func menuActions(for item: QueueItem) -> some View {

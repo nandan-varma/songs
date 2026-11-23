@@ -13,7 +13,7 @@ struct SearchView: View {
             Group {
                 if query.isEmpty {
                     SearchBrowseView()
-                } else if let results, !isEmpty(results) {
+                } else if let results, !results.isEmpty {
                     list(results)
                 } else if searching {
                     ProgressView()
@@ -39,11 +39,10 @@ struct SearchView: View {
                 results = nil
                 defer { searching = false }
                 do {
-                    let found = try await SaavnAPI.searchAll(query: text, baseURL: model.settings.baseURL,
-                                                              highQuality: model.settings.highQuality)
+                    let found = try await SaavnAPI.search(text, highQuality: model.settings.highQuality)
                     guard !Task.isCancelled else { return }
                     results = found
-                    ImagePipeline.shared.prefetch(found.songs.compactMap(\.image) + found.albums.compactMap(\.image)
+                    ImagePipeline.shared.prefetch(found.songs.compactMap(\.song.image) + found.albums.compactMap(\.image)
                         + found.artists.compactMap(\.image) + found.playlists.compactMap(\.image))
                 } catch {
                     guard !Task.isCancelled else { return }
@@ -54,12 +53,8 @@ struct SearchView: View {
         }
     }
 
-    private func isEmpty(_ results: SaavnAPI.SearchResults) -> Bool {
-        results.songs.isEmpty && results.albums.isEmpty && results.artists.isEmpty && results.playlists.isEmpty
-    }
-
     private func list(_ results: SaavnAPI.SearchResults) -> some View {
-        let hits = results.songs.compactMap(\.hit)
+        let hits = results.songs
         let context = hits.map { SongReference.hit($0) }
         return List {
             if !hits.isEmpty {

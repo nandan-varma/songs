@@ -1,8 +1,12 @@
 import Foundation
+import ModesCore
 
-/// Raw shapes returned by the API (see `src/modules/*/*.schema.ts`); mapped into the value types in `Models.swift`.
-/// Only genuinely nullable fields are optional here.
+/// Raw shapes returned by the API, as little of them as the app reads. Only genuinely nullable fields are optional.
+/// Each payload maps itself into the value types in `APIModels.swift`.
 extension SaavnAPI {
+    struct Envelope<T: Decodable>: Decodable { let data: T? }
+    struct Results<T: Decodable>: Decodable { let results: [T]? }
+
     struct LinkPayload: Decodable {
         let quality: String
         let url: String
@@ -12,7 +16,6 @@ extension SaavnAPI {
         let id: String?
         let name: String?
         let role: String?
-        let image: [LinkPayload]?
     }
 
     struct ArtistsPayload: Decodable {
@@ -24,20 +27,17 @@ extension SaavnAPI {
     struct AlbumRefPayload: Decodable {
         let id: String?
         let name: String?
-        let url: String?
     }
 
     struct SongPayload: Decodable {
         let id: String
         let name: String?
         let year: String?
-        let releaseDate: String?
         let duration: Double?
         let language: String?
         let label: String?
         let playCount: Int?
         let explicitContent: Bool?
-        let hasLyrics: Bool?
         let album: AlbumRefPayload?
         let artists: ArtistsPayload?
         let image: [LinkPayload]?
@@ -48,10 +48,7 @@ extension SaavnAPI {
         let id: String
         let name: String?
         let description: String?
-        let year: Int?
-        let songCount: Int?
         let image: [LinkPayload]?
-        let artists: ArtistsPayload?
         let songs: [SongPayload]?
     }
 
@@ -61,7 +58,6 @@ extension SaavnAPI {
         let description: String?
         let songCount: Int?
         let image: [LinkPayload]?
-        let artists: [CreditPayload]?
         let songs: [SongPayload]?
     }
 
@@ -72,7 +68,6 @@ extension SaavnAPI {
         let type: String?
         let dominantType: String?
         let image: [LinkPayload]?
-        let followerCount: Int?
         let topSongs: [SongPayload]?
         let topAlbums: [AlbumPayload]?
     }
@@ -83,97 +78,58 @@ extension SaavnAPI {
         let songCount: Int?
         let image: [LinkPayload]?
     }
-
-    struct Envelope<T: Decodable>: Decodable {
-        let data: T?
-    }
-
-    struct ResultsPayload<T: Decodable>: Decodable {
-        let results: [T]?
-    }
-
-    struct ArtistSongsPayload: Decodable {
-        let songs: [SongPayload]?
-    }
-
-    struct ArtistAlbumsPayload: Decodable {
-        let albums: [AlbumPayload]?
-    }
 }
 
 // MARK: - Mapping
 
-extension SaavnAPI.SongPayload {
-    func song(highQuality: Bool) -> SaavnAPI.Song {
-        let links = downloadUrl ?? []
-        let want = highQuality ? "320kbps" : "160kbps"
-        let chosen = links.first { $0.quality == want } ?? links.last
-        let artwork = image?.last.flatMap { URL(string: $0.url) }
-        return SaavnAPI.Song(
-            id: id,
-            name: (name ?? "").htmlDecoded,
-            year: year,
-            releaseDate: releaseDate,
-            duration: duration ?? 0,
-            language: language,
-            label: label,
-            playCount: playCount,
-            explicitContent: explicitContent ?? false,
-            hasLyrics: hasLyrics ?? false,
-            albumID: album?.id,
-            albumName: album?.name.map(\.htmlDecoded),
-            albumURL: album?.url.flatMap { URL(string: $0) },
-            primaryArtists: (artists?.primary ?? []).map(\.credit),
-            featuredArtists: (artists?.featured ?? []).map(\.credit),
-            allArtists: (artists?.all ?? []).map(\.credit),
-            image: artwork,
-            resolved: chosen.flatMap { link in
-                URL(string: link.url).map {
-                    Resolved(id: id, url: $0, image: artwork, duration: duration ?? 0)
-                }
-            }
-        )
-    }
+private extension [SaavnAPI.LinkPayload] {
+    /// The largest image the API lists.
+    var artwork: URL? { last.flatMap { URL(string: $0.url) } }
 }
 
-extension SaavnAPI.CreditPayload {
-    var credit: SaavnAPI.ArtistCredit {
-        SaavnAPI.ArtistCredit(
-            id: id ?? "",
-            name: (name ?? "").htmlDecoded,
-            role: role ?? "",
-            image: image?.last.flatMap { URL(string: $0.url) }
-        )
+extension SaavnAPI.SongPayload {
+    /// `nil` when the API lists no stream for the song, which makes it unplayable.
+    func hit(highQuality: Bool) -> SaavnAPI.Hit? {
+        let links = downloadUrl ?? []
+        let wanted = highQuality ? "320kbps" : "160kbps"
+        guard let link = links.first(where: { $0.quality == wanted }) ?? links.last,
+              let stream = URL(string: link.url) else { return nil }
+        let artwork = image?.artwork
+        let length = duration ?? 0
+        let song = SongFeatures(
+            id: id, title: (name ?? "").htmlDecoded, artist: artistLine,
+            album: (album?.name ?? "").htmlDecoded, albumID: album?.id,
+            label: label ?? "", language: language ?? "", year: Int(year ?? "") ?? 0,
+            artistIDs: (artists?.all ?? []).compactMap(\.id), duration: length,
+            playCount: playCount ?? 0, explicit: explicitContent ?? false, image: artwork)
+        return SaavnAPI.Hit(song: song, resolved: Resolved(id: id, url: stream, image: artwork, duration: length))
+    }
+
+    /// The "name, name" line the lists show. Some songs credit no primary artist, so fall back to featured credits
+    /// and then to credited singers (the API's `all` list also holds lyricists and film cast).
+    private var artistLine: String {
+        let primary = artists?.primary ?? []
+        let featured = artists?.featured ?? []
+        let credited = primary.isEmpty
+            ? (featured.isEmpty ? (artists?.all ?? []).filter { ($0.role ?? "").contains("singer") } : featured)
+            : primary
+        return credited.prefix(2).map { ($0.name ?? "").htmlDecoded }.joined(separator: ", ")
     }
 }
 
 extension SaavnAPI.AlbumPayload {
     func album(highQuality: Bool) -> SaavnAPI.Album {
-        SaavnAPI.Album(
-            id: id,
-            name: (name ?? "").htmlDecoded,
-            subtitle: description?.cleanedSubtitle,
-            image: image?.last.flatMap { URL(string: $0.url) },
-            artists: credits(from: artists),
-            songs: (songs ?? []).map { $0.song(highQuality: highQuality) },
-            year: year,
-            songCount: songCount
-        )
+        SaavnAPI.Album(id: id, name: (name ?? "").htmlDecoded, subtitle: description?.cleanedSubtitle,
+                       image: image?.artwork, songs: (songs ?? []).compactMap { $0.hit(highQuality: highQuality) })
     }
 }
 
 extension SaavnAPI.PlaylistPayload {
     /// `songs` overrides the payload's single page when the caller has collected the whole playlist.
     func playlist(highQuality: Bool, songs collected: [SaavnAPI.SongPayload]? = nil) -> SaavnAPI.Playlist {
-        SaavnAPI.Playlist(
-            id: id,
-            name: (name ?? "").htmlDecoded,
-            subtitle: description?.cleanedSubtitle,
-            image: image?.last.flatMap { URL(string: $0.url) },
-            artists: (artists ?? []).map(\.credit),
-            songs: (collected ?? songs ?? []).map { $0.song(highQuality: highQuality) },
-            songCount: songCount
-        )
+        SaavnAPI.Playlist(id: id, name: (name ?? "").htmlDecoded, subtitle: description?.cleanedSubtitle,
+                          image: image?.artwork,
+                          songs: (collected ?? songs ?? []).compactMap { $0.hit(highQuality: highQuality) })
     }
 }
 
@@ -181,37 +137,28 @@ extension SaavnAPI.ArtistPayload {
     func artist(highQuality: Bool) -> SaavnAPI.Artist {
         let labels = [role, dominantType, type].compactMap { $0 }.filter { !$0.isEmpty }
         return SaavnAPI.Artist(
-            id: id ?? "",
-            name: name.htmlDecoded,
-            image: image?.last.flatMap { URL(string: $0.url) },
+            id: id ?? "", name: name.htmlDecoded, image: image?.artwork,
             roles: Array(Set(labels)).sorted(),
-            followerCount: followerCount,
-            songs: (topSongs ?? []).map { $0.song(highQuality: highQuality) },
-            albums: (topAlbums ?? []).map { $0.album(highQuality: highQuality) }
-        )
+            songs: (topSongs ?? []).compactMap { $0.hit(highQuality: highQuality) },
+            albums: (topAlbums ?? []).map { $0.album(highQuality: highQuality) })
     }
 }
 
 extension SaavnAPI.ChartPayload {
-    func chart(highQuality: Bool, songs: [SaavnAPI.Song] = []) -> SaavnAPI.Chart {
-        SaavnAPI.Chart(
-            id: id,
-            name: name.htmlDecoded,
-            image: image?.last.flatMap { URL(string: $0.url) },
-            songCount: songCount,
-            songs: songs
-        )
+    func chart(songs: [SaavnAPI.Hit] = []) -> SaavnAPI.Chart {
+        SaavnAPI.Chart(id: id, name: name.htmlDecoded, image: image?.artwork, songCount: songCount, songs: songs)
     }
 }
 
-private func credits(from artists: SaavnAPI.ArtistsPayload?) -> [SaavnAPI.ArtistCredit] {
-    let list = artists?.all ?? artists?.primary ?? []
-    return list.map(\.credit)
-}
+extension String {
+    var htmlDecoded: String {
+        replacingOccurrences(of: "&quot;", with: "\"").replacingOccurrences(of: "&amp;", with: "&")
+            .replacingOccurrences(of: "&#039;", with: "'")
+            .replacingOccurrences(of: "&lt;", with: "<").replacingOccurrences(of: "&gt;", with: ">")
+    }
 
-private extension String {
     /// Playlist descriptions arrive padded with long runs of whitespace; empty means "no subtitle".
-    var cleanedSubtitle: String? {
+    fileprivate var cleanedSubtitle: String? {
         let collapsed = split(whereSeparator: \.isWhitespace).joined(separator: " ")
         return collapsed.isEmpty ? nil : collapsed.htmlDecoded
     }

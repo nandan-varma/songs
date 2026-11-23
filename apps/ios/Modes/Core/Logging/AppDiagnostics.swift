@@ -23,12 +23,6 @@ enum AppDiagnostics {
         HitchMonitor.shared.startIfEnabled()
     }
 
-    /// Records the catalog signature once the catalog is loaded (not known at launch).
-    static func catalogReady(signature: String, songs: Int, loadMs: Double) {
-        AppLog.info("session", "catalog_ready", ["catalog_signature": signature, "songs": songs, "load_ms": loadMs.rounded()])
-        if let ms = msSinceProcessStart() { AppLog.metric("model_ready_ms", ms, unit: "ms") }
-    }
-
     /// Called from the first view's `onAppear`: the nearest cheap proxy for "first frame is on screen".
     static func firstContentAppeared() {
         guard !firstContentLogged else { return }

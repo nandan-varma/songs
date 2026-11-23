@@ -23,9 +23,8 @@ extension AppModel {
     }
 
     func addToPlaylist(_ source: SongReference, playlistID: UUID) {
-        guard let item = songItem(for: source),
-              let index = playlists.firstIndex(where: { $0.id == playlistID }) else { return }
-        let entry = libraryItem(for: item)
+        guard let index = playlists.firstIndex(where: { $0.id == playlistID }) else { return }
+        let entry = libraryItem(for: songItem(for: source))
         guard playlists[index].add(entry) else {
             flash("Already in \(playlists[index].name)")
             return

@@ -1,5 +1,7 @@
-import pickle,glob,sys,collections,numpy as np
-OUT='/private/tmp/claude-501/-Users-nandan-dev-web-music-music-api/0c615e2d-e85f-41eb-99bc-164d1e551c62/scratchpad/exp1'
+import os,pickle,glob,sys,collections,numpy as np
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+os.makedirs(S, exist_ok=True)
+OUT=S+'/exp1'
 def load(sc,level='full'):
     R=[pickle.load(open(f,'rb')) for f in sorted(glob.glob(f'{OUT}/res_{sc}_{level}_f*.pkl'))]
     return R

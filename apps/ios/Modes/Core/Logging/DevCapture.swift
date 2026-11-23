@@ -92,13 +92,14 @@ enum DevCapture {
         file += ".jpg"
         let url = directory.appendingPathComponent(file)
         let dir = directory
+        let keep = maxShots
         let screen = ScreenHint.current().text
         AppLog.info("capture", "shot", ["file": file, "screen": screen])
         ioQueue.async {
             guard let data = image.jpegData(compressionQuality: 0.7) else { return }
             try? data.write(to: url, options: .atomic)
             let names = ((try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? []).filter { $0.hasSuffix(".jpg") }
-            for old in LogRetention.excess(names, keep: maxShots) { try? FileManager.default.removeItem(at: dir.appendingPathComponent(old)) }
+            for old in LogRetention.excess(names, keep: keep) { try? FileManager.default.removeItem(at: dir.appendingPathComponent(old)) }
         }
     }
 }

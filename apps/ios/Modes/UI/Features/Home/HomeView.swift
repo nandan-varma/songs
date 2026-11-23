@@ -11,7 +11,15 @@ struct HomeView: View {
                 let context = slate.map { SongReference.queued($0) }
                 if slate.isEmpty {
                     Group {
-                        if model.homeReady {
+                        if model.homeFailed {
+                            ContentUnavailableView {
+                                Label("Can’t reach the music server", systemImage: "wifi.exclamationmark")
+                            } description: {
+                                Text("Check your connection and try again.")
+                            } actions: {
+                                Button("Try again") { Task { await model.refreshHome() } }.buttonStyle(.bordered)
+                            }
+                        } else if model.homeReady {
                             ContentUnavailableView("Nothing to play yet", systemImage: "music.note",
                                                    description: Text("Songs you can play will appear here."))
                         } else {

@@ -4,7 +4,8 @@ os.environ['OMP_NUM_THREADS']='1'
 import essentia; essentia.log.infoActive=False; essentia.log.warningActive=False
 import essentia.standard as es, librosa
 from multiprocessing import Pool
-S='/private/tmp/claude-501/-Users-nandan-dev-web-music-music-api/0c615e2d-e85f-41eb-99bc-164d1e551c62/scratchpad'
+S = os.path.abspath(os.environ.get('RECS_WORK') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.work'))  # scratch: data/, exp1/, exp2/ (env RECS_WORK; see research/README.md)
+os.makedirs(S, exist_ok=True)
 OUT=S+'/exp2'; T=469; NM=64; SR=16000
 MEL=librosa.filters.mel(sr=SR,n_fft=1024,n_mels=NM,fmin=30,fmax=8000).astype(np.float32)
 def work(f):

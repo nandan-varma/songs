@@ -85,4 +85,4 @@ Note: the top-100/top-300 overlap is harsh because the teacher's voice probabili
 - 717 of 10,746 clips have no teacher output and were excluded from training and evaluation.
 - The sim s.e. is dominated by playlist variance (150 playlists); differences of ~0.005 are not distinguishable. Student/DSP attrs are in student_attrs.npy / dsp_attrs.npy (build_feats scale: arousal=(a-5)/4, valence=(v-5)/4, tempo=bpm/220; emb_pca in a global teacher PCA basis).
 
-Files: tools/recs/experiments/{prep,common,dsp,net,train,convert,sim_attrs}.py (uncommitted); S/exp2/{student.mlpackage,student_attrs.npy,dsp_attrs.npy,oof_small.npy,sim_results.json,steer.json,*.log}.
+Files: research/recs/experiments/{prep,common,dsp,net,train,convert,sim_attrs}.py (uncommitted); S/exp2/{student.mlpackage,student_attrs.npy,dsp_attrs.npy,oof_small.npy,sim_results.json,steer.json,*.log}.

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Everything the UI shows for one song, derived once from the raw catalog or API strings.
+/// Everything the UI shows for one song, derived once from the raw API strings.
 public struct SongDisplay: Equatable, Sendable {
     public let title: String
     /// "A", "A & B", "A, B & C".

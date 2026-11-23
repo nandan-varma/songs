@@ -1,0 +1,32 @@
+{
+	"total": 12636,
+	"start": 1,
+	"results": [
+		{
+			"name": "Dua Lipa",
+			"id": "1274170",
+			"ctr": 915,
+			"entity": 1,
+			"image": "https:\/\/c.saavncdn.com\/artists\/Dua_Lipa_004_20231120090922_50x50.jpg",
+			"role": "Artist",
+			"perma_url": "https:\/\/www.jiosaavn.com\/artist\/dua-lipa-songs\/r-OWIKgpX2I_",
+			"type": "artist",
+			"mini_obj": true,
+			"isRadioPresent": true,
+			"is_followed": false
+		},
+		{
+			"name": "Super Cassettes Industries Private Limited",
+			"id": "455088",
+			"ctr": 171,
+			"entity": 1,
+			"image": "https:\/\/c.saavncdn.com\/365\/Aashiqui-Hindi-1989-50x50.jpg",
+			"role": "Artist",
+			"perma_url": "https:\/\/www.jiosaavn.com\/artist\/super-cassettes-industries-private-limited-songs\/vmkmAmMCvB8_",
+			"type": "artist",
+			"mini_obj": true,
+			"isRadioPresent": true,
+			"is_followed": false
+		}
+	]
+}

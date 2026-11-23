@@ -5,7 +5,7 @@ import ModesCore
 /// One place for diagnostics.
 ///
 /// Every record goes to (1) the unified log (subsystem `com.nandanvarma.modes`), (2) `Documents/logs/*.jsonl` as one JSON
-/// object per line (see `LogWriter` and ios/Modes/README.md "Dev loop"), and (3) stdout when the process is launched with
+/// object per line (see `LogWriter` and apps/ios/README.md "Dev loop"), and (3) stdout when the process is launched with
 /// `MODES_LOG_STDOUT=1`, so `devicectl ... launch --console` shows everything live. `debug` records are only produced when
 /// `MODES_LOG_DEBUG=1` or in DEBUG builds. Calls never block: file IO happens on one background queue.
 enum AppLog {

@@ -16,7 +16,7 @@ struct TogglePlaybackIntent: AudioPlaybackIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        let model = try await AppRuntime.ensureModel()
+        let model = AppRuntime.model
         guard model.onboarded else { throw ModesIntentError.notSetUp }
         AppLog.info("intents", "TogglePlaybackIntent wasPlaying=\(model.isPlaying)")
         model.togglePlay()
@@ -30,7 +30,7 @@ struct NextSongIntent: AudioPlaybackIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        let model = try await AppRuntime.ensureModel()
+        let model = AppRuntime.model
         guard model.onboarded else { throw ModesIntentError.notSetUp }
         AppLog.info("intents", "NextSongIntent")
         model.skip()
@@ -44,7 +44,7 @@ struct PreviousSongIntent: AudioPlaybackIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        let model = try await AppRuntime.ensureModel()
+        let model = AppRuntime.model
         guard model.onboarded else { throw ModesIntentError.notSetUp }
         AppLog.info("intents", "PreviousSongIntent")
         model.previous()

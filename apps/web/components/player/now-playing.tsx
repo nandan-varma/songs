@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ListMusic, Volume2 } from "lucide-react";
+import { ChevronDown, ListMusic, Quote, Volume2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Cover } from "@/components/cover";
@@ -9,6 +9,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { PlaybackControls } from "@/components/player/controls";
 import { QueueList } from "@/components/player/queue-list";
 import { SeekBar } from "@/components/player/seek-bar";
+import { SyncedLyrics } from "@/components/player/synced-lyrics";
 import { ArtistLinks } from "@/components/song-list";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +30,9 @@ interface NowPlayingProps {
 }
 
 export function NowPlaying({ track, open, onOpenChange }: NowPlayingProps) {
-	const [showQueue, setShowQueue] = useState(false);
+	const [pane, setPane] = useState<"cover" | "queue" | "lyrics">("cover");
+	const toggle = (next: "queue" | "lyrics") =>
+		setPane((current) => (current === next ? "cover" : next));
 	const volume = usePlayer((s) => s.volume);
 	const setVolume = usePlayer((s) => s.setVolume);
 
@@ -45,18 +48,31 @@ export function NowPlaying({ track, open, onOpenChange }: NowPlayingProps) {
 								<ChevronDown />
 							</Button>
 						</DialogClose>
-						<Button
-							variant={showQueue ? "secondary" : "ghost"}
-							size="icon"
-							aria-label="Toggle queue"
-							aria-pressed={showQueue}
-							onClick={() => setShowQueue((v) => !v)}
-						>
-							<ListMusic />
-						</Button>
+						<div className="flex gap-1">
+							<Button
+								variant={pane === "lyrics" ? "secondary" : "ghost"}
+								size="icon"
+								aria-label="Toggle lyrics"
+								aria-pressed={pane === "lyrics"}
+								onClick={() => toggle("lyrics")}
+							>
+								<Quote />
+							</Button>
+							<Button
+								variant={pane === "queue" ? "secondary" : "ghost"}
+								size="icon"
+								aria-label="Toggle queue"
+								aria-pressed={pane === "queue"}
+								onClick={() => toggle("queue")}
+							>
+								<ListMusic />
+							</Button>
+						</div>
 					</div>
-					{showQueue ? (
+					{pane === "queue" ? (
 						<QueueList />
+					) : pane === "lyrics" ? (
+						<SyncedLyrics track={track} />
 					) : (
 						<>
 							<Cover

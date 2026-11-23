@@ -1,12 +1,14 @@
 "use client";
 
-import { Home, Library, Search } from "lucide-react";
+import { Home, LayoutGrid, Library, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
 	{ href: "/", label: "Home", icon: Home },
+	{ href: "/new", label: "New", icon: Sparkles },
+	{ href: "/browse", label: "Browse", icon: LayoutGrid },
 	{ href: "/search", label: "Search", icon: Search },
 	{ href: "/library", label: "Library", icon: Library },
 ] as const;
@@ -38,7 +40,7 @@ export function BottomNav() {
 	return (
 		<nav
 			aria-label="Main"
-			className="grid grid-cols-3 border-t bg-background md:hidden"
+			className="grid grid-cols-5 border-t bg-background md:hidden"
 		>
 			{LINKS.map(({ href, label, icon: Icon }) => (
 				<Link

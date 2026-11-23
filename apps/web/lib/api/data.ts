@@ -49,6 +49,73 @@ export async function getHome(language: string) {
 	return { ...trending, charts: uniqueById(charts.map(playlistCard)) };
 }
 
+export interface ShelfItem {
+	id: string;
+	title: string;
+	subtitle?: string;
+	image: ImageLink[];
+	href: string;
+	round: boolean;
+	station: boolean;
+}
+
+export interface Shelf {
+	key: string;
+	title: string;
+	items: ShelfItem[];
+}
+
+const SKIPPED_SHELVES = new Set(["city_mod"]);
+
+export async function getLaunch(languages: string) {
+	const data = await unwrap(api.launch.$get({ query: { languages } }));
+	const toItem = (tile: (typeof data.genres)[number]): ShelfItem => {
+		const search = `/search?q=${encodeURIComponent(`${tile.name} ${tile.language ?? ""}`.trim())}`;
+		const route: Record<string, string> = {
+			playlist: `/playlist/${tile.id}`,
+			album: `/album/${tile.id}`,
+			artist: `/artist/${tile.id}`,
+			song: `/song/${tile.id}`,
+		};
+		return {
+			id: `${tile.type}:${tile.id}`,
+			title: tile.name,
+			subtitle: tile.subtitle ?? undefined,
+			image: tile.image,
+			href: route[tile.type] ?? search,
+			round: tile.type === "artist",
+			station: tile.type === "radio_station",
+		};
+	};
+	const shelves: Shelf[] = data.shelves
+		.filter(
+			(shelf) =>
+				!SKIPPED_SHELVES.has(shelf.key) &&
+				!/podcast/i.test(shelf.title) &&
+				shelf.items.length > 0,
+		)
+		.map((shelf) => ({
+			key: shelf.key,
+			title: shelf.title,
+			items: uniqueById(shelf.items.map(toItem)),
+		}));
+	return { shelves, genres: uniqueById(data.genres.map(toItem)) };
+}
+
+export async function getSyncedLyrics(
+	title: string,
+	artist: string,
+	duration: number,
+) {
+	const query = {
+		title,
+		artist,
+		...(duration > 0 ? { duration: String(Math.round(duration)) } : {}),
+	};
+	const found = await unwrap(api.lyrics.$get({ query }));
+	return found?.synced?.length ? found.synced : null;
+}
+
 export async function getAlbum(id: string): Promise<Collection> {
 	const album = await unwrap(api.albums.$get({ query: { id } }));
 	return {

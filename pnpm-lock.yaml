@@ -196,6 +196,9 @@ importers:
       '@biomejs/biome':
         specifier: 2.6.4
         version: 2.6.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
       knip:
         specifier: ^6.48.0
         version: 6.48.0

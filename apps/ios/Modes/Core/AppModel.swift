@@ -10,8 +10,10 @@ final class AppModel {
     var profile = PersonalizedProfile()
     var settings = AppSettings() {
         didSet {
-            if settings.highQuality != oldValue.highQuality { resolved.removeAll() }
-            if settings.languages != oldValue.languages {
+            if settings.wifiQuality != oldValue.wifiQuality || settings.cellularQuality != oldValue.cellularQuality
+                || settings.dataSaver != oldValue.dataSaver || settings.allowExplicit != oldValue.allowExplicit {
+                deliveryChanged()
+            } else if settings.languages != oldValue.languages {
                 pool = []
                 invalidateRanking()
             } else if settings.personalizationPaused != oldValue.personalizationPaused {
@@ -37,6 +39,7 @@ final class AppModel {
     var progress = 0.0
     var duration = 0.0
     var loading = false
+    var currentHasLyrics = false
 
     var hasSession = false
 
@@ -47,6 +50,7 @@ final class AppModel {
         didSet { if library.favorites != oldValue.favorites { refreshLiked() } }
     }
     var playlists: [LocalPlaylist] = []
+    var recentSearches = RecentSearches()
     var favoriteItems: [LibraryItem] { library.favorites }
     var recentItems: [LibraryItem] { library.recents }
 
@@ -56,7 +60,6 @@ final class AppModel {
 
     var homeFailed = false
     var homeVersion = 0
-    var charts: [SaavnAPI.Chart] = []
     var modelStats: PersonalizedStats?
     var modelStatsLoading = false
 
@@ -64,6 +67,8 @@ final class AppModel {
     @ObservationIgnored let nowPlaying = NowPlaying()
     @ObservationIgnored let undoStack = UndoStack()
     @ObservationIgnored let ranking = RankingWorker()
+    @ObservationIgnored let network = NetworkMonitor()
+    @ObservationIgnored var lastSong: SongFeatures?
     @ObservationIgnored var playback = PlaybackLedger()
     @ObservationIgnored var listenerQueue = ListenerQueue()
     @ObservationIgnored var forward: [QueueItem] = []
@@ -89,6 +94,8 @@ final class AppModel {
 
     @ObservationIgnored var knownSongs: [String: SongFeatures] = [:]
     @ObservationIgnored var displayCache: [String: SongDisplay] = [:]
+    @ObservationIgnored var lyricsCache: [String: String] = [:]
+    @ObservationIgnored var recentSearchesBlocked = false
 
     @ObservationIgnored var failures = 0
     @ObservationIgnored var streamFailures = 0
@@ -102,6 +109,12 @@ final class AppModel {
 
     var onboarded: Bool { !settings.languages.isEmpty }
     var learningGate: LearningGate { LearningGate(paused: settings.personalizationPaused) }
+    var delivery: Delivery {
+        Delivery(quality: StreamQuality.preference(wifi: settings.wifiQuality, cellular: settings.cellularQuality,
+                                                   network: network.kind, dataSaver: settings.dataSaver),
+                 allowExplicit: settings.allowExplicit,
+                 smallArtwork: settings.dataSaver && network.kind == .cellular)
+    }
     var undoAvailable: Bool { undoStack.isAvailable }
     var undoLabel: String? { undoStack.label }
     var sleepTimer: SleepTimer { sleep.kind }
@@ -109,9 +122,12 @@ final class AppModel {
 
     init() {
         loadState()
+        loadRecentSearches()
         reconcileLikes()
         AppLog.info("launch", "profile dim \(SparseLearner.dimension), observations \(profile.learner.observations), "
             + "languages \(settings.languages), favorites \(library.favorites.count), paused \(settings.personalizationPaused)")
+        network.onChange = { [weak self] in self?.deliveryChanged() }
+        restoreLastSong()
         configureSession()
         player.automaticallyWaitsToMinimizeStalling = true
         player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 0.5, preferredTimescale: 600), queue: .main) { [weak self] time in
@@ -127,6 +143,20 @@ final class AppModel {
             seek: { [weak self] t in self?.seek(toSeconds: t) },
             like: { [weak self] in self?.feedback(.favorite) },
             dislike: { [weak self] in self?.feedback(.suggestLess) }))
+    }
+
+    func deliveryChanged() {
+        resolved.removeAll()
+        pool = []
+        invalidateRanking()
+    }
+
+    private func restoreLastSong() {
+        guard settings.resumeOnLaunch, let song = lastSong else { return }
+        let item = QueueItem(song: song, why: "Resuming")
+        current = item
+        hasSession = true
+        loadArt(for: item)
     }
 
     private func tick(_ time: CMTime) {

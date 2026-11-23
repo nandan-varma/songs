@@ -18,7 +18,7 @@ struct ToastView: View {
             if text != nil || undoable { capsule(undoable: undoable) }
         }
         .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(duration: 0.4), value: Phase(text: text, undoable: undoable))
-        .sensoryFeedback(.impact(weight: .medium), trigger: undoTick)
+        .haptic(.impact(weight: .medium), trigger: undoTick)
     }
 
     private func capsule(undoable: Bool) -> some View {

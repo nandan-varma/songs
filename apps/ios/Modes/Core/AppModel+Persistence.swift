@@ -2,20 +2,21 @@ import Foundation
 import ModesCore
 
 private struct PersistedState: Codable {
-    static let currentVersion = 3
+    static let currentVersion = 4
 
     var version = currentVersion
     var profile: PersonalizedProfile
     var settings: AppSettings
     var library: LibraryState
     var playlists: [LocalPlaylist]
+    var lastSong: SongFeatures?
 }
 
 extension AppModel {
     private static let stateURL: URL = {
         let directory = URL.applicationSupportDirectory
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return directory.appendingPathComponent("listener-v3.plist")
+        return directory.appendingPathComponent("listener-v4.plist")
     }()
 
     static var eventsURL: URL { URL.documentsDirectory.appending(path: "events.jsonl") }
@@ -29,9 +30,10 @@ extension AppModel {
             settings = state.settings
             library = state.library
             playlists = state.playlists
+            lastSong = state.lastSong
         } catch {
             let aside = Self.stateURL.deletingLastPathComponent()
-                .appendingPathComponent("listener-v3.unreadable-\(Int(Date().timeIntervalSince1970)).plist")
+                .appendingPathComponent("listener-v4.unreadable-\(Int(Date().timeIntervalSince1970)).plist")
             AppLog.error("persistence", "state unreadable, moving it aside: \(error)")
             do { try FileManager.default.moveItem(at: Self.stateURL, to: aside) }
             catch { persistenceBlocked = true }
@@ -49,7 +51,7 @@ extension AppModel {
 
     func saveNow() {
         guard !persistenceBlocked else { return }
-        let state = PersistedState(profile: profile, settings: settings, library: library, playlists: playlists)
+        let state = PersistedState(profile: profile, settings: settings, library: library, playlists: playlists, lastSong: lastSong)
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         do { try encoder.encode(state).write(to: Self.stateURL, options: .atomic) }

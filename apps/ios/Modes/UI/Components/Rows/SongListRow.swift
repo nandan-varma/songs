@@ -53,7 +53,7 @@ struct SongListRow: View {
         .swipeActions(edge: layoutDirection == .leftToRight ? .trailing : .leading, allowsFullSwipe: fullSwipe) { swipeButton(trailing, item: item) }
         .contextMenu { menuActions(for: item) }
         .sheet(isPresented: $addingToPlaylist) { PlaylistPicker(source: source) }
-        .sensoryFeedback(.selection, trigger: actionTick)
+        .haptic(.selection, trigger: actionTick)
         .listRowBackground(Color.clear)
         .listRowInsets(EdgeInsets(top: 2, leading: MusicLayout.pageInset, bottom: 2, trailing: 12))
     }

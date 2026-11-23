@@ -26,10 +26,10 @@ enum SaavnAPI {
     }
 
     private static func cachedGet<Payload: Decodable, Value: Sendable>(
-        _ path: String, _ query: [URLQueryItem] = [], highQuality: Bool, ttl: TimeInterval,
+        _ path: String, _ query: [URLQueryItem] = [], delivery: Delivery, ttl: TimeInterval,
         as payload: Payload.Type, map: (Payload?) throws -> Value
     ) async throws -> Value {
-        let key = ([path] + query.map { "\($0.name)=\($0.value ?? "")" } + [highQuality ? "320" : "160"]).joined(separator: "|")
+        let key = ([path] + query.map { "\($0.name)=\($0.value ?? "")" } + [delivery.cacheKey]).joined(separator: "|")
         if let hit = await ResponseCache.shared.value(for: key, as: Value.self) { return hit }
         let value = try map(try await get(path, query) as Payload?)
         await ResponseCache.shared.store(value, for: key, ttl: ttl)
@@ -41,21 +41,21 @@ enum SaavnAPI {
         return value
     }
 
-    static func resolve(ids: [String], highQuality: Bool) async throws -> [String: Resolved] {
+    static func resolve(ids: [String], delivery: Delivery) async throws -> [String: Resolved] {
         guard !ids.isEmpty else { return [:] }
         let payloads: [SongPayload]? = try await get("/api/songs", [URLQueryItem(name: "ids", value: ids.joined(separator: ","))])
         var out: [String: Resolved] = [:]
-        for hit in (payloads ?? []).compactMap({ $0.hit(highQuality: highQuality) }) { out[hit.song.id] = hit.resolved }
+        for hit in (payloads ?? []).compactMap({ $0.hit(delivery: delivery) }) { out[hit.song.id] = hit.resolved }
         return out
     }
 
-    static func album(id: String, highQuality: Bool) async throws -> Album {
-        try await cachedGet("/api/albums", [URLQueryItem(name: "id", value: id)], highQuality: highQuality,
-                            ttl: TTL.collection, as: AlbumPayload.self) { try required($0).album(highQuality: highQuality) }
+    static func album(id: String, delivery: Delivery) async throws -> Album {
+        try await cachedGet("/api/albums", [URLQueryItem(name: "id", value: id)], delivery: delivery,
+                            ttl: TTL.collection, as: AlbumPayload.self) { try required($0).album(delivery: delivery) }
     }
 
-    static func playlist(id: String, highQuality: Bool) async throws -> Playlist {
-        let key = "playlist|\(id)|\(highQuality ? "320" : "160")"
+    static func playlist(id: String, delivery: Delivery) async throws -> Playlist {
+        let key = "playlist|\(id)|\(delivery.cacheKey)"
         if let hit = await ResponseCache.shared.value(for: key, as: Playlist.self) { return hit }
         var first: PlaylistPayload?
         var songs: [SongPayload] = []
@@ -69,57 +69,84 @@ enum SaavnAPI {
             songs.append(contentsOf: added)
             if added.count < playlistPageSize || songs.count >= (batch.songCount ?? songs.count) { break }
         }
-        let playlist = try required(first).playlist(highQuality: highQuality, songs: songs)
+        let playlist = try required(first).playlist(delivery: delivery, songs: songs)
         await ResponseCache.shared.store(playlist, for: key, ttl: TTL.collection)
         return playlist
     }
 
-    static func artist(id: String, highQuality: Bool) async throws -> Artist {
-        try await cachedGet("/api/artists/\(id)", highQuality: highQuality, ttl: TTL.collection,
-                            as: ArtistPayload.self) { try required($0).artist(highQuality: highQuality) }
+    static func artist(id: String, delivery: Delivery) async throws -> Artist {
+        try await cachedGet("/api/artists/\(id)", delivery: delivery, ttl: TTL.collection,
+                            as: ArtistPayload.self) { try required($0).artist(delivery: delivery) }
     }
 
-    static func charts() async throws -> [Chart] {
-        try await cachedGet("/api/charts", highQuality: false, ttl: TTL.ephemeral,
-                            as: [ChartPayload].self) { ($0 ?? []).map { $0.chart() } }
+    static func charts(delivery: Delivery) async throws -> [Chart] {
+        try await cachedGet("/api/charts", delivery: delivery, ttl: TTL.ephemeral,
+                            as: [ChartPayload].self) { ($0 ?? []).map { $0.chart(delivery: delivery) } }
     }
 
-    static func chart(id: String, highQuality: Bool) async throws -> Chart {
-        guard let entry = try await charts().first(where: { $0.id == id }) else { throw URLError(.resourceUnavailable) }
-        let songs = try await playlist(id: id, highQuality: highQuality).songs
+    static func chart(id: String, delivery: Delivery) async throws -> Chart {
+        guard let entry = try await charts(delivery: delivery).first(where: { $0.id == id }) else { throw URLError(.resourceUnavailable) }
+        let songs = try await playlist(id: id, delivery: delivery).songs
         return Chart(id: entry.id, name: entry.name, image: entry.image, songCount: entry.songCount, songs: songs)
     }
 
-    static func trending(language: String, highQuality: Bool) async throws -> [Hit] {
-        try await cachedGet("/api/trending", [URLQueryItem(name: "type", value: "song"),
-                                              URLQueryItem(name: "language", value: language)],
-                            highQuality: highQuality, ttl: TTL.ephemeral, as: [SongPayload].self) {
-            ($0 ?? []).compactMap { $0.hit(highQuality: highQuality) }
+    static func trending(language: String, delivery: Delivery) async throws -> [Hit] {
+        try await cachedGet("/api/trending/songs", [URLQueryItem(name: "language", value: language)],
+                            delivery: delivery, ttl: TTL.ephemeral, as: [SongPayload].self) {
+            ($0 ?? []).compactMap { $0.hit(delivery: delivery) }
         }
     }
 
-    static func suggestions(songID: String, limit: Int = 20, highQuality: Bool) async throws -> [Hit] {
+    static func suggestions(songID: String, limit: Int = 20, delivery: Delivery) async throws -> [Hit] {
         try await cachedGet("/api/songs/\(songID)/suggestions", [URLQueryItem(name: "limit", value: String(limit))],
-                            highQuality: highQuality, ttl: TTL.collection, as: [SongPayload].self) {
-            ($0 ?? []).compactMap { $0.hit(highQuality: highQuality) }
+                            delivery: delivery, ttl: TTL.collection, as: [SongPayload].self) {
+            ($0 ?? []).compactMap { $0.hit(delivery: delivery) }
         }
     }
 
-    static func search(_ query: String, highQuality: Bool) async throws -> SearchResults {
-        async let songs = search("songs", query, highQuality: highQuality) { (p: SongPayload) in p.hit(highQuality: highQuality) }
-        async let albums = search("albums", query, highQuality: highQuality) { (p: AlbumPayload) in p.album(highQuality: highQuality) }
-        async let artists = search("artists", query, highQuality: highQuality) { (p: ArtistPayload) in p.artist(highQuality: highQuality) }
-        async let playlists = search("playlists", query, highQuality: highQuality) { (p: PlaylistPayload) in p.playlist(highQuality: highQuality) }
-        return try await SearchResults(songs: songs, albums: albums, artists: artists, playlists: playlists)
+    static let pageSize = 25
+    static let overviewLimit = 6
+
+    static func search(_ query: String, delivery: Delivery) async throws -> SearchOverview {
+        try await cachedGet("/api/search", [URLQueryItem(name: "query", value: query),
+                                            URLQueryItem(name: "limit", value: String(overviewLimit))],
+                            delivery: delivery, ttl: TTL.collection, as: OverviewPayload.self) {
+            try required($0).overview(delivery: delivery)
+        }
     }
 
-    private static func search<P: Decodable, V: Sendable>(
-        _ kind: String, _ query: String, highQuality: Bool, map: @escaping @Sendable (P) -> V?
-    ) async throws -> [V] {
-        try await cachedGet("/api/search/\(kind)",
-                            [URLQueryItem(name: "query", value: query), URLQueryItem(name: "limit", value: String(searchLimit))],
-                            highQuality: highQuality, ttl: TTL.collection, as: Results<P>.self) {
-            ($0?.results ?? []).compactMap(map)
+    static func searchSongs(_ query: String, page: Int, delivery: Delivery) async throws -> SearchPage<Hit> {
+        try await searchPage("songs", query, page: page, delivery: delivery) { (p: SongPayload) in p.hit(delivery: delivery) }
+    }
+
+    static func searchAlbums(_ query: String, page: Int, delivery: Delivery) async throws -> SearchPage<Album> {
+        try await searchPage("albums", query, page: page, delivery: delivery) { (p: AlbumPayload) in p.album(delivery: delivery) }
+    }
+
+    static func searchArtists(_ query: String, page: Int, delivery: Delivery) async throws -> SearchPage<Artist> {
+        try await searchPage("artists", query, page: page, delivery: delivery) { (p: ArtistPayload) in p.artist(delivery: delivery) }
+    }
+
+    static func searchPlaylists(_ query: String, page: Int, delivery: Delivery) async throws -> SearchPage<Playlist> {
+        try await searchPage("playlists", query, page: page, delivery: delivery) { (p: PlaylistPayload) in p.playlist(delivery: delivery) }
+    }
+
+    private static func searchPage<P: Decodable, V: Sendable>(
+        _ kind: String, _ query: String, page: Int, delivery: Delivery, map: @escaping @Sendable (P) -> V?
+    ) async throws -> SearchPage<V> {
+        let items = [URLQueryItem(name: "query", value: query), URLQueryItem(name: "page", value: String(page)),
+                     URLQueryItem(name: "limit", value: String(pageSize))]
+        return try await cachedGet("/api/search/\(kind)", items, delivery: delivery, ttl: TTL.collection,
+                                   as: Page<P>.self) {
+            SearchPage(items: ($0?.results ?? []).compactMap(map), total: $0?.total ?? 0)
         }
+    }
+
+    static func lyrics(songID: String) async throws -> String {
+        let payload: LyricsPayload? = try await get("/api/songs/\(songID)/lyrics")
+        let text = try required(payload).lyrics
+            .replacingOccurrences(of: "<br>", with: "\n").replacingOccurrences(of: "<br/>", with: "\n")
+            .replacingOccurrences(of: "<br />", with: "\n")
+        return text.htmlDecoded.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

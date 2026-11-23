@@ -36,7 +36,7 @@ extension AppModel {
         AppLog.info("library", "resolve then play \(item.id)")
         Task {
             do {
-                guard let audio = try await SaavnAPI.resolve(ids: [item.id], highQuality: settings.highQuality)[item.id] else {
+                guard let audio = try await SaavnAPI.resolve(ids: [item.id], delivery: delivery)[item.id] else {
                     flash("Can’t play that song right now"); return
                 }
                 var playable = item
@@ -63,7 +63,7 @@ extension AppModel {
         flash(last ? "Adding to play last…" : "Adding to Up next…")
         Task {
             do {
-                guard let audio = try await SaavnAPI.resolve(ids: [item.id], highQuality: settings.highQuality)[item.id] else {
+                guard let audio = try await SaavnAPI.resolve(ids: [item.id], delivery: delivery)[item.id] else {
                     flash("Can’t play that song right now"); return
                 }
                 guard generation == listenerQueue.clearGeneration else { return }
@@ -99,12 +99,12 @@ extension AppModel {
         resolvingIDs.formUnion(ids)
         Task {
             defer { resolvingIDs.subtract(ids) }
-            let highQuality = settings.highQuality
+            let delivery = delivery
 
             await withTaskGroup(of: [String: Resolved].self) { group in
                 for id in ids {
                     group.addTask {
-                        do { return try await SaavnAPI.resolve(ids: [id], highQuality: highQuality) }
+                        do { return try await SaavnAPI.resolve(ids: [id], delivery: delivery) }
                         catch { AppLog.error("network", "prefetch failed for \(id): \(error)"); return [:] }
                     }
                 }

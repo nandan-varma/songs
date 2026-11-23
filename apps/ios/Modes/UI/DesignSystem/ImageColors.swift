@@ -1,3 +1,4 @@
+import ModesCore
 import SwiftUI
 
 extension UIImage {
@@ -11,9 +12,10 @@ extension UIImage {
         return UIColor(red: CGFloat(px[0]) / 255, green: CGFloat(px[1]) / 255, blue: CGFloat(px[2]) / 255, alpha: 1)
     }
 
-    static func backdrop(from color: UIColor, brightness cap: CGFloat) -> Color {
-        var h: CGFloat = 0, sat: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        color.getHue(&h, saturation: &sat, brightness: &b, alpha: &a)
-        return Color(hue: Double(h), saturation: Double(min(1, sat * 1.15)), brightness: Double(min(b, cap)))
+    static func playerTint(from color: UIColor) -> Color {
+        var h: CGFloat = 0, s: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getHue(&h, saturation: &s, brightness: &b, alpha: &a)
+        let calm = PlayerTint.calm(hue: Double(h), saturation: Double(s), brightness: Double(b))
+        return Color(hue: calm.hue, saturation: calm.saturation, brightness: calm.brightness)
     }
 }

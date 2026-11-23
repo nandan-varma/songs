@@ -18,14 +18,11 @@ struct SearchBrowseView: View {
     var body: some View {
         Group {
             if loading {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                List { SkeletonRows() }.musicListStyle()
+            } else if failed {
+                LoadFailedView { retry += 1 }
             } else if sections.isEmpty {
-                ContentUnavailableView {
-                    Label(failed ? "Couldn’t load songs" : "No songs yet",
-                          systemImage: failed ? "wifi.exclamationmark" : "music.note")
-                } actions: {
-                    if failed { Button("Retry") { retry += 1 }.buttonStyle(.bordered) }
-                }
+                ContentUnavailableView("No songs yet", systemImage: "music.note")
             } else {
                 List {
                     if !charts.isEmpty {
@@ -54,11 +51,11 @@ struct SearchBrowseView: View {
         }
         .background(Color(.systemBackground))
         .musicRoutes()
-        .task(id: LoadKey(languages: model.settings.languages, highQuality: model.settings.highQuality, retry: retry)) {
+        .task(id: LoadKey(languages: model.settings.languages, delivery: model.delivery, retry: retry)) {
             await load()
         }
         .task(id: "charts") {
-            charts = (try? await SaavnAPI.charts()) ?? []
+            charts = (try? await SaavnAPI.charts(delivery: model.delivery)) ?? []
             ImagePipeline.shared.prefetch(charts.compactMap(\.image))
         }
     }
@@ -75,7 +72,7 @@ struct SearchBrowseView: View {
         var loaded: [HotSection] = []
         for language in languages {
             do {
-                let hits = try await SaavnAPI.trending(language: language, highQuality: model.settings.highQuality)
+                let hits = try await SaavnAPI.trending(language: language, delivery: model.delivery)
                 guard !Task.isCancelled else { return }
                 if !hits.isEmpty { loaded.append(HotSection(language: language, hits: Array(hits.prefix(20)))) }
             } catch {
@@ -91,7 +88,7 @@ struct SearchBrowseView: View {
 
     private struct LoadKey: Equatable {
         let languages: [String]
-        let highQuality: Bool
+        let delivery: Delivery
         let retry: Int
     }
 }

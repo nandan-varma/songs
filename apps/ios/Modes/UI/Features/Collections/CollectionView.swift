@@ -1,3 +1,4 @@
+import ModesCore
 import SwiftUI
 
 enum MusicRoute: Hashable {
@@ -7,9 +8,17 @@ enum MusicRoute: Hashable {
     case chart(String)
 }
 
+struct SearchRoute: Hashable {
+    let scope: SearchScope
+    let query: String
+}
+
 extension View {
     func musicRoutes() -> some View {
         navigationDestination(for: MusicRoute.self) { CollectionView(route: $0) }
+            .navigationDestination(for: SearchRoute.self) {
+                SearchResultsList(scope: $0.scope, query: $0.query).navigationTitle($0.scope.title)
+            }
     }
 }
 
@@ -91,10 +100,9 @@ struct CollectionView: View {
                 }
                 .musicListStyle()
             } else if loading {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                List { SkeletonRows() }.musicListStyle()
             } else {
-                ContentUnavailableView("Couldn’t load this", systemImage: "wifi.exclamationmark",
-                                       description: Text(failed ? "Check your connection and try again." : "Nothing here."))
+                LoadFailedView { Task { await load() } }
             }
         }
         .navigationTitle(detail?.title ?? "")
@@ -109,20 +117,20 @@ struct CollectionView: View {
         do {
             switch route {
             case .album(let id):
-                let album = try await SaavnAPI.album(id: id, highQuality: model.settings.highQuality)
+                let album = try await SaavnAPI.album(id: id, delivery: model.delivery)
                 detail = CollectionDetail(title: album.name, subtitle: album.subtitle ?? "",
                                           imageURL: album.image, songs: album.songs, albums: [])
             case .playlist(let id):
-                let playlist = try await SaavnAPI.playlist(id: id, highQuality: model.settings.highQuality)
+                let playlist = try await SaavnAPI.playlist(id: id, delivery: model.delivery)
                 detail = CollectionDetail(title: playlist.name, subtitle: "\(playlist.songs.count) songs",
                                           imageURL: playlist.image, songs: playlist.songs, albums: [])
             case .artist(let id):
-                let artist = try await SaavnAPI.artist(id: id, highQuality: model.settings.highQuality)
+                let artist = try await SaavnAPI.artist(id: id, delivery: model.delivery)
                 detail = CollectionDetail(title: artist.name, subtitle: artist.roles.joined(separator: " · "),
                                           imageURL: artist.image, songs: artist.songs, albums: artist.albums,
                                           round: true)
             case .chart(let id):
-                let chart = try await SaavnAPI.chart(id: id, highQuality: model.settings.highQuality)
+                let chart = try await SaavnAPI.chart(id: id, delivery: model.delivery)
                 detail = CollectionDetail(title: chart.name, subtitle: "\(chart.songs.count) songs",
                                           imageURL: chart.image, songs: chart.songs, albums: [])
             }

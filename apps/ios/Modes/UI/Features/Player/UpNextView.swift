@@ -12,7 +12,7 @@ struct UpNextView: View {
                 let context = queue.map { SongReference.queued($0) }
                 Section {
                     ForEach(queue) { item in
-                        SongListRow(source: .queued(item), context: context, detail: item.why)
+                        SongListRow(source: .queued(item), context: context, detail: model.settings.showWhy ? item.why : nil)
                     }
                 }
             }

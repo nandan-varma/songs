@@ -27,6 +27,11 @@ actor ResponseCache {
         while insertionOrder.count > capacity { remove(insertionOrder[0]) }
     }
 
+    func removeAll() {
+        entries.removeAll()
+        insertionOrder.removeAll()
+    }
+
     private func remove(_ key: String) {
         entries[key] = nil
         insertionOrder.removeAll { $0 == key }

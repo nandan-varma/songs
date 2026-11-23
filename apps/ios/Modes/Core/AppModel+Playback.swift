@@ -57,7 +57,10 @@ extension AppModel {
 
     func playHead() async {
         if upNext.isEmpty { await rebuildUpNext() }
-        guard !upNext.isEmpty else { giveUp(reason: "Can’t reach the music server"); return }
+        guard !upNext.isEmpty else {
+            if settings.autoplay { giveUp(reason: "Can’t reach the music server") } else { finishQueue() }
+            return
+        }
         await start(upNext.removeFirst())
     }
 
@@ -69,7 +72,7 @@ extension AppModel {
         hasSession = true
         removeItemObservers()
         player.pause(); player.replaceCurrentItem(with: nil)
-        loading = true; current = item; progress = 0; duration = 0; currentArt = nil; isPlaying = false
+        loading = true; current = item; currentHasLyrics = false; progress = 0; duration = 0; currentArt = nil; isPlaying = false
         loadArt(for: item)
         nowPlaying.begin(.init(title: displayTitle(item), artist: displayArtist(item),
                                album: display(item).context ?? item.song.album), duration: 0)
@@ -79,7 +82,7 @@ extension AppModel {
         do {
             if let known = resolved[item.id] { audio = known } else {
                 AppLog.info("playback", "no prefetched url for \(item.song.title); resolving now")
-                let got = try await SaavnAPI.resolve(ids: [item.id], highQuality: settings.highQuality)
+                let got = try await SaavnAPI.resolve(ids: [item.id], delivery: delivery)
                 resolved.merge(got) { _, new in new }
                 audio = got[item.id]
                 if audio == nil { unplayable.insert(item.id) }
@@ -100,7 +103,9 @@ extension AppModel {
         failures = 0
         if picked { learn(item, .picked) }
         duration = audio.duration
+        currentHasLyrics = audio.hasLyrics
         recordRecent(item, resolved: audio)
+        lastSong = features(for: item)
         AppLog.info("playback", "playing \(item.song.title) \(Int(audio.duration))s via \(audio.url.host ?? "?")")
         activateSession()
         let playerItem = AVPlayerItem(url: audio.url)
@@ -117,6 +122,13 @@ extension AppModel {
         if entry.imageURL == nil { entry.imageURL = audio.image }
         library.recordPlay(entry)
         scheduleSave()
+    }
+
+    private func finishQueue() {
+        removeItemObservers()
+        player.pause(); player.replaceCurrentItem(with: nil)
+        loading = false; isPlaying = false; resumeFromQueue = false
+        syncNowPlaying()
     }
 
     func giveUp(reason: String) {

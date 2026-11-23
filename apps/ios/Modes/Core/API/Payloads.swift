@@ -3,7 +3,39 @@ import ModesCore
 
 extension SaavnAPI {
     struct Envelope<T: Decodable>: Decodable { let data: T? }
-    struct Results<T: Decodable>: Decodable { let results: [T]? }
+    struct Page<T: Decodable>: Decodable {
+        let total: Int?
+        let results: [T]?
+    }
+
+    struct LyricsPayload: Decodable { let lyrics: String }
+
+    struct TopPayload: Decodable {
+        let type: String?
+        let id: String?
+        let name: String?
+        let subtitle: String?
+        let image: [LinkPayload]?
+    }
+
+    struct OverviewPayload: Decodable {
+        let topResult: TopPayload?
+        let songs: [SongPayload]?
+        let albums: [AlbumPayload]?
+        let artists: [ArtistPayload]?
+        let playlists: [PlaylistPayload]?
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            topResult = try? container.decodeIfPresent(TopPayload.self, forKey: .topResult)
+            songs = try container.decodeIfPresent([SongPayload].self, forKey: .songs)
+            albums = try container.decodeIfPresent([AlbumPayload].self, forKey: .albums)
+            artists = try container.decodeIfPresent([ArtistPayload].self, forKey: .artists)
+            playlists = try container.decodeIfPresent([PlaylistPayload].self, forKey: .playlists)
+        }
+
+        private enum CodingKeys: String, CodingKey { case topResult, songs, albums, artists, playlists }
+    }
 
     struct LinkPayload: Decodable {
         let quality: String
@@ -36,6 +68,7 @@ extension SaavnAPI {
         let label: String?
         let playCount: Int?
         let explicitContent: Bool?
+        let hasLyrics: Bool?
         let album: AlbumRefPayload?
         let artists: ArtistsPayload?
         let image: [LinkPayload]?
@@ -79,16 +112,21 @@ extension SaavnAPI {
 }
 
 private extension [SaavnAPI.LinkPayload] {
-    var artwork: URL? { last.flatMap { URL(string: $0.url) } }
+    func artwork(_ delivery: Delivery) -> URL? {
+        let chosen = delivery.smallArtwork ? (first { $0.quality.hasPrefix("150") } ?? first) : last
+        return chosen.flatMap { URL(string: $0.url) }
+    }
 }
 
 extension SaavnAPI.SongPayload {
-    func hit(highQuality: Bool) -> SaavnAPI.Hit? {
+    func hit(delivery: Delivery) -> SaavnAPI.Hit? {
         let links = downloadUrl ?? []
-        let wanted = highQuality ? "320kbps" : "160kbps"
-        guard let link = links.first(where: { $0.quality == wanted }) ?? links.last,
+        guard delivery.allowExplicit || explicitContent != true else { return nil }
+        let rates = links.compactMap { StreamQuality.bitrate(of: $0.quality) }
+        guard let rate = StreamQuality.pick(preference: delivery.quality, available: rates),
+              let link = links.first(where: { StreamQuality.bitrate(of: $0.quality) == rate }),
               let stream = URL(string: link.url) else { return nil }
-        let artwork = image?.artwork
+        let artwork = image?.artwork(delivery)
         let length = duration ?? 0
         let song = SongFeatures(
             id: id, title: (name ?? "").htmlDecoded, artist: artistLine,
@@ -96,7 +134,7 @@ extension SaavnAPI.SongPayload {
             label: label ?? "", language: language ?? "", year: Int(year ?? "") ?? 0,
             artistIDs: (artists?.all ?? []).compactMap(\.id), duration: length,
             playCount: playCount ?? 0, explicit: explicitContent ?? false, image: artwork)
-        return SaavnAPI.Hit(song: song, resolved: Resolved(id: id, url: stream, image: artwork, duration: length))
+        return SaavnAPI.Hit(song: song, resolved: Resolved(id: id, url: stream, image: artwork, duration: length, hasLyrics: hasLyrics ?? false))
     }
 
     private var artistLine: String {
@@ -110,34 +148,54 @@ extension SaavnAPI.SongPayload {
 }
 
 extension SaavnAPI.AlbumPayload {
-    func album(highQuality: Bool) -> SaavnAPI.Album {
+    func album(delivery: Delivery) -> SaavnAPI.Album {
         SaavnAPI.Album(id: id, name: (name ?? "").htmlDecoded, subtitle: description?.cleanedSubtitle,
-                       image: image?.artwork, songs: (songs ?? []).compactMap { $0.hit(highQuality: highQuality) })
+                       image: image?.artwork(delivery), songs: (songs ?? []).compactMap { $0.hit(delivery: delivery) })
     }
 }
 
 extension SaavnAPI.PlaylistPayload {
-    func playlist(highQuality: Bool, songs collected: [SaavnAPI.SongPayload]? = nil) -> SaavnAPI.Playlist {
+    func playlist(delivery: Delivery, songs collected: [SaavnAPI.SongPayload]? = nil) -> SaavnAPI.Playlist {
         SaavnAPI.Playlist(id: id, name: (name ?? "").htmlDecoded, subtitle: description?.cleanedSubtitle,
-                          image: image?.artwork,
-                          songs: (collected ?? songs ?? []).compactMap { $0.hit(highQuality: highQuality) })
+                          image: image?.artwork(delivery),
+                          songs: (collected ?? songs ?? []).compactMap { $0.hit(delivery: delivery) })
     }
 }
 
 extension SaavnAPI.ArtistPayload {
-    func artist(highQuality: Bool) -> SaavnAPI.Artist {
+    func artist(delivery: Delivery) -> SaavnAPI.Artist {
         let labels = [role, dominantType, type].compactMap { $0 }.filter { !$0.isEmpty }
         return SaavnAPI.Artist(
-            id: id ?? "", name: name.htmlDecoded, image: image?.artwork,
+            id: id ?? "", name: name.htmlDecoded, image: image?.artwork(delivery),
             roles: Array(Set(labels)).sorted(),
-            songs: (topSongs ?? []).compactMap { $0.hit(highQuality: highQuality) },
-            albums: (topAlbums ?? []).map { $0.album(highQuality: highQuality) })
+            songs: (topSongs ?? []).compactMap { $0.hit(delivery: delivery) },
+            albums: (topAlbums ?? []).map { $0.album(delivery: delivery) })
+    }
+}
+
+extension SaavnAPI.OverviewPayload {
+    func overview(delivery: Delivery) -> SaavnAPI.SearchOverview {
+        let hits = (songs ?? []).compactMap { $0.hit(delivery: delivery) }
+        let results = SaavnAPI.SearchResults(
+            songs: hits,
+            albums: (albums ?? []).map { $0.album(delivery: delivery) },
+            artists: (artists ?? []).map { $0.artist(delivery: delivery) },
+            playlists: (playlists ?? []).map { $0.playlist(delivery: delivery) })
+        return SaavnAPI.SearchOverview(top: topResult?.card(in: results, delivery: delivery), results: results)
+    }
+}
+
+extension SaavnAPI.TopPayload {
+    func card(in results: SaavnAPI.SearchResults, delivery: Delivery) -> SaavnAPI.TopResult? {
+        guard let id, let name, let kind = type.flatMap(SaavnAPI.TopResult.Kind.init(rawValue:)) else { return nil }
+        if kind == .song, !results.songs.contains(where: { $0.song.id == id }) { return nil }
+        return SaavnAPI.TopResult(kind: kind, id: id, name: name.htmlDecoded, subtitle: subtitle?.htmlDecoded, image: image?.artwork(delivery))
     }
 }
 
 extension SaavnAPI.ChartPayload {
-    func chart(songs: [SaavnAPI.Hit] = []) -> SaavnAPI.Chart {
-        SaavnAPI.Chart(id: id, name: name.htmlDecoded, image: image?.artwork, songCount: songCount, songs: songs)
+    func chart(delivery: Delivery) -> SaavnAPI.Chart {
+        SaavnAPI.Chart(id: id, name: name.htmlDecoded, image: image?.artwork(delivery), songCount: songCount, songs: [])
     }
 }
 

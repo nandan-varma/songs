@@ -12,18 +12,12 @@ struct HomeView: View {
                 if slate.isEmpty {
                     Group {
                         if model.homeFailed {
-                            ContentUnavailableView {
-                                Label("Can’t reach the music server", systemImage: "wifi.exclamationmark")
-                            } description: {
-                                Text("Check your connection and try again.")
-                            } actions: {
-                                Button("Try again") { Task { await model.refreshHome() } }.buttonStyle(.bordered)
-                            }
+                            LoadFailedView { Task { await model.refreshHome() } }
                         } else if model.homeReady {
                             ContentUnavailableView("Nothing to play yet", systemImage: "music.note",
                                                    description: Text("Songs you can play will appear here."))
                         } else {
-                            ProgressView("Finding something for you…").frame(maxWidth: .infinity, minHeight: 160)
+                            SkeletonRows(count: 10)
                         }
                     }
                     .listRowBackground(Color.clear)
@@ -45,7 +39,6 @@ struct HomeView: View {
                 ToolbarItem(placement: .topBarTrailing) { SettingsButton() }
             }
             .task(id: model.homeVersion) { await model.loadHomeSlate() }
-            .task { await model.loadCharts() }
             .refreshable { await model.refreshHome() }
             .musicRoutes()
         }

@@ -5,7 +5,6 @@ struct AcknowledgementsView: View {
         List {
             Section("Open source") {
                 row("LNPopupUI", "Expandable player bar. MIT License, Leo Natan.")
-                row("Essentia models", "Audio analysis behind the song index. AGPL-3.0, Music Technology Group, UPF.")
             }
             Section("Content") {
                 Text("Songs, artwork and charts come from an unofficial JioSaavn API. This prototype isn’t affiliated with or endorsed by JioSaavn.")

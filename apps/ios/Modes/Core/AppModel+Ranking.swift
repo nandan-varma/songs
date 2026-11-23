@@ -21,7 +21,7 @@ extension AppModel {
         for id in profile.recent.suffix(3).reversed() + profile.liked.suffix(3).reversed() where !seeds.contains(id) {
             seeds.append(id)
         }
-        let batch = await CandidateSource.fetch(languages: settings.languages, seeds: seeds, highQuality: settings.highQuality)
+        let batch = await CandidateSource.fetch(languages: settings.languages, seeds: seeds, delivery: delivery)
         homeFailed = batch.failed
         var seen = Set<String>()
         let merged = batch.hits.compactMap { candidate -> RankedCandidate? in
@@ -71,11 +71,6 @@ extension AppModel {
         await loadHomeSlate()
     }
 
-    func loadCharts() async {
-        guard charts.isEmpty else { return }
-        charts = (try? await SaavnAPI.charts()) ?? []
-    }
-
     func loadStats() async {
         modelStatsLoading = true
         let snapshot = profile
@@ -95,6 +90,10 @@ extension AppModel {
 
     func rebuildUpNext() async {
         queueTask?.cancel()
+        guard settings.autoplay else {
+            upNext = listenerQueue.combining([], excluding: current?.id)
+            return
+        }
         let pinned = listenerQueue.items + listenerQueue.appended
         let candidates = await candidates()
         let excluded = Set(pinned.map(\.id) + [current].compactMap { $0?.id })
@@ -116,6 +115,7 @@ extension AppModel {
     }
 
     func refill() async {
+        guard settings.autoplay else { return }
         let appendedIDs = Set(listenerQueue.appended.map(\.id))
         let auto = upNext.filter { !appendedIDs.contains($0.id) }
         guard auto.count < 5 else { return }

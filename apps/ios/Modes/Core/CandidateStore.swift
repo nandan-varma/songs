@@ -12,17 +12,17 @@ struct CandidateBatch: Sendable {
 }
 
 enum CandidateSource {
-    static func fetch(languages: [String], seeds: [String], highQuality: Bool) async -> CandidateBatch {
+    static func fetch(languages: [String], seeds: [String], delivery: Delivery) async -> CandidateBatch {
         await withTaskGroup(of: [CandidateHit]?.self) { group in
             for language in languages.prefix(3) {
                 group.addTask {
-                    try? await SaavnAPI.trending(language: language, highQuality: highQuality)
+                    try? await SaavnAPI.trending(language: language, delivery: delivery)
                         .map { CandidateHit(hit: $0, source: "trending") }
                 }
             }
             for seed in seeds.prefix(3) {
                 group.addTask {
-                    try? await SaavnAPI.suggestions(songID: seed, highQuality: highQuality)
+                    try? await SaavnAPI.suggestions(songID: seed, delivery: delivery)
                         .map { CandidateHit(hit: $0, source: "similar") }
                 }
             }

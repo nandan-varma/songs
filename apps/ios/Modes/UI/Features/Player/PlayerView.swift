@@ -5,6 +5,7 @@ import SwiftUI
 struct PlayerView: View {
     @Environment(AppModel.self) private var model
     @State private var showQueue = false
+    @State private var showLyrics = false
     @State private var favoriteTick = 0
     @State private var feedbackTick = 0
     @State private var reveal = SwipeReveal()
@@ -14,20 +15,17 @@ struct PlayerView: View {
     @AppStorage("hint.swipedDislike") private var dislikedBySwipe = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .title) private var sideIcon = 34
-    @ScaledMetric(relativeTo: .title) private var playIcon = 56
-    @ScaledMetric(relativeTo: .body) private var rowIcon = 24
-    @ScaledMetric(relativeTo: .body) private var rowTarget = 52
-
-    @Environment(\.dynamicTypeSize) private var typeSize
+    @ScaledMetric(relativeTo: .title) private var playIcon = 60
+    @ScaledMetric(relativeTo: .body) private var rowIcon = 22
 
     var body: some View {
         GeometryReader { geo in
-            let height = geo.size.height
-            let side = max(120, min(geo.size.width - 48, height * 0.44))
+            let side = max(120, geo.size.width * 0.64)
+            let gap = max(12, geo.size.height * 0.024)
             ViewThatFits(in: .vertical) {
-                column(side: side, gap: max(10, height * 0.028))
+                column(side: side, gap: gap, top: geo.size.height * 0.04)
                     .fixedSize(horizontal: false, vertical: true)
-                ScrollView { column(side: side, gap: 18) }
+                ScrollView { column(side: side, gap: 18, top: 8) }
                     .scrollBounceBehavior(.basedOnSize)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -38,8 +36,9 @@ struct PlayerView: View {
         .tint(.white)
         .foregroundStyle(.white)
         .sheet(isPresented: $showQueue) { UpNextView().presentationDetents([.medium, .large]) }
-        .sensoryFeedback(.success, trigger: favoriteTick)
-        .sensoryFeedback(.impact(weight: .medium), trigger: feedbackTick)
+        .sheet(isPresented: $showLyrics) { LyricsView().presentationDetents([.medium, .large]) }
+        .haptic(.success, trigger: favoriteTick)
+        .haptic(.impact(weight: .medium), trigger: feedbackTick)
         .modifier(PlayerPopupBar())
     }
 
@@ -53,15 +52,15 @@ struct PlayerView: View {
         }
     }()
 
-    private func column(side: CGFloat, gap: CGFloat) -> some View {
+    private func column(side: CGFloat, gap: CGFloat, top: CGFloat) -> some View {
         let item = model.current
         return VStack(spacing: 0) {
-            SleepTimerBadge().padding(.top, 4)
-            artworkStage(item, side: side).padding(.top, gap)
-            titleRow(item).padding(.top, gap)
-            PlayerScrubber(why: item?.why).padding(.top, gap * 0.8)
-            transport.padding(.top, gap * 0.5)
-            volume.padding(.top, gap * 0.4)
+            SleepTimerBadge()
+            artworkStage(item, side: side).padding(.top, top)
+            titleRow(item).padding(.top, gap * 1.5)
+            PlayerScrubber().padding(.top, gap)
+            transport.padding(.top, gap * 0.6)
+            volume.padding(.top, gap * 0.6)
             bottomRow.padding(.top, gap * 0.6)
             Spacer(minLength: 0)
         }
@@ -82,11 +81,11 @@ struct PlayerView: View {
         }
         .frame(width: side, height: side)
         .popupTransitionTarget()
-        .scaleEffect(model.isPlaying ? 1 : 0.84)
+        .scaleEffect(model.isPlaying || reduceMotion ? 1 : 0.8)
         .overlay(alignment: .bottom) { if showHint { swipeHint.padding(.bottom, 10).transition(.opacity) } }
         .frame(maxWidth: .infinity)
-        .animation(.spring(duration: 0.5, bounce: 0.3), value: model.isPlaying)
-        .animation(.spring(duration: 0.45, bounce: 0.12), value: item?.id)
+        .animation(reduceMotion ? nil : .spring(duration: 0.5, bounce: 0.25), value: model.isPlaying)
+        .animation(reduceMotion ? nil : .spring(duration: 0.45, bounce: 0.12), value: item?.id)
         .coverSwipe(reveal: reveal, itemID: item?.id ?? "none",
                     onBegin: { withAnimation(.easeOut(duration: 0.25)) { hintDismissed = true } },
                     onWillDislike: { quietSwap = true },
@@ -127,10 +126,12 @@ struct PlayerView: View {
     private func titleRow(_ item: QueueItem?) -> some View {
         let fav = model.isFavorite(item)
         let shown = item.map { model.display($0) }
-        return HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 5) {
-                MarqueeText(text: shown?.title ?? "Finding something for you…", isActive: model.isPlaying).font(.playerTitle)
-                MarqueeText(text: shown?.artist ?? " ", isActive: model.isPlaying).font(.playerArtist).foregroundStyle(.playerSecondary)
+        return HStack(alignment: .center, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
+                MarqueeText(text: shown?.title ?? "Finding something for you…", isActive: model.isPlaying)
+                    .font(.title2.weight(.semibold))
+                MarqueeText(text: shown?.artist ?? " ", isActive: model.isPlaying)
+                    .font(.title3).foregroundStyle(.playerSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .id(item?.id ?? "none")
@@ -138,19 +139,21 @@ struct PlayerView: View {
             .animation(.easeInOut(duration: 0.25), value: item?.id)
             .accessibilityElement(children: .combine)
 
-            Button(fav ? "Remove favorite" : "Favorite", systemImage: fav ? "heart.fill" : "heart") { favorite() }
-                .labelStyle(.iconOnly).buttonStyle(PressableStyle())
-                .font(.headline).foregroundStyle(fav ? Color.brand : .white)
-                .frame(width: 44, height: 44).glassEffect(.regular.interactive(), in: .circle)
-                .symbolEffect(.bounce, value: favoriteTick)
+            Button { favorite() } label: {
+                Image(systemName: fav ? "star.fill" : "star").font(.title3).frame(width: 44, height: 44)
+            }
+            .buttonStyle(PressableStyle())
+            .accessibilityLabel("Favorite")
+            .accessibilityValue(fav ? "On" : "Off")
+            .accessibilityAddTraits(.isToggle)
+            .symbolEffect(.bounce, value: favoriteTick)
 
             Menu {
                 PlayerMenuItems(item: item) { feedbackTick += 1 }
             } label: {
-                Image(systemName: "ellipsis").font(.headline).frame(width: 44, height: 44)
-                    .glassEffect(.regular.interactive(), in: .circle)
+                Image(systemName: "ellipsis").font(.title3).frame(width: 44, height: 44)
             }
-            .accessibilityLabel("More options")
+            .accessibilityLabel("More")
         }
     }
 
@@ -162,14 +165,14 @@ struct PlayerView: View {
             Spacer()
             Button(model.isPlaying ? "Pause" : "Play", systemImage: model.isPlaying ? "pause.fill" : "play.fill") { model.togglePlay() }
                 .font(.system(size: playIcon)).frame(minWidth: 72, minHeight: 72)
-                .contentTransition(.symbolEffect(.replace.downUp))
+                .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace.downUp))
             Spacer()
             Button("Next", systemImage: "forward.fill") { model.skip() }
                 .font(.system(size: sideIcon)).frame(minWidth: 56, minHeight: 56)
             Spacer()
         }
         .labelStyle(.iconOnly).buttonStyle(PressableStyle())
-        .sensoryFeedback(.impact(weight: .light), trigger: model.isPlaying)
+        .haptic(.impact(weight: .light), trigger: model.isPlaying)
     }
 
     private var volume: some View {
@@ -183,29 +186,24 @@ struct PlayerView: View {
     }
 
     private var bottomRow: some View {
-        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout(alignment: .top, spacing: 8))
-        return layout {
-            VStack(spacing: 4) {
-                AirPlayButton().frame(width: rowTarget, height: rowTarget).accessibilityLabel("AirPlay")
-                Text("AirPlay").font(.caption).foregroundStyle(.playerSecondary)
-            }.frame(maxWidth: .infinity)
-            rowButton("Up next", "list.bullet") { showQueue = true }
-                .frame(maxWidth: .infinity)
+        HStack {
+            rowButton("Lyrics", "quote.bubble", active: showLyrics, enabled: model.currentHasLyrics) { showLyrics = true }
+            AirPlayButton().frame(width: 44, height: 44).frame(maxWidth: .infinity).accessibilityLabel("AirPlay")
+            rowButton("Up next", "list.bullet", active: showQueue, enabled: true) { showQueue = true }
         }
         .dimmedByReveal(reveal)
     }
 
-    private func rowButton(_ title: String, _ icon: String, _ action: @escaping () -> Void) -> some View {
+    private func rowButton(_ title: String, _ icon: String, active: Bool, enabled: Bool,
+                           _ action: @escaping () -> Void) -> some View {
         Button { feedbackTick += 1; action() } label: {
-            VStack(spacing: 4) {
-                Image(systemName: icon).font(.system(size: rowIcon, weight: .regular))
-                    .frame(minWidth: rowTarget, minHeight: rowTarget)
-                Text(title).font(.caption).foregroundStyle(.playerSecondary)
-                    .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-            }
+            Image(systemName: icon).font(.system(size: rowIcon)).frame(width: 44, height: 44)
         }
         .buttonStyle(PressableStyle())
-        .foregroundStyle(.white.opacity(0.85))
+        .frame(maxWidth: .infinity)
+        .foregroundStyle(active ? Color.white : .playerSecondary)
+        .opacity(enabled ? 1 : 0.35)
+        .disabled(!enabled)
         .accessibilityLabel(title)
     }
 
@@ -223,7 +221,7 @@ private struct CoverTile: View {
                 else { Image(systemName: "music.note").font(.system(size: 54)).foregroundStyle(.white.opacity(0.3)) }
             }
             .clipShape(.rect(cornerRadius: 12, style: .continuous))
-            .shadow(color: .black.opacity(0.45), radius: 26, y: 16)
+            .shadow(color: .black.opacity(0.3), radius: 24, y: 12)
             .animation(.easeInOut(duration: 0.3), value: image != nil)
     }
 }
@@ -232,63 +230,42 @@ private struct PlayerBackground: View {
     @Environment(AppModel.self) private var model
     let reveal: SwipeReveal
 
-    static func dimming(forAverage color: UIColor?) -> Double {
-        guard let color else { return 0.5 }
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        color.getRed(&r, green: &g, blue: &b, alpha: &a)
-        let luma = 0.2126 * Double(r) + 0.7152 * Double(g) + 0.0722 * Double(b)
-        return 0.42 + 0.23 * min(1, max(0, luma))
-    }
-
     var body: some View {
-        let tint: Color = model.artTint.map { UIImage.backdrop(from: $0, brightness: 0.42) } ?? Color(white: 0.2)
+        let tint = model.settings.tintedPlayer ? (model.artTint.map { UIImage.playerTint(from: $0) } ?? Color(white: 0.2)) : Color(white: 0.12)
         ZStack {
-            LinearGradient(stops: [.init(color: tint, location: 0), .init(color: tint.opacity(0.6), location: 0.5), .init(color: .black, location: 1)],
-                           startPoint: .top, endPoint: .bottom)
-            if let art = model.currentArt {
-                ZStack {
-                    Image(uiImage: art).resizable().scaledToFill()
-                    Color.black.opacity(Self.dimming(forAverage: model.artTint))
-                }
-                .compositingGroup().blur(radius: 80, opaque: true)
-                .transition(.opacity)
-            }
-            LinearGradient(colors: [.clear, .black.opacity(0.45)], startPoint: .center, endPoint: .bottom)
+            LinearGradient(colors: [tint, tint.opacity(0.78), Color.black.opacity(0.55)], startPoint: .top, endPoint: .bottom)
+                .background(tint)
             SwipeBackdrop(reveal: reveal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
         .ignoresSafeArea()
-        .animation(.easeInOut(duration: 0.7), value: model.currentArt != nil)
-        .animation(.easeInOut(duration: 0.7), value: model.artTint)
+        .animation(.easeInOut(duration: 0.4), value: model.artTint)
     }
 }
 
 private struct PlayerScrubber: View {
     @Environment(AppModel.self) private var model
-    let why: String?
     @State private var scrubbing: Double?
 
     var body: some View {
         let duration = model.duration
         let frac = scrubbing ?? (duration > 0 ? min(1, model.progress / duration) : 0)
-        VStack(spacing: 6) {
+        VStack(spacing: 2) {
             GeometryReader { g in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(.white.opacity(0.28))
-                    Capsule().fill(.white.opacity(0.92)).frame(width: max(7, g.size.width * frac))
+                    Capsule().fill(.white.opacity(0.25))
+                    Capsule().fill(.white.opacity(0.7)).frame(width: max(5, g.size.width * frac))
                 }
-                .frame(height: scrubbing == nil ? 7 : 13).frame(maxHeight: .infinity)
+                .frame(height: scrubbing == nil ? 5 : 9).frame(maxHeight: .infinity)
                 .contentShape(.rect)
                 .gesture(DragGesture(minimumDistance: 0)
                     .onChanged { scrubbing = min(1, max(0, $0.location.x / g.size.width)) }
                     .onEnded { v in model.seek(to: min(1, max(0, v.location.x / g.size.width))); scrubbing = nil })
                 .animation(.snappy(duration: 0.2), value: scrubbing == nil)
-            }.frame(height: 22)
+            }.frame(height: 20)
             HStack(alignment: .firstTextBaseline) {
                 Text(Self.clock(frac * duration)).monospacedDigit().frame(minWidth: 44, alignment: .leading)
-                Spacer(minLength: 6)
-                if let why { Label(why, systemImage: "sparkle").labelStyle(.titleAndIcon).font(.playerMetaStrong).lineLimit(1).truncationMode(.tail) }
                 Spacer(minLength: 6)
                 Text("−" + Self.clock(max(0, duration - frac * duration))).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
             }

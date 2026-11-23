@@ -33,7 +33,7 @@ struct CoverSwipe: ViewModifier {
             .rotationEffect(.degrees(tilt), anchor: .bottom)
             .offset(x: reduceMotion ? 0 : dx)
             .gesture(HorizontalPan(onBegan: began, onChanged: changed, onEnded: ended))
-            .sensoryFeedback(.impact(weight: .medium), trigger: crossTick)
+            .haptic(.impact(weight: .medium), trigger: crossTick)
             .onChange(of: itemID) { settle() }
     }
 

@@ -25,6 +25,13 @@ final class ImagePipeline: @unchecked Sendable {
         session = URLSession(configuration: configuration)
     }
 
+    var diskUsage: Int { session.configuration.urlCache?.currentDiskUsage ?? 0 }
+
+    func clear() {
+        session.configuration.urlCache?.removeAllCachedResponses()
+        memory.cache.removeAllObjects()
+    }
+
     func cached(_ url: URL?) -> UIImage? {
         guard let url else { return nil }
         return memory.cache.object(forKey: url as NSURL)

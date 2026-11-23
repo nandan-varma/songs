@@ -6,12 +6,42 @@ struct Resolved: Sendable {
     let url: URL
     let image: URL?
     let duration: Double
+    let hasLyrics: Bool
+}
+
+struct Delivery: Hashable, Sendable {
+    var quality: QualityPreference
+    var allowExplicit: Bool
+    var smallArtwork: Bool
+
+    var cacheKey: String { "\(quality.rawValue)|\(allowExplicit)|\(smallArtwork)" }
 }
 
 extension SaavnAPI {
-    struct Hit: Sendable {
+    struct Hit: Sendable, Identifiable {
         let song: SongFeatures
         let resolved: Resolved
+        var id: String { song.id }
+    }
+
+    struct TopResult: Sendable {
+        enum Kind: String, Sendable { case song, album, artist, playlist }
+
+        let kind: Kind
+        let id: String
+        let name: String
+        let subtitle: String?
+        let image: URL?
+    }
+
+    struct SearchOverview: Sendable {
+        let top: TopResult?
+        let results: SearchResults
+    }
+
+    struct SearchPage<Item: Sendable>: Sendable {
+        let items: [Item]
+        let total: Int
     }
 
     struct Album: Sendable, Identifiable {

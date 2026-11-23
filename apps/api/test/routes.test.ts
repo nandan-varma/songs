@@ -496,3 +496,69 @@ describe("errors", () => {
 		expect(status).toBe(502);
 	});
 });
+
+describe("launch", () => {
+	it("returns shelves in module order with normalised tiles and genre channels", async () => {
+		const requests = mockUpstream({
+			"webapi.getLaunchData": fixture("launch"),
+		});
+
+		const { status, body } = await get("/api/launch?languages=telugu,hindi");
+
+		expect(status).toBe(200);
+		expect(requests[0]?.searchParams.get("__call")).toBe(
+			"webapi.getLaunchData",
+		);
+		const data = body.data as {
+			shelves: {
+				key: string;
+				title: string;
+				items: { id: string; name: string }[];
+			}[];
+			genres: { type: string }[];
+		};
+		expect(data.shelves[0]).toMatchObject({
+			key: "new_trending",
+			title: "Trending Now",
+		});
+		expect(data.shelves.map((s) => s.key)).toContain("radio");
+		expect(data.genres[0]?.type).toBe("channel");
+	});
+});
+
+describe("lyrics", () => {
+	it("parses synced lyrics into timed lines", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () =>
+				Response.json({
+					syncedLyrics: "[00:01.50] first\n[01:02.00] second\n[00:03.00]",
+					plainLyrics: "first\nsecond",
+				}),
+			),
+		);
+
+		const { body } = await get("/api/lyrics?title=a&artist=b&duration=200");
+
+		expect(body.data).toEqual({
+			synced: [
+				{ time: 1.5, text: "first" },
+				{ time: 62, text: "second" },
+				{ time: 3, text: "" },
+			],
+			plain: "first\nsecond",
+		});
+	});
+
+	it("returns null data when lrclib has no track", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => new Response("{}", { status: 404 })),
+		);
+
+		const { status, body } = await get("/api/lyrics?title=a&artist=b");
+
+		expect(status).toBe(200);
+		expect(body.data).toBeNull();
+	});
+});

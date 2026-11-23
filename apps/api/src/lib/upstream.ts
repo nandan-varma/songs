@@ -12,6 +12,7 @@ export async function jiosaavn(
 	call: string,
 	params: Params = {},
 	context: Context = "web6dot0",
+	languages?: string,
 ): Promise<unknown> {
 	const url = new URL(ENDPOINT);
 	url.searchParams.set("__call", call);
@@ -26,7 +27,9 @@ export async function jiosaavn(
 	let response: Response;
 	try {
 		response = await fetch(url, {
-			headers: { "User-Agent": USER_AGENT },
+			headers: languages
+				? { "User-Agent": USER_AGENT, Cookie: `L=${languages}` }
+				: { "User-Agent": USER_AGENT },
 			signal: AbortSignal.timeout(10_000),
 		});
 	} catch (cause) {

@@ -25,7 +25,7 @@ extension AppModel {
         case .suggestLess:
 
             learn(cur, .rejected)
-            log("suggest_less", song: cur.id); flash("You’ll hear less like this")
+            log("suggest_less", item: cur); flash("You’ll hear less like this")
             advance(.rejected)
             return
         }
@@ -45,7 +45,7 @@ extension AppModel {
 
     @discardableResult
     private func setFavorite(_ item: QueueItem, _ favorite: Bool, heard: Bool) -> Bool {
-        let changed = FavoriteAction.set(favorite, item: libraryItem(for: item), song: heard ? features(for: item) : nil,
+        let changed = FavoriteAction.set(favorite, item: libraryItem(for: item), song: heard ? features(for: item) : nil, encoder: encoder,
                                          library: &library, profile: &profile, gate: learningGate)
         guard changed else { return false }
         AppLog.info("library", "\(favorite ? "favorite" : "unfavorite") \(item.id)")
@@ -88,7 +88,7 @@ extension AppModel {
         profile = PersonalizedProfile()
         for item in library.favorites.reversed() {
             profile.setLiked(item.id, true)
-            profile.learn(songItem(for: .library(item)).song, signal: .favorite, gate: LearningGate())
+            profile.learn(songItem(for: .library(item)).song, signal: .favorite, encoder: encoder, gate: LearningGate())
         }
         invalidateRanking()
         log("profile_reset")

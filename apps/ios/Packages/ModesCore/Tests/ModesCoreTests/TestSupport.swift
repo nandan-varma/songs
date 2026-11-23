@@ -12,3 +12,19 @@ struct SeededGenerator: RandomNumberGenerator {
         return z ^ (z >> 31)
     }
 }
+
+enum TestEncoder {
+    static let directory = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appendingPathComponent("Modes/Resources")
+
+    static let item: ItemEncoder = {
+        do {
+            return try ItemEncoder(table: Data(contentsOf: directory.appendingPathComponent("table_fp16.bin")),
+                                   vocabulary: Data(contentsOf: directory.appendingPathComponent("vocab.json")))
+        } catch { fatalError("encoder resources missing: \(error)") }
+    }()
+
+    static let encoder = SongEncoder(item: item)
+}

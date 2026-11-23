@@ -134,7 +134,7 @@ extension SaavnAPI.SongPayload {
             label: label ?? "", language: language ?? "", year: Int(year ?? "") ?? 0,
             artistIDs: (artists?.all ?? []).compactMap(\.id), duration: length,
             playCount: playCount ?? 0, explicit: explicitContent ?? false, image: artwork)
-        return SaavnAPI.Hit(song: song, resolved: Resolved(id: id, url: stream, image: artwork, duration: length, hasLyrics: hasLyrics ?? false))
+        return SaavnAPI.Hit(song: song, resolved: Resolved(id: id, url: stream, image: artwork, duration: length, hasLyrics: hasLyrics ?? false, bitrate: rate))
     }
 
     private var artistLine: String {

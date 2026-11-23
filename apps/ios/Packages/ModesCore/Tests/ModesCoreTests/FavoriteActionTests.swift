@@ -14,19 +14,19 @@ struct FavoriteActionTests {
     @Test func favoriteUpdatesLibraryAndLikedAndLearns() {
         var library = LibraryState()
         var profile = PersonalizedProfile()
-        let changed = FavoriteAction.set(true, item: item(), song: song(), library: &library, profile: &profile)
+        let changed = FavoriteAction.set(true, item: item(), song: song(), encoder: TestEncoder.encoder, library: &library, profile: &profile)
         #expect(changed)
         #expect(library.isFavorite(item().id))
         #expect(profile.liked == ["song"])
         #expect(profile.learner.observations == 1)
-        #expect(!FavoriteAction.set(true, item: item(), song: song(), library: &library, profile: &profile))
+        #expect(!FavoriteAction.set(true, item: item(), song: song(), encoder: TestEncoder.encoder, library: &library, profile: &profile))
     }
 
     @Test func unfavoriteRemovesBoth() {
         var library = LibraryState()
         var profile = PersonalizedProfile()
-        FavoriteAction.set(true, item: item(), song: song(), library: &library, profile: &profile)
-        #expect(FavoriteAction.set(false, item: item(), song: nil, library: &library, profile: &profile))
+        FavoriteAction.set(true, item: item(), song: song(), encoder: TestEncoder.encoder, library: &library, profile: &profile)
+        #expect(FavoriteAction.set(false, item: item(), song: nil, encoder: TestEncoder.encoder, library: &library, profile: &profile))
         #expect(!library.isFavorite(item().id))
         #expect(profile.liked.isEmpty)
     }
@@ -34,7 +34,7 @@ struct FavoriteActionTests {
     @Test func listFavoriteWithoutPlaybackDoesNotTrainTheModel() {
         var library = LibraryState()
         var profile = PersonalizedProfile()
-        FavoriteAction.set(true, item: item(), song: nil, library: &library, profile: &profile)
+        FavoriteAction.set(true, item: item(), song: nil, encoder: TestEncoder.encoder, library: &library, profile: &profile)
         #expect(library.isFavorite(item().id))
         #expect(profile.liked == ["song"])
         #expect(profile.learner.observations == 0)
@@ -43,7 +43,7 @@ struct FavoriteActionTests {
     @Test func pausedFavoriteUpdatesCollectionsButNotWeights() {
         var library = LibraryState()
         var profile = PersonalizedProfile()
-        FavoriteAction.set(true, item: item(), song: song(), library: &library,
+        FavoriteAction.set(true, item: item(), song: song(), encoder: TestEncoder.encoder, library: &library,
                            profile: &profile, gate: LearningGate(paused: true))
         #expect(library.isFavorite(item().id))
         #expect(profile.liked == ["song"])

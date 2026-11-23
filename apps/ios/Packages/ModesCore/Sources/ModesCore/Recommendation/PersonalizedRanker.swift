@@ -4,15 +4,27 @@ public struct RankedCandidate: Sendable {
     public let song: SongFeatures
     public let features: SparseFeatures
     public let source: String
+    public let suggestionRanks: [Int]
 
-    public init(song: SongFeatures, source: String) {
+    public init(song: SongFeatures, source: String, suggestionRanks: [Int] = [], encoder: SongEncoder) {
         self.song = song
-        self.features = FeatureHasher.vector(for: song)
+        self.features = encoder.features(for: song)
         self.source = source
+        self.suggestionRanks = suggestionRanks
     }
 
-    public init(song: SongFeatures, features: SparseFeatures, source: String) {
-        self.song = song; self.features = features; self.source = source
+    public init(song: SongFeatures, features: SparseFeatures, source: String, suggestionRanks: [Int] = []) {
+        self.song = song; self.features = features; self.source = source; self.suggestionRanks = suggestionRanks
+    }
+}
+
+public enum SuggestionPrior {
+    public static let weight: Float = 0.15
+    public static let cap: Float = 0.5
+
+    public static func bonus(ranks: [Int]) -> Float {
+        let total = ranks.reduce(Float(0)) { $0 + 1 / (1 + Float(max(0, $1)) / 5) }
+        return min(cap, weight * total)
     }
 }
 
@@ -52,6 +64,7 @@ public enum PersonalizedRanker {
             guard !banned.contains(song.id), !recent.contains(song.id), !options.excluded.contains(song.id) else { continue }
             if !options.languages.isEmpty, !options.languages.contains(song.language.lowercased()) { continue }
             let score = profile.learner.sampleScore(candidate.features, temperature: options.explore, using: &generator)
+                + SuggestionPrior.bonus(ranks: candidate.suggestionRanks)
             scored.append((candidate, score, position))
         }
         scored.sort { $0.score == $1.score ? $0.position < $1.position : $0.score > $1.score }

@@ -49,6 +49,8 @@ struct EventRecord: Codable {
     var song: String?
     var frac: Double?
     var note: String?
+    var source: String?
+    var model: String?
 }
 
 typealias LibraryItem = ModesCore.LibraryItem

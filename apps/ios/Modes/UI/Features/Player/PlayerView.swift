@@ -23,7 +23,7 @@ struct PlayerView: View {
         GeometryReader { geo in
             Group {
                 if typeSize.isAccessibilitySize {
-                    ScrollView { column(side: geo.size.width * 0.64, gap: 18, top: 8) }
+                    ScrollView { column(side: geo.size.width * PlayerLayout.artWidth, gap: 18, top: 8) }
                         .scrollBounceBehavior(.basedOnSize)
                 } else {
                     proportional(geo)
@@ -53,35 +53,28 @@ struct PlayerView: View {
         }
     }()
 
-    private enum Slot {
-        static let artwork = 0.3155
-        static let title = 0.586
-        static let progress = 0.679
-        static let transport = 0.773
-        static let volume = 0.877
-        static let bottom = 0.938
-        static let artworkHeight = 0.299
-    }
-
     private func proportional(_ geo: GeometryProxy) -> some View {
         let item = model.current
         let inset = geo.safeAreaInsets
         let screen = geo.size.height + inset.top + inset.bottom
-        let width = geo.size.width - 48
-        let side = min(geo.size.width * 0.64, screen * Slot.artworkHeight)
-        func place<Content: View>(_ slot: Double, @ViewBuilder _ content: () -> Content) -> some View {
-            content().frame(width: width).position(x: geo.size.width / 2, y: slot * screen - inset.top)
+        let w = geo.size.width
+        let artHeight = (PlayerLayout.artBottom - PlayerLayout.artTop) * screen
+        let side = min(w * PlayerLayout.artWidth, artHeight)
+        let content = w * (1 - 2 * PlayerLayout.margin)
+        let titleWidth = w * (PlayerLayout.ellipsisCenter - PlayerLayout.margin) + PlayerLayout.buttonSize / 2
+        func place<Content: View>(_ center: Double, x: Double = 0.5, width: CGFloat, @ViewBuilder _ view: () -> Content) -> some View {
+            view().frame(width: width).position(x: w * x, y: center * screen - inset.top)
         }
         return ZStack(alignment: .topLeading) {
             SleepTimerBadge().frame(maxWidth: .infinity)
-            artworkStage(item, side: side).frame(width: geo.size.width).position(x: geo.size.width / 2, y: Slot.artwork * screen - inset.top)
-            place(Slot.title) { titleRow(item) }
-            place(Slot.progress) { PlayerScrubber() }
-            place(Slot.transport) { transport }
-            place(Slot.volume) { volume }
-            place(Slot.bottom) { bottomRow }
+            place((PlayerLayout.artTop + PlayerLayout.artBottom) / 2, width: w) { artworkStage(item, side: side) }
+            place(PlayerLayout.titleCenter, x: PlayerLayout.margin + titleWidth / 2 / w, width: titleWidth) { titleRow(item) }
+            place(PlayerLayout.progressCenter, width: content) { PlayerScrubber() }
+            place(PlayerLayout.transportCenter, width: w) { transport(width: w) }
+            place(PlayerLayout.volumeCenter, width: w) { volume(width: w) }
+            place(PlayerLayout.bottomCenter, width: w) { bottomRow(width: w) }
         }
-        .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+        .frame(width: w, height: geo.size.height, alignment: .topLeading)
     }
 
     private func column(side: CGFloat, gap: CGFloat, top: CGFloat) -> some View {
@@ -91,9 +84,9 @@ struct PlayerView: View {
             artworkStage(item, side: side).padding(.top, top)
             titleRow(item).padding(.top, gap * 1.5)
             PlayerScrubber().padding(.top, gap)
-            transport.padding(.top, gap * 0.6)
-            volume.padding(.top, gap * 0.6)
-            bottomRow.padding(.top, gap * 0.6)
+            transport(width: UIScreen.main.bounds.width).padding(.top, gap * 0.6)
+            volume(width: UIScreen.main.bounds.width).padding(.top, gap * 0.6)
+            bottomRow(width: UIScreen.main.bounds.width).padding(.top, gap * 0.6)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 24)
@@ -113,7 +106,7 @@ struct PlayerView: View {
         }
         .frame(width: side, height: side)
         .popupTransitionTarget()
-        .scaleEffect(model.isPlaying || reduceMotion ? 1 : 0.8)
+        .scaleEffect(model.isPlaying || reduceMotion ? 1 : PlayerLayout.pausedScale)
         .overlay(alignment: .bottom) { if showHint { swipeHint.padding(.bottom, 10).transition(.opacity) } }
         .frame(maxWidth: .infinity)
         .animation(reduceMotion ? nil : .spring(duration: 0.5, bounce: 0.25), value: model.isPlaying)
@@ -159,10 +152,10 @@ struct PlayerView: View {
         let fav = model.isFavorite(item)
         let shown = item.map { model.display($0) }
         return HStack(alignment: .center, spacing: 4) {
-            VStack(alignment: .leading, spacing: 2) {
-                MarqueeText(text: shown?.title ?? "Finding something for you…", isActive: model.isPlaying)
+            VStack(alignment: .leading, spacing: 0) {
+                MarqueeText(text: shown?.title ?? "Finding something for you…", isActive: model.isPlaying, verticalPadding: 0)
                     .font(.title2.weight(.semibold))
-                MarqueeText(text: shown?.artist ?? " ", isActive: model.isPlaying)
+                MarqueeText(text: shown?.artist ?? " ", isActive: model.isPlaying, verticalPadding: 0)
                     .font(.title3).foregroundStyle(.playerSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -172,7 +165,7 @@ struct PlayerView: View {
             .accessibilityElement(children: .combine)
 
             Button { favorite() } label: {
-                Image(systemName: fav ? "star.fill" : "star").font(.title3).frame(width: 44, height: 44)
+                Image(systemName: fav ? "star.fill" : "star").font(.title3).frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize)
             }
             .buttonStyle(PressableStyle())
             .accessibilityLabel("Favorite")
@@ -183,45 +176,51 @@ struct PlayerView: View {
             Menu {
                 PlayerMenuItems(item: item) { feedbackTick += 1 }
             } label: {
-                Image(systemName: "ellipsis").font(.title3).frame(width: 44, height: 44)
+                Image(systemName: "ellipsis").font(.title3).frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize)
             }
             .accessibilityLabel("More")
         }
     }
 
-    private var transport: some View {
-        HStack(spacing: 0) {
-            Spacer()
+    private func transport(width: CGFloat) -> some View {
+        let cell = width * PlayerLayout.transportSpread
+        return HStack(spacing: 0) {
             Button("Previous", systemImage: "backward.fill") { model.previous() }
-                .font(.system(size: sideIcon)).frame(minWidth: 56, minHeight: 56)
-            Spacer()
+                .font(.system(size: sideIcon)).frame(width: cell, height: 56)
             Button(model.isPlaying ? "Pause" : "Play", systemImage: model.isPlaying ? "pause.fill" : "play.fill") { model.togglePlay() }
-                .font(.system(size: playIcon)).frame(minWidth: 72, minHeight: 72)
+                .font(.system(size: playIcon)).frame(width: cell, height: 72)
                 .contentTransition(reduceMotion ? .identity : .symbolEffect(.replace.downUp))
-            Spacer()
             Button("Next", systemImage: "forward.fill") { model.skip() }
-                .font(.system(size: sideIcon)).frame(minWidth: 56, minHeight: 56)
-            Spacer()
+                .font(.system(size: sideIcon)).frame(width: cell, height: 56)
         }
         .labelStyle(.iconOnly).buttonStyle(PressableStyle())
         .haptic(.impact(weight: .light), trigger: model.isPlaying)
     }
 
-    private var volume: some View {
-        HStack(spacing: 12) {
+    private func volume(width: CGFloat) -> some View {
+        let bar = PlayerLayout.volumeBar
+        return ZStack(alignment: .topLeading) {
             Image(systemName: "speaker.fill").font(.footnote).foregroundStyle(.playerSecondary)
-            SystemVolumeSlider().frame(height: 28)
+                .position(x: width * PlayerLayout.volumeIconCenters.low, y: 14)
+            SystemVolumeSlider().frame(width: width * (bar.upperBound - bar.lowerBound), height: 28)
+                .position(x: width * (bar.lowerBound + bar.upperBound) / 2, y: 14)
             Image(systemName: "speaker.wave.3.fill").font(.footnote).foregroundStyle(.playerSecondary)
+                .position(x: width * PlayerLayout.volumeIconCenters.high, y: 14)
         }
+        .frame(width: width, height: 28)
         .accessibilityElement(children: .contain)
         .dimmedByReveal(reveal)
     }
 
-    private var bottomRow: some View {
-        HStack {
+    private func bottomRow(width: CGFloat) -> some View {
+        let cell = width * PlayerLayout.bottomSpread
+        return HStack(spacing: 0) {
             rowButton("Lyrics", "quote.bubble", active: showLyrics, enabled: model.currentHasLyrics) { showLyrics = true }
-            AirPlayButton().frame(width: 44, height: 44).frame(maxWidth: .infinity).accessibilityLabel("AirPlay")
+                .frame(width: cell)
+            AirPlayButton().frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize).frame(width: cell)
+                .accessibilityLabel("AirPlay")
             rowButton("Up next", "list.bullet", active: showQueue, enabled: true) { showQueue = true }
+                .frame(width: cell)
         }
         .dimmedByReveal(reveal)
     }
@@ -229,10 +228,9 @@ struct PlayerView: View {
     private func rowButton(_ title: String, _ icon: String, active: Bool, enabled: Bool,
                            _ action: @escaping () -> Void) -> some View {
         Button { feedbackTick += 1; action() } label: {
-            Image(systemName: icon).font(.system(size: rowIcon)).frame(width: 44, height: 44)
+            Image(systemName: icon).font(.system(size: rowIcon)).frame(width: PlayerLayout.buttonSize, height: PlayerLayout.buttonSize)
         }
         .buttonStyle(PressableStyle())
-        .frame(maxWidth: .infinity)
         .foregroundStyle(active ? Color.white : .playerSecondary)
         .opacity(enabled ? 1 : 0.35)
         .disabled(!enabled)
@@ -260,19 +258,25 @@ private struct CoverTile: View {
 
 private struct PlayerBackground: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let reveal: SwipeReveal
 
+    private static let points: [SIMD2<Float>] = [
+        [0, 0], [0.5, 0], [1, 0], [0, 0.5], [0.5, 0.5], [1, 0.5], [0, 1], [0.5, 1], [1, 1],
+    ]
+
     var body: some View {
-        let tint = model.settings.tintedPlayer ? (model.artTint.map { UIImage.playerTint(from: $0) } ?? Color(white: 0.2)) : Color(white: 0.12)
+        let palette = model.settings.tintedPlayer && model.artPalette.count == 9
+            ? model.artPalette.map { UIImage.playerTint(from: $0) }
+            : Array(repeating: Color(white: 0.12), count: 9)
         ZStack {
-            LinearGradient(colors: [tint, tint.opacity(0.78), Color.black.opacity(0.55)], startPoint: .top, endPoint: .bottom)
-                .background(tint)
+            MeshGradient(width: 3, height: 3, points: Self.points, colors: palette)
             SwipeBackdrop(reveal: reveal)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
         .ignoresSafeArea()
-        .animation(.easeInOut(duration: 0.4), value: model.artTint)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.4), value: model.artPalette)
     }
 }
 
@@ -283,13 +287,13 @@ private struct PlayerScrubber: View {
     var body: some View {
         let duration = model.duration
         let frac = scrubbing ?? (duration > 0 ? min(1, model.progress / duration) : 0)
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             GeometryReader { g in
                 ZStack(alignment: .leading) {
                     Capsule().fill(.white.opacity(0.25))
-                    Capsule().fill(.white.opacity(0.7)).frame(width: max(5, g.size.width * frac))
+                    Capsule().fill(.white.opacity(0.7)).frame(width: max(PlayerLayout.barThickness, g.size.width * frac))
                 }
-                .frame(height: scrubbing == nil ? 5 : 9).frame(maxHeight: .infinity)
+                .frame(height: scrubbing == nil ? PlayerLayout.barThickness : PlayerLayout.barThickness + 4).frame(maxHeight: .infinity)
                 .contentShape(.rect)
                 .gesture(DragGesture(minimumDistance: 0)
                     .onChanged { scrubbing = min(1, max(0, $0.location.x / g.size.width)) }
@@ -299,6 +303,11 @@ private struct PlayerScrubber: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(Self.clock(frac * duration)).monospacedDigit().frame(minWidth: 44, alignment: .leading)
                 Spacer(minLength: 6)
+                if let rate = model.currentBitrate {
+                    Text("\(rate) kbps").font(.caption2.weight(.semibold)).padding(.horizontal, 8).padding(.vertical, 2)
+                        .background(.white.opacity(0.12), in: .capsule)
+                    Spacer(minLength: 6)
+                }
                 Text("−" + Self.clock(max(0, duration - frac * duration))).monospacedDigit().frame(minWidth: 44, alignment: .trailing)
             }
             .font(.playerMeta).foregroundStyle(.playerSecondary)

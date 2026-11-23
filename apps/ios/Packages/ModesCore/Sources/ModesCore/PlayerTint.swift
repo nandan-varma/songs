@@ -8,10 +8,12 @@ public struct TintComponents: Equatable, Sendable {
 
 public enum PlayerTint {
     public static let maximumLuminance = 0.18
+    public static let saturationScale = 0.65
+    public static let brightnessRange = 0.22...0.40
 
     public static func calm(hue: Double, saturation: Double, brightness: Double) -> TintComponents {
-        let tinted = saturation < 0.1 ? saturation : min(max(saturation, 0.35), 0.7)
-        var result = TintComponents(hue: hue, saturation: tinted, brightness: min(max(brightness, 0.35), 0.62))
+        var result = TintComponents(hue: hue, saturation: saturation * saturationScale,
+                                    brightness: min(max(brightness, brightnessRange.lowerBound), brightnessRange.upperBound))
         while luminance(result) > maximumLuminance, result.brightness > 0.1 { result.brightness -= 0.02 }
         return result
     }

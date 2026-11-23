@@ -1,7 +1,7 @@
 import Foundation
 
 public struct SparseLearner: Codable, Sendable {
-    public static let dimension = FeatureHasher.dimension
+    public static let dimension = FeatureHasher.dimension + ItemEncoder.dimension
 
     public private(set) var prior: Float
     public private(set) var precision: [Float]
@@ -71,7 +71,7 @@ public struct SparseLearner: Codable, Sendable {
 
     public func explanation(for features: SparseFeatures) -> String? {
         var best: (contribution: Float, label: String)?
-        for position in features.indices.indices {
+        for position in features.indices.indices where Int(features.indices[position]) < FeatureHasher.dimension {
             let featureIndex = Int(features.indices[position])
             let value = features.values[position]
             let contribution = information[featureIndex] / precision[featureIndex] * value

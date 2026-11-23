@@ -7,6 +7,7 @@ struct Resolved: Sendable {
     let image: URL?
     let duration: Double
     let hasLyrics: Bool
+    let bitrate: Int?
 }
 
 struct Delivery: Hashable, Sendable {

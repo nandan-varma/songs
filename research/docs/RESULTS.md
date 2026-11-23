@@ -176,3 +176,20 @@ Audio (E) adds about +0.05 more on the audio subset but needs a clip per candida
 use needs a licence from MTG-UPF), so treat it as a later experiment. Forgetting did not help in the simulation.
 Not verified: real listening behaviour, English, drift recovery, the audio student's fidelity to the teacher, on-phone latency, and whether the
 quality holds for songs outside the crawled playlists (training data is 1.2 k playlists; more playlists should help the encoder).
+
+### Round 2 addendum: runtime-faithful tokenisation (supersedes the Round 2 table)
+
+The first Round 2 run tokenised crawled songs with all credited artists, a composer field, a comma-only primary artist and an ASCII-only
+word splitter. The app (`SongFeatures`, `Payloads.swift`) uses only the first 2 primary artists joined by ", " (split again on "," and "&"),
+never sets a composer, takes the `x|` primary from the first split name, and splits title words on non-letter/mark/number characters with a
+grapheme-count of at least 2. Everything was re-run with the app's exact rules (`rdata.tokens_from_fields`; `verify_tokens/main.swift` checks
+30 golden songs against the real `SongFeatures` with 0 mismatches). Strict nDCG@20, paired difference vs A:
+
+| Setting | A | A + D | gain |
+|---|---|---|---|
+| Cold songs (n 604) | 0.216 ± 0.011 | 0.265 ± 0.011 | +0.049 ± 0.007 |
+| Cold artists (n 575) | 0.247 ± 0.011 | 0.268 ± 0.012 | +0.022 ± 0.007 |
+| Warm pool (n 786) | 0.146 ± 0.007 | 0.213 ± 0.008 | +0.067 ± 0.005 |
+
+D alone: 0.202 (cold song), 0.191 (warm, +0.045 ± 0.008). Runtime co-occurrence C still adds nothing on top of A + D (0.212). Conclusions unchanged.
+Thompson 0.04 costs -0.009 ± 0.005. Shipped export: 17,022 tokens (album tokens included, no composer tokens), 2.18 MB fp16 table, 0.31 MB vocab.

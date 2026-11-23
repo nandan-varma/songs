@@ -15,7 +15,7 @@ extension AppModel {
         let after = queueItems(after: item, in: context)
         listenerQueue.replacePins(with: after)
         upNext = after
-        log("picked", song: item.id)
+        log("picked", item: item)
         Task { await start(item, picked: true) }
     }
 

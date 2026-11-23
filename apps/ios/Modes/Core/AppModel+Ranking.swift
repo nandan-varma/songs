@@ -29,7 +29,7 @@ extension AppModel {
             guard !unplayable.contains(song.id), seen.insert(song.id).inserted else { return nil }
             knownSongs[song.id] = song
             resolved[song.id] = candidate.hit.resolved
-            return RankedCandidate(song: song, source: candidate.source)
+            return RankedCandidate(song: song, source: candidate.source, suggestionRanks: candidate.ranks, encoder: encoder)
         }
         pool = merged
         poolAt = batch.failed ? .distantPast : .now
@@ -37,7 +37,7 @@ extension AppModel {
         return merged
     }
 
-    private func queueItem(_ ranked: RankedSong) -> QueueItem { QueueItem(song: ranked.song, why: ranked.why) }
+    private func queueItem(_ ranked: RankedSong) -> QueueItem { QueueItem(song: ranked.song, why: ranked.why, source: ranked.source) }
 
     func loadHomeSlate() async {
         guard homeCachedTaste != tasteRevision else { return }
@@ -45,7 +45,7 @@ extension AppModel {
         let taste = tasteRevision
         homeTask?.cancel()
         let candidates = await candidates()
-        let explore: Float = profile.learner.observations == 0 ? 0 : 0.04
+        let explore: Float = profile.learner.observations == 0 ? 0 : 0.02
         let options = RankOptions(count: 20, excluded: unplayable, languages: Set(settings.languages), explore: explore)
         let request = PersonalizedRankingRequest(revision: revision, queueRevision: nil, profile: profile,
                                                  candidates: candidates, options: options)
@@ -57,7 +57,9 @@ extension AppModel {
             self.homeCachedTaste = taste
             self.homeSlate = result.items.map { self.queueItem($0) }
             self.homeReasons = result.items.map(\.why)
-            AppLog.info("ranking", "home slate \(result.items.count) from \(candidates.count) candidates")
+            let perSource = Dictionary(grouping: result.items, by: \.source).mapValues(\.count)
+            AppLog.info("ranking", "slate", ["trending": perSource["trending"] ?? 0, "similar": perSource["similar"] ?? 0,
+                                              "candidates": candidates.count])
             self.homeReady = true
             for item in self.homeSlate { self.warmArt(for: item) }
         }

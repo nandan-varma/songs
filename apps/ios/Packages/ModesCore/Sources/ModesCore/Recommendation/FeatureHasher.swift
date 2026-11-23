@@ -37,23 +37,7 @@ public enum FeatureHasher {
             }
         }
 
-        for artist in song.artistNames { add("a|" + artist, 0.50) }
-        for composer in song.composer.split(separator: ",") {
-            let name = composer.trimmingCharacters(in: .whitespaces).lowercased()
-            if !name.isEmpty { add("m|" + name, 0.25) }
-        }
-        if !song.album.isEmpty { add("al|" + song.album.lowercased(), 1.0) }
-        if !song.label.isEmpty { add("lb|" + song.label.lowercased(), 0.50) }
-        if !song.language.isEmpty { add("lg|" + song.language.lowercased(), 0.50) }
-        if song.year > 0 {
-            add("y|\(song.year)", 0.25)
-            add("d|\(song.year / 5 * 5)", 0.50)
-        }
-        if let primary = song.artistNames.first, !song.language.isEmpty {
-            add("x|\(primary)|\(song.language.lowercased())", 0.50)
-        }
-        for word in song.titleWords { add("w|" + word, 0.50) }
-        if song.explicit { add("e|explicit", 0.10) }
+        for (token, weight) in song.tokens { add(token, weight) }
 
         let total = values.values.reduce(Float(0)) { $0 + $1 * $1 }
         let scale = total > 0 ? 1 / total.squareRoot() : 1

@@ -29,17 +29,18 @@ final class AppModel {
     var history: [QueueItem] = []
     var currentArt: UIImage? {
         didSet {
-            artTint = currentArt?.averageColor
+            artPalette = currentArt?.gridColors() ?? []
             if let currentArt, current != nil { nowPlaying.setArtwork(currentArt) }
         }
     }
 
-    var artTint: UIColor?
+    var artPalette: [UIColor] = []
     var isPlaying = false
     var progress = 0.0
     var duration = 0.0
     var loading = false
     var currentHasLyrics = false
+    var currentBitrate: Int?
 
     var hasSession = false
 
@@ -68,6 +69,7 @@ final class AppModel {
     @ObservationIgnored let undoStack = UndoStack()
     @ObservationIgnored let ranking = RankingWorker()
     @ObservationIgnored let network = NetworkMonitor()
+    @ObservationIgnored let encoder = SongEncoder.bundled()
     @ObservationIgnored var lastSong: SongFeatures?
     @ObservationIgnored var playback = PlaybackLedger()
     @ObservationIgnored var listenerQueue = ListenerQueue()

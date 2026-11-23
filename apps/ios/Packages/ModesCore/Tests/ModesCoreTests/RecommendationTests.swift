@@ -27,15 +27,15 @@ struct RecommendationTests {
         let similar = song("2", title: "Love Story 2", artist: "Arijit Singh")
         let unrelated = song("3", title: "Heavy Metal", artist: "Someone Else")
 
-        profile.learn(seed, signal: .picked)
-        let seedScore = profile.learner.mean(FeatureHasher.vector(for: seed))
-        let similarScore = profile.learner.mean(FeatureHasher.vector(for: similar))
-        let unrelatedScore = profile.learner.mean(FeatureHasher.vector(for: unrelated))
+        profile.learn(seed, signal: .picked, encoder: TestEncoder.encoder)
+        let seedScore = profile.learner.mean(TestEncoder.encoder.features(for: seed))
+        let similarScore = profile.learner.mean(TestEncoder.encoder.features(for: similar))
+        let unrelatedScore = profile.learner.mean(TestEncoder.encoder.features(for: unrelated))
         #expect(seedScore > 0)
         #expect(similarScore > unrelatedScore)
 
-        profile.learn(unrelated, signal: .rejected)
-        #expect(profile.learner.mean(FeatureHasher.vector(for: unrelated)) < 0)
+        profile.learn(unrelated, signal: .rejected, encoder: TestEncoder.encoder)
+        #expect(profile.learner.mean(TestEncoder.encoder.features(for: unrelated)) < 0)
         #expect(profile.banned == ["3"])
     }
 
@@ -43,21 +43,21 @@ struct RecommendationTests {
         var profile = PersonalizedProfile()
         let paused = LearningGate(paused: true)
         let target = song("1")
-        profile.learn(target, signal: .favorite, gate: paused)
+        profile.learn(target, signal: .favorite, encoder: TestEncoder.encoder, gate: paused)
         #expect(profile.learner.observations == 0)
         #expect(profile.liked == ["1"])
-        profile.learn(target, signal: .rejected, gate: paused)
+        profile.learn(target, signal: .rejected, encoder: TestEncoder.encoder, gate: paused)
         #expect(profile.learner.observations == 0)
         #expect(profile.banned == ["1"])
     }
 
     @Test func unheardSkipsDoNotTrain() {
         var profile = PersonalizedProfile()
-        profile.learn(song("1"), signal: .skipped(fraction: 0, heard: false))
+        profile.learn(song("1"), signal: .skipped(fraction: 0, heard: false), encoder: TestEncoder.encoder)
         #expect(profile.learner.observations == 0)
-        profile.learn(song("1"), signal: .skipped(fraction: 0, heard: true))
+        profile.learn(song("1"), signal: .skipped(fraction: 0, heard: true), encoder: TestEncoder.encoder)
         #expect(profile.learner.observations == 1)
-        #expect(profile.learner.mean(FeatureHasher.vector(for: song("1"))) < 0)
+        #expect(profile.learner.mean(TestEncoder.encoder.features(for: song("1"))) < 0)
     }
 
     @Test func rankingFiltersExclusionsRecentAndLanguages() {
@@ -65,10 +65,10 @@ struct RecommendationTests {
         profile.banned = ["banned"]
         profile.recent = ["recent"]
         let candidates = [
-            RankedCandidate(song: song("keep", artist: "A"), source: "trending"),
-            RankedCandidate(song: song("banned", artist: "B"), source: "trending"),
-            RankedCandidate(song: song("recent", artist: "C"), source: "trending"),
-            RankedCandidate(song: song("english", artist: "D", language: "english"), source: "search")
+            RankedCandidate(song: song("keep", artist: "A"), source: "trending", encoder: TestEncoder.encoder),
+            RankedCandidate(song: song("banned", artist: "B"), source: "trending", encoder: TestEncoder.encoder),
+            RankedCandidate(song: song("recent", artist: "C"), source: "trending", encoder: TestEncoder.encoder),
+            RankedCandidate(song: song("english", artist: "D", language: "english"), source: "search", encoder: TestEncoder.encoder)
         ]
         var generator = SeededGenerator(seed: 1)
         let ranked = PersonalizedRanker.rank(candidates, profile: profile,
@@ -79,7 +79,7 @@ struct RecommendationTests {
 
     @Test func rankingKeepsArtistsApartAndCapsRepeats() {
         let candidates = (0..<4).map { index in
-            RankedCandidate(song: song("\(index)", artist: "Same Artist", album: "Same Album"), source: "test")
+            RankedCandidate(song: song("\(index)", artist: "Same Artist", album: "Same Album"), source: "test", encoder: TestEncoder.encoder)
         }
         var generator = SeededGenerator(seed: 2)
         let ranked = PersonalizedRanker.rank(candidates, profile: PersonalizedProfile(),
@@ -89,7 +89,7 @@ struct RecommendationTests {
 
     @Test func zeroExplorationIsDeterministic() {
         let candidates = (0..<8).map { index in
-            RankedCandidate(song: song("\(index)", artist: "Artist \(index)", album: "Album \(index)"), source: "test")
+            RankedCandidate(song: song("\(index)", artist: "Artist \(index)", album: "Album \(index)"), source: "test", encoder: TestEncoder.encoder)
         }
         var first = SeededGenerator(seed: 1), second = SeededGenerator(seed: 2)
         let firstRank = PersonalizedRanker.rank(candidates, profile: PersonalizedProfile(), options: RankOptions(count: 5), using: &first)
@@ -100,21 +100,21 @@ struct RecommendationTests {
     @Test func explanationUsesALearnedToken() {
         var profile = PersonalizedProfile()
         let target = song("1", title: "Love Story", artist: "Arijit Singh")
-        profile.learn(target, signal: .favorite)
-        let explanation = profile.learner.explanation(for: FeatureHasher.vector(for: target))
+        profile.learn(target, signal: .favorite, encoder: TestEncoder.encoder)
+        let explanation = profile.learner.explanation(for: TestEncoder.encoder.features(for: target))
         #expect(explanation != nil)
         #expect(explanation?.isEmpty == false)
     }
 
     @Test func profileAndLearnerRoundTrip() throws {
         var profile = PersonalizedProfile()
-        profile.learn(song("1"), signal: .favorite)
+        profile.learn(song("1"), signal: .favorite, encoder: TestEncoder.encoder)
         profile.banned = ["2"]
         let data = try PropertyListEncoder().encode(profile)
         let decoded = try PropertyListDecoder().decode(PersonalizedProfile.self, from: data)
         #expect(decoded.learner.observations == 1)
         #expect(decoded.banned == ["2"])
-        #expect(decoded.learner.mean(FeatureHasher.vector(for: song("1"))) > 0)
+        #expect(decoded.learner.mean(TestEncoder.encoder.features(for: song("1"))) > 0)
     }
 }
 
@@ -133,7 +133,7 @@ struct PersonalizationContractTests {
 
     @Test func statsCountLearnedFeaturesAndEvidence() {
         var profile = PersonalizedProfile()
-        profile.learn(SongFeatures(id: "1", title: "A", artist: "X"), signal: .favorite)
+        profile.learn(SongFeatures(id: "1", title: "A", artist: "X"), signal: .favorite, encoder: TestEncoder.encoder)
         profile.banned = ["2"]
         let stats = PersonalizedStats(profile: profile)
         #expect(stats.observations == 1)

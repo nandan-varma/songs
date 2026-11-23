@@ -72,7 +72,7 @@ extension AppModel {
         hasSession = true
         removeItemObservers()
         player.pause(); player.replaceCurrentItem(with: nil)
-        loading = true; current = item; currentHasLyrics = false; progress = 0; duration = 0; currentArt = nil; isPlaying = false
+        loading = true; current = item; currentHasLyrics = false; currentBitrate = nil; progress = 0; duration = 0; currentArt = nil; isPlaying = false
         loadArt(for: item)
         nowPlaying.begin(.init(title: displayTitle(item), artist: displayArtist(item),
                                album: display(item).context ?? item.song.album), duration: 0)
@@ -104,6 +104,7 @@ extension AppModel {
         if picked { learn(item, .picked) }
         duration = audio.duration
         currentHasLyrics = audio.hasLyrics
+        currentBitrate = audio.bitrate
         recordRecent(item, resolved: audio)
         lastSong = features(for: item)
         AppLog.info("playback", "playing \(item.song.title) \(Int(audio.duration))s via \(audio.url.host ?? "?")")
@@ -158,11 +159,11 @@ extension AppModel {
         switch reason {
         case .completed:
             learn(cur, .completed)
-            log("completed", song: id, frac: 1)
+            log("completed", frac: 1, item: cur)
         case .skipped where heard:
             learn(cur, .skipped(fraction: frac, heard: true))
-            log("skipped", song: id, frac: frac)
-        case .skipped: log("skipped_unheard", song: id)
+            log("skipped", frac: frac, item: cur)
+        case .skipped: log("skipped_unheard", item: cur)
         case .rejected: break
         case .switched: log("switched_away", song: id, frac: frac)
         }
@@ -174,7 +175,7 @@ extension AppModel {
     }
 
     func learn(_ item: QueueItem, _ signal: PlaybackSignal) {
-        profile.learn(features(for: item), signal: signal, gate: learningGate)
+        profile.learn(features(for: item), signal: signal, encoder: encoder, gate: learningGate)
     }
 
     func setSleepTimer(_ timer: SleepTimer) { sleep.set(timer) }

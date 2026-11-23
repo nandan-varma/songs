@@ -4,6 +4,7 @@ struct MarqueeText: View {
     let text: String
 
     var isActive = true
+    var verticalPadding: CGFloat = 4
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
@@ -33,7 +34,7 @@ struct MarqueeText: View {
             .truncationMode(.tail)
             .opacity(scrolls ? 0 : 1)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)
+            .padding(.vertical, verticalPadding)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { containerWidth = $0 }
             .background(alignment: .leading) {
                 Text(text).fixedSize().opacity(0).accessibilityHidden(true)

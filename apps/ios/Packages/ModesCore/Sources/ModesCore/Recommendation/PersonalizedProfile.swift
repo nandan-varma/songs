@@ -18,8 +18,9 @@ public struct PersonalizedProfile: Codable, Sendable {
         learner = SparseLearner(prior: prior)
     }
 
-    public mutating func learn(_ song: SongFeatures, signal: PlaybackSignal, gate: LearningGate = LearningGate()) {
-        let features = FeatureHasher.vector(for: song)
+    public mutating func learn(_ song: SongFeatures, signal: PlaybackSignal, encoder: SongEncoder,
+                               gate: LearningGate = LearningGate()) {
+        let features = encoder.features(for: song)
         switch signal {
         case .completed:
             learn(features, target: 1, weight: 1, gate: gate, signal: .completion)
@@ -53,10 +54,6 @@ public struct PersonalizedProfile: Codable, Sendable {
                                 gate: LearningGate, signal: LearningSignal) {
         guard gate.allows(signal) else { return }
         learner.observe(features, target: target, weight: weight)
-    }
-
-    public func featureVector(for song: SongFeatures) -> SparseFeatures {
-        FeatureHasher.vector(for: song)
     }
 }
 

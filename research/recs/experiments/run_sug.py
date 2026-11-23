@@ -19,7 +19,7 @@ X = rlib.hashed(songs, allids)
 ix = {s: i for i, s in enumerate(allids)}
 lang = np.array([songs[s]['lang'] for s in allids])
 plays = np.array([songs[s]['plays'] for s in allids])
-anames = [set(rdata.artist_names(songs[s])) for s in allids]
+anames = [rdata.all_artist_names(songs[s]) for s in allids]
 print('extra songs', len(eids), 'seeds with sug', len(sug))
 
 def zs(x):

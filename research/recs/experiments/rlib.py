@@ -32,7 +32,7 @@ class World:
         self.lang = np.array([s['lang'] for s in S])
         self.year = np.array([s['year'] for s in S])
         self.prim = [rdata.primary(s) for s in S]
-        self.anames = [set(rdata.artist_names(s)) for s in S]
+        self.anames = [rdata.all_artist_names(s) for s in S]
         self.album = [s['album_id'] for s in S]
         self.X = hashed(self.songs, self.ids)
         self.P = [[self.ix[s] for s in p['songs']] for p in self.pls]

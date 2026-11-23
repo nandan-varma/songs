@@ -2,14 +2,14 @@ import Foundation
 
 public enum FavoriteAction {
     @discardableResult
-    public static func set(_ favorite: Bool, item: LibraryItem, song: SongFeatures?,
+    public static func set(_ favorite: Bool, item: LibraryItem, song: SongFeatures?, encoder: SongEncoder,
                            library: inout LibraryState, profile: inout PersonalizedProfile,
                            gate: LearningGate = LearningGate()) -> Bool {
         guard library.isFavorite(item.id) != favorite else { return false }
         if favorite {
             library.addFavorite(item)
             if let song {
-                profile.learn(song, signal: .favorite, gate: gate)
+                profile.learn(song, signal: .favorite, encoder: encoder, gate: gate)
             } else {
                 profile.setLiked(item.id, true)
             }

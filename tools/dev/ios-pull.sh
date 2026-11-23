@@ -10,7 +10,7 @@ Pulls into dev-out/pull/<timestamp>/ (and repoints dev-out/pull/latest):
   logs/            Documents/logs/** (JSON-lines logs + MetricKit diagnostics)
   events.jsonl     Documents/events.jsonl (listening events)
   shots/           Documents/shots/**           only with --shots
-  listener-v2.plist  Library/Application Support/listener-v2.plist   only with --state
+  listener-v*.plist  Library/Application Support/listener-v*.plist   only with --state
   crashes/         newest N (default 3) Modes crash logs (.ips) plus a readable .txt summary of each
 
 Env: DEVICE=<udid|name> overrides auto-detection of the paired iPhone.
@@ -48,7 +48,7 @@ for f in files:
     if f["resources"].get("isDirectory"): continue
     if p.startswith("Documents/logs/") or p == "Documents/events.jsonl" \
        or (shots and p.startswith("Documents/shots/")) \
-       or (state and p == "Library/Application Support/listener-v2.plist"):
+       or (state and p.startswith("Library/Application Support/listener-v") and p.endswith(".plist")):
         print(p)
 PY
 
@@ -66,7 +66,7 @@ while IFS= read -r rel; do
     Documents/logs/*) local_rel="logs/${rel#Documents/logs/}" ;;
     Documents/shots/*) local_rel="shots/${rel#Documents/shots/}" ;;
     Documents/events.jsonl) local_rel="events.jsonl" ;;
-    *listener-v2.plist) local_rel="listener-v2.plist" ;;
+    */listener-v*.plist) local_rel="${rel##*/}" ;;
     *) continue ;;
   esac
   copy_one "$rel" "$local_rel" &

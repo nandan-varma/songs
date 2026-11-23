@@ -26,9 +26,6 @@
 		"enabled": true,
 		"rules": {
 			"preset": "recommended",
-			"performance": {
-				"noImgElement": "off"
-			},
 			"correctness": {
 				"noUnusedFunctionParameters": "warn"
 			},
@@ -49,7 +46,7 @@
 				"noDangerouslySetInnerHtml": "warn"
 			},
 			"performance": {
-				"noImgElement": "warn"
+				"noImgElement": "off"
 			}
 		}
 	},

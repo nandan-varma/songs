@@ -1,13 +1,18 @@
-import Image from "next/image";
+import type { ImageLink } from "@/lib/models";
 import { cn } from "@/lib/utils";
 
 interface CoverProps {
-	src: string;
+	src: ImageLink[];
 	alt: string;
 	sizes: string;
 	className?: string;
 	priority?: boolean;
 }
+
+const srcSet = (links: ImageLink[]) =>
+	links
+		.map(({ quality, url }) => `${url} ${Number.parseInt(quality, 10)}w`)
+		.join(", ");
 
 export function Cover({ src, alt, sizes, className, priority }: CoverProps) {
 	return (
@@ -17,14 +22,15 @@ export function Cover({ src, alt, sizes, className, priority }: CoverProps) {
 				className,
 			)}
 		>
-			{src && (
-				<Image
-					src={src}
-					alt={alt}
-					fill
+			{src.length > 0 && (
+				<img
+					src={src.at(-1)?.url}
+					srcSet={srcSet(src)}
 					sizes={sizes}
-					priority={priority}
-					className="object-cover"
+					alt={alt}
+					loading={priority ? "eager" : "lazy"}
+					decoding="async"
+					className="absolute inset-0 size-full object-cover"
 				/>
 			)}
 		</div>

@@ -1,5 +1,5 @@
 import type { InferResponseType } from "hono/client";
-import type { Card, Track } from "@/lib/models";
+import type { Card, ImageLink, Track } from "@/lib/models";
 import type { api, Payload } from "./client";
 
 type Data<E extends { $get: (...args: never[]) => unknown }> = Payload<
@@ -31,7 +31,7 @@ export function toTrack(song: SongWire): Track | null {
 			song.album.id && song.album.name
 				? { id: song.album.id, name: song.album.name }
 				: null,
-		image: best(song.image),
+		image: song.image,
 		audioUrl,
 		duration: song.duration ?? 0,
 	};
@@ -48,7 +48,7 @@ export function toTracks(songs: SongWire[] | null | undefined): Track[] {
 export function albumCard(album: {
 	id: string;
 	name: string;
-	image: Link[];
+	image: ImageLink[];
 	artists: { primary: { name: string }[] };
 }): Card {
 	return {
@@ -56,14 +56,14 @@ export function albumCard(album: {
 		kind: "album",
 		title: album.name,
 		subtitle: joinNames(album.artists.primary),
-		image: best(album.image),
+		image: album.image,
 	};
 }
 
 export function playlistCard(playlist: {
 	id: string;
 	name: string;
-	image: Link[];
+	image: ImageLink[];
 	songCount: number | null;
 }): Card {
 	return {
@@ -71,19 +71,19 @@ export function playlistCard(playlist: {
 		kind: "playlist",
 		title: playlist.name,
 		subtitle: playlist.songCount ? `${playlist.songCount} songs` : undefined,
-		image: best(playlist.image),
+		image: playlist.image,
 	};
 }
 
 export function artistCard(artist: {
 	id: string;
 	name: string;
-	image: Link[];
+	image: ImageLink[];
 }): Card {
 	return {
 		id: artist.id,
 		kind: "artist",
 		title: artist.name,
-		image: best(artist.image),
+		image: artist.image,
 	};
 }

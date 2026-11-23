@@ -1,13 +1,13 @@
 import { Cover } from "@/components/cover";
 import { PlayButtons } from "@/components/play-buttons";
-import type { Track } from "@/lib/models";
+import type { ImageLink, Track } from "@/lib/models";
 import { cn } from "@/lib/utils";
 
 interface CollectionHeaderProps {
 	title: string;
 	subtitle?: string;
 	meta?: string;
-	image: string;
+	image: ImageLink[];
 	tracks: Track[];
 	round?: boolean;
 	children?: React.ReactNode;

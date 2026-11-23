@@ -103,3 +103,76 @@ rejection makes the weight negative.
 * LLM prompt expansion; exploration under taste drift; Hindi-specific audio model quality.
 * Licensing: Essentia models are AGPL, MuQ-MuLan weights CC-BY-NC, Yambda research-only — check before shipping commercially.
   JioSaavn's API is unofficial; bulk crawling and clip analysis may conflict with its terms.
+
+## Round 2: on-device model comparison
+
+Setup: 1,193 unique playlists (exact duplicates removed), 22,071 songs, 4 playlist folds (3 evaluated: n = 575-786 playlists with a
+valid target). 5 seed likes, nDCG@20 ± s.e. over playlists; strict removes candidates (and targets) sharing an artist or album with a seed.
+Cold items: 20 % of songs (or of primary artists) are removed from every training playlist and are the only candidates.
+Models see only metadata tokens; CF and the encoder are built without the evaluation playlists. Still playlists, not listening.
+Scripts: `research/recs/experiments/` (`run_cold.py`, `run_warm.py`, `run_sug.py`, `run_audio.py`, `sessions.py`, `cost_bench.swift`).
+
+| Model (5 seeds, strict nDCG@20) | cold song | cold artist | warm pool | audio subset, cold song |
+|---|---|---|---|---|
+| A greedy (current, no noise) | 0.228 ± 0.011 | 0.258 ± 0.012 | 0.154 ± 0.007 | 0.288 ± 0.013 |
+| A + Thompson 0.04 (shipped) | 0.217 ± 0.011 (-0.011 ± 0.005) | 0.232 ± 0.011 | - | - |
+| C: ItemKNN from ≤20 runtime playlists | n/a (cold items have no co-occurrence) | n/a | 0.130 ± 0.008 | - |
+| A + C (z-sum 1 : 0.5) | n/a | n/a | 0.202 ± 0.009 (+0.047 ± 0.008) | - |
+| D alone (64-d encoder, Rocchio) | 0.208 ± 0.010 | 0.204 ± 0.010 | 0.193 ± 0.008 (+0.038 ± 0.008) | 0.291 ± 0.013 |
+| **A + D (64 dense dims, scale 0.5, appended to the hashed vector)** | **0.272 ± 0.011 (+0.043 ± 0.007)** | 0.273 ± 0.012 (+0.015 ± 0.008) | 0.224 ± 0.008 (+0.070 ± 0.005) | 0.352 ± 0.014 (+0.064 ± 0.009) |
+| A + D + C | - | - | 0.215 ± 0.009 (no gain over A + D) | - |
+| E: A + D + 0.5 × audio (Discogs-EffNet PCA-64) | - | - | - | 0.398 ± 0.014 (+0.110 ± 0.011 vs A) |
+
+Loose (same-artist allowed) nDCG, cold song: A 0.367, A + D 0.389 ± 0.011. Differences in parentheses are paired vs A.
+Encoder hyperparameters (dim 32/64/128, steps, token dropout, MLP, temperature, different-artist pairs) moved A + D by less than 1 s.e.
+on the validation fold, so defaults were kept. Scale 0.25 / 0.5 / 1.0 gives 0.260 / 0.272 / 0.244; 0.5 was best.
+
+B (source signal), 612 playlists with real `/songs/{id}/suggestions` for 3 seeds + 200 popular songs in the seed language: a candidate that comes
+from a seed's suggestions is relevant 6.1 % of the time vs 1.1 % for the popular pool. As an additive prior on top of A, strict nDCG
+rises +0.008 ± 0.004 (β 0.1), +0.017 ± 0.006 (β 0.25, tuned on test, optimistic), then falls above β 0.5; used alone it is worse than A
+(-0.10 ± 0.02). Suggestions ranked by their own order are not a good ranker, but a small prior is a cheap gain.
+
+Per-language gap, cold song, strict, A → A + D (paired difference):
+Hindi 0.196 → +0.061 ± 0.020 (n 107); Telugu 0.183 → +0.033 ± 0.019 (75); Tamil 0.214 → +0.058 ± 0.023 (62);
+Punjabi 0.185 → +0.066 ± 0.016 (58); Kannada +0.044 ± 0.015; Bengali +0.051 ± 0.025; Marathi +0.057 ± 0.029; Malayalam +0.033 ± 0.033;
+Bhojpuri +0.042 ± 0.030; Gujarati +0.032 ± 0.029; Haryanvi -0.084 ± 0.040 (n 27, A is strong there because playlists are single-artist).
+Cold-artist: gains only in Bengali (+0.098 ± 0.026) and Marathi (+0.063 ± 0.027); Hindi +0.012, Punjabi +0.002 (no gain). English has 8
+playlists in the crawl and 189 songs, so it is **not measured**.
+
+Sessions (fold 0, 291 simulated listeners, 1 seed then 10 rounds of 5, language-filtered full pool, completion/favourite/skip/explicit
+reject with 12 % noise on likes and 5 % tolerated dislikes, same artist/album diversity rules as the app). Absolute rates are low because
+only the playlist's own ~30 songs count as hits among thousands:
+
+| Learner | mean hit rate, static taste | mean hit rate, taste switches to another playlist after round 5 |
+|---|---|---|
+| A greedy | 0.075 ± 0.007 | 0.053 ± 0.004 |
+| A current (Thompson 0.04) | 0.076 ± 0.006 (same as greedy) | 0.051 ± 0.004 |
+| A + forgetting 0.97 / 0.90 per event | 0.071 / 0.062 (worse) | 0.049 / 0.047 (worse) |
+| A + D (diag) | 0.086 ± 0.007 (+0.011 ± 0.005) | 0.056 ± 0.005 (+0.005 ± 0.004) |
+| A + D (sparse part + full 64×64 Bayesian head) | 0.090 ± 0.007 (+0.015 ± 0.006) | 0.058 ± 0.005 (+0.007 ± 0.004) |
+| A with 0.97 forgetting + D head | 0.090 ± 0.007 | 0.060 ± 0.005 (+0.009 ± 0.004) |
+
+No variant recovers after a taste switch (post-switch hit rate 0.01-0.02 for all); time-to-good-slate is censored and does not separate models.
+Artist diversity (distinct primary artists per slate item) is 0.74-0.83 for all. Thompson noise at 0.04 has no measurable effect on
+hit rate, and costs -0.011 ± 0.005 in the static ranking test.
+
+Cost (Mac M-series CPU, `-O` Swift + Accelerate, 500 candidates, synthetic weights, not on a phone):
+
+| Item | Value |
+|---|---|
+| Shipped encoder | 20.8 k tokens × 64 fp16 = 2.7 MB (≈1.4 MB if the 3.1 k album tokens are dropped) + 0.38 MB token list |
+| Embed 500 candidates (dictionary lookup, mean, normalise) | 0.38 ms |
+| Score 500 (diagonal ridge, sparse + 64 dense dims) | 0.03 ms |
+| Update per feedback event (diagonal) / dense rank-1 / dense posterior solve | 0.001 / 0.0002 / 0.006 ms |
+| Dense Thompson sample + score 500 | 0.011 ms |
+| Learner state | 0.26 MB diagonal + 16 KB dense |
+| Audio student (223 k params, fp16 CoreML, 64×470 mel) | 0.38 ms CPU, 0.17 ms ANE per clip, plus the 15 s clip download and mel front end (not measured) |
+
+Recommendation: ship **D appended to the existing hashed learner** (pure Swift, no CoreML, no hosting). The encoder is an embedding bag over the
+same metadata tokens, trained once offline with in-batch contrastive loss on playlist co-occurrence, exported as `table_fp16.bin` +
+`vocab.json` by `export_d.py`. On cold songs it is worth +0.043 ± 0.007 strict nDCG (+19 %) and +0.07 on the warm pool; it makes runtime
+playlist co-occurrence (C) redundant. It does not fix cold artists or taste drift. Add the source prior from suggestions with a small weight.
+Audio (E) adds about +0.05 more on the audio subset but needs a clip per candidate and the Essentia weights are CC BY-NC-SA (commercial
+use needs a licence from MTG-UPF), so treat it as a later experiment. Forgetting did not help in the simulation.
+Not verified: real listening behaviour, English, drift recovery, the audio student's fidelity to the teacher, on-phone latency, and whether the
+quality holds for songs outside the crawled playlists (training data is 1.2 k playlists; more playlists should help the encoder).

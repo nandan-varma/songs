@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import collections
+from datetime import datetime
 import glob
 import json
 import math
@@ -144,26 +145,89 @@ def context_section(recs, out):
     for r in recs[max(0, i - 30): i + 1]:
         out.append(fmt_line(r))
 
-def events_section(path, out):
+CLOSED = ("completed", "skipped", "skipped_unheard", "switched_away")
+ALL = ("*", "*")
+
+
+def to_dt(ts):
+    try:
+        return datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def session_starts(recs):
+    first = {}
+    for r in recs:
+        t, sid = to_dt(r.get("ts")), r.get("session")
+        if t and sid and (sid not in first or t < first[sid]):
+            first[sid] = t
+    return sorted((t, sid) for sid, t in first.items())
+
+
+def session_at(t, starts):
+    sid = None
+    for start, s in starts:
+        if start > t:
+            break
+        sid = s
+    return sid
+
+
+def is_skip(e):
+    t = e.get("type")
+    return t in ("skipped", "skipped_unheard") or (t == "switched_away" and (e.get("frac") or 0) < 0.5)
+
+
+def pc(n, d):
+    return f"{100 * n / d:.0f}%" if d else "n/a"
+
+
+def events_section(path, out, recs):
     ev = read_jsonl(path)
     out.append(f"== listening events ({len(ev)}) ==")
     if not ev:
         out.append("none")
-        return
-    types = collections.Counter(e.get("type") for e in ev)
-    out.append("types: " + ", ".join(f"{t}={n}" for t, n in types.most_common(12)))
-    outcomes = []
-    for e in sorted(ev, key=lambda e: e.get("t") or ""):
-        t = e.get("type")
-        if t == "completed":
-            outcomes.append(False)
-        elif t in ("skipped", "skipped_unheard") or (t == "switched_away" and (e.get("frac") or 0) < 0.5):
-            outcomes.append(True)
-    first, later = outcomes[:10], outcomes[10:]
-    f = lambda xs: f"{100 * sum(xs) / len(xs):.0f}% of {len(xs)}" if xs else "n/a"
-    out.append(f"completed={outcomes.count(False)} skipped={outcomes.count(True)} skip-rate first10={f(first)} later={f(later)}"
-               f" picked={types.get('picked', 0)} suggest_less={types.get('suggest_less', 0)}"
-               f" unfavorite={types.get('unfavorite', 0)} profile_reset={types.get('profile_reset', 0)}")
+    else:
+        types = collections.Counter(e.get("type") for e in ev)
+        out.append("types: " + ", ".join(f"{t}={n}" for t, n in types.most_common(12)))
+        starts = session_starts(recs)
+        stats = collections.defaultdict(collections.Counter)
+        seen = collections.Counter()
+        for e in sorted((e for e in ev if e.get("type") in CLOSED), key=lambda e: e.get("t") or ""):
+            t = to_dt(e.get("t"))
+            sid = session_at(t, starts) if (t and starts) else None
+            first3 = False
+            if sid is not None:
+                seen[sid] += 1
+                first3 = seen[sid] <= 3
+            skip = is_skip(e)
+            for key in ((e.get("model") or "-", e.get("source") or "-"), ALL):
+                s = stats[key]
+                s["plays"] += 1
+                s["done"] += e.get("type") == "completed"
+                s["skip"] += skip
+                if first3:
+                    s["f3"] += 1
+                    s["f3skip"] += skip
+        out.append(f"{'model':<6}{'source':<10}{'plays':>6}{'done':>6}{'skip':>6}{'1st3skip':>12}")
+        for key in sorted(stats, key=lambda k: (k == ALL, -stats[k]["plays"])):
+            s = stats[key]
+            model, source = ("all", "") if key == ALL else key
+            f3 = f"{pc(s['f3skip'], s['f3'])}/{s['f3']}" if s["f3"] else "n/a"
+            out.append(f"{model:<6}{source:<10}{s['plays']:>6}{pc(s['done'], s['plays']):>6}"
+                       f"{pc(s['skip'], s['plays']):>6}{f3:>12}")
+        out.append(f"picked={types.get('picked', 0)} suggest_less={types.get('suggest_less', 0)}"
+                   f" unfavorite={types.get('unfavorite', 0)} profile_reset={types.get('profile_reset', 0)}")
+    slates = [r["kv"] for r in recs if r.get("cat") == "ranking" and r.get("msg") == "slate" and isinstance(r.get("kv"), dict)]
+    mixes = [s.get("trending", 0) / (s.get("trending", 0) + s.get("similar", 0))
+             for s in slates if s.get("trending", 0) + s.get("similar", 0)]
+    if mixes:
+        tr = sum(mixes) / len(mixes)
+        cands = sum(s.get("candidates", 0) for s in slates) / len(slates)
+        out.append(f"slate mix: {len(mixes)} slates, mean trending {100 * tr:.0f}%, similar {100 * (1 - tr):.0f}%, "
+                   f"mean candidates {cands:.0f}")
+
 
 def main():
     ap = argparse.ArgumentParser(description="Summarise a pull folder from ios-pull.sh.")
@@ -193,7 +257,7 @@ def main():
         out.append(f"== crash logs ({len(crashes)}), newest: {os.path.basename(crashes[-1])} ==")
         for line in open(crashes[-1]).read().splitlines()[:8]:
             out.append("  " + line[:150])
-    events_section(os.path.join(d, "events.jsonl"), out)
+    events_section(os.path.join(d, "events.jsonl"), out, recs)
     if recs:
         context_section(recs, out)
     print("\n".join(out))

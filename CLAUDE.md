@@ -30,9 +30,14 @@ cd apps/ios && xcodegen generate        # after editing project.yml
 
 ## iOS invariants
 
-- One hidden listener profile; no visible modes or knobs. For You and autoplay share one sparse hashed model; changing
-  languages filters the slate without resetting taste.
-- Songs are live from the API; metadata is hashed on device. No bundled catalogue, no offline fallback.
+- One hidden listener profile; no visible modes or knobs. For You and autoplay share one learner (sparse hashed metadata
+  features + 64 dense dims from `ItemEncoder`); changing languages filters the slate without resetting taste.
+- `ItemEncoder` is a learned embedding table (`Modes/Resources/table_fp16.bin`, `vocab.json`) trained offline by
+  `research/recs/experiments/export_d.py`. Its tokenisation is `SongFeatures.tokens`, shared with the hasher and checked
+  against `golden.json`; change one side and the other must be re-exported. Candidates from `/suggestions` get a capped rank
+  prior. No decay/forgetting (it measurably hurt).
+- Songs are live from the API; metadata is featurised on device. No bundled catalogue, no offline fallback.
+- Events in `events.jsonl` carry `source` and `model` so skip rate can be compared per model (`tools/dev/ios-summary.py`).
 - Pure logic lives in `ModesCore` (Foundation only). The app target holds AVFoundation, persistence and UI.
 - `PlaybackLedger`: `generation` drops stale async work, `closed` accounts for a song exactly once, `started` learns only from
   songs that were heard. Signals: finish +1, skip `2·frac−1` (only if heard), "Suggest less" −1 (recorded even while paused).
@@ -49,6 +54,5 @@ cd apps/ios && xcodegen generate        # after editing project.yml
 
 ## Next
 
-A learned metadata→collaborative projection (artist, composer, label, language, year, title words → 128-d, trained once on
-playlist co-occurrence) so any new song scores on-device, plus a personal dense head with a sparse wide part, forgetting and
-diversity. Evaluate offline first (`research/`).
+Measure real listening (skip rate by `model`/`source`), retrain the encoder on a larger playlist crawl (English is barely
+covered), and consider audio features only after the Essentia licence is settled. Offline results: `research/docs/RESULTS.md`.

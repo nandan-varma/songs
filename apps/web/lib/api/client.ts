@@ -14,7 +14,7 @@ export const api = hc<AppType>(API_URL, {
 		fetch(input, { ...init, next: { revalidate: REVALIDATE_SECONDS } }),
 }).api;
 
-class ApiError extends Error {
+export class ApiError extends Error {
 	constructor(
 		message: string,
 		readonly status: number,

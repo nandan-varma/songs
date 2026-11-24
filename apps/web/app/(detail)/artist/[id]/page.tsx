@@ -4,6 +4,8 @@ import { Section } from "@/components/section";
 import { SongList } from "@/components/song-list";
 import { getArtist } from "@/lib/api/data";
 
+export const revalidate = 300;
+
 export default async function ArtistPage({
 	params,
 }: {

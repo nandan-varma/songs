@@ -3,7 +3,9 @@ import { DownloadButton } from "@/components/download-button";
 import { Lyrics } from "@/components/lyrics";
 import { Section } from "@/components/section";
 import { Suggestions } from "@/components/suggestions";
-import { getSong } from "@/lib/api/data";
+import { getSong, orNotFound } from "@/lib/api/data";
+
+export const revalidate = 300;
 
 export default async function SongPage({
 	params,
@@ -11,7 +13,7 @@ export default async function SongPage({
 	params: Promise<{ id: string }>;
 }) {
 	const { id } = await params;
-	const { track, meta, lyricsId } = await getSong(id);
+	const { track, meta, lyricsId } = await orNotFound(getSong(id));
 	return (
 		<div className="space-y-8">
 			<CollectionHeader

@@ -1,5 +1,6 @@
+import { notFound } from "next/navigation";
 import type { Card, ImageLink, TopResult, Track } from "@/lib/models";
-import { api, unwrap } from "./client";
+import { ApiError, api, unwrap } from "./client";
 import {
 	albumCard,
 	artistCard,
@@ -20,6 +21,17 @@ export interface Collection {
 	image: ImageLink[];
 	tracks: Track[];
 }
+
+export const orNotFound = <T>(request: Promise<T>): Promise<T> =>
+	request.catch((error: unknown) => {
+		if (
+			error instanceof ApiError &&
+			(error.status === 404 || error.status === 400)
+		) {
+			notFound();
+		}
+		throw error;
+	});
 
 const countLabel = (count: number | null, noun: string) =>
 	count ? `${count} ${noun}` : undefined;
@@ -50,7 +62,7 @@ export async function getHome(language: string) {
 }
 
 export async function getAlbum(id: string): Promise<Collection> {
-	const album = await unwrap(api.albums.$get({ query: { id } }));
+	const album = await orNotFound(unwrap(api.albums.$get({ query: { id } })));
 	return {
 		title: album.name,
 		subtitle: album.artists.primary.map((artist) => artist.name).join(", "),
@@ -65,8 +77,8 @@ export async function getAlbum(id: string): Promise<Collection> {
 
 export async function getPlaylist(id: string): Promise<Collection> {
 	const query = { id, limit: String(PLAYLIST_PAGE_SIZE) };
-	const first = await unwrap(
-		api.playlists.$get({ query: { ...query, page: "0" } }),
+	const first = await orNotFound(
+		unwrap(api.playlists.$get({ query: { ...query, page: "0" } })),
 	);
 	const pages = Math.min(
 		Math.ceil((first.songCount ?? 0) / PLAYLIST_PAGE_SIZE),
@@ -90,11 +102,13 @@ export async function getPlaylist(id: string): Promise<Collection> {
 const compact = new Intl.NumberFormat("en", { notation: "compact" });
 
 export async function getArtist(id: string) {
-	const artist = await unwrap(
-		api.artists[":id"].$get({
-			param: { id },
-			query: { songCount: "20", albumCount: "12" },
-		}),
+	const artist = await orNotFound(
+		unwrap(
+			api.artists[":id"].$get({
+				param: { id },
+				query: { songCount: "20", albumCount: "12" },
+			}),
+		),
 	);
 	return {
 		title: artist.name,
@@ -111,7 +125,7 @@ export async function getArtist(id: string) {
 export async function getSong(id: string) {
 	const [song] = await unwrap(api.songs[":id"].$get({ param: { id } }));
 	const track = song && toTrack(song);
-	if (!song || !track) throw new Error("This song is not available");
+	if (!song || !track) throw new ApiError("This song is not available", 404);
 	return {
 		track,
 		lyricsId: song.hasLyrics ? song.lyricsId : null,

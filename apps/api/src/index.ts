@@ -21,6 +21,8 @@ const app = new Hono()
 		await next();
 		if (c.res.ok) {
 			c.header("Cache-Control", "s-maxage=300, stale-while-revalidate");
+		} else if (c.res.status === 404) {
+			c.header("Cache-Control", "s-maxage=3600");
 		}
 	})
 	.route("/songs", songs)

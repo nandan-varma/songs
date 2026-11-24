@@ -27,7 +27,7 @@ export async function jiosaavn(
 	try {
 		response = await fetch(url, {
 			headers: { "User-Agent": USER_AGENT },
-			signal: AbortSignal.timeout(10_000),
+			signal: AbortSignal.timeout(8_000),
 		});
 	} catch (cause) {
 		throw new HTTPException(502, {

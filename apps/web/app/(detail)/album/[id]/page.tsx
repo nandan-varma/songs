@@ -2,6 +2,8 @@ import { CollectionHeader } from "@/components/collection-header";
 import { SongList } from "@/components/song-list";
 import { getAlbum } from "@/lib/api/data";
 
+export const revalidate = 300;
+
 export default async function AlbumPage({
 	params,
 }: {

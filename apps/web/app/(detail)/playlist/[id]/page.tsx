@@ -4,6 +4,8 @@ import { getPlaylist } from "@/lib/api/data";
 
 export const revalidate = 300;
 
+export const generateStaticParams = () => [];
+
 export default async function PlaylistPage({
 	params,
 }: {
